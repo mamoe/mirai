@@ -51,6 +51,7 @@ kotlin {
         commonTest {
             dependencies {
                 runtimeOnly(`log4j-core`)
+                implementation(`kotlinx-coroutines-test`)
             }
         }
 

@@ -50,6 +50,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(kotlin("script-runtime"))
+                implementation(`kotlinx-coroutines-test`)
                 api(yamlkt)
             }
         }

@@ -12,6 +12,7 @@ package net.mamoe.mirai.utils
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -50,7 +51,7 @@ internal class LateinitMutablePropertyTest {
     }
 
     @Test
-    fun setValuePrevailsOnCompetitionWithInitializer() = runBlocking {
+    fun setValuePrevailsOnCompetitionWithInitializer() = runTest {
         val verySlowInitializer = CompletableDeferred<Unit>()
         val override = Symbol("override")
         val initializer = Symbol("initializer")

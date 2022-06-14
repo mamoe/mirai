@@ -73,6 +73,7 @@ fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$v
 fun ktor(id: String, version: String = Versions.ktor) = "io.ktor:ktor-$id:$version"
 
 val `kotlinx-coroutines-core` = kotlinx("coroutines-core", Versions.coroutines)
+val `kotlinx-coroutines-test` = kotlinx("coroutines-test", Versions.coroutines)
 val `kotlinx-coroutines-jdk8` = kotlinx("coroutines-jdk8", Versions.coroutines)
 val `kotlinx-coroutines-swing` = kotlinx("coroutines-swing", Versions.coroutines)
 val `kotlinx-coroutines-debug` = kotlinx("coroutines-debug", Versions.coroutines)

@@ -73,13 +73,6 @@ internal class AwaitStateTest : AbstractMockNetworkHandlerTest() {
     // single thread so we can use [yield] to transfer dispatch
     private val singleThreadDispatcher: CoroutineDispatcher = borrowSingleThreadDispatcher()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @AfterTest
-    fun after() {
-        (singleThreadDispatcher as CloseableCoroutineDispatcher).close()
-    }
-
-
     @Test
     fun `test whileSelect onStateChanged drop if not listening`() = runBlockingUnit(singleThreadDispatcher + Job()) {
         createNetworkHandler().run {
