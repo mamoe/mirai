@@ -161,10 +161,6 @@ jobs:
           :mirai-logging-slf4j-simple:check
           ${{ env.gradleArgs }}
 
-      - if: ${{ env.isMac == 'true' }}
-        name: Ensure KDoc valid
-        run: ./gradlew dokkaHtmlMultiModule
-
       - name: Upload mirai-console
         uses: actions/upload-artifact@v3
         with:
@@ -219,8 +215,44 @@ jobs:
           name: mirai-logging-slf4j-simple
           path: logging/mirai-logging-slf4j-simple/build/libs
 
+  build-mirai-all:
+    name: "Everything (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-12
+    env:
+      gradleArgs: --scan
+      isMac: ${{ startsWith(matrix.os, 'macos') }}
+      isWindows: ${{ startsWith(matrix.os, 'windows') }}
+      isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
+      isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: git submodule update --init --recursive
 
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '17'
 
+      - if: ${{ env.isUnix == 'true' }}
+        run: chmod -R 777 *
+
+      - name: Clean and download dependencies
+        run: ./gradlew clean ${{ env.gradleArgs }}
+
+      - name: "Assemble"
+        run: ./gradlew assemble ${{ env.gradleArgs }}
+
+      - name: "Check"
+        run: ./gradlew check ${{ env.gradleArgs }}
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Ensure KDoc valid
+        run: ./gradlew dokkaHtmlMultiModule
 
 
   build-mirai-core-native:
