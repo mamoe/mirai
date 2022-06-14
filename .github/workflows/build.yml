@@ -337,15 +337,19 @@ jobs:
 
       - if: ${{ env.isWindows == 'true' }}
         name: Install OpenSSL
-        run: >
-          git clone https://github.com/openssl/openssl.git --recursive &&
-          cd openssl &&
-          git checkout tags/openssl-3.0.3 &&
-          perl Configure VC-WIN64A --prefix=C:/openssl --openssldir=C:/openssl/ssl no-asm &&
-          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64 && 
-          nmake && 
-          nmake install
-        shell: cmd
+        run: 'vcpkg install openssl'
+      #
+      #      - if: ${{ env.isWindows == 'true' }}
+      #        name: Install OpenSSL
+      #        run: >
+      #          git clone https://github.com/openssl/openssl.git --recursive &&
+      #          cd openssl &&
+      #          git checkout tags/openssl-3.0.3 &&
+      #          perl Configure VC-WIN64A --prefix=C:/openssl --openssldir=C:/openssl/ssl no-asm &&
+      #          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64 &&
+      #          nmake &&
+      #          nmake install
+      #        shell: cmd
 
       #      - if: ${{ env.isWindows == 'true' }}
       #        name: Install OpenSSL install_sw
