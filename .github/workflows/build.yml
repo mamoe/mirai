@@ -478,6 +478,16 @@ jobs:
         continue-on-error: true
 
       - if: ${{ env.isWindows == 'true' }}
+        name: wmic pagefile list /format:list
+        run: wmic pagefile list /format:list
+        continue-on-error: true
+
+      - if: ${{ env.isWindows == 'true' }}
+        name: wmic computersystem where name="%computername%" set AutomaticManagedPagefile=true
+        run: wmic computersystem where name="%computername%" set AutomaticManagedPagefile=true
+        continue-on-error: true
+
+      - if: ${{ env.isWindows == 'true' }}
         name: "Link mirai-core for mingwX64"
         run: ./gradlew mirai-core:linkReleaseTestMingwX64 ${{ env.gradleArgs }}
 
