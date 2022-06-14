@@ -8,13 +8,14 @@
  */
 
 @file:JvmMultifileClass
+@file:JvmName("MiraiUtils")
 
 package net.mamoe.mirai.utils
 
 
 public expect class PlatformImage
 
-public interface PlatformImageUtil {
+public interface BarcodeSupport {
     public val available: Boolean
 
     /**
@@ -26,17 +27,17 @@ public interface PlatformImageUtil {
         height: Int
     ): PlatformImage?
 
-    public companion object INSTANCE : PlatformImageUtil by initService()
+    public companion object INSTANCE : BarcodeSupport by initService()
 }
 
-private fun initService(): PlatformImageUtil {
+private fun initService(): BarcodeSupport {
     return loadServiceOrNull(
-        PlatformImageUtil::class,
-        "net.mamoe.mirai.utils.addition.PlatformImageUtilImpl"
-    ) ?: DummyPIU
+        BarcodeSupport::class,
+        "net.mamoe.mirai.utils.barcode.BarcodeSupportImpl"
+    ) ?: DummyBSI
 }
 
-private object DummyPIU : PlatformImageUtil {
+private object DummyBSI : BarcodeSupport {
     override val available: Boolean get() = false
     override fun generateQRCode(content: String, width: Int, height: Int): PlatformImage? = null
 }

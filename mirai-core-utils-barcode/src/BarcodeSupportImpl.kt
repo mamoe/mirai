@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.utils.addition
+package net.mamoe.mirai.utils.barcode
 
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
@@ -15,9 +15,9 @@ import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
 import net.mamoe.mirai.utils.PlatformImage
-import net.mamoe.mirai.utils.PlatformImageUtil
+import net.mamoe.mirai.utils.BarcodeSupport
 
-public class PlatformImageUtilImpl : PlatformImageUtil {
+public class BarcodeSupportImpl : BarcodeSupport {
     override val available: Boolean get() = true
 
     override fun generateQRCode(content: String, width: Int, height: Int): PlatformImage? {

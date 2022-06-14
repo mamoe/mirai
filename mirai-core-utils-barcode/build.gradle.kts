@@ -7,4 +7,23 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.utils.addition
+
+plugins {
+    kotlin("jvm")
+    kotlin("plugin.serialization")
+    `maven-publish`
+}
+
+description = "mirai-core utilities barcode support"
+
+kotlin {
+    explicitApi()
+}
+
+dependencies {
+    implementation(project(":mirai-core-utils"))
+    implementation(`zxing-javase`)
+}
+
+configurePublishing("mirai-core-utils-barcode")
+

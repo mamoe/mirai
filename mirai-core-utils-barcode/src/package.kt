@@ -7,4 +7,4 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.utils.addition
+package net.mamoe.mirai.utils.barcode

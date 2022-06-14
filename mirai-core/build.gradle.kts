@@ -102,7 +102,7 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 api(`kotlinx-coroutines-debug`)
-                api(project(":mirai-core-utils-addition"))
+                api(project(":mirai-core-utils-barcode"))
                 //  implementation("net.mamoe:mirai-login-solver-selenium:1.0-dev-14")
             }
         }

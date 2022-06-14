@@ -106,7 +106,7 @@ public object SwingSolver : LoginSolver() {
                 "", HyperLinkLabel(url, "设备锁验证", title),
                 "URL", JTextField(url),
             ).also { components ->
-                val qr = PlatformImageUtil.generateQRCode(url, 300, 300)
+                val qr = BarcodeSupport.generateQRCode(url, 300, 300)
                 if (qr != null) {
                     components.add("")
                     components.add(JLabel(ImageIcon(qr)))
