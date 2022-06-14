@@ -351,14 +351,14 @@ jobs:
           nmake install
         shell: cmd
 
-      - if: ${{ env.isWindows == 'true' }}
-        name: Install OpenSSL install_sw
-        run: >
-          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64 &&
-          nmake install_sw
-        shell: cmd
-        working-directory: openssl
-        continue-on-error: true
+      #      - if: ${{ env.isWindows == 'true' }}
+      #        name: Install OpenSSL install_sw
+      #        run: >
+      #          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64 &&
+      #          nmake install_sw
+      #        shell: cmd
+      #        working-directory: openssl
+      #        continue-on-error: true
 
 
       - name: Clean and download dependencies
