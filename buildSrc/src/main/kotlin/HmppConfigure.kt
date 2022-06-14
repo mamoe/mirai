@@ -405,8 +405,11 @@ private fun KotlinNativeTarget.findOrCreateTest(buildType: NativeBuildType, conf
 // e.g. Linker will try to link curl for mingwX64 but this can't be done on macOS.
 fun Project.disableCrossCompile() {
     project.afterEvaluate {
-        if (HOST_KIND !is HostKind.MACOS) {
-            MAC_TARGETS.forEach { target -> disableTargetLink(this, target) }
+        if (HOST_KIND != HostKind.MACOS_ARM64) {
+            disableTargetLink(this, HostKind.MACOS_ARM64.targetName)
+        }
+        if (HOST_KIND != HostKind.MACOS_X64) {
+            disableTargetLink(this, HostKind.MACOS_X64.targetName)
         }
         if (HOST_KIND != HostKind.WINDOWS) {
             WIN_TARGETS.forEach { target -> disableTargetLink(this, target) }
