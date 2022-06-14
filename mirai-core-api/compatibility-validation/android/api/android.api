@@ -1911,41 +1911,23 @@ public abstract class net/mamoe/mirai/event/MessageSelectBuilder : net/mamoe/mir
 	public synthetic fun reply-8NSq9Eo (JLnet/mamoe/mirai/message/data/Message;)V
 }
 
-public abstract class net/mamoe/mirai/event/MessageSelectBuilderUnit : net/mamoe/mirai/event/MessageSubscribersBuilder {
+public abstract class net/mamoe/mirai/event/MessageSelectBuilderUnit : net/mamoe/mirai/event/CommonMessageSelectBuilderUnit {
 	public fun <init> (Lnet/mamoe/mirai/event/events/MessageEvent;Ljava/lang/Object;Lkotlin/jvm/functions/Function2;)V
-	public synthetic fun always (Lkotlin/jvm/functions/Function3;)Ljava/lang/Object;
-	public synthetic fun always (Lkotlin/jvm/functions/Function3;)Ljava/lang/Void;
-	public abstract fun default (Lkotlin/jvm/functions/Function3;)V
-	public final fun defaultQuoteReply (Lkotlin/jvm/functions/Function1;)V
-	public final fun defaultReply (Lkotlin/jvm/functions/Function1;)V
-	public final fun invoke-8NSq9Eo (JLkotlin/jvm/functions/Function1;)V
 	public final synthetic fun invoke-RNyhSv4 (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
 	public final synthetic fun invoke-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
-	protected abstract fun obtainCurrentCoroutineScope ()Lkotlinx/coroutines/CoroutineScope;
-	protected abstract fun obtainCurrentDeferred ()Lkotlinx/coroutines/CompletableDeferred;
-	public fun quoteReply-8NSq9Eo (JLjava/lang/String;)V
-	public fun quoteReply-8NSq9Eo (JLkotlin/jvm/functions/Function1;)V
-	public fun quoteReply-8NSq9Eo (JLnet/mamoe/mirai/message/data/Message;)V
 	public final synthetic fun quoteReply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
 	public final synthetic fun quoteReply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)V
 	public final synthetic fun quoteReply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
 	public final synthetic fun quoteReply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
 	public final synthetic fun quoteReply-sCZ5gAI (JLjava/lang/String;)Ljava/lang/Void;
 	public final synthetic fun quoteReply-sCZ5gAI (JLjava/lang/String;)V
-	public fun reply-8NSq9Eo (JLjava/lang/String;)V
-	public fun reply-8NSq9Eo (JLkotlin/jvm/functions/Function1;)V
-	public fun reply-8NSq9Eo (JLnet/mamoe/mirai/message/data/Message;)V
 	public final synthetic fun reply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)Ljava/lang/Void;
 	public final synthetic fun reply-AVDwu3U (JLnet/mamoe/mirai/message/data/Message;)V
 	public final synthetic fun reply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)Ljava/lang/Void;
 	public final synthetic fun reply-RNyhSv4 (JLkotlin/jvm/functions/Function1;)V
 	public final synthetic fun reply-sCZ5gAI (JLjava/lang/String;)Ljava/lang/Void;
 	public final synthetic fun reply-sCZ5gAI (JLjava/lang/String;)V
-	public final fun timeout (JLkotlin/jvm/functions/Function1;)V
-	public final fun timeout-1WcQj8o (J)J
 	public final synthetic fun timeout-ncvN2qU (J)J
-	public final fun timeoutException (JLkotlin/jvm/functions/Function0;)V
-	public static synthetic fun timeoutException$default (Lnet/mamoe/mirai/event/MessageSelectBuilderUnit;JLkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
 }
 
 public final class net/mamoe/mirai/event/MessageSelectionTimeoutChecker {
