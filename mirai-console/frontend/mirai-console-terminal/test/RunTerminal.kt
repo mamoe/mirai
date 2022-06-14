@@ -31,6 +31,8 @@ fun main() {
 
     val mockPlugin = object : KotlinPlugin(JvmPluginDescription("org.test.test", "1.0.0")) {}
 
+    MiraiConsoleTerminalLoader.startAsDaemon(terminal)
+
     terminal.backendAccess.globalComponentStorage.contribute(
         BotConfigurationAlterer,
         mockPlugin,
@@ -39,9 +41,6 @@ fun main() {
             configuration
         }
     )
-
-    MiraiConsoleTerminalLoader.startAsDaemon(terminal)
-
 
     runCatching { runBlocking { MiraiConsole.job.join() } }
 }
