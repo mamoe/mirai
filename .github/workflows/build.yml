@@ -535,8 +535,8 @@ jobs:
         continue-on-error: true
 
       - if: ${{ env.isWindows == 'true' }}
-        name: 'wmic pagefileset where name="C:\\pagefile.sys" set InitialSize=9216,MaximumSize=12000'
-        run: 'wmic pagefileset where name="C:\\pagefile.sys" set InitialSize=9216,MaximumSize=12000' # only 14G total space available
+        name: 'wmic pagefileset where name="D:\\pagefile.sys" set InitialSize=9216,MaximumSize=12000'
+        run: 'wmic pagefileset where name="D:\\pagefile.sys" set InitialSize=9216,MaximumSize=12000' # only 14G total space available
         shell: cmd
         continue-on-error: true
 
