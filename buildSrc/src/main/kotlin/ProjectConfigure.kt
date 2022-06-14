@@ -16,7 +16,10 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.*
-import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinSingleTargetExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
@@ -61,11 +64,12 @@ fun Project.preConfigureJvmTarget() {
 fun Project.configureJvmTarget() {
     val defaultVer = jvmVersion()
 
-    tasks.withType(KotlinCompile::class)
-        .filter { it.name.contains("test", ignoreCase = true) }
-        .forEach { task ->
-            task.kotlinOptions.freeCompilerArgs += "-opt-in=net.mamoe.mirai.utils.TestOnly"
+    configure(kotlinSourceSets.orEmpty()) {
+        languageSettings {
+            optIn("net.mamoe.mirai.utils.TestOnly")
+            optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
         }
+    }
 
     extensions.findByType(JavaPluginExtension::class.java)?.run {
         sourceCompatibility = defaultVer

@@ -11,7 +11,9 @@ package net.mamoe.mirai.internal.event
 
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
+import kotlinx.coroutines.test.runTest
 import net.mamoe.mirai.event.*
+import net.mamoe.mirai.utils.childScope
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -112,7 +114,7 @@ internal class EventTests : AbstractEventTest() {
     }
 
     @Test
-    fun `test concurrent listening 2`() = runBlocking {
+    fun `test concurrent listening 2`() = runTest {
         resetEventListeners()
         val registered = atomic(0)
         val called = atomic(0)
@@ -190,15 +192,11 @@ internal class EventTests : AbstractEventTest() {
     open class PriorityTestEvent : AbstractEvent()
 
     private fun singleThreaded(step: StepUtil, invoke: suspend EventChannel<Event>.() -> Unit) {
-        // runBlocking 会完全堵死, 没法退出
-        val scope = CoroutineScope(borrowSingleThreadDispatcher())
-        val job = scope.launch {
+        runTest(borrowSingleThreadDispatcher()) {
+            val scope = this.childScope()
             invoke(scope.globalEventChannel())
+            scope.cancel()
         }
-        runBlocking {
-            job.join()
-        }
-        scope.cancel()
         step.throws()
     }
 
