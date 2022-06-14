@@ -15,7 +15,6 @@ import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.utils.RemoteFileImpl
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
-import net.mamoe.mirai.utils.RemoteFile
 import kotlin.coroutines.CoroutineContext
 
 internal actual class GroupImpl actual constructor(
@@ -30,5 +29,5 @@ internal actual class GroupImpl actual constructor(
     @Suppress("DEPRECATION")
     @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"), level = DeprecationLevel.WARNING)
     @DeprecatedSinceMirai(warningSince = "2.8")
-    override val filesRoot: RemoteFile by lazy { RemoteFileImpl(this, "/") }
+    override val filesRoot: net.mamoe.mirai.utils.RemoteFile by lazy { RemoteFileImpl(this, "/") }
 }
