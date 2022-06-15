@@ -143,11 +143,10 @@ public object ExistingBotValueArgumentParser : InternalCommandValueArgumentParse
  */
 public object ExistingFriendValueArgumentParser : InternalCommandValueArgumentParserExtensions<Friend>() {
     private val syntax = """
-        - `botId.friendId`
-        - `botId.friendNick` (模糊搜索, 寻找最优匹配)
-        - `~` (指代指令调用人自己作为好友. 仅聊天环境下)
+        - 机器人号码.好友号码
+        - ~ (指代指令调用人自己作为好友. 仅聊天环境下)
         
-        当只登录了一个 [Bot] 时, `botId` 参数可省略
+        当只登录了一个机器人时，机器人号码可省略
     """.trimIndent()
 
     public override fun parse(raw: String, sender: CommandSender): Friend {
@@ -182,9 +181,10 @@ public object ExistingFriendValueArgumentParser : InternalCommandValueArgumentPa
  */
 public object ExistingGroupValueArgumentParser : InternalCommandValueArgumentParserExtensions<Group>() {
     private val syntax = """
-        - `botId.groupId`
-        - `~` (指代指令调用人自己所在群. 仅群聊天环境下)
-        当只登录了一个 [Bot] 时, `botId` 参数可省略
+        - 机器人号码.群号码
+        - ~    (指代指令调用人自己所在群. 仅群聊天环境下)
+        
+        当只登录了一个机器人时，机器人号码可省略
     """.trimIndent()
 
     public override fun parse(raw: String, sender: CommandSender): Group {
@@ -209,14 +209,14 @@ public object ExistingGroupValueArgumentParser : InternalCommandValueArgumentPar
 
 public object ExistingUserValueArgumentParser : InternalCommandValueArgumentParserExtensions<User>() {
     private val syntax: String = """
-         - `botId.groupId.memberId`
-         - `botId.groupId.memberCard` (模糊搜索, 寻找最优匹配)
-         - `~` (指代指令调用人自己. 仅聊天环境下)
-         - `botId.groupId.$` (随机成员. )
-         - `botId.friendId
+         - 机器人号码.群号码.群员号码
+         - 机器人号码.群号码.群员名片   (模糊搜索)
+         - ~   (指代指令调用人自己. 仅聊天环境下)
+         - 机器人号码.群号码.$   (随机成员)
+         - 机器人号码.好友号码
          
-         当处于一个群内时, `botId` 和 `groupId` 参数都可省略
-         当只登录了一个 [Bot] 时, `botId` 参数可省略
+         当处于一个群内时，机器人号码和群号码参数都可省略
+         当只登录了一个机器人时，机器人号码可省略
     """.trimIndent()
 
     override fun parse(raw: String, sender: CommandSender): User {
@@ -263,14 +263,15 @@ public object ExistingUserValueArgumentParser : InternalCommandValueArgumentPars
 
 public object ExistingContactValueArgumentParser : InternalCommandValueArgumentParserExtensions<Contact>() {
     private val syntax: String = """
-         - `botId.groupId.memberId`
-         - `botId.groupId.memberCard` (模糊搜索, 寻找最优匹配)
-         - `botId.groupId.$` (随机成员. 仅聊天环境下)
-         - `botId.friendId
-         - `botId.groupId`
+         - 机器人号码.群号码.群员号码
+         - 机器人号码.群号码.群员名片    (模糊搜索)
+         - ~    (指代指令调用人自己. 仅聊天环境下)
+         - 机器人号码.群号码.$    (随机成员)
+         - 机器人号码.好友号码
+         - 机器人号码.群号码
          
-         当处于一个群内时, `botId` 和 `groupId` 参数都可省略
-         当只登录了一个 [Bot] 时, `botId` 参数可省略
+         当处于一个群内时，机器人号码和群号码参数都可省略
+         当只登录了一个机器人时，机器人号码可省略
     """.trimIndent()
 
     override fun parse(raw: String, sender: CommandSender): Contact {
@@ -292,7 +293,7 @@ public object ExistingContactValueArgumentParser : InternalCommandValueArgumentP
         }.recoverCatching {
             return parseFunction2(raw, sender)
         }.getOrElse {
-            illegalArgument("无法推断目标好友, 群或群员. \n$syntax")
+            illegalArgument("无法推断目标好友、群或群员。 \n$syntax")
         }
     }
 }
@@ -303,13 +304,13 @@ public object ExistingContactValueArgumentParser : InternalCommandValueArgumentP
  */
 public object ExistingMemberValueArgumentParser : InternalCommandValueArgumentParserExtensions<Member>() {
     private val syntax: String = """
-         - `botId.groupId.memberId`
-         - `botId.groupId.memberCard` (模糊搜索, 寻找最优匹配)
-         - `~` (指代指令调用人自己. 仅聊天环境下)
-         - `groupId.$` (随机成员)
+         - 机器人号码.群号码.群员号码
+         - 机器人号码.群号码.群员名片    (模糊搜索)
+         - ~    (指代指令调用人自己. 仅聊天环境下)
+         - 机器人号码.群号码.${'$'}    (随机成员)
          
-         当处于一个群内时, `botId` 和 `groupId` 参数都可省略
-         当只登录了一个 [Bot] 时, `botId` 参数可省略
+         当处于一个群内时，机器人号码和群号码参数都可省略
+         当只登录了一个机器人时，机器人号码可省略
     """.trimIndent()
 
     public override fun parse(raw: String, sender: CommandSender): Member {
