@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -19,10 +19,7 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.runBIO
-import kotlin.reflect.KFunction
-import kotlin.reflect.KParameter
-import kotlin.reflect.KType
-import kotlin.reflect.KVisibility
+import kotlin.reflect.*
 import kotlin.reflect.full.*
 
 
@@ -130,7 +127,7 @@ public class IllegalCommandDeclarationException : Exception {
 @OptIn(ExperimentalCommandDescriptors::class)
 internal class CommandReflector(
     val command: Command,
-    val annotationResolver: SubCommandAnnotationResolver,
+    private val annotationResolver: SubCommandAnnotationResolver,
 ) {
 
     @Suppress("NOTHING_TO_INLINE")
@@ -143,8 +140,11 @@ internal class CommandReflector(
     private fun KFunction<*>.isSubCommandFunction(): Boolean = annotationResolver.hasAnnotation(command, this)
     private fun KFunction<*>.checkExtensionReceiver() {
         this.extensionReceiverParameter?.let { receiver ->
-            if (receiver.type.classifierAsKClassOrNull()?.isSubclassOf(CommandSender::class) != true) {
-                illegalDeclaration("Extension receiver parameter type is not subclass of CommandSender.")
+            val classifier = receiver.type.classifierAsKClassOrNull()
+            if (classifier != null) {
+                if (!classifier.isSubclassOf(CommandSender::class) && !classifier.isSubclassOf(CommandContext::class)) {
+                    illegalDeclaration("Extension receiver parameter type is not subclass of CommandSender nor CommandContext.")
+                }
             }
         }
     }
@@ -279,8 +279,8 @@ internal class CommandReflector(
                 var receiverParameter = function.extensionReceiverParameter
                 if (receiverParameter == null && valueParameters.isNotEmpty()) {
                     val valueFirstParameter = valueParameters[0]
-                    if (valueFirstParameter.type.classifierAsKClassOrNull()
-                            ?.isSubclassOf(CommandSender::class) == true
+                    val classifier = valueFirstParameter.type.classifierAsKClassOrNull()
+                    if (classifier != null && isAcceptableReceiverType(classifier)
                     ) {
                         receiverParameter = valueFirstParameter
                         valueParameters.removeAt(0)
@@ -317,14 +317,22 @@ internal class CommandReflector(
                     }
 
                     if (receiverParameter != null) {
-                        check(receiverParameter.type.classifierAsKClass().isInstance(call.caller)) {
-                            "Bad command call resolved. " +
-                                    "Function expects receiver parameter ${receiverParameter.type} whereas actual is ${call.caller::class}."
+
+                        val receiverType = receiverParameter.type.classifierAsKClass()
+
+                        if (receiverType.isSubclassOf(CommandContext::class)) {
+                            args[receiverParameter] = CommandContextImpl(call.caller, call.originalMessage)
+                        } else {
+                            check(receiverType.isInstance(call.caller)) {
+                                "Bad command call resolved. " +
+                                        "Function expects receiver parameter ${receiverParameter.type} whereas actual is ${call.caller::class}."
+                            }
+                            args[receiverParameter] = call.caller
                         }
-                        args[receiverParameter] = call.caller
+
                     }
 
-                    // #341
+                    // mirai-console#341
                     if (function.isSuspend) {
                         function.callSuspendBy(args)
                     } else {
@@ -334,18 +342,29 @@ internal class CommandReflector(
             }.toList()
     }
 
+    private fun isAcceptableReceiverType(classifier: KClass<Any>) =
+        classifier.isSubclassOf(CommandSender::class) || classifier.isSubclassOf(CommandContext::class)
+
+    @Suppress("SameParameterValue")
     private fun <K, V> createMapEntry(key: K, value: V) = object : Map.Entry<K, V> {
         override val key: K get() = key
         override val value: V get() = value
     }
 
-    private fun KParameter.toCommandReceiverParameter(): CommandReceiverParameter<out CommandSender> {
+    private fun KParameter.toCommandReceiverParameter(): CommandReceiverParameter<*> {
         check(!this.isVararg) { "Receiver cannot be vararg." }
-        check(
-            this.type.classifierAsKClass().isSubclassOf(CommandSender::class)
-        ) { "Receiver must be subclass of CommandSender" }
-
-        return CommandReceiverParameter(this.type.isMarkedNullable, this.type)
+        val classifier = type.classifierAsKClass()
+        return when {
+            classifier.isSubclassOf(CommandSender::class) -> {
+                CommandReceiverParameter.Sender(this.type.isMarkedNullable, this.type)
+            }
+            classifier.isSubclassOf(CommandContext::class) -> {
+                CommandReceiverParameter.Context(this.type.isMarkedNullable, this.type)
+            }
+            else -> {
+                throw IllegalArgumentException("Receiver must be subclass of CommandSender or CommandContext")
+            }
+        }
     }
 
     private fun createStringConstantParameterForName(

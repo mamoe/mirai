@@ -35,7 +35,8 @@ public object SpaceSeparatedCommandCallParser : CommandCallParser {
         return CommandCallImpl(
             caller = caller,
             calleeName = flatten.first().content,
-            valueArguments = flatten.drop(1).map(::DefaultCommandValueArgument)
+            valueArguments = flatten.drop(1).map(::DefaultCommandValueArgument),
+            originalMessage = message
         )
     }
 }

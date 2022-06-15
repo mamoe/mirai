@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -50,6 +50,12 @@ public interface CommandCall {
      */
     public val valueArguments: List<CommandValueArgument>
 
+    /**
+     * Original message
+     * @since 2.12
+     */
+    public val originalMessage: MessageChain
+
     // maybe add contextual arguments, i.e. from MessageMetadata
 }
 
@@ -58,4 +64,5 @@ public class CommandCallImpl(
     override val caller: CommandSender,
     override val calleeName: String,
     override val valueArguments: List<CommandValueArgument>,
+    override val originalMessage: MessageChain,
 ) : CommandCall

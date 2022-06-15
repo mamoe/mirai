@@ -16,4 +16,8 @@ import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
 internal abstract class AbstractCommandTest : AbstractConsoleInstanceTest() {
     val dataScope get() = DataScope as ConsoleDataScopeImpl
     val consoleSender get() = ConsoleCommandSender
+
+
+    open val sender: CommandSender get() = ConsoleCommandSender
+    open val owner: CommandOwner get() = ConsoleCommandOwner
 }

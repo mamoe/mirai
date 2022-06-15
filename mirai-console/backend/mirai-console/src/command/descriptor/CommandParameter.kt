@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.command.descriptor
 
+import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.descriptor.AbstractCommandValueParameter.UserDefinedType.Companion.createOptional
 import net.mamoe.mirai.console.command.descriptor.AbstractCommandValueParameter.UserDefinedType.Companion.createRequired
@@ -122,21 +123,49 @@ public sealed class ArgumentAcceptance(
 }
 
 @ExperimentalCommandDescriptors
-public data class CommandReceiverParameter<T : CommandSender>(
-    override val isOptional: Boolean,
-    override val type: KType,
+public sealed class CommandReceiverParameter<T>(
 ) : CommandParameter<T>, AbstractCommandParameter<T>() {
-    override val name: String get() = NAME
 
-    init {
-        val classifier = type.classifier
-        require(classifier is KClass<*>) {
-            "CommandReceiverParameter.type.classifier must be KClass."
-        }
-        require(classifier.isSubclassOf(CommandSender::class)) {
-            "CommandReceiverParameter.type.classifier must be subclass of CommandSender."
+    /**
+     * @since 2.12
+     */
+    @ExperimentalCommandDescriptors
+    public class Sender(
+        override val isOptional: Boolean,
+        override val type: KType,
+    ) : CommandReceiverParameter<CommandSender>() {
+        init {
+            val classifier = type.classifier
+            require(classifier is KClass<*>) {
+                "CommandReceiverParameter.Sender.type.classifier must be KClass."
+            }
+            require(classifier.isSubclassOf(CommandSender::class)) {
+                "CommandReceiverParameter.Sender.type.classifier must be subclass of CommandSender."
+            }
         }
     }
+
+    /**
+     * @since 2.12
+     */
+    @ExperimentalCommandDescriptors
+    public class Context(
+        override val isOptional: Boolean,
+        override val type: KType = typeOf<CommandContext>(),
+    ) : CommandReceiverParameter<CommandContext>() {
+        init {
+            val classifier = type.classifier
+            require(classifier is KClass<*>) {
+                "CommandReceiverParameter.Context.type.classifier must be KClass."
+            }
+            require(classifier.isSubclassOf(CommandContext::class)) {
+                "CommandReceiverParameter.Context.type.classifier must be subclass of CommandContext."
+            }
+        }
+    }
+
+    override val name: String get() = NAME
+
 
     public companion object {
         public const val NAME: String = "<receiver>"
@@ -221,7 +250,6 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
         }
 
         private companion object {
-            @OptIn(ExperimentalStdlibApi::class)
             val STRING_TYPE = typeOf<String>()
         }
     }
@@ -251,13 +279,11 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
         public companion object {
             @JvmStatic
             public inline fun <reified T : Any> createOptional(name: String, isVararg: Boolean): UserDefinedType<T> {
-                @OptIn(ExperimentalStdlibApi::class)
                 return UserDefinedType(name, true, isVararg, typeOf<T>())
             }
 
             @JvmStatic
             public inline fun <reified T : Any> createRequired(name: String, isVararg: Boolean): UserDefinedType<T> {
-                @OptIn(ExperimentalStdlibApi::class)
                 return UserDefinedType(name, false, isVararg, typeOf<T>())
             }
         }
