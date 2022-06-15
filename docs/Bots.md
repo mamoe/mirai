@@ -289,7 +289,7 @@ contactListCache.setSaveIntervalMillis(60000) // 可选设置有更新时的保�
 > [回到 Mirai 文档索引](CoreAPI.md)
 
 
-<!--
+<!-- BEGIN DROP A
 
 ## 附录
 
@@ -420,4 +420,4 @@ dependencies {
 </dependencies>
 ```
 
--->
+END DROP A -->
