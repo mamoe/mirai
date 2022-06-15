@@ -15,6 +15,7 @@ module.exports = {
         {text: "Mirai 生态概览", link: "/mirai-ecology.html"},
         {text: "从 1.x 迁移", link: "/MigrationFrom1x.html"},
         {text: '用户手册', link: '/UserManual.html'},
+        {text: '用户手册 - 控制台', link: '/ConsoleTerminal.html'},
         {text: 'JVM 环境和开发准备工作', link: '/Preparations.html'},
         {text: "配置项目", link: "/ConfiguringProjects.html"},
         {
