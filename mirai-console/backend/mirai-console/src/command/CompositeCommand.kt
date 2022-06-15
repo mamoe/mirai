@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.console.command
@@ -63,6 +63,12 @@ import kotlin.annotation.AnnotationTarget.FUNCTION
  *
  *     @SubCommand("list", "查看列表") // 可以设置多个子指令名。此时函数名会被忽略。
  *     suspend fun CommandSender.list() { // 执行 "/manage list" 时调用这个函数
+ *         sendMessage("/manage list 被调用了")
+ *     }
+ *
+ *     @SubCommand
+ *     suspend fun CommandContext.repeat() {
+ *         // 使用 CommandContext 作为参数，
  *         sendMessage("/manage list 被调用了")
  *     }
  *

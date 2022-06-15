@@ -171,6 +171,11 @@ public final class net/mamoe/mirai/console/command/Command$Companion {
 	public final fun getAllNames (Lnet/mamoe/mirai/console/command/Command;)[Ljava/lang/String;
 }
 
+public abstract interface class net/mamoe/mirai/console/command/CommandContext {
+	public abstract fun getOriginalMessage ()Lnet/mamoe/mirai/message/data/MessageChain;
+	public abstract fun getSender ()Lnet/mamoe/mirai/console/command/CommandSender;
+}
+
 public abstract class net/mamoe/mirai/console/command/CommandExecuteResult {
 	public abstract fun getCall ()Lnet/mamoe/mirai/console/command/parse/CommandCall;
 	public abstract fun getCommand ()Lnet/mamoe/mirai/console/command/Command;
@@ -571,7 +576,8 @@ public abstract class net/mamoe/mirai/console/command/RawCommand : net/mamoe/mir
 	public fun getPrimaryName ()Ljava/lang/String;
 	public fun getSecondaryNames ()[Ljava/lang/String;
 	public fun getUsage ()Ljava/lang/String;
-	public abstract fun onCommand (Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/message/data/MessageChain;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun onCommand (Lnet/mamoe/mirai/console/command/CommandContext;Lnet/mamoe/mirai/message/data/MessageChain;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun onCommand (Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/message/data/MessageChain;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract class net/mamoe/mirai/console/command/SimpleCommand : net/mamoe/mirai/console/command/AbstractCommand, net/mamoe/mirai/console/command/Command, net/mamoe/mirai/console/command/descriptor/CommandArgumentContextAware {
@@ -855,23 +861,26 @@ public abstract interface class net/mamoe/mirai/console/command/descriptor/Comma
 	public abstract fun isOptional ()Z
 }
 
-public final class net/mamoe/mirai/console/command/descriptor/CommandReceiverParameter : net/mamoe/mirai/console/command/descriptor/AbstractCommandParameter, net/mamoe/mirai/console/command/descriptor/CommandParameter {
+public abstract class net/mamoe/mirai/console/command/descriptor/CommandReceiverParameter : net/mamoe/mirai/console/command/descriptor/AbstractCommandParameter, net/mamoe/mirai/console/command/descriptor/CommandParameter {
 	public static final field Companion Lnet/mamoe/mirai/console/command/descriptor/CommandReceiverParameter$Companion;
 	public static final field NAME Ljava/lang/String;
-	public fun <init> (ZLkotlin/reflect/KType;)V
-	public final fun component1 ()Z
-	public final fun component2 ()Lkotlin/reflect/KType;
-	public final fun copy (ZLkotlin/reflect/KType;)Lnet/mamoe/mirai/console/command/descriptor/CommandReceiverParameter;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/console/command/descriptor/CommandReceiverParameter;ZLkotlin/reflect/KType;ILjava/lang/Object;)Lnet/mamoe/mirai/console/command/descriptor/CommandReceiverParameter;
-	public fun equals (Ljava/lang/Object;)Z
 	public fun getName ()Ljava/lang/String;
-	public fun getType ()Lkotlin/reflect/KType;
-	public fun hashCode ()I
-	public fun isOptional ()Z
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/console/command/descriptor/CommandReceiverParameter$Companion {
+}
+
+public final class net/mamoe/mirai/console/command/descriptor/CommandReceiverParameter$Context : net/mamoe/mirai/console/command/descriptor/CommandReceiverParameter {
+	public fun <init> (ZLkotlin/reflect/KType;)V
+	public synthetic fun <init> (ZLkotlin/reflect/KType;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getType ()Lkotlin/reflect/KType;
+	public fun isOptional ()Z
+}
+
+public final class net/mamoe/mirai/console/command/descriptor/CommandReceiverParameter$Sender : net/mamoe/mirai/console/command/descriptor/CommandReceiverParameter {
+	public fun <init> (ZLkotlin/reflect/KType;)V
+	public fun getType ()Lkotlin/reflect/KType;
+	public fun isOptional ()Z
 }
 
 public class net/mamoe/mirai/console/command/descriptor/CommandResolutionException : java/lang/RuntimeException {
@@ -1118,6 +1127,7 @@ public abstract class net/mamoe/mirai/console/command/java/JRawCommand : net/mam
 	public fun getPrimaryName ()Ljava/lang/String;
 	public fun getSecondaryNames ()[Ljava/lang/String;
 	public fun getUsage ()Ljava/lang/String;
+	public fun onCommand (Lnet/mamoe/mirai/console/command/CommandContext;Lnet/mamoe/mirai/message/data/MessageChain;)V
 	public fun onCommand (Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/message/data/MessageChain;)V
 	protected final fun setDescription (Ljava/lang/String;)V
 	protected final fun setPermission (Lnet/mamoe/mirai/console/permission/Permission;)V
@@ -1145,13 +1155,15 @@ public abstract interface class net/mamoe/mirai/console/command/parse/CommandArg
 public abstract interface class net/mamoe/mirai/console/command/parse/CommandCall {
 	public abstract fun getCalleeName ()Ljava/lang/String;
 	public abstract fun getCaller ()Lnet/mamoe/mirai/console/command/CommandSender;
+	public abstract fun getOriginalMessage ()Lnet/mamoe/mirai/message/data/MessageChain;
 	public abstract fun getValueArguments ()Ljava/util/List;
 }
 
 public final class net/mamoe/mirai/console/command/parse/CommandCallImpl : net/mamoe/mirai/console/command/parse/CommandCall {
-	public fun <init> (Lnet/mamoe/mirai/console/command/CommandSender;Ljava/lang/String;Ljava/util/List;)V
+	public fun <init> (Lnet/mamoe/mirai/console/command/CommandSender;Ljava/lang/String;Ljava/util/List;Lnet/mamoe/mirai/message/data/MessageChain;)V
 	public fun getCalleeName ()Ljava/lang/String;
 	public fun getCaller ()Lnet/mamoe/mirai/console/command/CommandSender;
+	public fun getOriginalMessage ()Lnet/mamoe/mirai/message/data/MessageChain;
 	public fun getValueArguments ()Ljava/util/List;
 }
 
@@ -1234,6 +1246,7 @@ public abstract interface class net/mamoe/mirai/console/command/resolve/Resolved
 	public abstract fun getCallee ()Lnet/mamoe/mirai/console/command/Command;
 	public abstract fun getCalleeSignature ()Lnet/mamoe/mirai/console/command/descriptor/CommandSignature;
 	public abstract fun getCaller ()Lnet/mamoe/mirai/console/command/CommandSender;
+	public abstract fun getOriginalMessage ()Lnet/mamoe/mirai/message/data/MessageChain;
 	public abstract fun getRawValueArguments ()Ljava/util/List;
 	public abstract fun getResolvedValueArguments ()Ljava/util/List;
 }
@@ -1242,10 +1255,11 @@ public final class net/mamoe/mirai/console/command/resolve/ResolvedCommandCall$C
 }
 
 public final class net/mamoe/mirai/console/command/resolve/ResolvedCommandCallImpl : net/mamoe/mirai/console/command/resolve/ResolvedCommandCall {
-	public fun <init> (Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/console/command/Command;Lnet/mamoe/mirai/console/command/descriptor/CommandSignature;Ljava/util/List;Lnet/mamoe/mirai/console/command/descriptor/CommandArgumentContext;)V
+	public fun <init> (Lnet/mamoe/mirai/console/command/CommandSender;Lnet/mamoe/mirai/console/command/Command;Lnet/mamoe/mirai/console/command/descriptor/CommandSignature;Ljava/util/List;Lnet/mamoe/mirai/console/command/descriptor/CommandArgumentContext;Lnet/mamoe/mirai/message/data/MessageChain;)V
 	public fun getCallee ()Lnet/mamoe/mirai/console/command/Command;
 	public fun getCalleeSignature ()Lnet/mamoe/mirai/console/command/descriptor/CommandSignature;
 	public fun getCaller ()Lnet/mamoe/mirai/console/command/CommandSender;
+	public fun getOriginalMessage ()Lnet/mamoe/mirai/message/data/MessageChain;
 	public fun getRawValueArguments ()Ljava/util/List;
 	public fun getResolvedValueArguments ()Ljava/util/List;
 }

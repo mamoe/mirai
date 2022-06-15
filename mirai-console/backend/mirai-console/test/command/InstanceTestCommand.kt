@@ -156,7 +156,7 @@ class TestTemporalArgCommand : CompositeCommand(owner, "testtemporal") {
 }
 
 private val sender get() = ConsoleCommandSender
-internal val owner get() = ConsoleCommandOwner
+private val owner get() = ConsoleCommandOwner
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @OptIn(ExperimentalCommandDescriptors::class)

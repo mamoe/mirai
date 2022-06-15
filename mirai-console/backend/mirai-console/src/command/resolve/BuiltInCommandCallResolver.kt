@@ -52,7 +52,8 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
                 callee,
                 signature.signature,
                 signature.zippedArguments.map { it.second },
-                context ?: EmptyCommandArgumentContext
+                context ?: EmptyCommandArgumentContext,
+                call.originalMessage,
             )
         )
     }
@@ -101,14 +102,24 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
     ): ResolveData? {
         val signature = this
         val receiverParameter = signature.receiverParameter
-        if (receiverParameter?.type?.classifierAsKClass()?.isInstance(caller) == false) {
-            errorSink.reportUnmatched(
-                UnmatchedCommandSignature(
-                    signature,
-                    FailureReason.InapplicableReceiverArgument(receiverParameter, caller)
-                )
-            )// not compatible receiver
-            return null
+
+        if (receiverParameter != null) {
+            when (receiverParameter) {
+                is CommandReceiverParameter.Context -> {
+                    // accepts any sender
+                }
+                is CommandReceiverParameter.Sender -> {
+                    if (!receiverParameter.type.classifierAsKClass().isInstance(caller)) {
+                        errorSink.reportUnmatched(
+                            UnmatchedCommandSignature(
+                                signature,
+                                FailureReason.InapplicableReceiverArgument(receiverParameter, caller)
+                            )
+                        )// not compatible receiver
+                        return null
+                    }
+                }
+            }
         }
 
         val valueParameters = signature.valueParameters
