@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.console.command.java
@@ -13,8 +13,10 @@ import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.command.CompositeCommand
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentContext
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
+import net.mamoe.mirai.console.command.descriptor.plus
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_CONSOLE_COMMAND_OWNER
@@ -24,7 +26,7 @@ import net.mamoe.mirai.console.permission.Permission
  * 复合指令. 指令注册时候会通过反射构造指令解析器.
  *
  * 示例:
- * ```
+ * ```java
  * public final class MyCompositeCommand extends CompositeCommand {
  *     public static final MyCompositeCommand INSTANCE = new MyCompositeCommand();
  *
@@ -52,12 +54,18 @@ import net.mamoe.mirai.console.permission.Permission
  *             result = ExceptionsKt.stackTraceToString(e);
  *         }
  *
- *         sender.sendMessage("结果: " + result)
+ *         sender.sendMessage("结果: " + result);
  *     }
  *
  *     @SubCommand
  *     public void list(CommandSender sender) { // 执行 "/manage list" 时调用这个方法
- *         sender.sendMessage("/manage list 被调用了")
+ *         sender.sendMessage("/manage list 被调用了");
+ *     }
+ *
+ *     @SubCommand
+ *     public void repeat(CommandContext context) {
+ *         // 使用 CommandContext 作为参数，可以获得触发指令的原消息链 originalMessage，其中包含 MessageMetadata。
+ *         context.getSender().sendMessage(context.getOriginalMessage());
  *     }
  *
  *     // 支持 Image 类型, 需在聊天中执行此指令.
@@ -91,4 +99,18 @@ public abstract class JCompositeCommand
     public final override var prefixOptional: Boolean = false
         protected set
 
+    /**
+     * 智能参数解析环境
+     * @since 2.12
+     */
+    public final override var context: CommandArgumentContext = super.context
+        private set
+
+    /**
+     * 增加智能参数解析环境
+     * @since 2.12
+     */
+    protected open fun addArgumentContext(context: CommandArgumentContext) {
+        this.context += context
+    }
 }
