@@ -110,7 +110,7 @@ public abstract class JCompositeCommand
      * 增加智能参数解析环境
      * @since 2.12
      */
-    protected open fun addArgumentContext(context: CommandArgumentContext) {
+    protected fun addArgumentContext(context: CommandArgumentContext) {
         this.context += context
     }
 }

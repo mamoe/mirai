@@ -21,10 +21,21 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.buildMessageChain
 
 /**
- * 无参数解析, 接收原生参数的指令.
+ * 无参数解析, 只会接收原消息链的指令. Java 查看 [JRawCommand].
  *
- * ### 指令执行流程
- * 继 [CommandManager.executeCommand] 所述第 3 步, [RawCommand] 不会对参数做任何解析.
+ * ```kotlin
+ * object MyCommand : RawCommand(
+ *     MyPluginMain, "name", // 使用插件主类对象作为指令拥有者；设置主指令名为 "name"
+ *     // 可选：
+ *     "name2", "name3", // 增加两个次要名称
+ *     usage = "/name arg1 arg2", // 设置用法，将会在 /help 展示
+ *     description = "这是一个测试指令", // 设置描述，将会在 /help 展示
+ *     prefixOptional = true, // 设置指令前缀是可选的，即使用 `test` 也能执行指令而不需要 `/test`
+ * ) {
+ *     override suspend fun CommandContext.onCommand(args: MessageChain) {
+ *     }
+ * }
+ * ```
  *
  * @see JRawCommand 供 Java 用户继承.
  *
@@ -33,7 +44,7 @@ import net.mamoe.mirai.message.data.buildMessageChain
  */
 public abstract class RawCommand(
     /**
-     * 指令拥有者.
+     * 指令拥有者. 通常建议使用插件主类.
      * @see CommandOwner
      */
     @ResolveContext(RESTRICTED_CONSOLE_COMMAND_OWNER)

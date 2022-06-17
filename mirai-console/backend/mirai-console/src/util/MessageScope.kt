@@ -68,15 +68,16 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *
  * 由于 [CommandSender] 与 [Contact] 无公共接口, 无法使用 [listOfNotNull] 遍历处理. [MessageScope] 就是设计为解决这样的问题.
  *
+ * *Kotlin*
  * ```
- * // 在一个 CompositeCommand 内
+ * // 在一个 SimpleCommand 内
  * @Handler
  * suspend fun CommandSender.handle(target: Member) {
  *     val duration = Random.nextInt(1, 15)
  *     target.mute(duration)
  *
  *
- *     // 不使用 MessageScope, 无用的样板代码
+ *     // 不使用 MessageScope
  *     val thisGroup = this.getGroupOrNull()
  *     val message = "${this.name} 禁言 ${target.nameCardOrNick} $duration 秒"
  *     if (target.group != thisGroup) {
@@ -85,7 +86,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *     sendMessage(message)
  *
  *
- *     // 使用 MessageScope, 清晰逻辑
+ *     // 使用 MessageScope
  *     // 表示至少发送给 `this`, 当 `this` 的真实发信对象与 `target.group` 不同时, 还额外发送给 `target.group`
  *     this.scopeWith(target.group) {
  *         sendMessage("${name} 禁言了 ${target.nameCardOrNick} $duration 秒")
@@ -97,6 +98,34 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *     //    target,
  *     //    target.group
  *     // ) { ... }
+ * }
+ * ```
+ *
+ * *Java*
+ * ```java
+ * // 在一个 SimpleCommand 内
+ * @Handler
+ * public void handle(sender: CommandSender, target: Member) {
+ *     int duration = Random.nextInt(1, 15);
+ *     target.mute(duration);
+ *
+ *
+ *     // 不使用 MessageScope
+ *     Group thisGroup = this.getGroupOrNull();
+ *     String message = "${this.name} 禁言 ${target.nameCardOrNick} $duration 秒";
+ *     if (!target.group.equals(thisGroup)) {
+ *         target.group.sendMessage(message);
+ *     }
+ *     sender.sendMessage(message);
+ *
+ *
+ *     // 使用 MessageScope
+ *     // 表示至少发送给 `this`, 当 `this` 的真实发信对象与 `target.group` 不同时, 还额外发送给 `target.group`
+ *     MessageScope scope = MessageScopeKt.scopeWith(sender, target);
+ *     scope.sendMessage("${name} 禁言了 ${target.nameCardOrNick} $duration 秒");
+ *
+ *     // 或是只用一行：
+ *     MessageScopeKt.scopeWith(sender, target).sendMessage("${name} 禁言了 ${target.nameCardOrNick} $duration 秒");
  * }
  * ```
  */
