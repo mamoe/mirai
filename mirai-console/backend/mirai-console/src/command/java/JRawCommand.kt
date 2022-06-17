@@ -30,16 +30,15 @@ import net.mamoe.mirai.utils.runBIO
  * public final class MyCommand extends JRawCommand {
  *     public static final MyCommand INSTANCE = new MyCommand();
  *     private MyCommand() {
- *         super(MyPluginMain.INSTANCE, "test")
+ *         super(MyPluginMain.INSTANCE, "test"); // 使用插件主类对象作为指令拥有者；设置主指令名为 "test"
  *         // 可选设置如下属性
- *         setUsage("/test")
- *         setDescription("这是一个测试指令")
- *         setPermission(CommandPermission.Operator.INSTANCE)
- *         setPrefixOptional(true)
+ *         setUsage("/test"); // 设置用法，这将会在 /help 中展示
+ *         setDescription("这是一个测试指令"); // 设置描述，也会在 /help 中展示
+ *         setPrefixOptional(true); // 设置指令前缀是可选的，即使用 `test` 也能执行指令而不需要 `/test`
  *     }
  *
  *     @Override
- *     public void onCommand(@NotNull CommandSender sender, @NotNull args: Object[]) {
+ *     public void onCommand(@NotNull CommandSender sender, @NotNull MessageChain args) {
  *         // 处理指令
  *     }
  * }
