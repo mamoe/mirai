@@ -21,6 +21,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.FUNCTION
 
+
 /**
  * 复合指令. 指令注册时候会通过反射构造指令解析器.
  *
@@ -68,8 +69,8 @@ import kotlin.annotation.AnnotationTarget.FUNCTION
  *
  *     @SubCommand
  *     suspend fun CommandContext.repeat() {
- *         // 使用 CommandContext 作为参数，
- *         sendMessage("/manage list 被调用了")
+ *         // 使用 CommandContext 作为参数，可以获得触发指令的原消息链 originalMessage，其中包含 MessageMetadata。
+ *         sender.sendMessage(originalMessage)
  *     }
  *
  *     // 支持 Image 类型, 需在聊天中执行此指令.
@@ -111,9 +112,9 @@ public abstract class CompositeCommand(
     }
 
     /**
-     * [CommandValueArgumentParser] 的环境
-     */
-    public final override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
+     * 智能参数解析环境
+     */ // open since 2.12
+    public override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
 
     /**
      * 标记一个函数为子指令, 当 [value] 为空时使用函数名.
