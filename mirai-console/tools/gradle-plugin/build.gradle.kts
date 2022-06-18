@@ -39,7 +39,6 @@ dependencies {
 
     api("com.github.jengelman.gradle.plugins:shadow:6.0.0")
     api(`jetbrains-annotations`)
-    api("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5")
 
 
     testApi(kotlin("test-junit5"))

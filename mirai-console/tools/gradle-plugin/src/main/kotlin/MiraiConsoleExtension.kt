@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("unused", "MemberVisibilityCanBePrivate")
@@ -12,8 +12,6 @@
 package net.mamoe.mirai.console.gradle
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.jfrog.bintray.gradle.BintrayExtension
-import com.jfrog.bintray.gradle.BintrayPlugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.XmlProvider
 import org.gradle.api.plugins.PluginContainer
@@ -280,28 +278,9 @@ public open class MiraiConsoleExtension {
 
         // Custom configurations
 
-        internal val bintrayConfigs = mutableListOf<BintrayExtension.() -> Unit>()
-        internal val bintrayPackageConfigConfigs = mutableListOf<BintrayExtension.PackageConfig.() -> Unit>()
         internal val mavenPomConfigs = mutableListOf<XmlProvider.() -> Unit>()
         internal val mavenPublicationConfigs = mutableListOf<MavenPublication.() -> Unit>()
 
-        /**
-         * 自定义配置 [BintrayExtension]，覆盖
-         */
-        @Suppress("DeprecatedCallableAddReplaceWith")
-        @Deprecated("不再支持发布到 bintray. 该配置会在 2.8 删除.", level = DeprecationLevel.ERROR)
-        public fun bintray(configure: BintrayExtension.() -> Unit) {
-            bintrayConfigs.add(configure)
-        }
-
-        /**
-         * 自定义配置 [BintrayExtension.PackageConfig]
-         */
-        @Suppress("DeprecatedCallableAddReplaceWith")
-        @Deprecated("不再支持发布到 bintray. 该配置会在 2.8 删除.", level = DeprecationLevel.ERROR)
-        public fun packageConfig(configure: BintrayExtension.PackageConfig.() -> Unit) {
-            bintrayPackageConfigConfigs.add(configure)
-        }
 
         /**
          * 自定义配置 maven pom.xml [XmlProvider]

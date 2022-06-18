@@ -10,7 +10,6 @@
 package net.mamoe.mirai.console.gradle
 
 import com.google.gson.Gson
-import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
@@ -136,16 +135,16 @@ private fun Project.registerPublishPluginTasks(target: KotlinTarget, isSingleTar
             Unit
         }
 
-    val bintrayUpload = tasks.getByName(BintrayUploadTask.getTASK_NAME()).dependsOn(
-        "buildPlugin".wrapNameWithPlatform(target, isSingleTarget),
-        generateMetadataTask,
-        // "shadowJar",
-        tasks.filterIsInstance<BuildMiraiPluginTask>().single { it.target == target }
-    )
-    tasks.register("publishPlugin".wrapNameWithPlatform(target, isSingleTarget)).get().apply {
-        group = "mirai"
-        dependsOn(bintrayUpload)
-    }
+//    val bintrayUpload = tasks.getByName(BintrayUploadTask.getTASK_NAME()).dependsOn(
+//        "buildPlugin".wrapNameWithPlatform(target, isSingleTarget),
+//        generateMetadataTask,
+//        // "shadowJar",
+//        tasks.filterIsInstance<BuildMiraiPluginTask>().single { it.target == target }
+//    )
+//    tasks.register("publishPlugin".wrapNameWithPlatform(target, isSingleTarget)).get().apply {
+//        group = "mirai"
+//        dependsOn(bintrayUpload)
+//    }
 }
 
 internal inline fun File.renamed(block: File.(nameWithoutExtension: String) -> String): File =
@@ -154,33 +153,33 @@ internal inline fun File.renamed(block: File.(nameWithoutExtension: String) -> S
 private fun Project.registerBintrayPublish() {
     val mirai = miraiExtension
 
-    bintray {
-        user = mirai.publishing.user ?: findPropertySmartOrFail("bintray.user")
-        key = mirai.publishing.key ?: findPropertySmartOrFail("bintray.key")
-
-        val targets = kotlinJvmOrAndroidTargets
-        if (targets.size == 1) {
-            setPublications("mavenJava")
-        } else {
-            setPublications(*targets.map { "mavenJava".wrapNameWithPlatform(it, false) }.toTypedArray())
-        }
-
-        setConfigurations("archives")
-
-        publish = mirai.publishing.publish
-        override = mirai.publishing.override
-
-        pkg.apply {
-            repo = mirai.publishing.repo ?: findPropertySmartOrFail("bintray.repo")
-            name = mirai.publishing.packageName ?: findPropertySmartOrFail("bintray.package")
-            userOrg = mirai.publishing.org ?: findPropertySmart("bintray.org")
-            desc = mirai.publishing.description ?: project.description
-
-            mirai.publishing.bintrayPackageConfigConfigs.forEach { it.invoke(this) }
-        }
-
-        mirai.publishing.bintrayConfigs.forEach { it.invoke(this) }
-    }
+//    bintray {
+//        user = mirai.publishing.user ?: findPropertySmartOrFail("bintray.user")
+//        key = mirai.publishing.key ?: findPropertySmartOrFail("bintray.key")
+//
+//        val targets = kotlinJvmOrAndroidTargets
+//        if (targets.size == 1) {
+//            setPublications("mavenJava")
+//        } else {
+//            setPublications(*targets.map { "mavenJava".wrapNameWithPlatform(it, false) }.toTypedArray())
+//        }
+//
+//        setConfigurations("archives")
+//
+//        publish = mirai.publishing.publish
+//        override = mirai.publishing.override
+//
+//        pkg.apply {
+//            repo = mirai.publishing.repo ?: findPropertySmartOrFail("bintray.repo")
+//            name = mirai.publishing.packageName ?: findPropertySmartOrFail("bintray.package")
+//            userOrg = mirai.publishing.org ?: findPropertySmart("bintray.org")
+//            desc = mirai.publishing.description ?: project.description
+//
+//            mirai.publishing.bintrayPackageConfigConfigs.forEach { it.invoke(this) }
+//        }
+//
+//        mirai.publishing.bintrayConfigs.forEach { it.invoke(this) }
+//    }
 }
 
 private fun Project.registerMavenPublications(target: KotlinTarget, isSingleTarget: Boolean) {
@@ -242,12 +241,6 @@ private fun Project.registerMavenPublications(target: KotlinTarget, isSingleTarg
 }
 
 
-/**
- * Configures the [bintray][com.jfrog.bintray.gradle.BintrayExtension] extension.
- */
-@PublishedApi
-internal fun Project.bintray(configure: com.jfrog.bintray.gradle.BintrayExtension.() -> Unit): Unit =
-    (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("bintray", configure)
 
 @PublishedApi
 internal val Project.sourceSets: org.gradle.api.tasks.SourceSetContainer
