@@ -432,6 +432,21 @@ public interface UserCommandSender : CommandSender {
 }
 
 /**
+ * 代表一个真实 [用户][User] 主动私聊机器人或在群内发送消息而执行指令
+ *
+ * @see MemberCommandSenderOnMessage 代表一个真实的 [群员][Member] 主动在群内发送消息执行指令.
+ * @see FriendCommandSenderOnMessage 代表一个真实的 [好友][Friend] 主动在私聊消息执行指令
+ * @see TempCommandSenderOnMessage 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
+ */
+public interface CommandSenderOnMessage<T : MessageEvent> : CommandSender {
+
+    /**
+     * 消息源 [MessageEvent]
+     */
+    public val fromEvent: T
+}
+
+/**
  * 所有 [CommandSender] 都必须继承自此对象.
  * @see CommandSender 查看更多信息
  */
@@ -456,6 +471,16 @@ public fun CommandSender.isConsole(): Boolean {
 }
 
 /**
+ * 当 [this] 为 [SystemCommandSender] 时返回 `true`
+ */
+public fun CommandSender.isSystem(): Boolean {
+    contract {
+        returns(true) implies (this@isSystem is SystemCommandSender)
+    }
+    return this is SystemCommandSender
+}
+
+/**
  * 当 [this] 不为 [ConsoleCommandSender] 时返回 `true`
  */
 public fun CommandSender.isNotConsole(): Boolean {
@@ -476,19 +501,19 @@ public fun CommandSender.isUser(): Boolean {
 }
 
 /**
- * 当 [this] 不为 [UserCommandSender], 即为 [ConsoleCommandSender] 时返回 `true`
+ * 当 [this] 不为 [UserCommandSender], 即为 [SystemCommandSender] 时返回 `true`
  */
 public fun CommandSender.isNotUser(): Boolean {
     contract {
-        returns(true) implies (this@isNotUser is ConsoleCommandSender)
+        returns(true) implies (this@isNotUser is SystemCommandSender)
     }
     return this !is UserCommandSender
 }
 
 /**
- * 折叠 [AbstractCommandSender] 的可能性.
+ * 折叠 [CommandSender] 的可能性.
  *
- * - 当 [this] 为 [ConsoleCommandSender] 时执行 [ifIsConsole]
+ * - 当 [this] 为 [SystemCommandSender] 时执行 [ifIsSystem]
  * - 当 [this] 为 [UserCommandSender] 时执行 [ifIsUser]
  * - 否则执行 [otherwise]
  *
@@ -498,7 +523,7 @@ public fun CommandSender.isNotUser(): Boolean {
  * val exception: Exception = ...
  *
  * sender.fold(
- *     ifIsConsole = { // this: ConsoleCommandSender
+ *     ifIsSystem = { // this: SystemCommandSender
  *         sendMessage(exception.stackTraceToString()) // 展示整个 stacktrace
  *     },
  *     ifIsUser = { // this: UserCommandSender
@@ -507,28 +532,28 @@ public fun CommandSender.isNotUser(): Boolean {
  * )
  * ```
  *
- * @return [ifIsConsole], [ifIsUser] 或 [otherwise] 执行结果.
+ * @return [ifIsSystem], [ifIsUser] 或 [otherwise] 执行结果.
  */
 @JvmSynthetic
 public inline fun <R> CommandSender.fold(
-    ifIsConsole: ConsoleCommandSender.() -> R,
+    ifIsSystem: SystemCommandSender.() -> R,
     ifIsUser: UserCommandSender.() -> R,
     otherwise: CommandSender.() -> R = { error("CommandSender ${this::class.qualifiedName} is not supported") },
 ): R {
     contract {
-        callsInPlace(ifIsConsole, InvocationKind.AT_MOST_ONCE)
+        callsInPlace(ifIsSystem, InvocationKind.AT_MOST_ONCE)
         callsInPlace(ifIsUser, InvocationKind.AT_MOST_ONCE)
         callsInPlace(otherwise, InvocationKind.AT_MOST_ONCE)
     }
     return when (val sender = this) {
-        is ConsoleCommandSender -> ifIsConsole(sender)
+        is SystemCommandSender -> ifIsSystem(sender)
         is UserCommandSender -> ifIsUser(sender)
         else -> otherwise(sender)
     }
 }
 
 /**
- * 折叠 [AbstractCommandSender] 的两种可能性, 即在群内发送或在私聊环境发送.
+ * 折叠 [UserCommandSender] 的两种可能性, 即在群内发送或在私聊环境发送.
  *
  * - 当 [this] 为 [MemberCommandSender] 时执行 [inGroup]
  * - 当 [this] 为 [TempCommandSender] 或 [FriendCommandSender] 时执行 [inPrivate]
@@ -734,21 +759,6 @@ public open class OtherClientCommandSender internal constructor(
 ///////////////////////////////////////////////////////////////////////////
 // CommandSenderOnMessage
 ///////////////////////////////////////////////////////////////////////////
-
-/**
- * 代表一个真实 [用户][User] 主动私聊机器人或在群内发送消息而执行指令
- *
- * @see MemberCommandSenderOnMessage 代表一个真实的 [群员][Member] 主动在群内发送消息执行指令.
- * @see FriendCommandSenderOnMessage 代表一个真实的 [好友][Friend] 主动在私聊消息执行指令
- * @see TempCommandSenderOnMessage 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
- */
-public interface CommandSenderOnMessage<T : MessageEvent> : CommandSender {
-
-    /**
-     * 消息源 [MessageEvent]
-     */
-    public val fromEvent: T
-}
 
 /**
  * 代表一个真实的 [好友][Friend] 主动在私聊消息执行指令

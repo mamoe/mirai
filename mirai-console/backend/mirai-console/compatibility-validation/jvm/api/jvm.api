@@ -374,6 +374,7 @@ public final class net/mamoe/mirai/console/command/CommandSenderKt {
 	public static final fun isConsole (Lnet/mamoe/mirai/console/command/CommandSender;)Z
 	public static final fun isNotConsole (Lnet/mamoe/mirai/console/command/CommandSender;)Z
 	public static final fun isNotUser (Lnet/mamoe/mirai/console/command/CommandSender;)Z
+	public static final fun isSystem (Lnet/mamoe/mirai/console/command/CommandSender;)Z
 	public static final fun isUser (Lnet/mamoe/mirai/console/command/CommandSender;)Z
 }
 
