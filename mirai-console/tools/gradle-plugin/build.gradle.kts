@@ -40,6 +40,10 @@ dependencies {
     api("com.github.jengelman.gradle.plugins:shadow:6.0.0")
     api(`jetbrains-annotations`)
 
+    // override vulnerable Log4J version
+    // https://blog.gradle.org/log4j-vulnerability
+    implementation(`log4j-api`)
+    implementation(`log4j-core`)
 
     testApi(kotlin("test-junit5"))
     testApi("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
