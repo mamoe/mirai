@@ -173,6 +173,9 @@ internal fun CommandReceiverParameter<*>.renderAsName(): String {
     val classifier = this.type.classifier.cast<KClass<out CommandSender>>()
     return when {
         classifier.isSubclassOf(ConsoleCommandSender::class) -> "控制台"
+        // 只有 classifier 明确为 SystemCommandSender 才有系统的意思
+        // classifier 为子类时不满足 "系统" 的定义
+        classifier == SystemCommandSender::class -> "系统"
         classifier.isSubclassOf(FriendCommandSenderOnMessage::class) -> "好友私聊"
         classifier.isSubclassOf(FriendCommandSender::class) -> "好友"
         classifier.isSubclassOf(MemberCommandSenderOnMessage::class) -> "群内发言"

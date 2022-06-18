@@ -57,8 +57,8 @@ import kotlin.annotation.AnnotationTarget.FUNCTION
  *     }
  *
  *     @SubCommand
- *     suspend fun ConsoleCommandSender.foo() {
- *         // 使用 ConsoleCommandSender 作为接收者，表示指令只能由控制台执行。
+ *     suspend fun SystemCommandSender.foo() {
+ *         // 使用 SystemCommandSender 作为接收者，表示指令只能由系统(控制台或其他插件)执行。
  *         // 当用户尝试在聊天环境执行时将会收到错误提示。
  *     }
  *

@@ -362,6 +362,10 @@ public interface PluginCustomCommandSender : CommandSender, SystemCommandSender 
  * 控制台指令执行者. 代表由控制台执行指令
  *
  * 控制台拥有一切指令的执行权限.
+ *
+ * 不建议在 [CompositeCommand] 中使用 [ConsoleCommandSender],
+ * 使用 [SystemCommandSender] 以允许其他插件执行
+ *
  */
 public object ConsoleCommandSender : AbstractCommandSender(), SystemCommandSender {
     public const val NAME: String = "ConsoleCommandSender"
