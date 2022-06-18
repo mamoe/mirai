@@ -41,6 +41,10 @@ dependencies {
     api(`jetbrains-annotations`)
     api("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5")
 
+    // override vulnerable Log4J version
+    // https://blog.gradle.org/log4j-vulnerability
+    implementation(`log4j-api`)
+    implementation(`log4j-core`)
 
     testApi(kotlin("test-junit5"))
     testApi("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
