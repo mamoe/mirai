@@ -22,14 +22,15 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiInternalApi
+import kotlin.coroutines.CoroutineContext
 
 
 /**
- * 在发送消息后广播的事件, 总是在 [MessagePreSendEvent] 之后广播.
+ * 在尝试发送消息后广播的事件, 总是在 [MessagePreSendEvent] 之后广播.
  *
  * 只要 [MessagePreSendEvent] 未被 [取消][CancellableEvent.cancel], [MessagePostSendEvent] 就一定会被广播, 并携带 [发送时产生的异常][MessagePostSendEvent.exception] (如果有).
  *
- * 在此事件广播前, 消息一定已经发送成功, 或产生一个异常.
+ * 在此事件广播前, 消息一定是主动发送的.
  *
  * @see Contact.sendMessage 发送消息. 为广播这个事件的唯一途径
  * @see MessagePreSendEvent
@@ -53,6 +54,9 @@ public sealed class MessagePostSendEvent<C : Contact> : BotEvent, BotActiveEvent
      * @see result
      */
     public abstract val receipt: MessageReceipt<C>?
+
+    /** 消息发送协程上下文. */
+    public abstract val coroutineContext: CoroutineContext
 }
 
 /**
@@ -115,7 +119,8 @@ public data class GroupMessagePostSendEvent @MiraiInternalApi constructor(
      * 发送消息成功时的回执. `null` 表示消息发送失败.
      * @see result
      */
-    public override val receipt: MessageReceipt<Group>?
+    public override val receipt: MessageReceipt<Group>?,
+    public override val coroutineContext: CoroutineContext,
 ) : MessagePostSendEvent<Group>()
 
 /**
@@ -142,7 +147,8 @@ public data class FriendMessagePostSendEvent @MiraiInternalApi constructor(
      * 发送消息成功时的回执. `null` 表示消息发送失败.
      * @see result
      */
-    public override val receipt: MessageReceipt<Friend>?
+    public override val receipt: MessageReceipt<Friend>?,
+    public override val coroutineContext: CoroutineContext,
 ) : UserMessagePostSendEvent<Friend>()
 
 /**
@@ -172,7 +178,8 @@ public sealed class TempMessagePostSendEvent @MiraiInternalApi constructor(
      * 发送消息成功时的回执. `null` 表示消息发送失败.
      * @see result
      */
-    public override val receipt: MessageReceipt<Member>?
+    public override val receipt: MessageReceipt<Member>?,
+    public override val coroutineContext: CoroutineContext,
 ) : UserMessagePostSendEvent<Member>() {
     public open val group: Group get() = target.group
 }
@@ -195,8 +202,9 @@ public data class GroupTempMessagePostSendEvent @MiraiInternalApi constructor(
      * 发送消息成功时的回执. `null` 表示消息发送失败.
      * @see result
      */
-    public override val receipt: MessageReceipt<NormalMember>?
-) : @kotlin.Suppress("DEPRECATION_ERROR") TempMessagePostSendEvent(target, message, exception, receipt) {
+    public override val receipt: MessageReceipt<NormalMember>?,
+    public override val coroutineContext: CoroutineContext,
+) : @kotlin.Suppress("DEPRECATION_ERROR") TempMessagePostSendEvent(target, message, exception, receipt, coroutineContext) {
     public override val group: Group get() = target.group
 }
 
@@ -218,5 +226,6 @@ public data class StrangerMessagePostSendEvent @MiraiInternalApi constructor(
      * 发送消息成功时的回执. `null` 表示消息发送失败.
      * @see result
      */
-    public override val receipt: MessageReceipt<Stranger>?
+    public override val receipt: MessageReceipt<Stranger>?,
+    public override val coroutineContext: CoroutineContext,
 ) : UserMessagePostSendEvent<Stranger>()

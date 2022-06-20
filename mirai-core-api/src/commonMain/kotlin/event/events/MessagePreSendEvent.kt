@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.event.VerboseEvent
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiInternalApi
+import kotlin.coroutines.CoroutineContext
 
 
 /**
@@ -41,6 +42,9 @@ public sealed class MessagePreSendEvent : BotEvent, BotActiveEvent, AbstractEven
 
     /** 待发送的消息. 修改后将会同时应用于发送. */
     public abstract var message: Message
+
+    /** 消息发送协程上下文. */
+    public abstract val coroutineContext: CoroutineContext
 }
 
 /**
@@ -51,7 +55,8 @@ public data class GroupMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Group,
     /** 待发送的消息. 修改后将会同时应用于发送. */
-    public override var message: Message
+    public override var message: Message,
+    public override val coroutineContext: CoroutineContext,
 ) : MessagePreSendEvent()
 
 /**
@@ -71,7 +76,8 @@ public data class FriendMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Friend,
     /** 待发送的消息. 修改后将会同时应用于发送. */
-    public override var message: Message
+    public override var message: Message,
+    public override val coroutineContext: CoroutineContext,
 ) : UserMessagePreSendEvent()
 
 /**
@@ -91,7 +97,8 @@ public sealed class TempMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Member,
     /** 待发送的消息. 修改后将会同时应用于发送. */
-    public override var message: Message
+    public override var message: Message,
+    public override val coroutineContext: CoroutineContext,
 ) : UserMessagePreSendEvent() {
     public open val group: Group get() = target.group
 }
@@ -104,8 +111,9 @@ public data class GroupTempMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: NormalMember,
     /** 待发送的消息. 修改后将会同时应用于发送. */
-    public override var message: Message
-) : @kotlin.Suppress("DEPRECATION_ERROR") TempMessagePreSendEvent(target, message) {
+    public override var message: Message,
+    public override val coroutineContext: CoroutineContext,
+) : @Suppress("DEPRECATION_ERROR") TempMessagePreSendEvent(target, message, coroutineContext) {
     public override val group: Group get() = target.group
 }
 
@@ -117,5 +125,6 @@ public data class StrangerMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Stranger,
     /** 待发送的消息. 修改后将会同时应用于发送. */
-    public override var message: Message
+    public override var message: Message,
+    public override val coroutineContext: CoroutineContext,
 ) : UserMessagePreSendEvent()
