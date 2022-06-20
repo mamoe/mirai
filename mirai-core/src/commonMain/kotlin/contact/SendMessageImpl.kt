@@ -14,10 +14,53 @@ package net.mamoe.mirai.internal.contact
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.EventCancelledException
+import net.mamoe.mirai.event.events.MessagePostSendEvent
 import net.mamoe.mirai.event.events.MessagePreSendEvent
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.toMessageChain
+import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
+import net.mamoe.mirai.internal.message.protocol.outgoing.HighwayUploader
+import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
+import net.mamoe.mirai.internal.network.component.buildComponentStorage
+import net.mamoe.mirai.internal.network.components.ClockHolder
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.*
+import kotlin.coroutines.CoroutineContext
+
+internal suspend fun <C : AbstractContact> C.sendMessageImpl(
+    message: Message,
+    messageProtocolStrategy: MessageProtocolStrategy<C>,
+    preSendEventConstructor: (C, Message, CoroutineContext) -> MessagePreSendEvent,
+    postSendEventConstructor: (C, MessageChain, Throwable?, MessageReceipt<C>?, CoroutineContext) -> MessagePostSendEvent<C>,
+): MessageReceipt<C> {
+    val ctx = coroutineContext
+
+    val isMiraiInternal = if (message is MessageChain) {
+        message.anyIsInstance<MiraiInternalMessageFlag>()
+    } else false
+
+    require(!message.isContentEmpty()) { "message is empty" }
+
+    val chain = broadcastMessagePreSendEvent(message, isMiraiInternal, ctx, preSendEventConstructor)
+
+    val result = kotlin.runCatching {
+        MessageProtocolFacade.preprocessAndSendOutgoing(this, message, buildComponentStorage {
+            set(MessageProtocolStrategy, messageProtocolStrategy)
+            set(HighwayUploader, HighwayUploader.Default)
+            set(ClockHolder, bot.components[ClockHolder])
+        })
+    }
+
+    if (result.isSuccess) {
+        // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
+        bot.logger.verbose("$this <- $chain".replaceMagicCodes())
+    }
+
+    if (!isMiraiInternal) {
+        postSendEventConstructor(this, chain, result.exceptionOrNull(), result.getOrNull(), ctx).broadcast()
+    }
+
+    return result.getOrThrow()
+}
 
 /**
  * Called only in 'public' apis.
@@ -25,12 +68,13 @@ import net.mamoe.mirai.message.data.toMessageChain
 internal suspend fun <C : Contact> C.broadcastMessagePreSendEvent(
     message: Message,
     isMiraiInternal: Boolean,
-    eventConstructor: (C, Message) -> MessagePreSendEvent,
+    coroutineContext: CoroutineContext,
+    eventConstructor: (C, Message, CoroutineContext) -> MessagePreSendEvent,
 ): MessageChain {
     if (isMiraiInternal) return message.toMessageChain()
     var eventName: String? = null
     return kotlin.runCatching {
-        eventConstructor(this, message).also {
+        eventConstructor(this, message, coroutineContext).also {
             eventName = it.javaClass.simpleName
         }.broadcast()
     }.onSuccess {
