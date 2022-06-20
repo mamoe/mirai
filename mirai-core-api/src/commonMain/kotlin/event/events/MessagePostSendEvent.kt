@@ -40,7 +40,7 @@ public sealed class MessagePostSendEvent<C : Contact> : BotEvent, BotActiveEvent
     public abstract val target: C
     public final override val bot: Bot get() = target.bot
 
-    /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
+    /** 已发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
     public abstract val message: MessageChain
 
     /**
@@ -108,7 +108,7 @@ public inline val <C : Contact> MessagePostSendEvent<C>.result: Result<MessageRe
 public data class GroupMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Group,
-    /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
+    /** 已发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
     public override val message: MessageChain,
     /**
      * 发送消息时抛出的异常. `null` 表示消息成功发送.
@@ -136,7 +136,7 @@ public sealed class UserMessagePostSendEvent<C : User> : MessagePostSendEvent<C>
 public data class FriendMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Friend,
-    /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
+    /** 已发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
     public override val message: MessageChain,
     /**
      * 发送消息时抛出的异常. `null` 表示消息成功发送.
@@ -167,7 +167,7 @@ public data class FriendMessagePostSendEvent @MiraiInternalApi constructor(
 public sealed class TempMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Member,
-    /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
+    /** 已发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
     public override val message: MessageChain,
     /**
      * 发送消息时抛出的异常. `null` 表示消息成功发送.
@@ -191,7 +191,7 @@ public sealed class TempMessagePostSendEvent @MiraiInternalApi constructor(
 public data class GroupTempMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: NormalMember,
-    /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
+    /** 已发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
     public override val message: MessageChain,
     /**
      * 发送消息时抛出的异常. `null` 表示消息成功发送.
@@ -215,7 +215,7 @@ public data class GroupTempMessagePostSendEvent @MiraiInternalApi constructor(
 public data class StrangerMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Stranger,
-    /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
+    /** 已发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
     public override val message: MessageChain,
     /**
      * 发送消息时抛出的异常. `null` 表示消息成功发送.
