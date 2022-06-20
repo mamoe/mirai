@@ -16,17 +16,13 @@ import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.data.UserInfo
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.BeforeImageUploadEvent
+import net.mamoe.mirai.event.events.EventCancelledException
+import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
-import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.message.image.*
-import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
-import net.mamoe.mirai.internal.message.protocol.outgoing.HighwayUploader
-import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
-import net.mamoe.mirai.internal.network.component.buildComponentStorage
 import net.mamoe.mirai.internal.network.components.BdhSession
-import net.mamoe.mirai.internal.network.components.ClockHolder
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind.PRIVATE_IMAGE
@@ -38,8 +34,9 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.utils.AtomicIntSeq
 import net.mamoe.mirai.internal.utils.C2CPkgMsgParsingCache
 import net.mamoe.mirai.internal.utils.structureToString
-import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.ImageType
+import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -241,39 +238,4 @@ internal sealed class AbstractUser(
             }
         }
     }
-}
-
-
-internal suspend fun <C : AbstractContact> C.sendMessageImpl(
-    message: Message,
-    messageProtocolStrategy: MessageProtocolStrategy<C>,
-    preSendEventConstructor: (C, Message) -> MessagePreSendEvent,
-    postSendEventConstructor: (C, MessageChain, Throwable?, MessageReceipt<C>?) -> MessagePostSendEvent<C>,
-): MessageReceipt<C> {
-    val isMiraiInternal = if (message is MessageChain) {
-        message.anyIsInstance<MiraiInternalMessageFlag>()
-    } else false
-
-    require(!message.isContentEmpty()) { "message is empty" }
-
-    val chain = broadcastMessagePreSendEvent(message, isMiraiInternal, preSendEventConstructor)
-
-    val result = kotlin.runCatching {
-        MessageProtocolFacade.preprocessAndSendOutgoing(this, message, buildComponentStorage {
-            set(MessageProtocolStrategy, messageProtocolStrategy)
-            set(HighwayUploader, HighwayUploader.Default)
-            set(ClockHolder, bot.components[ClockHolder])
-        })
-    }
-
-    if (result.isSuccess) {
-        // logMessageSent(result.getOrNull()?.source?.plus(chain) ?: chain) // log with source
-        bot.logger.verbose("$this <- $chain".replaceMagicCodes())
-    }
-
-    if (!isMiraiInternal) {
-        postSendEventConstructor(this, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
-    }
-
-    return result.getOrThrow()
 }
