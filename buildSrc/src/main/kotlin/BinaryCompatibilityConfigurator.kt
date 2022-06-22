@@ -21,7 +21,7 @@ import java.io.File
  */
 
 object BinaryCompatibilityConfigurator {
-    fun Project.configureBinaryValidators(vararg targetNames: String) {
+    fun Project.configureBinaryValidators(targetNames: Set<String>) {
         targetNames.forEach { configureBinaryValidator(it) }
     }
 

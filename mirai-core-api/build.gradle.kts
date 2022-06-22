@@ -55,7 +55,7 @@ kotlin {
             }
         }
 
-        val jvmBaseMain by getting {
+        findByName("jvmBaseMain")?.apply {
             dependencies {
                 api(`kotlinx-coroutines-jdk8`) // use -jvm modules for this magic target 'jvmBase'
                 implementation(`jetbrains-annotations`)
@@ -64,34 +64,32 @@ kotlin {
             }
         }
 
-        if (isAndroidSDKAvailable) {
-            val androidMain by getting {
-                dependsOn(commonMain)
-                dependencies {
-                    compileOnly(`android-runtime`)
+        findByName("androidMain")?.apply {
+            dependsOn(commonMain)
+            dependencies {
+                compileOnly(`android-runtime`)
 //                    api(`ktor-client-android`)
-                }
             }
         }
 
-        val jvmMain by getting {
+        findByName("jvmMain")?.apply {
 
         }
 
-        val jvmTest by getting {
+        findByName("jvmTest")?.apply {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
         }
 
-        val nativeMain by getting {
+        findByName("nativeMain")?.apply {
             dependencies {
             }
         }
     }
 }
 
-if (isAndroidSDKAvailable) {
+if (tasks.findByName("androidMainClasses") != null) {
     tasks.register("checkAndroidApiLevel") {
         doFirst {
             analyzes.AndroidApiLevelCheck.check(
@@ -107,4 +105,4 @@ if (isAndroidSDKAvailable) {
 }
 
 configureMppPublishing()
-configureBinaryValidators("jvm", "android")
+configureBinaryValidators(setOf("jvm", "android").filterTargets())

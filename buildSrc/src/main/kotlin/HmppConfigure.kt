@@ -30,10 +30,6 @@ private val miraiPlatform = Attribute.of(
 )
 
 val IDEA_ACTIVE = System.getProperty("idea.active") == "true" && System.getProperty("publication.test") != "true"
-val WINDOWS_TARGET_ENABLED = System.getProperty("mirai.windows.target") != "false"
-
-val NATIVE_ENABLED = System.getProperty("mirai.enable.native", "true").toBoolean()
-val ANDROID_ENABLED = System.getProperty("mirai.enable.android", "true").toBoolean()
 
 val OS_NAME = System.getProperty("os.name").toLowerCase()
 
@@ -76,11 +72,26 @@ enum class HostArch {
     X86, X64, ARM32, ARM64
 }
 
-fun Set<String>.reduceTargetIfIdeaActive() =
+/// eg. "!a;!b" means to enable all targets but a or b
+/// eg. "a;b;!other" means to disable all targets but a or b
+val ENABLED_TARGET = System.getProperty(
+    "mirai.target",
     if (IDEA_ACTIVE)
-        this.filter{it == HOST_KIND.targetName}.toSet()
+        "jvm;android;${HOST_KIND.targetName};!other"
     else
-        this
+        ""
+).split(';').toSet()
+
+fun isTargetEnable(name: String): Boolean {
+    return when {
+        name in ENABLED_TARGET -> true
+        "!$name" in ENABLED_TARGET -> false
+        else -> "!other" !in ENABLED_TARGET
+    }
+}
+
+fun Set<String>.filterTargets() =
+    this.filter { isTargetEnable(it) }.toSet()
 
 val MAC_TARGETS: Set<String> =
     setOf(
@@ -104,11 +115,11 @@ val MAC_TARGETS: Set<String> =
 //        "tvosX64",
 //        "tvosArm64",
 //        "tvosSimulatorArm64",
-    ).reduceTargetIfIdeaActive()
+    ).filterTargets()
 
-val WIN_TARGETS = if (WINDOWS_TARGET_ENABLED) setOf("mingwX64").reduceTargetIfIdeaActive() else emptySet()
+val WIN_TARGETS = setOf("mingwX64").filterTargets()
 
-val LINUX_TARGETS = setOf("linuxX64").reduceTargetIfIdeaActive()
+val LINUX_TARGETS = setOf("linuxX64").filterTargets()
 
 val UNIX_LIKE_TARGETS =  LINUX_TARGETS + MAC_TARGETS
 
@@ -116,6 +127,9 @@ val NATIVE_TARGETS = UNIX_LIKE_TARGETS + WIN_TARGETS
 
 fun Project.configureJvmTargetsHierarchical() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
+        val commonMain by sourceSets.getting
+        val commonTest by sourceSets.getting
+
         if (IDEA_ACTIVE) {
             jvm("jvmBase") { // dummy target for resolution, not published
                 compilations.all {
@@ -126,19 +140,42 @@ fun Project.configureJvmTargetsHierarchical() {
             }
         }
 
-        if (isAndroidSDKAvailable && ANDROID_ENABLED) {
-            jvm("android") {
-                attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-                if (IDEA_ACTIVE) {
-                    attributes.attribute(miraiPlatform, "android") // avoid resolution
-                }
+        val jvmBaseMain by lazy {
+            sourceSets.maybeCreate("jvmBaseMain").apply {
+                dependsOn(commonMain)
             }
-        } else {
-            printAndroidNotInstalled()
+        }
+        val jvmBaseTest by lazy {
+            sourceSets.maybeCreate("jvmBaseTest").apply {
+                dependsOn(commonTest)
+            }
         }
 
-        jvm("jvm") {
+        if (isTargetEnable("android")) {
+            if (isAndroidSDKAvailable) {
+                jvm("android") {
+                    attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
+                    if (IDEA_ACTIVE) {
+                        attributes.attribute(miraiPlatform, "android") // avoid resolution
+                    }
+                }
+                val androidMain by sourceSets.getting
+                val androidTest by sourceSets.getting
+                androidMain.dependsOn(jvmBaseMain)
+                androidTest.dependsOn(jvmBaseTest)
+            } else {
+                printAndroidNotInstalled()
+            }
+        }
 
+        if (isTargetEnable("jvm")) {
+            jvm("jvm") {
+
+            }
+            val jvmMain by sourceSets.getting
+            val jvmTest by sourceSets.getting
+            jvmMain.dependsOn(jvmBaseMain)
+            jvmTest.dependsOn(jvmBaseTest)
         }
     }
 }
@@ -189,12 +226,6 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
 
     val commonMain by sourceSets.getting
     val commonTest by sourceSets.getting
-    val jvmBaseMain = this.sourceSets.maybeCreate("jvmBaseMain")
-    val jvmBaseTest = this.sourceSets.maybeCreate("jvmBaseTest")
-    val jvmMain by sourceSets.getting
-    val jvmTest by sourceSets.getting
-    val androidMain by sourceSets.getting
-    val androidTest by sourceSets.getting
 
     val nativeMain by lazy {
         this.sourceSets.maybeCreate("nativeMain").apply {
@@ -318,15 +349,6 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
             }
         }
     }
-
-    jvmBaseMain.dependsOn(commonMain)
-    jvmBaseTest.dependsOn(commonTest)
-
-    jvmMain.dependsOn(jvmBaseMain)
-    jvmTest.dependsOn(jvmBaseTest)
-
-    androidMain.dependsOn(jvmBaseMain)
-    androidTest.dependsOn(jvmBaseTest)
 }
 
 private fun KotlinNativeTarget.findOrCreateTest(buildType: NativeBuildType, configure: TestExecutable.() -> Unit) =

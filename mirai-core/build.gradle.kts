@@ -55,7 +55,7 @@ kotlin {
             }
         }
 
-        val jvmBaseMain by getting {
+        findByName("jvmBaseMain")?.apply {
             dependencies {
                 implementation(bouncycastle)
                 implementation(`log4j-api`)
@@ -65,45 +65,43 @@ kotlin {
             }
         }
 
-        val jvmBaseTest by getting {
+        findByName("jvmBaseTest")?.apply {
             dependencies {
                 implementation(`kotlinx-coroutines-debug`)
             }
         }
 
-        if (isAndroidSDKAvailable) {
-            val androidMain by getting {
-                dependsOn(commonMain)
-                dependencies {
-                    compileOnly(`android-runtime`)
-                }
+        findByName("androidMain")?.apply {
+            dependsOn(commonMain)
+            dependencies {
+                compileOnly(`android-runtime`)
             }
-            val androidTest by getting {
-                dependencies {
-                    implementation(kotlin("test", Versions.kotlinCompiler))
-                    implementation(kotlin("test-junit5", Versions.kotlinCompiler))
-                    implementation(kotlin("test-annotations-common"))
-                    implementation(kotlin("test-common"))
-                    //implementation("org.bouncycastle:bcprov-jdk15on:1.64")
-                }
+        }
+        findByName("androidTest")?.apply {
+            dependencies {
+                implementation(kotlin("test", Versions.kotlinCompiler))
+                implementation(kotlin("test-junit5", Versions.kotlinCompiler))
+                implementation(kotlin("test-annotations-common"))
+                implementation(kotlin("test-common"))
+                //implementation("org.bouncycastle:bcprov-jdk15on:1.64")
             }
         }
 
-        val jvmMain by getting {
+        findByName("jvmMain")?.apply {
             dependencies {
                 //implementation("org.bouncycastle:bcprov-jdk15on:1.64")
                 // api(kotlinx("coroutines-debug", Versions.coroutines))
             }
         }
 
-        val jvmTest by getting {
+        findByName("jvmTest")?.apply {
             dependencies {
                 api(`kotlinx-coroutines-debug`)
                 //  implementation("net.mamoe:mirai-login-solver-selenium:1.0-dev-14")
             }
         }
 
-        val nativeMain by getting {
+        findByName("nativeMain")?.apply {
             dependencies {
             }
         }
@@ -188,7 +186,7 @@ afterEvaluate {
     }
 }
 
-if (isAndroidSDKAvailable) {
+if (tasks.findByName("androidMainClasses") != null) {
     tasks.register("checkAndroidApiLevel") {
         doFirst {
             analyzes.AndroidApiLevelCheck.check(
@@ -204,4 +202,4 @@ if (isAndroidSDKAvailable) {
 }
 
 configureMppPublishing()
-configureBinaryValidators("jvm", "android")
+configureBinaryValidators(setOf("jvm", "android").filterTargets())
