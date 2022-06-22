@@ -119,5 +119,5 @@ tasks {
 }
 
 if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING")?.toBoolean() == true) {
-    configurePublishing("mirai-console-gradle")
+    configurePublishing("mirai-console-gradle", skipPublicationSetup = true)
 }

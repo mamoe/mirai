@@ -75,8 +75,11 @@ inline fun Project.configurePublishing(
     vcs: String = "https://github.com/mamoe/mirai",
     addProjectComponents: Boolean = true,
     setupGpg: Boolean = true,
+    skipPublicationSetup: Boolean = false,
 ) {
     configureRemoteRepos()
+
+    if (skipPublicationSetup) return
 
     val shadowJar = if (!addProjectComponents) null else tasks.register<ShadowJar>("shadowJar") {
         archiveClassifier.set("all")
