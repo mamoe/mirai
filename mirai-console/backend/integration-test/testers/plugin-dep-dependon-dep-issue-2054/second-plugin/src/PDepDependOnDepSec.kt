@@ -11,6 +11,7 @@ package pdepdep2054sec
 
 import issue2054.modulea.ModuleA
 import issue2054.moduleb.ModuleB
+import issue2108.PrivateModule
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.utils.info
@@ -26,10 +27,21 @@ public object PDepDependOnDepSec : KotlinPlugin(
             jvmPluginClasspath.pluginIndependentLibrariesClassLoader,
             listOf("net.mamoe.consoleit.issue2054:modb:1.0.0")
         )
+        jvmPluginClasspath.downloadAndAddToPath(
+            jvmPluginClasspath.pluginIndependentLibrariesClassLoader,
+            listOf("net.mamoe.consoleit.issue2108:private-module:1.0.0")
+        )
 
         assertSame(ModuleA, ModuleB.getModuleA)
         logger.info { "issue 2054" }
 
         ModuleB.act { ModuleA.act { logger.info(Throwable("Stack trace")) } }
+
+        logger.info("issue 2108", PrivateModule.stack())
+        assertSame(
+            jvmPluginClasspath.pluginIndependentLibrariesClassLoader,
+            PrivateModule.javaClass.classLoader,
+            "Failed to load private module from " + jvmPluginClasspath.pluginIndependentLibrariesClassLoader
+        )
     }
 }
