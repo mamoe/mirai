@@ -12,7 +12,6 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
@@ -42,7 +41,6 @@ import net.mamoe.mirai.utils.safeCast
 @Serializable(FileMessage.Serializer::class)
 @SerialName(FileMessage.SERIAL_NAME)
 @NotStableForInheritance
-@JvmBlockingBridge
 public actual interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
     /**
      * 服务器需要的某种 ID.

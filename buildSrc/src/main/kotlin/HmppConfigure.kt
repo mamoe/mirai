@@ -50,7 +50,7 @@ sealed class HostKind(
     val targetName: String
 ) {
     object LINUX : HostKind("linuxX64")
-    object WINDOWS : HostKind("windowsX64")
+    object WINDOWS : HostKind("mingwX64")
 
     abstract class MACOS(targetName: String) : HostKind(targetName)
 
@@ -76,8 +76,14 @@ enum class HostArch {
     X86, X64, ARM32, ARM64
 }
 
-val MAC_TARGETS: Set<String> by lazy {
-    if (!IDEA_ACTIVE) setOf(
+fun Set<String>.reduceTargetIfIdeaActive() =
+    if (IDEA_ACTIVE)
+        this.filter{it == HOST_KIND.targetName}.toSet()
+    else
+        this
+
+val MAC_TARGETS: Set<String> =
+    setOf(
 //        "watchosX86",
         "macosX64",
         "macosArm64",
@@ -98,20 +104,15 @@ val MAC_TARGETS: Set<String> by lazy {
 //        "tvosX64",
 //        "tvosArm64",
 //        "tvosSimulatorArm64",
-    ) else setOf(
-        // IDEA active, reduce load
-        HOST_KIND.targetName
-    )
-}
+    ).reduceTargetIfIdeaActive()
 
-val WIN_TARGETS = if (WINDOWS_TARGET_ENABLED) setOf("mingwX64") else emptySet()
+val WIN_TARGETS = if (WINDOWS_TARGET_ENABLED) setOf("mingwX64").reduceTargetIfIdeaActive() else emptySet()
 
-val LINUX_TARGETS = setOf("linuxX64")
+val LINUX_TARGETS = setOf("linuxX64").reduceTargetIfIdeaActive()
 
-val UNIX_LIKE_TARGETS by lazy { LINUX_TARGETS + MAC_TARGETS }
+val UNIX_LIKE_TARGETS =  LINUX_TARGETS + MAC_TARGETS
 
-val NATIVE_TARGETS by lazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
-
+val NATIVE_TARGETS = UNIX_LIKE_TARGETS + WIN_TARGETS
 
 fun Project.configureJvmTargetsHierarchical() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
@@ -195,14 +196,38 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     val androidMain by sourceSets.getting
     val androidTest by sourceSets.getting
 
-    val nativeMain = this.sourceSets.maybeCreate("nativeMain")
-    val nativeTest = this.sourceSets.maybeCreate("nativeTest")
+    val nativeMain by lazy {
+        this.sourceSets.maybeCreate("nativeMain").apply {
+            dependsOn(commonMain)
+        }
+    }
+    val nativeTest by lazy {
+        this.sourceSets.maybeCreate("nativeTest").apply {
+            dependsOn(commonTest)
+        }
+    }
 
-    val unixMain = this.sourceSets.maybeCreate("unixMain")
-    val unixTest = this.sourceSets.maybeCreate("unixTest")
+    val unixMain by lazy {
+        this.sourceSets.maybeCreate("unixMain").apply {
+            dependsOn(nativeMain)
+        }
+    }
+    val unixTest by lazy {
+        this.sourceSets.maybeCreate("unixTest").apply {
+            dependsOn(nativeTest)
+        }
+    }
 
-    val darwinMain = this.sourceSets.maybeCreate("darwinMain")
-    val darwinTest = this.sourceSets.maybeCreate("darwinTest")
+    val darwinMain by lazy {
+        this.sourceSets.maybeCreate("darwinMain").apply {
+            dependsOn(unixMain)
+        }
+    }
+    val darwinTest by lazy {
+        this.sourceSets.maybeCreate("darwinTest") .apply {
+            dependsOn(unixTest)
+        }
+    }
 
     presets.filter { it.name in MAC_TARGETS }.forEach { preset ->
         addNativeTarget(preset).run {
@@ -296,15 +321,6 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
 
     jvmBaseMain.dependsOn(commonMain)
     jvmBaseTest.dependsOn(commonTest)
-
-    nativeMain.dependsOn(commonMain)
-    nativeTest.dependsOn(commonTest)
-
-    unixMain.dependsOn(nativeMain)
-    unixTest.dependsOn(nativeTest)
-
-    darwinMain.dependsOn(unixMain)
-    darwinTest.dependsOn(unixTest)
 
     jvmMain.dependsOn(jvmBaseMain)
     jvmTest.dependsOn(jvmBaseTest)

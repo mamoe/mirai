@@ -151,7 +151,7 @@ kotlin {
             }
         }
 
-        val darwinMain by getting {
+        findByName("darwinMain")?.apply {
             dependencies {
                 implementation(`ktor-client-darwin`)
             }
