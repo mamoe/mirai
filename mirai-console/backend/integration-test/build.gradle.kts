@@ -94,10 +94,13 @@ mcit_test.configure {
 val crtProject = project
 allprojects {
     if (project != crtProject) {
+        if (project.file(".module-group.txt").exists()) return@allprojects
         project.afterEvaluate {
-            val tk = tasks.named<Jar>("jar")
-            subplugins.add(tk)
-            mcit_test.configure { dependsOn(tk) }
+            runCatching {
+                val tk = tasks.named<Jar>("jar")
+                subplugins.add(tk)
+                mcit_test.configure { dependsOn(tk) }
+            }
         }
     }
 }
