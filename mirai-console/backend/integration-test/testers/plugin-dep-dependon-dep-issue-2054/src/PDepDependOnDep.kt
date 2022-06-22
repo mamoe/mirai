@@ -20,5 +20,9 @@ public object PDepDependOnDep : KotlinPlugin(
             jvmPluginClasspath.pluginSharedLibrariesClassLoader,
             listOf("net.mamoe.consoleit.issue2054:moda:1.0.0")
         )
+        jvmPluginClasspath.downloadAndAddToPath(
+            jvmPluginClasspath.pluginIndependentLibrariesClassLoader,
+            listOf("net.mamoe.consoleit.issue2108:private-module:1.0.0")
+        )
     }
 }

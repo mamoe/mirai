@@ -1,0 +1,1 @@
+net.mamoe.consoleit.issue2108:private-module:1.0.0

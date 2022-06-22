@@ -24,6 +24,7 @@ kotlin {
 dependencies {
     api(project(":mirai-console.integration-test"))
     api(parent!!.project("module-modb"))
+    api(parent!!.project("module-private-issue2108"))
 }
 
 tasks.getByName("jar", Jar::class) {

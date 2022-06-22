@@ -247,7 +247,6 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         dependency: String
     ): Boolean {
         if (dependency in sharedClLoadedDependencies) return true
-        if (dependency in privateClLoadedDependencies) return true
         return dependencies.any { it.containsSharedDependency(dependency) }
     }
 
@@ -288,8 +287,11 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         if (dependencies.isEmpty()) return
         val results = ctx.downloader.resolveDependencies(
             dependencies, ctx.sharedLibrariesFilter,
-            DependencyFilter { node, _ ->
-                return@DependencyFilter !containsSharedDependency(node.artifact.depId())
+            DependencyFilter filter@{ node, _ ->
+                val depid = node.artifact.depId()
+                if (containsSharedDependency(depid)) return@filter false
+                if (depid in privateClLoadedDependencies) return@filter false
+                return@filter true
             })
         val files = results.artifactResults.mapNotNull { result ->
             result.artifact?.let { it to it.file }
