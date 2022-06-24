@@ -31,6 +31,7 @@ abstract class AbstractTest {
 
     @OptIn(ExperimentalStdlibApi::class)
     fun runGradle(vararg arguments: String) {
+        System.gc()
         GradleRunner.create()
             .withProjectDir(tempDir)
             .withPluginClasspath()
@@ -40,7 +41,7 @@ abstract class AbstractTest {
             .withArguments(buildList {
                 addAll(arguments)
                 add("-Pkotlin.compiler.execution.strategy=in-process")
-                add("-Dorg.gradle.jvmargs=-Xmx512m -Dfile.encoding=UTF-8")
+                add("-Dorg.gradle.jvmargs=-Xmx256m -Dfile.encoding=UTF-8")
             })
             .build()
     }
