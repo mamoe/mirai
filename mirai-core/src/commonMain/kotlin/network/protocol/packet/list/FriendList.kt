@@ -22,7 +22,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
-import okhttp3.internal.toHexString
+import net.mamoe.mirai.utils.toByteArray
 
 
 internal class FriendList {
@@ -332,12 +332,10 @@ internal class FriendList {
 
     internal object MoveGroupMemReqPack :
         OutgoingPacketFactory<MoveGroupMemReqPack.Response>("friendlist.MovGroupMemReq") {
-        private fun String.decodeHex(): ByteArray {
-            check(length % 2 == 0) { "Must have an even length" }
-
-            return chunked(2)
-                .map { it.toInt(16).toByte() }
-                .toByteArray()
+        private fun Long.toByteArray2(): ByteArray {
+            val arr = this.toByteArray()
+            val index = arr.indexOfFirst { it.toInt() != 0 }
+            return arr.sliceArray(index until arr.size)
         }
 
         class Response(
@@ -362,7 +360,6 @@ internal class FriendList {
             // friend group id
             groupId: Int
         ) = buildOutgoingUniPacket(client) {
-            // maybe is constant
             writeJceRequestPacket(
                 servantName = "mqq.IMService.FriendListServiceServantObj",
                 funcName = "MovGroupMemReq",
@@ -370,8 +367,11 @@ internal class FriendList {
                 body = MovGroupMemReq(
                     client.uin,
                     0,
-                    byteArrayOf(0x01, 0x00, (id.toHexString().decodeHex().size + 1).toByte()) + id.toHexString()
-                        .decodeHex() + groupId.toByte() + 0x00 + 0x00
+                    byteArrayOf(
+                        0x01,
+                        0x00,
+                        (id.toByteArray2().size + 1).toByte()
+                    ) + id.toByteArray2() + groupId.toByte() + 0x00 + 0x00
                 )
             )
         }
