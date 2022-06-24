@@ -74,7 +74,7 @@ enum class HostArch {
 
 /// eg. "!a;!b" means to enable all targets but a or b
 /// eg. "a;b;!other" means to disable all targets but a or b
-val ENABLED_TARGET = System.getProperty(
+val ENABLED_TARGETS = System.getProperty(
     "mirai.target",
     if (IDEA_ACTIVE)
         "jvm;android;${HOST_KIND.targetName};!other"
@@ -82,16 +82,16 @@ val ENABLED_TARGET = System.getProperty(
         ""
 ).split(';').toSet()
 
-fun isTargetEnable(name: String): Boolean {
+fun isTargetEnabled(name: String): Boolean {
     return when {
-        name in ENABLED_TARGET -> true
-        "!$name" in ENABLED_TARGET -> false
-        else -> "!other" !in ENABLED_TARGET
+        name in ENABLED_TARGETS -> true
+        "!$name" in ENABLED_TARGETS -> false
+        else -> "!other" !in ENABLED_TARGETS
     }
 }
 
 fun Set<String>.filterTargets() =
-    this.filter { isTargetEnable(it) }.toSet()
+    this.filter { isTargetEnabled(it) }.toSet()
 
 val MAC_TARGETS: Set<String> =
     setOf(
@@ -151,7 +151,7 @@ fun Project.configureJvmTargetsHierarchical() {
             }
         }
 
-        if (isTargetEnable("android")) {
+        if (isTargetEnabled("android")) {
             if (isAndroidSDKAvailable) {
                 jvm("android") {
                     attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
@@ -168,7 +168,7 @@ fun Project.configureJvmTargetsHierarchical() {
             }
         }
 
-        if (isTargetEnable("jvm")) {
+        if (isTargetEnabled("jvm")) {
             jvm("jvm") {
 
             }
