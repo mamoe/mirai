@@ -14,14 +14,13 @@
 
 package net.mamoe.mirai.internal.contact
 
+import kotlinx.coroutines.launch
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.roaming.RoamingMessages
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
-import net.mamoe.mirai.event.events.FriendRemarkChangeEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplFriend
@@ -74,11 +73,9 @@ internal class FriendImpl(
     override var remark: String
         get() = remarkField
         set(value) {
-            val oldValue = remarkField
-            remarkField = value
             launch {
                 bot.network.sendAndExpect(ChangeFriendRemark(bot.client, this@FriendImpl.id, value))
-                FriendRemarkChangeEvent(this@FriendImpl, oldValue, value).broadcast()
+                remarkField = value
             }
         }
 
