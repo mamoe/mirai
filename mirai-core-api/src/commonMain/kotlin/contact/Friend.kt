@@ -37,6 +37,13 @@ import net.mamoe.mirai.utils.NotStableForInheritance
 @NotStableForInheritance
 public interface Friend : User, CoroutineScope, AudioSupported, RoamingSupported {
 
+    /**
+     * 备注信息
+     *
+     * 更改后会触发 FriendRemarkChangeEvent
+     *
+     * @see [FriendRemarkChangeEvent]
+     */
     override var remark: String
 
     /**
