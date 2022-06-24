@@ -29,6 +29,7 @@ abstract class AbstractTest {
     lateinit var propertiesFile: File
 
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun runGradle(vararg arguments: String) {
         GradleRunner.create()
             .withProjectDir(tempDir)
@@ -36,7 +37,7 @@ abstract class AbstractTest {
             .withGradleVersion("7.2")
             .forwardOutput()
             .withEnvironment(System.getenv())
-            .withArguments(mutableListOf<String>().apply {
+            .withArguments(buildList {
                 addAll(arguments)
                 add("-Pkotlin.compiler.execution.strategy=in-process")
                 add("-Dorg.gradle.jvmargs=-Xmx512m -Dfile.encoding=UTF-8")
