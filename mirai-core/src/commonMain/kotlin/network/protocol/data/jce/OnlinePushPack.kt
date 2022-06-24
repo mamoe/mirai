@@ -73,8 +73,8 @@ internal class OnlinePushPack {
         @TarsId(4) @JvmField val vSyncCookie: ByteArray? = null,
         @TarsId(5) @JvmField val vUinPairMsg: List<UinPairMsg>? = null,
         @TarsId(6) @JvmField val mPreviews: Map<String, ByteArray>? = null,
-        // @SerialId(7) @JvmField val wUserActive: Int? = null,
-        //@SerialId(12) @JvmField val wGeneralFlag: Int? = null
+        @TarsId(7) @JvmField val wUserActive: Int? = 0,
+        @TarsId(12) @JvmField val wGeneralFlag: Int? = 0
     ) : JceStruct
 
     @Serializable

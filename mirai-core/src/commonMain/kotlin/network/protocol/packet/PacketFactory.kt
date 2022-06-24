@@ -144,6 +144,8 @@ internal object KnownPacketFactories {
         FriendList.DelFriend,
         FriendList.GetTroopListSimplify,
         FriendList.GetTroopMemberList,
+        FriendList.SetGroupReqPack,
+        FriendList.MoveGroupMemReqPack,
         ImgStore.GroupPicUp,
         PttStore.GroupPttUp,
         PttStore.GroupPttDown,
