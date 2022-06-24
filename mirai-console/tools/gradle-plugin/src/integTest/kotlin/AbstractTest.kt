@@ -29,14 +29,19 @@ abstract class AbstractTest {
     lateinit var propertiesFile: File
 
 
-    fun gradleRunner(): GradleRunner {
-        println(PluginUnderTestMetadataReading.readImplementationClasspath())
-        return GradleRunner.create()
+    fun runGradle(vararg arguments: String) {
+        GradleRunner.create()
             .withProjectDir(tempDir)
             .withPluginClasspath()
             .withGradleVersion("7.2")
             .forwardOutput()
             .withEnvironment(System.getenv())
+            .withArguments(mutableListOf<String>().apply {
+                addAll(arguments)
+                add("-Pkotlin.compiler.execution.strategy=in-process")
+                add("-Dorg.gradle.jvmargs=-Xmx512m -Dfile.encoding=UTF-8")
+            })
+            .build()
     }
 
     @BeforeEach

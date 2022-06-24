@@ -15,8 +15,6 @@ class TestPluginApply : AbstractTest() {
 
     @Test
     fun `can apply plugin`() {
-        gradleRunner()
-            .withArguments("clean", "--stacktrace")
-            .build()
+        runGradle("clean", "--stacktrace")
     }
 }
