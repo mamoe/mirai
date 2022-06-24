@@ -215,8 +215,7 @@ internal class GroupImpl constructor(
                 filename = "${resource.md5.toUHexString("")}.${resource.formatName}",
                 picWidth = imageInfo.width,
                 picHeight = imageInfo.height,
-                picType = getIdByImageType(imageInfo.imageType),
-                originalPic = 1
+                picType = getIdByImageType(imageInfo.imageType)
             ), 5000, 2
         )
 
