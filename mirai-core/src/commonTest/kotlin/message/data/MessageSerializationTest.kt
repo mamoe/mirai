@@ -124,6 +124,28 @@ internal class MessageSerializationTest : AbstractTest() {
         assertEquals(w, w.serialize(W.serializer()).deserialize(W.serializer()))
     }
 
+    @Test
+    fun `test Image serialization`() {
+        val string = image.serialize<SingleMessage>()
+        val element = string.deserialize<JsonElement>()
+        element as JsonObject
+        assertEquals(element["type"]?.jsonPrimitive?.content, "Image")
+        assertEquals(string.deserialize<SingleMessage>(), image)
+
+        val image2 = Image(image.imageId) {
+            width = 123
+            height = 456
+        }
+        val string2 = image2.serialize<SingleMessage>()
+        val element2 = string2.deserialize<JsonElement>()
+        element2 as JsonObject
+        assertEquals(element2["type"]?.jsonPrimitive?.content, "Image")
+        val decoded = string2.deserialize<SingleMessage>()
+        decoded as Image
+        assertEquals(decoded.width, image2.width)
+        assertEquals(decoded.height, image2.height)
+    }
+
     @Serializable
     data class RichWrapper(
         val richMessage: RichMessage
