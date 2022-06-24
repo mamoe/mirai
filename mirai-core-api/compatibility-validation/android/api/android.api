@@ -354,6 +354,7 @@ public abstract interface class net/mamoe/mirai/contact/FileSupported : net/mamo
 public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/User, net/mamoe/mirai/contact/roaming/RoamingSupported {
 	public fun delete ()V
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getRemark ()Ljava/lang/String;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/FriendNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/UserNudge;
@@ -362,6 +363,7 @@ public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/corouti
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun sendMessage$suspendImpl (Lnet/mamoe/mirai/contact/Friend;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun setRemark (Ljava/lang/String;)V
 }
 
 public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/Contact, net/mamoe/mirai/contact/FileSupported {
