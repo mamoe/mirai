@@ -13,7 +13,7 @@ jobs:
           - windows-2022
           - macos-12
     env:
-      gradleArgs: --scan "-Dmirai.target=jvm;android;!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 --illegal-access=permit -Dkotlin.daemon.jvm.options=--illegal-access=permit --add-opens java.base/java.util=ALL-UNNAMED"
+      gradleArgs: --scan "-Dmirai.target=jvm;android;!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
@@ -314,12 +314,12 @@ jobs:
     env:
       # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
       # > Declaration annotated with '@OptionalExpectation' can only be used in common module sources
-      gradleArgs: --scan  "-Dmirai.target=jvm;${{ matrix.targetName }};!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 --illegal-access=permit -Dkotlin.daemon.jvm.options=--illegal-access=permit --add-opens java.base/java.util=ALL-UNNAMED"
+      gradleArgs: --scan  "-Dmirai.target=jvm;${{ matrix.targetName }};!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ startsWith(matrix.os, 'windows') && 'C:\\vcpkg\\binary_cache' || '/usr/local/share/vcpkg/binary_cache' }}
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ startsWith(matrix.os, 'windows') && 'C:\vcpkg\binary_cache' || '/usr/local/share/vcpkg/binary_cache' }}
     steps:
       - uses: actions/checkout@v2
         with:
