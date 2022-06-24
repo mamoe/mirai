@@ -21,8 +21,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.writeJceRequestPacket
 
-internal object ChangeFriendRemarkReq :
-    OutgoingPacketFactory<ChangeFriendRemarkReq.Response>("ProfileService.ChangeFriendName") {
+internal object ChangeFriendRemark :
+    OutgoingPacketFactory<ChangeFriendRemark.Response>("ProfileService.ChangeFriendName") {
     class Response(val isSuccess: Boolean, val resultCode: Int) : Packet {
         override fun toString(): String {
             return "ProfileService.ChangeFriendName.Response(isSuccess=$isSuccess, resultCode=$resultCode)"

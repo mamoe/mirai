@@ -26,6 +26,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.internal.network.protocol.packet.summarycard.ChangeFriendRemark
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiLoggerWithSwitch
@@ -170,6 +171,7 @@ internal object KnownPacketFactories {
         StrangerList.GetStrangerList,
         StrangerList.DelStranger,
         SummaryCard.ReqSummaryCard,
+        ChangeFriendRemark,
         MusicSharePacket,
         *FileManagement.factories
     )

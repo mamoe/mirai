@@ -35,7 +35,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.audioCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.internal.network.protocol.packet.summarycard.ChangeFriendRemarkReq
+import net.mamoe.mirai.internal.network.protocol.packet.summarycard.ChangeFriendRemark
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
@@ -77,7 +77,7 @@ internal class FriendImpl(
             val oldValue = remarkField
             remarkField = value
             launch {
-                bot.network.sendAndExpect(ChangeFriendRemarkReq(bot.client, this@FriendImpl.id, value))
+                bot.network.sendAndExpect(ChangeFriendRemark(bot.client, this@FriendImpl.id, value))
                 FriendRemarkChangeEvent(this@FriendImpl, oldValue, value).broadcast()
             }
         }
