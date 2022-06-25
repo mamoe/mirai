@@ -64,6 +64,7 @@ val HOST_KIND by lazy {
                 HostKind.MACOS_X64
             }
         }
+
         else -> HostKind.LINUX
     }
 }
@@ -74,13 +75,15 @@ enum class HostArch {
 
 /// eg. "!a;!b" means to enable all targets but a or b
 /// eg. "a;b;!other" means to disable all targets but a or b
-val ENABLED_TARGETS = System.getProperty(
-    "mirai.target",
-    if (IDEA_ACTIVE)
-        "jvm;android;${HOST_KIND.targetName};!other"
-    else
-        ""
-).split(';').toSet()
+val ENABLED_TARGETS by lazy {
+    System.getProperty(
+        "mirai.target",
+        if (IDEA_ACTIVE)
+            "jvm;android;${HOST_KIND.targetName};!other"
+        else
+            ""
+    ).split(';').toSet()
+}
 
 fun isTargetEnabled(name: String): Boolean {
     return when {
@@ -93,7 +96,7 @@ fun isTargetEnabled(name: String): Boolean {
 fun Set<String>.filterTargets() =
     this.filter { isTargetEnabled(it) }.toSet()
 
-val MAC_TARGETS: Set<String> =
+val MAC_TARGETS: Set<String> by lazy {
     setOf(
 //        "watchosX86",
         "macosX64",
@@ -116,14 +119,15 @@ val MAC_TARGETS: Set<String> =
 //        "tvosArm64",
 //        "tvosSimulatorArm64",
     ).filterTargets()
+}
 
-val WIN_TARGETS = setOf("mingwX64").filterTargets()
+val WIN_TARGETS by lazy { setOf("mingwX64").filterTargets() }
 
-val LINUX_TARGETS = setOf("linuxX64").filterTargets()
+val LINUX_TARGETS by lazy { setOf("linuxX64").filterTargets() }
 
-val UNIX_LIKE_TARGETS =  LINUX_TARGETS + MAC_TARGETS
+val UNIX_LIKE_TARGETS by lazy { LINUX_TARGETS + MAC_TARGETS }
 
-val NATIVE_TARGETS = UNIX_LIKE_TARGETS + WIN_TARGETS
+val NATIVE_TARGETS by lazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
 
 fun Project.configureJvmTargetsHierarchical() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
@@ -255,7 +259,7 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
         }
     }
     val darwinTest by lazy {
-        this.sourceSets.maybeCreate("darwinTest") .apply {
+        this.sourceSets.maybeCreate("darwinTest").apply {
             dependsOn(unixTest)
         }
     }
