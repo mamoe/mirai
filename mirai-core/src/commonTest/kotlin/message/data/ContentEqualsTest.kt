@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.message.data
 
+import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.safeCast
 import kotlin.test.Test
@@ -26,7 +27,7 @@ internal class TestConstrainSingleMessage : ConstrainSingle, Any() {
         get() = Key
 }
 
-internal class ContentEqualsTest {
+internal class ContentEqualsTest: AbstractTest() {
 
     @Test
     fun testContentEquals() {

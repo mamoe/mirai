@@ -88,9 +88,7 @@ class TestBuildPlugin : AbstractTest() {
         """.trimIndent()
         )
 
-        gradleRunner()
-            .withArguments(":buildPlugin", "--stacktrace", "--info")
-            .build()
+        runGradle(":buildPlugin", "--stacktrace", "--info")
 
 
         ZipFile(findJar()).use { zipFile ->
@@ -174,9 +172,7 @@ class TestBuildPlugin : AbstractTest() {
         """.trimIndent()
         )
 
-        gradleRunner()
-            .withArguments(":buildPlugin", "--stacktrace", "--info")
-            .build()
+        runGradle(":buildPlugin", "--stacktrace", "--info")
 
 
         ZipFile(findJar()).use { zipFile ->
@@ -242,9 +238,7 @@ class TestBuildPlugin : AbstractTest() {
         """.trimIndent()
         )
 
-        gradleRunner()
-            .withArguments(":buildPlugin", "--stacktrace", "--info")
-            .build()
+        runGradle(":buildPlugin", "--stacktrace", "--info")
 
 
         ZipFile(findJar()).use { zipFile ->
@@ -311,9 +305,7 @@ class TestBuildPlugin : AbstractTest() {
         """.trimIndent()
         )
 
-        gradleRunner()
-            .withArguments(":buildPlugin", "dependencies", "--stacktrace", "--info")
-            .build()
+        runGradle(":buildPlugin", "dependencies", "--stacktrace", "--info")
         checkOutput()
 
         ZipFile(findJar()).use { zipFile ->
@@ -334,9 +326,7 @@ class TestBuildPlugin : AbstractTest() {
             }
         """.trimIndent()
         )
-        gradleRunner()
-            .withArguments("buildPlugin", "dependencies", "--stacktrace", "--info")
-            .build()
+        runGradle("buildPlugin", "dependencies", "--stacktrace", "--info")
         checkOutput()
     }
 
@@ -349,9 +339,7 @@ class TestBuildPlugin : AbstractTest() {
             }
         """.trimIndent()
         )
-        gradleRunner()
-            .withArguments("buildPlugin", "dependencies", "--stacktrace", "--info")
-            .build()
+        runGradle("buildPlugin", "dependencies", "--stacktrace", "--info")
 
         ZipFile(findJar()).use { zipFile ->
 
@@ -372,9 +360,7 @@ class TestBuildPlugin : AbstractTest() {
             }
         """.trimIndent()
         )
-        gradleRunner()
-            .withArguments("buildPlugin", "dependencies", "--stacktrace", "--info")
-            .build()
+        runGradle("buildPlugin", "dependencies", "--stacktrace", "--info")
 
         ZipFile(findJar()).use { zipFile ->
 
@@ -397,9 +383,7 @@ class TestBuildPlugin : AbstractTest() {
             }
         """.trimIndent()
         )
-        gradleRunner()
-            .withArguments("buildPlugin", "dependencies", "--stacktrace", "--info")
-            .build()
+        runGradle("buildPlugin", "dependencies", "--stacktrace", "--info")
 
         ZipFile(findJar()).use { zipFile ->
 
@@ -423,9 +407,7 @@ class TestBuildPlugin : AbstractTest() {
             }
         """.trimIndent()
         )
-        gradleRunner()
-            .withArguments("buildPlugin", "dependencies", "--stacktrace", "--info")
-            .build()
+        runGradle("buildPlugin", "dependencies", "--stacktrace", "--info")
         ZipFile(findJar()).use { zipFile ->
             assertNotNull(zipFile.getEntry("cn/hutool/core/annotation/Alias.class"))
 
