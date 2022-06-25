@@ -105,11 +105,12 @@ internal interface GroupExtensions {
         confessTalk: Boolean = false,
         muteAll: Boolean = false,
         botMuteTimestamp: Int = 0,
+        levelTitles: Map<Int, String> = emptyMap()
     ): GroupInfoImpl =
         GroupInfoImpl(
             uin, owner, groupCode, memo, name,
             allowMemberInvite, allowAnonymousChat, autoApprove, confessTalk, muteAll,
-            botMuteTimestamp
+            botMuteTimestamp, levelTitles
         )
 
     fun Bot.addGroup(group: Group) {
