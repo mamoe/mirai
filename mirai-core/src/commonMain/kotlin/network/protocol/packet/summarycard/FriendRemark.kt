@@ -31,7 +31,7 @@ internal object ChangeFriendRemark :
 
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
         val res = this.readUniPacket(ChangeFriendNameRes.serializer())
-        return Response(res.result == 0x0c.toByte(), res.result.toInt())
+        return Response(res.result == 0x0.toByte(), res.result.toInt())
     }
 
     operator fun invoke(

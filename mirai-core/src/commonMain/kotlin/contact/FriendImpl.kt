@@ -15,12 +15,15 @@
 package net.mamoe.mirai.internal.contact
 
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.roaming.RoamingMessages
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
+import net.mamoe.mirai.event.events.FriendRemarkChangeEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplFriend
@@ -69,13 +72,21 @@ internal class FriendImpl(
 ) : Friend, AbstractUser(bot, parentCoroutineContext, info) {
     override var nick: String by info::nick
 
-    private var remarkField: String by info::remark
     override var remark: String
-        get() = remarkField
+        get() = info::remark.get()
         set(value) {
-            launch {
-                bot.network.sendAndExpect(ChangeFriendRemark(bot.client, this@FriendImpl.id, value))
-                remarkField = value
+            // 为了赋值后remark立即改变
+            runBlocking {
+                val result = bot.network.sendAndExpect(ChangeFriendRemark(bot.client, this@FriendImpl.id, value))
+                println(result)
+                if (result.isSuccess) {
+                    val old = remark
+                    info::remark.set(value)
+                    // 为了不阻塞当前事件
+                    launch {
+                        FriendRemarkChangeEvent(this@FriendImpl, old, value).broadcast()
+                    }
+                }
             }
         }
 
