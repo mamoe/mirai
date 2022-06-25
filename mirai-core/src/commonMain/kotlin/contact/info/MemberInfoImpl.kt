@@ -29,6 +29,8 @@ internal data class MemberInfoImpl(
     override val joinTimestamp: Int = currentTimeSeconds().toInt(),
     override var lastSpeakTimestamp: Int = 0,
     override val isOfficialBot: Boolean = false,
+    override val level: Int = 1,
+    override val point: Int = 0,
 ) : MemberInfo {
     constructor(
         client: QQAndroidClient,
@@ -49,6 +51,8 @@ internal data class MemberInfoImpl(
         anonymousId = null,
         joinTimestamp = jceInfo.dwJoinTime?.toInt() ?: 0,
         lastSpeakTimestamp = jceInfo.dwLastSpeakTime?.toInt() ?: 0,
-        isOfficialBot = client.groupConfig.isOfficialRobot(jceInfo.memberUin)
+        isOfficialBot = client.groupConfig.isOfficialRobot(jceInfo.memberUin),
+        level = jceInfo.dwMemberLevel?.toInt() ?: 1,
+        point = jceInfo.dwPoint?.toInt() ?: 0
     )
 }

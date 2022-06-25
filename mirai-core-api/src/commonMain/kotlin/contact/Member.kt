@@ -66,6 +66,24 @@ public interface Member : User {
     public val specialTitle: String
 
     /**
+     * 群活跃等级. 取值为 1~6
+     *
+     * 这个积分是在 PC端 成员管理功能中显示的等级
+     *
+     * @see point
+     */
+    public val level: Int
+
+    /**
+     * 群活跃积分.
+     *
+     * 这个积分是在 PC端 成员管理功能中显示的积分，和手机端显示的 群荣誉活跃积分 不同
+     *
+     * @see level
+     */
+    public val point: Int
+
+    /**
      * 禁言这个群成员 [durationSeconds] 秒, 在机器人无权限操作时抛出 [PermissionDeniedException].
      *
      * QQ 中最小操作和显示的时间都是一分钟. 机器人可以实现精确到秒, 会被客户端显示为 1 分钟但不影响实际禁言时间.

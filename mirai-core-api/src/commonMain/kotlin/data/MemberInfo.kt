@@ -38,4 +38,16 @@ public interface MemberInfo : UserInfo {
      * 是否为官方机器人
      */
     public val isOfficialBot: Boolean
+
+    /**
+     * 活跃等级
+     * @see point
+     */
+    public val level: Int
+
+    /**
+     * 活跃积分
+     * @see level
+     */
+    public val point: Int
 }

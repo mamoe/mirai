@@ -29,5 +29,8 @@ internal sealed class AbstractMember(
 
     override val nameCard: String get() = info.nameCard
     override val specialTitle: String get() = info.specialTitle
+    override val level: Int get() = info.level
+    override val point: Int get() = info.point
+
     override var permission: MemberPermission by info::permission
 }
