@@ -75,7 +75,7 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
                     filename = "${md5.toUHexString("")}.${type.formatName}",
                     picWidth = width,
                     picHeight = height,
-                    picType = getIdByImageType(type)
+                    picType = getIdByImageType(type),
                 )
             )
 
@@ -137,7 +137,7 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
                     filename = "${md5.toUHexString("")}.${type.formatName}",
                     picWidth = width,
                     picHeight = height,
-                    picType = getIdByImageType(type)
+                    picType = getIdByImageType(type),
                 )
             )
 

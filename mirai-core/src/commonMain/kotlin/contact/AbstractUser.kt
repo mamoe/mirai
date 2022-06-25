@@ -157,7 +157,7 @@ internal sealed class AbstractUser(
                             picWidth = imageInfo.width,
                             picHeight = imageInfo.height,
                             picType = getIdByImageType(imageInfo.imageType),
-                            buType = 2 // not group
+                            buType = 2, // not group
                         )
                     )
 

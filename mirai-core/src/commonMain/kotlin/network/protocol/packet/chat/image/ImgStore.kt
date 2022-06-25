@@ -46,7 +46,7 @@ internal class ImgStore {
             srcTerm: Int = 5,
             platformType: Int = 9,
             buType: Int = 1, // group 1, other 2
-            appPicType: Int = 1006
+            appPicType: Int = 1006,
         ) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
                 Cmd0x388.ReqBody.serializer(),
