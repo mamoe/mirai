@@ -40,9 +40,10 @@ public interface Friend : User, CoroutineScope, AudioSupported, RoamingSupported
     /**
      * 备注信息
      *
-     * 更改后会触发 FriendRemarkChangeEvent
+     * 更改备注后会广播 [FriendRemarkChangeEvent]
      *
-     * @see [FriendRemarkChangeEvent]
+     * @see User.remarkOrNick
+     * @see FriendRemarkChangeEvent
      */
     override var remark: String
 
