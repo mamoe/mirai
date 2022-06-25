@@ -15,7 +15,6 @@ import net.mamoe.mirai.utils.md5
 import net.mamoe.mirai.utils.toUHexString
 import openssl.*
 import platform.posix.errno
-import platform.posix.free
 
 private const val curveId = NID_X9_62_prime256v1
 
@@ -27,13 +26,26 @@ private val convForm by lazy { EC_GROUP_get_point_conversion_form(group) }
 // shared, not freed!
 private val bnCtx by lazy { BN_CTX_new() }
 
+// ====ATTENTION====
+// Do not use [platform.posix.free] easily
+// For anything allocated by OpenSSL, <type>_free or CRYPTO_free
+// (the underlying of OPENSSL_free macro) should be called.
+// It's more than dangerous to assume OpenSSL uses the same memory manager as general posix functions,
+// easily causing memory leaking (usually on *nix) or crash (usually on Windows)
 
 internal actual interface ECDHPublicKey : OpenSSLKey {
     val encoded: ByteArray
+
+    /**
+     * @return It is the caller's responsibility to free this memory with a subsequent call to [EC_POINT_free]
+     */
     fun toPoint(): CPointer<EC_POINT>
 }
 
 internal actual interface ECDHPrivateKey : OpenSSLKey {
+    /**
+     * @return It is the caller's responsibility to free this memory with a subsequent call to [BN_free]
+     */
     fun toBignum(): CPointer<BIGNUM>
 }
 
@@ -52,16 +64,14 @@ internal class OpenSslPrivateKey(
 
     companion object {
         fun fromKey(key: CPointer<EC_KEY>): OpenSslPrivateKey {
+            // Note that the private key (bignum) is associated with the key
+            // We can't free it, or it'll crash when EC_KEY_free
             val bn = EC_KEY_get0_private_key(key) ?: error("Failed EC_KEY_get0_private_key")
+            val ptr = BN_bn2hex(bn) ?: error("Failed EC_POINT_bn2point")
             val hex = try {
-                val ptr = BN_bn2hex(bn) ?: error("Failed EC_POINT_bn2point")
-                try {
-                    ptr.toKString()
-                } finally {
-                    free(ptr)
-                }
+                ptr.toKString()
             } finally {
-                BN_free(bn)
+                CRYPTO_free(ptr, "OpenSslPrivateKey.Companion.fromKey(key: CPointer<EC_KEY>)", -1)
             }
             return OpenSslPrivateKey(hex)
         }
@@ -115,7 +125,7 @@ private fun CPointer<EC_POINT>.toKtHex(): String {
     return try {
         ptr.toKString()
     } finally {
-        free(ptr)
+        CRYPTO_free(ptr, "CPointer<EC_POINT>.toKtHex()", -1)
     }
 }
 
@@ -159,15 +169,13 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
         actual fun generateKeyPair(initialPublicKey: ECDHPublicKey): ECDHKeyPair {
             val key: CPointer<EC_KEY> = EC_KEY_new_by_curve_name(curveId)
                 ?: throw IllegalStateException("Failed to create key curve, $errno")
-
-            if (1 != EC_KEY_generate_key(key)) {
-                throw IllegalStateException("Failed to generate key, $errno")
-            }
-
             try {
+                if (1 != EC_KEY_generate_key(key)) {
+                    throw IllegalStateException("Failed to generate key, $errno")
+                }
                 return ECDHKeyPairImpl.fromKey(key, initialPublicKey)
             } finally {
-                free(key) // TODO: THIS MAY CAUSE MEMORY LEAK. But EC_KEY_free() will terminate the process for unknown reason.
+                EC_KEY_free(key)
             }
         }
 

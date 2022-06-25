@@ -47,31 +47,31 @@ kotlin {
             }
         }
 
-        val jvmBaseMain by getting {
+        findByName("jvmBaseMain")?.apply {
             dependencies {
                 implementation(`jetbrains-annotations`)
             }
         }
 
-        if (isAndroidSDKAvailable) {
-            val androidMain by getting {
-                //
-                dependencies {
-                    compileOnly(`android-runtime`)
+        findByName("androidMain")?.apply {
+            //
+            dependencies {
+                compileOnly(`android-runtime`)
 //                    api1(`ktor-client-android`)
-                }
             }
         }
 
-        val jvmMain by getting
+        findByName("jvmMain")?.apply {
 
-        val jvmTest by getting {
+        }
+
+        findByName("jvmTest")?.apply {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
         }
 
-        val nativeMain by getting {
+        findByName("nativeMain")?.apply {
             dependencies {
 //                implementation("com.soywiz.korlibs.krypto:krypto:2.4.12") // ':mirai-core-utils:compileNativeMainKotlinMetadata' fails because compiler cannot find reference
             }
@@ -79,7 +79,7 @@ kotlin {
     }
 }
 
-if (isAndroidSDKAvailable) {
+if (tasks.findByName("androidMainClasses") != null) {
     tasks.register("checkAndroidApiLevel") {
         doFirst {
             analyzes.AndroidApiLevelCheck.check(

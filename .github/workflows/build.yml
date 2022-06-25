@@ -13,7 +13,7 @@ jobs:
           - windows-2022
           - macos-12
     env:
-      gradleArgs: --scan "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 --illegal-access=permit -Dkotlin.daemon.jvm.options=--illegal-access=permit --add-opens java.base/java.util=ALL-UNNAMED"
+      gradleArgs: --scan "-Dmirai.target=jvm;android;!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
@@ -34,6 +34,13 @@ jobs:
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
 
+      - if: ${{ env.isWindows == 'true' }}
+        name: Setup Memory Environment on Windows
+        run: >
+          wmic pagefileset where name="D:\\pagefile.sys" set InitialSize=1024,MaximumSize=9216 &
+          net stop mongodb
+        shell: cmd
+        continue-on-error: true
 
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
@@ -295,22 +302,24 @@ jobs:
           - macos-11
         include:
         - os: windows-2022
-          testTaskName: mingwX64Test
+          targetName: mingwX64
         - os: ubuntu-20.04
-          testTaskName: linuxX64Test
+          targetName: linuxX64
         - os: ubuntu-18.04
-          testTaskName: linuxX64Test
+          targetName: linuxX64
         - os: macos-12
-          testTaskName: macosX64Test
+          targetName: macosX64
         - os: macos-11
-          testTaskName: macosX64Test
+          targetName: macosX64
     env:
-      gradleArgs: --scan "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 --illegal-access=permit -Dkotlin.daemon.jvm.options=--illegal-access=permit --add-opens java.base/java.util=ALL-UNNAMED"
+      # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
+      # > Declaration annotated with '@OptionalExpectation' can only be used in common module sources
+      gradleArgs: --scan  "-Dmirai.target=jvm;${{ matrix.targetName }};!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ startsWith(matrix.os, 'windows') && 'C:\\vcpkg\\binary_cache' || '/usr/local/share/vcpkg/binary_cache' }}
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ startsWith(matrix.os, 'windows') && 'C:\vcpkg\binary_cache' || '/usr/local/share/vcpkg/binary_cache' }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -374,12 +383,6 @@ jobs:
         continue-on-error: true
 
       - if: ${{ env.isWindows == 'true' }}
-        name: Setup C++ Toolchain Environment on Windows
-        run: |
-          'echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.32.31326\bin\Hostx64\x64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
-          'echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\Llvm\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
-
-      - if: ${{ env.isWindows == 'true' }}
         name: Install OpenSSL & cURL on Windows
         run: |
           echo "set(VCPKG_BUILD_TYPE release)" | Out-File -FilePath "$env:VCPKG_INSTALLATION_ROOT\triplets\x64-windows.cmake" -Encoding utf8 -Append
@@ -393,10 +396,10 @@ jobs:
         run: ./gradlew clean ${{ env.gradleArgs }}
 
       - name: "Test mirai-core-utils for ${{ matrix.os }}"
-        run: ./gradlew :mirai-core-utils:${{ matrix.testTaskName }} ${{ env.gradleArgs }}
+        run: ./gradlew :mirai-core-utils:${{ matrix.targetName }}Test ${{ env.gradleArgs }}
 
       - name: "Test mirai-core-api for ${{ matrix.os }}"
-        run: ./gradlew :mirai-core-api:${{ matrix.testTaskName }} ${{ env.gradleArgs }}
+        run: ./gradlew :mirai-core-api:${{ matrix.targetName }}Test ${{ env.gradleArgs }}
 
       - name: "Test mirai-core for ${{ matrix.os }}"
-        run: ./gradlew :mirai-core:${{ matrix.testTaskName }} ${{ env.gradleArgs }}
+        run: ./gradlew :mirai-core:${{ matrix.targetName }}Test ${{ env.gradleArgs }}

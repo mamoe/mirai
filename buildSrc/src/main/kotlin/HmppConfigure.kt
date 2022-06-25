@@ -30,10 +30,6 @@ private val miraiPlatform = Attribute.of(
 )
 
 val IDEA_ACTIVE = System.getProperty("idea.active") == "true" && System.getProperty("publication.test") != "true"
-val WINDOWS_TARGET_ENABLED = System.getProperty("mirai.windows.target") != "false"
-
-val NATIVE_ENABLED = System.getProperty("mirai.enable.native", "true").toBoolean()
-val ANDROID_ENABLED = System.getProperty("mirai.enable.android", "true").toBoolean()
 
 val OS_NAME = System.getProperty("os.name").toLowerCase()
 
@@ -50,7 +46,7 @@ sealed class HostKind(
     val targetName: String
 ) {
     object LINUX : HostKind("linuxX64")
-    object WINDOWS : HostKind("windowsX64")
+    object WINDOWS : HostKind("mingwX64")
 
     abstract class MACOS(targetName: String) : HostKind(targetName)
 
@@ -76,8 +72,29 @@ enum class HostArch {
     X86, X64, ARM32, ARM64
 }
 
-val MAC_TARGETS: Set<String> by lazy {
-    if (!IDEA_ACTIVE) setOf(
+/// eg. "!a;!b" means to enable all targets but a or b
+/// eg. "a;b;!other" means to disable all targets but a or b
+val ENABLED_TARGETS = System.getProperty(
+    "mirai.target",
+    if (IDEA_ACTIVE)
+        "jvm;android;${HOST_KIND.targetName};!other"
+    else
+        ""
+).split(';').toSet()
+
+fun isTargetEnabled(name: String): Boolean {
+    return when {
+        name in ENABLED_TARGETS -> true
+        "!$name" in ENABLED_TARGETS -> false
+        else -> "!other" !in ENABLED_TARGETS
+    }
+}
+
+fun Set<String>.filterTargets() =
+    this.filter { isTargetEnabled(it) }.toSet()
+
+val MAC_TARGETS: Set<String> =
+    setOf(
 //        "watchosX86",
         "macosX64",
         "macosArm64",
@@ -98,23 +115,21 @@ val MAC_TARGETS: Set<String> by lazy {
 //        "tvosX64",
 //        "tvosArm64",
 //        "tvosSimulatorArm64",
-    ) else setOf(
-        // IDEA active, reduce load
-        HOST_KIND.targetName
-    )
-}
+    ).filterTargets()
 
-val WIN_TARGETS = if (WINDOWS_TARGET_ENABLED) setOf("mingwX64") else emptySet()
+val WIN_TARGETS = setOf("mingwX64").filterTargets()
 
-val LINUX_TARGETS = setOf("linuxX64")
+val LINUX_TARGETS = setOf("linuxX64").filterTargets()
 
-val UNIX_LIKE_TARGETS by lazy { LINUX_TARGETS + MAC_TARGETS }
+val UNIX_LIKE_TARGETS =  LINUX_TARGETS + MAC_TARGETS
 
-val NATIVE_TARGETS by lazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
-
+val NATIVE_TARGETS = UNIX_LIKE_TARGETS + WIN_TARGETS
 
 fun Project.configureJvmTargetsHierarchical() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
+        val commonMain by sourceSets.getting
+        val commonTest by sourceSets.getting
+
         if (IDEA_ACTIVE) {
             jvm("jvmBase") { // dummy target for resolution, not published
                 compilations.all {
@@ -125,19 +140,42 @@ fun Project.configureJvmTargetsHierarchical() {
             }
         }
 
-        if (isAndroidSDKAvailable && ANDROID_ENABLED) {
-            jvm("android") {
-                attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-                if (IDEA_ACTIVE) {
-                    attributes.attribute(miraiPlatform, "android") // avoid resolution
-                }
+        val jvmBaseMain by lazy {
+            sourceSets.maybeCreate("jvmBaseMain").apply {
+                dependsOn(commonMain)
             }
-        } else {
-            printAndroidNotInstalled()
+        }
+        val jvmBaseTest by lazy {
+            sourceSets.maybeCreate("jvmBaseTest").apply {
+                dependsOn(commonTest)
+            }
         }
 
-        jvm("jvm") {
+        if (isTargetEnabled("android")) {
+            if (isAndroidSDKAvailable) {
+                jvm("android") {
+                    attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
+                    if (IDEA_ACTIVE) {
+                        attributes.attribute(miraiPlatform, "android") // avoid resolution
+                    }
+                }
+                val androidMain by sourceSets.getting
+                val androidTest by sourceSets.getting
+                androidMain.dependsOn(jvmBaseMain)
+                androidTest.dependsOn(jvmBaseTest)
+            } else {
+                printAndroidNotInstalled()
+            }
+        }
 
+        if (isTargetEnabled("jvm")) {
+            jvm("jvm") {
+
+            }
+            val jvmMain by sourceSets.getting
+            val jvmTest by sourceSets.getting
+            jvmMain.dependsOn(jvmBaseMain)
+            jvmTest.dependsOn(jvmBaseTest)
         }
     }
 }
@@ -188,21 +226,39 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
 
     val commonMain by sourceSets.getting
     val commonTest by sourceSets.getting
-    val jvmBaseMain = this.sourceSets.maybeCreate("jvmBaseMain")
-    val jvmBaseTest = this.sourceSets.maybeCreate("jvmBaseTest")
-    val jvmMain by sourceSets.getting
-    val jvmTest by sourceSets.getting
-    val androidMain by sourceSets.getting
-    val androidTest by sourceSets.getting
 
-    val nativeMain = this.sourceSets.maybeCreate("nativeMain")
-    val nativeTest = this.sourceSets.maybeCreate("nativeTest")
+    val nativeMain by lazy {
+        this.sourceSets.maybeCreate("nativeMain").apply {
+            dependsOn(commonMain)
+        }
+    }
+    val nativeTest by lazy {
+        this.sourceSets.maybeCreate("nativeTest").apply {
+            dependsOn(commonTest)
+        }
+    }
 
-    val unixMain = this.sourceSets.maybeCreate("unixMain")
-    val unixTest = this.sourceSets.maybeCreate("unixTest")
+    val unixMain by lazy {
+        this.sourceSets.maybeCreate("unixMain").apply {
+            dependsOn(nativeMain)
+        }
+    }
+    val unixTest by lazy {
+        this.sourceSets.maybeCreate("unixTest").apply {
+            dependsOn(nativeTest)
+        }
+    }
 
-    val darwinMain = this.sourceSets.maybeCreate("darwinMain")
-    val darwinTest = this.sourceSets.maybeCreate("darwinTest")
+    val darwinMain by lazy {
+        this.sourceSets.maybeCreate("darwinMain").apply {
+            dependsOn(unixMain)
+        }
+    }
+    val darwinTest by lazy {
+        this.sourceSets.maybeCreate("darwinTest") .apply {
+            dependsOn(unixTest)
+        }
+    }
 
     presets.filter { it.name in MAC_TARGETS }.forEach { preset ->
         addNativeTarget(preset).run {
@@ -293,24 +349,6 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
             }
         }
     }
-
-    jvmBaseMain.dependsOn(commonMain)
-    jvmBaseTest.dependsOn(commonTest)
-
-    nativeMain.dependsOn(commonMain)
-    nativeTest.dependsOn(commonTest)
-
-    unixMain.dependsOn(nativeMain)
-    unixTest.dependsOn(nativeTest)
-
-    darwinMain.dependsOn(unixMain)
-    darwinTest.dependsOn(unixTest)
-
-    jvmMain.dependsOn(jvmBaseMain)
-    jvmTest.dependsOn(jvmBaseTest)
-
-    androidMain.dependsOn(jvmBaseMain)
-    androidTest.dependsOn(jvmBaseTest)
 }
 
 private fun KotlinNativeTarget.findOrCreateTest(buildType: NativeBuildType, configure: TestExecutable.() -> Unit) =
