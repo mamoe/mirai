@@ -78,7 +78,6 @@ internal class FriendImpl(
             // 为了赋值后remark立即改变
             runBlocking {
                 val result = bot.network.sendAndExpect(ChangeFriendRemark(bot.client, this@FriendImpl.id, value))
-                println(result)
                 if (result.isSuccess) {
                     val old = remark
                     info::remark.set(value)

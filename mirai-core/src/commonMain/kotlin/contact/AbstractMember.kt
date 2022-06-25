@@ -25,7 +25,7 @@ internal sealed class AbstractMember(
     final override val info: MemberInfoImpl = memberInfo.cast()
 
     override var nick: String by info::nick
-    override val remark by info::remark
+    override val remark: String by info::remark
 
     override val nameCard: String get() = info.nameCard
     override val specialTitle: String get() = info.specialTitle
