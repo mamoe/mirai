@@ -15,6 +15,7 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public abstract fun getConfiguration ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public abstract fun getEventChannel ()Lnet/mamoe/mirai/event/EventChannel;
 	public fun getFriend (J)Lnet/mamoe/mirai/contact/Friend;
+	public abstract fun getFriendGroups ()Ljava/util/List;
 	public fun getFriendOrFail (J)Lnet/mamoe/mirai/contact/Friend;
 	public abstract fun getFriends ()Lnet/mamoe/mirai/contact/ContactList;
 	public fun getGroup (J)Lnet/mamoe/mirai/contact/Group;
@@ -961,6 +962,23 @@ public abstract interface class net/mamoe/mirai/contact/roaming/RoamingSupported
 	public abstract fun getRoamingMessages ()Lnet/mamoe/mirai/contact/roaming/RoamingMessages;
 }
 
+public abstract interface class net/mamoe/mirai/data/FriendGroup {
+	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getFriendCount ()I
+	public abstract fun getId ()I
+	public abstract fun getInfo ()Lnet/mamoe/mirai/data/FriendGroupInfo;
+	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun moveIn (Lnet/mamoe/mirai/contact/Friend;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun new (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class net/mamoe/mirai/data/FriendGroupInfo {
+	public abstract fun getFriendCount ()I
+	public abstract fun getGroupId ()I
+	public abstract fun getGroupName ()Ljava/lang/String;
+	public abstract fun getOnlineFriendCount ()I
+}
+
 public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mirai/data/UserInfo {
 	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun getRemark ()Ljava/lang/String;
@@ -1688,6 +1706,7 @@ public abstract interface class net/mamoe/mirai/data/UserInfo {
 public abstract interface class net/mamoe/mirai/data/UserProfile {
 	public abstract fun getAge ()I
 	public abstract fun getEmail ()Ljava/lang/String;
+	public abstract fun getFriendGroupId ()J
 	public abstract fun getNickname ()Ljava/lang/String;
 	public abstract fun getQLevel ()I
 	public abstract fun getSex ()Lnet/mamoe/mirai/data/UserProfile$Sex;

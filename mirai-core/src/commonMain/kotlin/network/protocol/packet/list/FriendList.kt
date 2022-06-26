@@ -161,7 +161,9 @@ internal class FriendList {
         class Response(
             val selfInfo: FriendInfo?,
             val totalFriendCount: Short,
-            val friendList: List<FriendInfo>
+            val friendList: List<FriendInfo>,
+            val groupList: List<GroupInfo>,
+            val totoalGroupCount: Short
         ) : Packet {
             override fun toString(): String = "FriendList.GetFriendGroupList.Response"
         }
@@ -175,7 +177,9 @@ internal class FriendList {
             return Response(
                 res.stSelfInfo,
                 res.totoalFriendCount,
-                res.vecFriendInfo.orEmpty()
+                res.vecFriendInfo.orEmpty(),
+                res.vecGroupInfo.orEmpty(),
+                res.totoalGroupCount ?: -1
             )
         }
 
@@ -245,7 +249,7 @@ internal class FriendList {
                         GetFriendListReq.serializer(),
                         GetFriendListReq(
                             reqtype = 3,
-                            ifReflush = if (friendListStartIndex <= 0) {
+                            ifReflush = if (friendListStartIndex + groupListStartIndex <= 0) {
                                 0
                             } else {
                                 1
@@ -290,10 +294,11 @@ internal class FriendList {
             val result: Byte,
             val errStr: String,
             // groupId for delete
-            val groupId: Int
+            val groupId: Int,
+            val isSuccess: Boolean = result.toInt() == 0
         ) : Packet {
             override fun toString(): String {
-                return "SetGroupResp(isSuccess=${result.toInt() == 0},resultCode=$result, errString=$errStr, groupId=$groupId)"
+                return "SetGroupResp(isSuccess=$isSuccess,resultCode=$result, errString=$errStr, groupId=$groupId)"
             }
         }
 
@@ -341,10 +346,11 @@ internal class FriendList {
         class Response(
             // Success: result == 0x00
             val result: Byte,
-            val errStr: String
+            val errStr: String,
+            val isSuccess: Boolean = result.toInt() == 0
         ) : Packet {
             override fun toString(): String {
-                return "MoveGroupMemReq(isSuccess=${result.toInt() == 0},resultCode=$result, errString=$errStr)"
+                return "MoveGroupMemReq(isSuccess=$isSuccess,resultCode=$result, errString=$errStr)"
             }
         }
 

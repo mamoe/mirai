@@ -19,14 +19,13 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.data.FriendGroup
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.FriendGroupImpl
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.StrangerImpl
-import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
-import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
-import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
-import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
+import net.mamoe.mirai.internal.contact.info.*
 import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
@@ -160,6 +159,40 @@ internal class ContactUpdaterImpl(
             return friendInfos
         }
 
+        suspend fun refreshFriendGroupList(): MutableList<FriendGroup> {
+            logger.info { "Start loading friendGroup list..." }
+            val friendGroupInfos = mutableListOf<FriendGroup>()
+
+            var count = 0
+            var total: Short
+            while (true) {
+                val data = bot.network.sendAndExpect(
+                    FriendList.GetFriendGroupList(bot.client, 0, 0, count, 150)
+                )
+
+                total = data.totoalGroupCount
+
+                for (jceInfo in data.groupList) {
+                    friendGroupInfos.add(
+                        FriendGroupImpl(
+                            bot, FriendGroupInfoImpl(
+                                jceInfo.groupId.toInt(),
+                                jceInfo.groupname,
+                                jceInfo.friendCount,
+                                jceInfo.onlineFriendCount
+                            )
+                        )
+                    )
+                }
+
+                count += data.groupList.size
+                logger.verbose { "Loading friendGroup list: ${count}/${total}" }
+                if (count >= total) break
+            }
+            logger.info { "Successfully loaded friendGroup list: $count in total" }
+            return friendGroupInfos
+        }
+
         val list = if (friendListCache?.isValid(registerResp) == true) {
             val list = friendListCache.list
             logger.info { "Loaded ${list.size} friends from local cache." }
@@ -182,6 +215,7 @@ internal class ContactUpdaterImpl(
             bot.addNewFriendAndRemoveStranger(friendInfoImpl)
         }
 
+        bot.friendGroups = refreshFriendGroupList()
 
         initFriendOk = true
     }
