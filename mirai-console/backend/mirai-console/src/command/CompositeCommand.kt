@@ -98,15 +98,10 @@ public abstract class CompositeCommand(
     private val reflector by lazy { CommandReflector(this, CompositeCommandSubCommandAnnotationResolver) }
 
     @ExperimentalCommandDescriptors
-    public val overloadImpls: List<@JvmWildcard CommandSignatureFromKFunctionImpl> by lazy {
+    public final override val overloads: List<@JvmWildcard CommandSignatureFromKFunction> by lazy {
         reflector.findSubCommands().also {
             reflector.validate(it)
         }
-    }
-
-    @ExperimentalCommandDescriptors
-    public final override val overloads: List<@JvmWildcard CommandSignatureFromKFunction> by lazy {
-        overloadImpls
     }
 
     /**
