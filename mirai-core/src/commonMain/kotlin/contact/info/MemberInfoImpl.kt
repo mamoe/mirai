@@ -74,7 +74,7 @@ internal data class MemberInfoImpl(
             for (index in bytes.indices step 2) {
                 val type = bytes[index]
                 if (type.toInt() == 8) {
-                    val value = bytes.getOrNull(index) ?: break
+                    val value = bytes.getOrNull(index + 1) ?: break
                     add(GroupHonorType.deserializeFromInt(value.toInt()))
                 }
             }
@@ -83,7 +83,7 @@ internal data class MemberInfoImpl(
             for (index in bytes.indices step 2) {
                 val type = bytes[index]
                 if (type.toInt() == 16) {
-                    val value = bytes.getOrNull(index) ?: break
+                    val value = bytes.getOrNull(index + 1) ?: break
                     return@let value.toInt()
                 }
             }
