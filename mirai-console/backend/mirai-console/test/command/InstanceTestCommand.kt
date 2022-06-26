@@ -36,6 +36,48 @@ import java.time.temporal.TemporalAccessor
 import kotlin.reflect.KClass
 import kotlin.test.*
 
+class TestParentCompositeCommand : CompositeCommand(
+    owner,
+    "testParentComposite", "tsPC"
+) {
+
+    class ChildCompositeCommand1 : CompositeCommand(
+        owner,
+        "testChildComposite1", "tsCC1"
+    ) {
+        @SubCommand
+        fun foo(seconds: Int) {
+            Testing.ok(seconds)
+        }
+    }
+
+    class ChildCompositeCommand2 : CompositeCommand(
+        owner,
+        "testChildComposite2", "tsCC2"
+    ) {
+        @SubCommand
+        fun bar(seconds: Int) {
+            Testing.ok(seconds)
+        }
+    }
+
+    @ChildCommand
+    val child1: ChildCompositeCommand1  = ChildCompositeCommand1();
+
+    @ChildCommand
+    val child2: ChildCompositeCommand2 = ChildCompositeCommand2();
+
+    @SubCommand
+    fun parentFoo(seconds: Int) {
+        Testing.ok(seconds)
+    }
+
+    @SubCommand
+    fun parentBar(seconds: Int) {
+        Testing.ok(seconds)
+    }
+}
+
 class TestCompositeCommand : CompositeCommand(
     owner,
     "testComposite", "tsC"
@@ -166,6 +208,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     private val simpleCommand by lazy { TestSimpleCommand() }
     private val rawCommand by lazy { TestRawCommand() }
     private val compositeCommand by lazy { TestCompositeCommand() }
+    private val parentCompositeCommand by lazy { TestParentCompositeCommand() }
 
     @BeforeEach
     fun grantPermission() {
@@ -498,6 +541,35 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
         compositeCommand.withRegistration {
             assertEquals(1, withTesting {
                 assertSuccess(compositeCommand.execute(sender, "mute 1"))
+            })
+        }
+    }
+
+    @Test
+    fun `parent composite command executing`() = runBlocking {
+        parentCompositeCommand.withRegistration {
+            assertEquals(1, withTesting {
+                assertSuccess(
+                    parentCompositeCommand.execute(sender, "parentFoo 1")
+                )
+            })
+            assertEquals(1, withTesting {
+                assertSuccess(
+                    parentCompositeCommand.execute(sender, "parentBar 1")
+                )
+            })
+            assertEquals(1, withTesting {
+                assertSuccess(
+                    parentCompositeCommand.execute(sender, "foo 1")
+                )
+            })
+            assertEquals(1, withTesting {
+                assertSuccess(
+                    parentCompositeCommand.execute(sender, "foo 1")
+                )
+            })
+            assertEquals(2, withTesting {
+                assertSuccess(parentCompositeCommand.execute(sender, "bar 2"))
             })
         }
     }

@@ -79,6 +79,10 @@ internal object CompositeCommandSubCommandAnnotationResolver :
 
     override fun getDescription(ownerCommand: Command, function: KFunction<*>): String? =
         function.findAnnotation<CompositeCommand.Description>()?.value
+
+    override fun hasPropertyAnnotation(command: Command, property: KProperty<*>): Boolean =
+        property.hasAnnotation<CompositeCommand.ChildCommand>()
+
 }
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
@@ -95,6 +99,8 @@ internal object SimpleCommandSubCommandAnnotationResolver :
 
     override fun getDescription(ownerCommand: Command, function: KFunction<*>): String =
         ownerCommand.description
+
+    override fun hasPropertyAnnotation(command: Command, kProperty: KProperty<*>): Boolean = false
 }
 
 internal interface SubCommandAnnotationResolver {
@@ -102,6 +108,7 @@ internal interface SubCommandAnnotationResolver {
     fun getSubCommandNames(ownerCommand: Command, function: KFunction<*>): Array<out String>
     fun getAnnotatedName(ownerCommand: Command, parameter: KParameter): String?
     fun getDescription(ownerCommand: Command, function: KFunction<*>): String?
+    fun hasPropertyAnnotation(command: Command, kProperty: KProperty<*>): Boolean
 }
 
 @ConsoleExperimentalApi
@@ -137,6 +144,7 @@ internal class CommandReflector(
         throw IllegalCommandDeclarationException(command, this, message)
     }
 
+    private fun KProperty<*>.isSubCommandProperty(): Boolean = annotationResolver.hasPropertyAnnotation(command, this)
     private fun KFunction<*>.isSubCommandFunction(): Boolean = annotationResolver.hasAnnotation(command, this)
     private fun KFunction<*>.checkExtensionReceiver() {
         this.extensionReceiverParameter?.let { receiver ->
@@ -258,7 +266,7 @@ internal class CommandReflector(
 
     @Throws(IllegalCommandDeclarationException::class)
     fun findSubCommands(): List<CommandSignatureFromKFunctionImpl> {
-        return command::class.functions // exclude static later
+        val fromMemberFunctions = command::class.functions // exclude static later
             .asSequence()
             .filter { it.isSubCommandFunction() }
             .onEach { it.checkExtensionReceiver() }
@@ -340,6 +348,19 @@ internal class CommandReflector(
                     }
                 }
             }.toList()
+
+        val fromMemberProperties = command::class.declaredMemberProperties
+            .asSequence()
+            .filter { it.isSubCommandProperty() }
+            .filterIsInstance(CompositeCommand::class.java)
+            .flatMap { property ->
+                property.overloadImpls
+            }.toList()
+
+        val list: MutableList<CommandSignatureFromKFunctionImpl> = ArrayList()
+        list.addAll(fromMemberFunctions)
+        list.addAll(fromMemberProperties)
+        return list
     }
 
     private fun isAcceptableReceiverType(classifier: KClass<Any>) =
