@@ -25,7 +25,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
 import java.io.File
 
-private val miraiPlatform = Attribute.of(
+val MIRAI_PLATFORM_ATTRIBUTE = Attribute.of(
     "net.mamoe.mirai.platform", String::class.java
 )
 
@@ -140,7 +140,7 @@ fun Project.configureJvmTargetsHierarchical() {
                     this.compileKotlinTask.enabled = false // IDE complain
                 }
                 attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // magic
-                attributes.attribute(miraiPlatform, "jvmBase") // avoid resolution
+                attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "jvmBase") // avoid resolution
             }
         }
 
@@ -160,7 +160,7 @@ fun Project.configureJvmTargetsHierarchical() {
                 jvm("android") {
                     attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
                     if (IDEA_ACTIVE) {
-                        attributes.attribute(miraiPlatform, "android") // avoid resolution
+                        attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "android") // avoid resolution
                     }
                 }
                 val androidMain by sourceSets.getting

@@ -46,14 +46,13 @@ dependencies {
     implementation(`log4j-core`)
 
     testApi(kotlin("test-junit5"))
-    testApi("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
-    testApi("org.junit.jupiter:junit-jupiter-params:${Versions.junit}")
+    testApi(`junit-jupiter-api`)
+    testApi(`junit-jupiter-params`)
 
     "integTestApi"(kotlin("test-junit5"))
-    "integTestApi"("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
-    "integTestApi"("org.junit.jupiter:junit-jupiter-params:${Versions.junit}")
-    "integTestImplementation"("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")
-//    "integTestImplementation"("org.spockframework:spock-core:1.3-groovy-2.5")
+    "integTestApi"(`junit-jupiter-api`)
+    "integTestApi"(`junit-jupiter-params`)
+    "integTestImplementation"(`junit-jupiter-engine`)
     "integTestImplementation"(gradleTestKit())
 
     kotlinVersionForIntegrationTest(kotlin("gradle-plugin", "1.5.21"))

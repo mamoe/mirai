@@ -111,8 +111,8 @@ fun Project.configureKotlinTestSettings() {
             dependencies {
                 "testImplementation"(kotlin("test-junit5"))?.because(b)
 
-                "testApi"("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")?.because(b)
-                "testRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")?.because(b)
+                "testApi"(`junit-jupiter-api`)?.because(b)
+                "testRuntimeOnly"(`junit-jupiter-engine`)?.because(b)
             }
         }
         isKotlinMpp -> {
@@ -121,8 +121,8 @@ fun Project.configureKotlinTestSettings() {
                     sourceSet.dependencies {
                         implementation(kotlin("test-junit5"))?.because(b)
 
-                        implementation("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")?.because(b)
-                        runtimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")?.because(b)
+                        implementation(`junit-jupiter-api`)?.because(b)
+                        runtimeOnly(`junit-jupiter-engine`)?.because(b)
                     }
                 }
 

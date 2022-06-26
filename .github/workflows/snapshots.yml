@@ -37,9 +37,13 @@ jobs:
       - name: Assemble
         run: ./gradlew assemble --scan
 
+      - name: Publish Local Artifacts
+        run: >
+          ./gradlew :mirai-deps-test:publishMiraiLocalArtifacts --scan
+
       - name: Check
         run: >
-          ./gradlew check --scan --no-parallel
+          ./gradlew check --scan
           -Dmirai.network.show.all.components=true
           -Dkotlinx.coroutines.debug=on
           -Dmirai.network.show.packet.details=true

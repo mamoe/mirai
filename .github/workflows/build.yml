@@ -280,6 +280,9 @@ jobs:
       - name: "Assemble"
         run: ./gradlew assemble ${{ env.gradleArgs }}
 
+      - name: Publish Local Artifacts
+        run: ./gradlew :mirai-deps-test:publishMiraiLocalArtifacts ${{ env.gradleArgs }}
+
       - name: "Check"
         run: ./gradlew check ${{ env.gradleArgs }}
 
@@ -403,3 +406,9 @@ jobs:
 
       - name: "Test mirai-core for ${{ matrix.os }}"
         run: ./gradlew :mirai-core:${{ matrix.targetName }}Test ${{ env.gradleArgs }}
+
+      - name: Publish Local Artifacts
+        run: ./gradlew :mirai-deps-test:publishMiraiLocalArtifacts ${{ env.gradleArgs }}
+
+      - name: Check Publication
+        run: ./gradlew :mirai-deps-test:check ${{ env.gradleArgs }}
