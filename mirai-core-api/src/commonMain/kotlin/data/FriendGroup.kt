@@ -30,6 +30,12 @@ public interface FriendGroup {
     public val friendCount: Int
 
     /**
+     * 更改好友分组名称
+     * @throws IllegalStateException 当改名不成功时
+     */
+    public suspend fun rename(newName: String)
+
+    /**
      * 把一名好友移动至本分组内
      * @throws IllegalStateException 当移动不成功时
      */

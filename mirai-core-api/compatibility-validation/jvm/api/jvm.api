@@ -970,6 +970,7 @@ public abstract interface class net/mamoe/mirai/data/FriendGroup {
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun moveIn (Lnet/mamoe/mirai/contact/Friend;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun new (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun rename (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/data/FriendGroupInfo {

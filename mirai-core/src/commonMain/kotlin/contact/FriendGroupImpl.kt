@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.data.FriendGroup
-import net.mamoe.mirai.data.FriendGroupInfo
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendGroupInfoImpl
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
@@ -49,13 +48,22 @@ private suspend fun refreshFriendGroupList(bot: QQAndroidBot): MutableList<Frien
 
 internal class FriendGroupImpl constructor(
     val bot: QQAndroidBot,
-    override val info: FriendGroupInfo
+    override val info: FriendGroupInfoImpl
 ) : FriendGroup {
     override val id: Int by info::groupId
 
     // todo rename
     override val name: String by info::groupName
     override val friendCount: Int by info::friendCount
+
+    override suspend fun rename(newName: String) {
+        bot.network.sendAndExpect(FriendList.SetGroupReqPack.Rename(bot.client, newName, id)).let {
+            check(it.isSuccess) {
+                "Cannot rename friendGroup(id=$id) to $newName, code=${it.result.toInt()}, errStr=${it.errStr}"
+            }
+        }
+        info.groupName = newName
+    }
 
     override suspend fun moveIn(friend: Friend) {
         bot.network.sendAndExpect(FriendList.MoveGroupMemReqPack(bot.client, friend.id, id)).let {

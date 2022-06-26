@@ -323,6 +323,18 @@ internal class FriendList {
             }
         }
 
+        object Rename {
+            operator fun invoke(client: QQAndroidClient, newName: String, id: Int) = buildOutgoingUniPacket(client) {
+                val arr = newName.toByteArray()
+                writeJceRequestPacket(
+                    servantName = "mqq.IMService.FriendListServiceServantObj",
+                    funcName = "SetGroupReq",
+                    serializer = SetGroupReq.serializer(),
+                    body = SetGroupReq(1, client.uin, byteArrayOf(id.toByte(), arr.size.toByte()) + arr)
+                )
+            }
+        }
+
         object Delete {
             operator fun invoke(client: QQAndroidClient, id: Int) = buildOutgoingUniPacket(client) {
                 writeJceRequestPacket(

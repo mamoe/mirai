@@ -15,7 +15,7 @@ import net.mamoe.mirai.data.FriendGroupInfo
 @Serializable
 internal data class FriendGroupInfoImpl(
     override val groupId: Int,
-    override val groupName: String,
+    override var groupName: String,
     override val friendCount: Int,
     override val onlineFriendCount: Int
 ) : FriendGroupInfo
