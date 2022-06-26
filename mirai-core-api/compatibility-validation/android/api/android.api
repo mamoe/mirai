@@ -2423,7 +2423,7 @@ public final class net/mamoe/mirai/event/events/FriendNickChangedEvent : net/mam
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/event/events/FriendRemarkChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/FriendEvent, net/mamoe/mirai/event/events/FriendInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
+public final class net/mamoe/mirai/event/events/FriendRemarkChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/BroadcastControllable, net/mamoe/mirai/event/events/FriendEvent, net/mamoe/mirai/event/events/FriendInfoChangeEvent, net/mamoe/mirai/internal/network/Packet {
 	public final fun component1 ()Lnet/mamoe/mirai/contact/Friend;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
@@ -2433,6 +2433,7 @@ public final class net/mamoe/mirai/event/events/FriendRemarkChangeEvent : net/ma
 	public fun getFriend ()Lnet/mamoe/mirai/contact/Friend;
 	public final fun getNewRemark ()Ljava/lang/String;
 	public final fun getOldRemark ()Ljava/lang/String;
+	public fun getShouldBroadcast ()Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
