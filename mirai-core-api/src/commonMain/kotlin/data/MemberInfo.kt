@@ -43,11 +43,11 @@ public interface MemberInfo : UserInfo {
      * 活跃等级
      * @see point
      */
-    public val level: Int
+    public val rank: Int
 
     /**
      * 活跃积分
-     * @see level
+     * @see rank
      */
     public val point: Int
 }

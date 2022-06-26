@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.contact.info
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.protocol.data.jce.StGroupRankInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
 
 @Serializable
@@ -27,8 +28,9 @@ internal data class GroupInfoImpl(
     override val confessTalk: Boolean,
     override val muteAll: Boolean,
     override val botMuteTimestamp: Int,
+    override val rankTitles: Map<Int, String>
 ) : GroupInfo, Packet, Packet.NoLog {
-    constructor(stTroopNum: StTroopNum) : this(
+    constructor(stTroopNum: StTroopNum, stGroupRankInfo: StGroupRankInfo?) : this(
         uin = stTroopNum.groupUin,
         owner = stTroopNum.dwGroupOwnerUin,
         groupCode = stTroopNum.groupCode,
@@ -40,5 +42,13 @@ internal data class GroupInfoImpl(
         confessTalk = stTroopNum.dwGroupFlagExt3?.and(0x00002000) == 0L,
         muteAll = stTroopNum.dwShutUpTimestamp != 0L,
         botMuteTimestamp = stTroopNum.dwMyShutUpTimestamp?.toInt() ?: 0,
+        rankTitles = buildMap {
+            for (pair in stGroupRankInfo?.vecRankMapNew.orEmpty()) {
+                val level = pair.dwLevel?.toInt() ?: continue
+                val title = pair.rank.orEmpty()
+
+                put(level, title)
+            }
+        }
     )
 }

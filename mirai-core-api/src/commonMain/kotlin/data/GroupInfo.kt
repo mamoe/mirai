@@ -71,14 +71,8 @@ public interface GroupInfo {
      */
     public val botMuteTimestamp: Int
 
-    /*
     /**
-     * 机器人的特殊头衔
+     * 等级头衔
      */
-    val botSpecialTitle: String
-
-    /**
-     * 机器人的昵称
-     */
-    val botNameCard: String*/
+    public val rankTitles: Map<Int, String>
 }

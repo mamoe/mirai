@@ -68,18 +68,18 @@ public interface Member : User {
     /**
      * 群活跃等级. 取值为 1~6
      *
-     * 这个积分是在 PC端 成员管理功能中显示的等级
+     * 这个等级是在 PC端 成员管理功能中显示的等级
      *
      * @see point
      */
-    public val level: Int
+    public val rank: Int
 
     /**
      * 群活跃积分.
      *
      * 这个积分是在 PC端 成员管理功能中显示的积分，和手机端显示的 群荣誉活跃积分 不同
      *
-     * @see level
+     * @see rank
      */
     public val point: Int
 

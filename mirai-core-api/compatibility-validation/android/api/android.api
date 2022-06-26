@@ -428,10 +428,10 @@ public abstract interface class net/mamoe/mirai/contact/GroupSettings {
 
 public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai/contact/User {
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
-	public abstract fun getLevel ()I
 	public abstract fun getNameCard ()Ljava/lang/String;
 	public abstract fun getPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
 	public abstract fun getPoint ()I
+	public abstract fun getRank ()I
 	public abstract fun getSpecialTitle ()Ljava/lang/String;
 	public fun mute (I)V
 	public abstract fun mute (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -479,9 +479,9 @@ public final class net/mamoe/mirai/contact/MessageTooLargeException : net/mamoe/
 public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe/mirai/contact/Member {
 	public abstract fun getJoinTimestamp ()I
 	public abstract fun getLastSpeakTimestamp ()I
-	public fun getLevelTitle ()Ljava/lang/String;
 	public abstract fun getMuteTimeRemaining ()I
 	public abstract fun getNameCard ()Ljava/lang/String;
+	public fun getRankTitle ()Ljava/lang/String;
 	public abstract fun getSpecialTitle ()Ljava/lang/String;
 	public fun isMuted ()Z
 	public fun kick (Ljava/lang/String;)V
@@ -623,7 +623,8 @@ public abstract interface class net/mamoe/mirai/contact/UserOrBot : net/mamoe/mi
 }
 
 public abstract interface class net/mamoe/mirai/contact/active/Active {
-	public abstract fun getLevelTitles ()Ljava/util/Map;
+	public abstract fun getRankTitles ()Ljava/util/Map;
+	public abstract fun setRankTitles (Ljava/util/Map;)V
 }
 
 public abstract interface class net/mamoe/mirai/contact/announcement/Announcement {
@@ -1549,11 +1550,11 @@ public abstract interface class net/mamoe/mirai/data/GroupInfo {
 	public abstract fun getBotMuteTimestamp ()I
 	public abstract fun getConfessTalk ()Z
 	public abstract fun getGroupCode ()J
-	public abstract fun getLevelTitles ()Ljava/util/Map;
 	public abstract fun getMemo ()Ljava/lang/String;
 	public abstract fun getMuteAll ()Z
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun getOwner ()J
+	public abstract fun getRankTitles ()Ljava/util/Map;
 	public abstract fun getUin ()J
 }
 
@@ -1561,11 +1562,11 @@ public abstract interface class net/mamoe/mirai/data/MemberInfo : net/mamoe/mira
 	public fun getAnonymousId ()Ljava/lang/String;
 	public abstract fun getJoinTimestamp ()I
 	public abstract fun getLastSpeakTimestamp ()I
-	public abstract fun getLevel ()I
 	public abstract fun getMuteTimestamp ()I
 	public abstract fun getNameCard ()Ljava/lang/String;
 	public abstract fun getPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
 	public abstract fun getPoint ()I
+	public abstract fun getRank ()I
 	public abstract fun getSpecialTitle ()Ljava/lang/String;
 	public abstract fun isOfficialBot ()Z
 }
