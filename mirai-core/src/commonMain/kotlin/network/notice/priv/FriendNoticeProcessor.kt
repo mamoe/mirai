@@ -218,8 +218,7 @@ internal class FriendNoticeProcessor(
     private fun NoticePipelineContext.handleRemarkChanged(body: ModFriendRemark) {
         for (new in body.msgFrdRmk) {
             val friend = bot.getFriend(new.fuin)?.impl() ?: continue
-            // 在客户端更改备注为相同时也会发包但是这种情况下的event没有意义
-            if (friend.remark == new.rmkName) continue
+
             collect(FriendRemarkChangeEvent(friend, friend.remark, new.rmkName))
             friend.info.remark = new.rmkName
         }

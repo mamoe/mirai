@@ -75,17 +75,11 @@ internal class FriendImpl(
     override var remark: String
         get() = info.remark
         set(value) {
-            // 为了赋值后remark立即改变
-            runBlocking {
-                val result = bot.network.sendAndExpect(ChangeFriendRemark(bot.client, this@FriendImpl.id, value))
-                if (result.isSuccess) {
-                    val old = remark
-                    info.remark = value
-                    // 为了不阻塞当前事件
-                    launch {
-                        FriendRemarkChangeEvent(this@FriendImpl, old, value).broadcast()
-                    }
-                }
+            val old = info.remark
+            info.remark = value
+            launch {
+                bot.network.sendWithoutExpect(ChangeFriendRemark(bot.client, this@FriendImpl.id, value))
+                FriendRemarkChangeEvent(this@FriendImpl, old, value).broadcast()
             }
         }
 
