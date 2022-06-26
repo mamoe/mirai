@@ -26,8 +26,6 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.uncheckedCast
-import kotlin.jvm.JvmName
 
 /**
  * Coroutine-based network framework. Usually wrapped with [SelectorNetworkHandler] to enable retrying.
@@ -152,10 +150,9 @@ internal interface NetworkHandler : CoroutineScope {
     /**
      * Sends [packet] and does not expect any response.
      *
-     * Response is still being processed but not passed as a return value of this function, so it does not suspends this function (due to awaiting for the response).
-     * However, coroutine is still suspended if connection is not yet available,
-     * and [IllegalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final.
-     * legalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final.
+     * Response is still being processed but not passed as a return value of this function, so it does not suspend this function (due to awaiting for the response).
+     * However, coroutine is still suspended if connection is not yet available.
+     * [IllegalStateException] will be thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final, since closure is final.
      *
      * @throws CancellationException if the [NetworkHandler] is closed, with the last cause for closure.
      */
