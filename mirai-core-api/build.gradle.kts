@@ -18,6 +18,7 @@ plugins {
     id("signing")
     id("me.him188.kotlin-jvm-blocking-bridge")
     id("me.him188.kotlin-dynamic-delegation")
+//    id("me.him188.maven-central-publish")
 
     `maven-publish`
 }
@@ -106,3 +107,12 @@ if (tasks.findByName("androidMainClasses") != null) {
 
 configureMppPublishing()
 configureBinaryValidators(setOf("jvm", "android").filterTargets())
+configureRelocationForCore()
+
+//mavenCentralPublish {
+//    artifactId = "mirai-core-api"
+//    githubProject("mamoe", "mirai")
+//    developer("Mamoe Technologies", email = "support@mamoe.net", url = "https://github.com/mamoe")
+//    licenseFromGitHubProject("AGPLv3", "dev")
+//    publishPlatformArtifactsInRootModule = "jvm"
+//}

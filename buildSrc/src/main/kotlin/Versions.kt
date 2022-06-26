@@ -13,6 +13,9 @@ import org.gradle.api.attributes.Attribute
 import org.gradle.kotlin.dsl.exclude
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 
+// DO NOT CHANGE FILENAME OR RELATIVE PATH TO ROOT PROJECT.
+// mirai-deps-test DEPENDS ON THE PATH.
+
 object Versions {
     val project = System.getenv("mirai.build.project.version")
         ?: /*PROJECT_VERSION_START*/"2.13.0"/*PROJECT_VERSION_END*/
@@ -22,11 +25,11 @@ object Versions {
     val consoleIntellij = "221-$project-162-1" // idea-mirai-kotlin-patch
     val consoleTerminal = project
 
-    const val kotlinCompiler = "1.7.0-RC"
+    const val kotlinCompiler = "1.7.0"
     const val kotlinStdlib = kotlinCompiler
     const val dokka = "1.6.21"
 
-    const val kotlinCompilerForIdeaPlugin = "1.7.0-RC"
+    const val kotlinCompilerForIdeaPlugin = "1.7.0"
 
     const val coroutines = "1.6.2"
     const val atomicFU = "0.17.2"
@@ -40,6 +43,7 @@ object Versions {
 
     const val blockingBridge = "2.1.0-170.1"
     const val dynamicDelegation = "0.3.0-170.1"
+    const val mavenCentralPublish = "1.0.0-dev-3"
 
     const val androidGradlePlugin = "4.1.1"
     const val android = "4.1.1.4"
@@ -138,7 +142,9 @@ const val `kotlin-stdlib-jdk8` = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Vers
 const val `kotlin-reflect` = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlinStdlib}"
 const val `kotlin-test` = "org.jetbrains.kotlin:kotlin-test:${Versions.kotlinStdlib}"
 const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Versions.kotlinStdlib}"
-
+const val `junit-jupiter-api` = "org.junit.jupiter:junit-jupiter-api:${Versions.junit}"
+const val `junit-jupiter-params` = "org.junit.jupiter:junit-jupiter-params:${Versions.junit}"
+const val `junit-jupiter-engine` = "org.junit.jupiter:junit-jupiter-engine:${Versions.junit}"
 
 //const val `mirai-core-api` = "net.mamoe:mirai-core-api:${Versions.core}"
 //const val `mirai-core` = "net.mamoe:mirai-core:${Versions.core}"
