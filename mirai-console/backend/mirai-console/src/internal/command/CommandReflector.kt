@@ -352,8 +352,10 @@ internal class CommandReflector(
         val fromMemberProperties = command::class.declaredMemberProperties
             .asSequence()
             .filter { it.isSubCommandProperty() }
-            .filterIsInstance(CompositeCommand::class.java)
+            .map { it.getter.call(command) }
+            .filter { it is CompositeCommand }
             .flatMap { property ->
+                property as CompositeCommand
                 property.overloadImpls
             }.toList()
 

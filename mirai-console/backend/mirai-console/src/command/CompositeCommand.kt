@@ -106,9 +106,7 @@ public abstract class CompositeCommand(
 
     @ExperimentalCommandDescriptors
     public final override val overloads: List<@JvmWildcard CommandSignatureFromKFunction> by lazy {
-        reflector.findSubCommands().also {
-            reflector.validate(it)
-        }
+        overloadImpls
     }
 
     /**

@@ -41,20 +41,14 @@ class TestParentCompositeCommand : CompositeCommand(
     "testParentComposite", "tsPC"
 ) {
 
-    class ChildCompositeCommand1 : CompositeCommand(
-        owner,
-        "testChildComposite1", "tsCC1"
-    ) {
+    class ChildCompositeCommand1 : CompositeCommand(owner, "useless") {
         @SubCommand
         fun foo(seconds: Int) {
             Testing.ok(seconds)
         }
     }
 
-    class ChildCompositeCommand2 : CompositeCommand(
-        owner,
-        "testChildComposite2", "tsCC2"
-    ) {
+    class ChildCompositeCommand2 : CompositeCommand(owner, "useless") {
         @SubCommand
         fun bar(seconds: Int) {
             Testing.ok(seconds)
@@ -549,24 +543,13 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     fun `parent composite command executing`() = runBlocking {
         parentCompositeCommand.withRegistration {
             assertEquals(1, withTesting {
-                assertSuccess(
-                    parentCompositeCommand.execute(sender, "parentFoo 1")
-                )
+                assertSuccess(parentCompositeCommand.execute(sender, "parentFoo 1"))
             })
             assertEquals(1, withTesting {
-                assertSuccess(
-                    parentCompositeCommand.execute(sender, "parentBar 1")
-                )
+                assertSuccess(parentCompositeCommand.execute(sender, "parentBar 1"))
             })
-            assertEquals(1, withTesting {
-                assertSuccess(
-                    parentCompositeCommand.execute(sender, "foo 1")
-                )
-            })
-            assertEquals(1, withTesting {
-                assertSuccess(
-                    parentCompositeCommand.execute(sender, "foo 1")
-                )
+            assertEquals(2, withTesting {
+                assertSuccess(parentCompositeCommand.execute(sender, "foo 2"))
             })
             assertEquals(2, withTesting {
                 assertSuccess(parentCompositeCommand.execute(sender, "bar 2"))
