@@ -75,4 +75,9 @@ public interface GroupInfo {
      * 等级头衔
      */
     public val rankTitles: Map<Int, String>
+
+    /**
+     * 等级头衔是否显示
+     */
+    public val rankShow: Boolean
 }

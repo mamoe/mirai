@@ -623,7 +623,9 @@ public abstract interface class net/mamoe/mirai/contact/UserOrBot : net/mamoe/mi
 }
 
 public abstract interface class net/mamoe/mirai/contact/active/Active {
+	public abstract fun getRankShow ()Z
 	public abstract fun getRankTitles ()Ljava/util/Map;
+	public abstract fun setRankShow (Z)V
 	public abstract fun setRankTitles (Ljava/util/Map;)V
 }
 
@@ -1554,6 +1556,7 @@ public abstract interface class net/mamoe/mirai/data/GroupInfo {
 	public abstract fun getMuteAll ()Z
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun getOwner ()J
+	public abstract fun getRankShow ()Z
 	public abstract fun getRankTitles ()Ljava/util/Map;
 	public abstract fun getUin ()J
 }

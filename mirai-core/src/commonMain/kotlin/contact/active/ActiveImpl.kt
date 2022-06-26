@@ -24,17 +24,33 @@ internal class ActiveImpl(
     groupInfo: GroupInfo
 ) : Active {
 
-    override var rankTitles: Map<Int, String> = groupInfo.rankTitles
+    private var _rankTitles: Map<Int, String> = groupInfo.rankTitles
+
+    private var _rankShow: Boolean = groupInfo.rankShow
+
+    private suspend fun rankFlush() {
+        val info = group.bot.getGroupLevelInfo(groupCode = group.groupCode)
+        _rankTitles = info.levelName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
+        _rankShow = info.levelFlag == 1
+
+    }
+
+    override var rankTitles: Map<Int, String>
+        get() = _rankTitles
         set(newValue) {
-            if (newValue.isNotEmpty()) {
-                group.checkBotPermission(MemberPermission.ADMINISTRATOR)
-            }
+            group.checkBotPermission(MemberPermission.ADMINISTRATOR)
             group.launch {
-                if (newValue.isNotEmpty()) {
-                    group.bot.setGroupLevelInfo(groupCode = group.groupCode, titles = newValue)
-                }
-                field = group.bot.getGroupLevelInfo(groupCode = group.groupCode).levelName
-                    .mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
+                group.bot.setGroupLevelInfo(groupCode = group.groupCode, titles = newValue)
+                rankFlush()
+            }
+        }
+
+    override var rankShow: Boolean = groupInfo.rankShow
+        set(newValue) {
+            group.checkBotPermission(MemberPermission.ADMINISTRATOR)
+            group.launch {
+                group.bot.setGroupLevelInfo(groupCode = group.groupCode, show = newValue)
+                rankFlush()
             }
         }
 }

@@ -17,12 +17,20 @@ public interface Active {
     /**
      * 等级头衔列表，key 是 等级，value 是 头衔
      *
-     * set 时传入的等级头衔 将会异步发送给api，并刷新等级头衔。
-     *
-     * 如果传入 map 为空，则相当于刷新等级头衔缓存
+     * set 时传入的等级头衔 将会异步发送给api，并刷新等级头衔信息。
      *
      * @see Member.rank
      */
     @MiraiExperimentalApi
     public var rankTitles: Map<Int, String>
+
+    /**
+     * 是否在群聊中显示等级头衔
+     *
+     * set 时传入的等级头衔显示设置 将会异步发送给api，并刷新等级头衔信息。
+     *
+     * @see Member.rank
+     */
+    @MiraiExperimentalApi
+    public var rankShow: Boolean
 }

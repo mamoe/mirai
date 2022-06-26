@@ -28,7 +28,8 @@ internal data class GroupInfoImpl(
     override val confessTalk: Boolean,
     override val muteAll: Boolean,
     override val botMuteTimestamp: Int,
-    override val rankTitles: Map<Int, String>
+    override val rankTitles: Map<Int, String>,
+    override val rankShow: Boolean
 ) : GroupInfo, Packet, Packet.NoLog {
     constructor(stTroopNum: StTroopNum, stGroupRankInfo: StGroupRankInfo?) : this(
         uin = stTroopNum.groupUin,
@@ -43,12 +44,13 @@ internal data class GroupInfoImpl(
         muteAll = stTroopNum.dwShutUpTimestamp != 0L,
         botMuteTimestamp = stTroopNum.dwMyShutUpTimestamp?.toInt() ?: 0,
         rankTitles = buildMap {
-            for (pair in stGroupRankInfo?.vecRankMapNew.orEmpty()) {
+            for (pair in stGroupRankInfo?.vecRankMap.orEmpty()) {
                 val level = pair.dwLevel?.toInt() ?: continue
                 val title = pair.rank.orEmpty()
 
                 put(level, title)
             }
-        }
+        },
+        rankShow = stGroupRankInfo?.groupRankUserFlag?.toInt() == 1
     )
 }
