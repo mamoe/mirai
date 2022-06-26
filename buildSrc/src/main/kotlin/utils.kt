@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+import groovy.util.Node
+import groovy.util.NodeList
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.MessageDigest
@@ -59,4 +61,15 @@ fun InputStream.md5(): ByteArray {
         }
     }
     return digest.digest()
+}
+
+
+
+
+fun Node.getSingleChild(name: String): Node {
+    return (this.get(name) as NodeList).single() as Node
+}
+
+fun Node.childrenNodes(): List<Node> {
+    return this.children().filterIsInstance<Node>()
 }

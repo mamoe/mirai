@@ -15,6 +15,7 @@ plugins {
 
     id("kotlinx-atomicfu")
     id("me.him188.kotlin-jvm-blocking-bridge")
+//    id("me.him188.maven-central-publish")
     `maven-publish`
 }
 
@@ -94,22 +95,13 @@ if (tasks.findByName("androidMainClasses") != null) {
     tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
 }
 
-fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
-    implementation(dependencyNotation) {
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-common")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
-    }
-
-fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.api1(dependencyNotation: String) =
-    api(dependencyNotation) {
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-common")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm")
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
-    }
-
 configureMppPublishing()
+configureRelocationForCore()
+
+//mavenCentralPublish {
+//    artifactId = "mirai-core-utils"
+//    githubProject("mamoe", "mirai")
+//    developer("Mamoe Technologies", email = "support@mamoe.net", url = "https://github.com/mamoe")
+//    licenseFromGitHubProject("AGPLv3", "dev")
+//    publishPlatformArtifactsInRootModule = "jvm"
+//}
