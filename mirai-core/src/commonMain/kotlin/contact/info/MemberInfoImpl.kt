@@ -11,9 +11,11 @@ package net.mamoe.mirai.internal.contact.info
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopMemberInfo
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.orEmpty
 import net.mamoe.mirai.utils.currentTimeSeconds
 
 @Serializable
@@ -31,6 +33,8 @@ internal data class MemberInfoImpl(
     override val isOfficialBot: Boolean = false,
     override val rank: Int = 1,
     override val point: Int = 0,
+    override val honor: Set<GroupHonorType> = emptySet(),
+    override val active: Int = 0
 ) : MemberInfo {
     constructor(
         client: QQAndroidClient,
@@ -53,6 +57,37 @@ internal data class MemberInfoImpl(
         lastSpeakTimestamp = jceInfo.dwLastSpeakTime?.toInt() ?: 0,
         isOfficialBot = client.groupConfig.isOfficialRobot(jceInfo.memberUin),
         rank = jceInfo.dwMemberLevel?.toInt() ?: 1,
-        point = jceInfo.dwPoint?.toInt() ?: 0
+        point = jceInfo.dwPoint?.toInt() ?: 0,
+        honor = buildSet {
+            /**
+             * vecGroupHonor 的 结构是
+             * [
+             *     (type, value),
+             *     (type, value),
+             *     (type, value),
+             * ]
+             *  构成的 ByteArray
+             *  type = 8 时，表示群荣誉头衔标志
+             *  type = 16 时，表示群荣誉活跃度
+             */
+            val bytes = jceInfo.vecGroupHonor.orEmpty()
+            for (index in bytes.indices step 2) {
+                val type = bytes[index]
+                if (type.toInt() == 8) {
+                    val value = bytes.getOrNull(index) ?: break
+                    add(GroupHonorType.deserializeFromInt(value.toInt()))
+                }
+            }
+        },
+        active = jceInfo.vecGroupHonor?.let { bytes ->
+            for (index in bytes.indices step 2) {
+                val type = bytes[index]
+                if (type.toInt() == 16) {
+                    val value = bytes.getOrNull(index) ?: break
+                    return@let value.toInt()
+                }
+            }
+            null
+        } ?: 0
     )
 }

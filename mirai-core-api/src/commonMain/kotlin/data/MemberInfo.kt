@@ -50,4 +50,14 @@ public interface MemberInfo : UserInfo {
      * @see rank
      */
     public val point: Int
+
+    /**
+     * 群荣誉
+     */
+    public val honor: Set<GroupHonorType>
+
+    /**
+     * 活跃度
+     */
+    public val active: Int
 }

@@ -427,7 +427,9 @@ public abstract interface class net/mamoe/mirai/contact/GroupSettings {
 }
 
 public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai/contact/User {
+	public abstract fun getActive ()I
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
+	public abstract fun getHonor ()Ljava/util/Set;
 	public abstract fun getNameCard ()Ljava/lang/String;
 	public abstract fun getPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
 	public abstract fun getPoint ()I
@@ -1545,6 +1547,10 @@ public final class net/mamoe/mirai/data/GroupHonorListData$Talkative$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class net/mamoe/mirai/data/GroupHonorType$Companion {
+	public final fun deserializeFromInt (I)Lnet/mamoe/mirai/data/GroupHonorType;
+}
+
 public abstract interface class net/mamoe/mirai/data/GroupInfo {
 	public abstract fun getAllowAnonymousChat ()Z
 	public abstract fun getAllowMemberInvite ()Z
@@ -1562,7 +1568,9 @@ public abstract interface class net/mamoe/mirai/data/GroupInfo {
 }
 
 public abstract interface class net/mamoe/mirai/data/MemberInfo : net/mamoe/mirai/data/UserInfo {
+	public abstract fun getActive ()I
 	public fun getAnonymousId ()Ljava/lang/String;
+	public abstract fun getHonor ()Ljava/util/Set;
 	public abstract fun getJoinTimestamp ()I
 	public abstract fun getLastSpeakTimestamp ()I
 	public abstract fun getMuteTimestamp ()I

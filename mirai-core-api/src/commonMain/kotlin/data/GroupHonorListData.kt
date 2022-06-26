@@ -35,9 +35,9 @@ public enum class GroupHonorType(public val value: Int) {
     EXCLUSIVE(8),       // 特殊头衔
     MANAGE(9);          // 管理头衔
 
-    internal companion object {
+    public companion object {
         @JvmStatic
-        internal fun deserializeFromInt(value: Int): GroupHonorType = values().first { it.value == value }
+        public fun deserializeFromInt(value: Int): GroupHonorType = values().first { it.value == value }
     }
 }
 
