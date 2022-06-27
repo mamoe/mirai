@@ -9,27 +9,60 @@
 
 package net.mamoe.mirai.internal.contact.active
 
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.contact.active.Active
+import net.mamoe.mirai.contact.active.ActiveChart
+import net.mamoe.mirai.contact.active.ActiveRecord
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.getGroupLevelInfo
+import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.getRawGroupActiveData
+import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.getRawGroupLevelInfo
 import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.setGroupLevelInfo
+import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.toActiveChart
+import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.toActiveRecord
 import net.mamoe.mirai.internal.contact.groupCode
+import net.mamoe.mirai.internal.network.handler.logger
+import net.mamoe.mirai.internal.utils.subLogger
+import net.mamoe.mirai.utils.Either.Companion.onLeft
+import net.mamoe.mirai.utils.Either.Companion.onRight
+import net.mamoe.mirai.utils.Either.Companion.rightOrNull
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.stream
+import net.mamoe.mirai.utils.warning
+import java.util.stream.Stream
 
 internal class ActiveImpl(
     private val group: GroupImpl,
-    groupInfo: GroupInfo
+    groupInfo: GroupInfo,
 ) : Active {
+
+    private val logger: MiraiLogger by lazy {
+        group.bot.network.logger.subLogger("Group ${group.id}")
+    }
 
     private var _rankTitles: Map<Int, String> = groupInfo.rankTitles
 
     private var _rankShow: Boolean = groupInfo.rankShow
 
+    private suspend fun getGroupLevelInfo(): GroupLevelInfo? {
+        return group.bot.getRawGroupLevelInfo(groupCode = group.groupCode).onLeft {
+            if (logger.isEnabled) { // createException
+                logger.warning(
+                    { "Failed to load rank info for group ${group.id}" },
+                    it.createException()
+                )
+            }
+        }.rightOrNull
+    }
+
     private suspend fun rankFlush() {
-        val info = group.bot.getGroupLevelInfo(groupCode = group.groupCode)
+        val info = getGroupLevelInfo() ?: return
         _rankTitles = info.levelName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
         _rankShow = info.levelFlag == 1
 
@@ -40,8 +73,16 @@ internal class ActiveImpl(
         set(newValue) {
             group.checkBotPermission(MemberPermission.ADMINISTRATOR)
             group.launch {
-                group.bot.setGroupLevelInfo(groupCode = group.groupCode, titles = newValue)
-                rankFlush()
+                group.bot.setGroupLevelInfo(groupCode = group.groupCode, titles = newValue).onLeft {
+                    if (logger.isEnabled) { // createException
+                        logger.warning(
+                            { "Failed to set rank titles for group ${group.id}" },
+                            it.createException()
+                        )
+                    }
+                }.onRight {
+                    rankFlush()
+                }
             }
         }
 
@@ -49,8 +90,65 @@ internal class ActiveImpl(
         set(newValue) {
             group.checkBotPermission(MemberPermission.ADMINISTRATOR)
             group.launch {
-                group.bot.setGroupLevelInfo(groupCode = group.groupCode, show = newValue)
-                rankFlush()
+                group.bot.setGroupLevelInfo(groupCode = group.groupCode, show = newValue).onLeft {
+                    if (logger.isEnabled) { // createException
+                        logger.warning(
+                            { "Failed to set rank show for group ${group.id}" },
+                            it.createException()
+                        )
+                    }
+                }.onRight {
+                    rankFlush()
+                }
             }
         }
+
+    private suspend fun getGroupActiveData(page: Int?): GroupActiveData? {
+        return group.bot.getRawGroupActiveData(group.id, page).onLeft {
+            if (logger.isEnabled) { // createException
+                logger.warning(
+                    { "Failed to load active data for group ${group.id}" },
+                    it.createException()
+                )
+            }
+        }.rightOrNull
+    }
+
+    override fun asFlow(): Flow<ActiveRecord> {
+        return flow {
+            var page = 0
+            while (currentCoroutineContext().isActive) {
+                val result = getGroupActiveData(page = page) ?: break
+
+                result.info.mostAct?.let { emitAll(it.asFlow()) } ?: break
+
+                if (result.info.isEnd == 1) break
+                page++
+            }
+        }.map { it.toActiveRecord(group) }
+    }
+
+    override fun asStream(): Stream<ActiveRecord> {
+        return stream {
+            var page = 0
+            while (true) {
+                val result = runBlocking { getGroupActiveData(page = page) } ?: break
+
+                result.info.mostAct?.let { yieldAll(it) } ?: break
+
+                if (result.info.isEnd == 1) break
+                page++
+            }
+        }.map { it.toActiveRecord(group) }
+    }
+
+    override suspend fun getChart(): ActiveChart {
+        return getGroupActiveData(page = null)?.info?.toActiveChart() ?: ActiveChartImpl(
+            actives = emptyMap(),
+            sentences = emptyMap(),
+            members = emptyMap(),
+            join = emptyMap(),
+            exit = emptyMap()
+        )
+    }
 }

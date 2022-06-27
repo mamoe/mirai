@@ -9,8 +9,10 @@
 
 package net.mamoe.mirai.contact.active
 
+import kotlinx.coroutines.flow.Flow
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.contact.Member
+import java.util.stream.Stream
 
 public interface Active {
 
@@ -33,4 +35,19 @@ public interface Active {
      */
     @MiraiExperimentalApi
     public var rankShow: Boolean
+
+    /**
+     *
+     */
+    public fun asFlow(): Flow<ActiveRecord>
+
+    /**
+     *
+     */
+    public fun asStream(): Stream<ActiveRecord>
+
+    /**
+     *
+     */
+    public suspend fun getChart(): ActiveChart?
 }

@@ -625,10 +625,29 @@ public abstract interface class net/mamoe/mirai/contact/UserOrBot : net/mamoe/mi
 }
 
 public abstract interface class net/mamoe/mirai/contact/active/Active {
+	public abstract fun asFlow ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun asStream ()Ljava/util/stream/Stream;
+	public abstract fun getChart (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getRankShow ()Z
 	public abstract fun getRankTitles ()Ljava/util/Map;
 	public abstract fun setRankShow (Z)V
 	public abstract fun setRankTitles (Ljava/util/Map;)V
+}
+
+public abstract interface class net/mamoe/mirai/contact/active/ActiveChart {
+	public abstract fun getActives ()Ljava/util/Map;
+	public abstract fun getExit ()Ljava/util/Map;
+	public abstract fun getJoin ()Ljava/util/Map;
+	public abstract fun getMembers ()Ljava/util/Map;
+	public abstract fun getSentences ()Ljava/util/Map;
+}
+
+public abstract interface class net/mamoe/mirai/contact/active/ActiveRecord {
+	public abstract fun getContinuation ()I
+	public abstract fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
+	public abstract fun getSenderId ()J
+	public abstract fun getSenderName ()Ljava/lang/String;
+	public abstract fun getSentences ()I
 }
 
 public abstract interface class net/mamoe/mirai/contact/announcement/Announcement {

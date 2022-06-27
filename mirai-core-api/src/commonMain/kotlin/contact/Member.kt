@@ -89,7 +89,6 @@ public interface Member : User {
      */
     public val honor: Set<GroupHonorType>
 
-
     /**
      * 群荣誉等级. 取值为 0~100
      *
