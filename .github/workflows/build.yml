@@ -350,7 +350,7 @@ jobs:
         uses: pat-s/always-upload-cache@v3
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key: ${{ runner.os }}-vcpkg-binary-cache-${{ github.job	}}
+          key: ${{ runner.os }}-vcpkg-binary-cache-${{ github.job }}
           restore-keys: |
             ${{ runner.os }}-vcpkg-binary-cache-
 
@@ -386,7 +386,7 @@ jobs:
         name: Install OpenSSL & cURL on Windows
         run: |
           echo "set(VCPKG_BUILD_TYPE release)" | Out-File -FilePath "$env:VCPKG_INSTALLATION_ROOT\triplets\x64-windows.cmake" -Encoding utf8 -Append
-          vcpkg install openssl:x64-windows curl[core,openssl]:x64-windows
+          vcpkg install openssl:x64-windows curl[core,ssl]:x64-windows
           New-Item -Path $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\crypto.lib -ItemType SymbolicLink -Value $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\libcrypto.lib
           New-Item -Path $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\ssl.lib -ItemType SymbolicLink -Value $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\libssl.lib
           New-Item -Path $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\curl.lib -ItemType SymbolicLink -Value $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\libcurl.lib
