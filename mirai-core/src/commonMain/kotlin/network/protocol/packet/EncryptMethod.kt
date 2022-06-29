@@ -11,8 +11,7 @@ package net.mamoe.mirai.internal.network.protocol.packet
 
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.utils.crypto.ECDHKeyPair
-import net.mamoe.mirai.internal.utils.crypto.ECDHWithPublicKey
+import net.mamoe.mirai.internal.utils.crypto.OicqECDH
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 
@@ -62,26 +61,26 @@ internal class EncryptMethodSessionKeyLoginState3(override val sessionKey: ByteA
     override val currentLoginState: Int get() = 3
 }
 
-internal class EncryptMethodECDH135(override val ecdh: ECDHWithPublicKey) :
+internal class EncryptMethodECDH135(override val ecdh: OicqECDH) :
     EncryptMethodECDH {
     override val id: Int get() = 135
 }
 
-internal class EncryptMethodECDH7(override val ecdh: ECDHWithPublicKey) :
+internal class EncryptMethodECDH7(override val ecdh: OicqECDH) :
     EncryptMethodECDH {
     override val id: Int get() = 7 // 135
 }
 
 internal interface EncryptMethodECDH : EncryptMethod {
     companion object {
-        operator fun invoke(ecdh: ECDHWithPublicKey): EncryptMethodECDH {
-            return if (ecdh.keyPair === ECDHKeyPair.DefaultStub) {
+        operator fun invoke(ecdh: OicqECDH): EncryptMethodECDH {
+            return if (ecdh.fallbackMode) {
                 EncryptMethodECDH135(ecdh)
             } else EncryptMethodECDH7(ecdh)
         }
     }
 
-    val ecdh: ECDHWithPublicKey
+    val ecdh: OicqECDH
 
     override fun makeBody(client: QQAndroidClient, body: BytePacketBuilder.() -> Unit): ByteReadPacket = buildPacket {
         /* //new curve p-256
@@ -97,14 +96,8 @@ internal interface EncryptMethodECDH : EncryptMethod {
         writeFully(client.randomKey)
         writeShort(0x0131)
         writeShort(ecdh.version.toShort())// public key version
-        if (ecdh.keyPair === ECDHKeyPair.DefaultStub) {
-            writeShortLVByteArray(ECDHKeyPair.DefaultStub.defaultPublicKey)
-            encryptAndWrite(ECDHKeyPair.DefaultStub.defaultShareKey, body)
-        } else {
-            // for p-256, drop(26). // but not really sure.
-            writeShortLVByteArray(ecdh.keyPair.maskedPublicKey)
-
-            encryptAndWrite(ecdh.keyPair.maskedShareKey, body)
-        }
+        // for p-256, drop(26). // but not really sure.
+        writeShortLVByteArray(ecdh.publicKey)
+        encryptAndWrite(ecdh.initialQQShareKey, body)
     }
 }

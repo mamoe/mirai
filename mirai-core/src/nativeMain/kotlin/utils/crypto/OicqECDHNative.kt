@@ -9,5 +9,7 @@
 
 package net.mamoe.mirai.internal.utils.crypto
 
-
-internal actual fun ECDH.Companion.create(): ECDH<*, *> = OpenSslECDH()
+internal actual fun OicqECDHInitialKey.verify(sign: String): Boolean {
+    // FIXME
+    return true
+}
