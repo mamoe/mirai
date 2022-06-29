@@ -9,85 +9,19 @@
 
 package net.mamoe.mirai.internal.utils.crypto
 
-import net.mamoe.mirai.utils.decodeBase64
-import net.mamoe.mirai.utils.md5
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import java.security.KeyFactory
-import java.security.KeyPairGenerator
-import java.security.Security
-import java.security.Signature
-import java.security.spec.ECGenParameterSpec
-import java.security.spec.X509EncodedKeySpec
-import javax.crypto.KeyAgreement
 
-internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
-    actual companion object {
-
-        actual val isECDHAvailable: Boolean
-
-        init {
-            isECDHAvailable = kotlin.runCatching {
-                fun testECDH() {
-                    ECDHKeyPairImpl(
-                        KeyPairGenerator.getInstance("ECDH")
-                            .also { it.initialize(ECGenParameterSpec(curveName)) }
-                            .genKeyPair()).let {
-                        calculateShareKey(it.privateKey, it.publicKey)
-                    }
-                }
-
-                if (kotlin.runCatching { testECDH() }.isSuccess) {
-                    return@runCatching
-                }
-
-                if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
-                    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
-                }
-                Security.addProvider(BouncyCastleProvider())
-                testECDH()
-            }.onFailure {
-                it.printStackTrace()
-            }.isSuccess
+internal actual fun ECDH.Companion.create(): ECDH<*, *> =
+    kotlin.runCatching {
+        // try platform default EC/ECDH implementations first, which may have better performance
+        // note that they may not work properly but being created successfully
+        JceECDH().apply {
+            val keyPair = generateKeyPair()
+            calculateShareKey(keyPair.public, keyPair.private)
+            val encoded = exportPublicKey(keyPair.public)
+            importPublicKey(encoded)
         }
-
-        actual fun generateKeyPair(initialPublicKey: ECDHPublicKey): ECDHKeyPair {
-            if (!isECDHAvailable) {
-                return ECDHKeyPair.DefaultStub
-            }
-            return ECDHKeyPairImpl(
-                KeyPairGenerator.getInstance("ECDH")
-                    .also { it.initialize(ECGenParameterSpec(curveName)) }
-                    .genKeyPair(), initialPublicKey)
-        }
-
-        actual fun verifyPublicKey(version: Int, publicKey: String, publicKeySign: String): Boolean {
-            val arrayForVerify = "305$version$publicKey".toByteArray()
-            val signInstance = Signature.getInstance("SHA256WithRSA")
-            signInstance.initVerify(publicKeyForVerify)
-            signInstance.update(arrayForVerify)
-            return signInstance.verify(publicKeySign.decodeBase64())
-        }
-
-        actual fun calculateShareKey(
-            privateKey: ECDHPrivateKey,
-            publicKey: ECDHPublicKey,
-        ): ByteArray {
-            val instance = KeyAgreement.getInstance("ECDH", "BC")
-            instance.init(privateKey)
-            instance.doPhase(publicKey, true)
-            return instance.generateSecret().copyOf(16).md5()
-        }
-
-        actual fun constructPublicKey(key: ByteArray): ECDHPublicKey {
-            return KeyFactory.getInstance("EC", "BC").generatePublic(X509EncodedKeySpec(key))
-        }
+    }.getOrElse {
+        // fallback to BouncyCastle
+        JceECDHWithProvider(BouncyCastleProvider())
     }
-
-    actual fun calculateShareKeyByPeerPublicKey(peerPublicKey: ECDHPublicKey): ByteArray {
-        return calculateShareKey(keyPair.privateKey, peerPublicKey)
-    }
-
-    actual override fun toString(): String {
-        return "ECDH(keyPair=$keyPair)"
-    }
-}

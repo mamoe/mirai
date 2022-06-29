@@ -19,25 +19,27 @@ internal class ECDHTest : AbstractTest() {
 
     @Test
     fun `can generate key pair`() {
-        val alice = ECDH.generateKeyPair()
-        val bob = ECDH.generateKeyPair()
+        val alice = ECDH.Instance.generateKeyPair()
+        val bob = ECDH.Instance.generateKeyPair()
 
-        val aliceSecret = ECDH.calculateShareKey(alice.privateKey, bob.publicKey)
-        val bobSecret = ECDH.calculateShareKey(bob.privateKey, alice.publicKey)
+        val aliceSecret = ECDH.Instance.calculateShareKey(bob.public, alice.private)
+        val bobSecret = ECDH.Instance.calculateShareKey(alice.public, bob.private)
 
         println(aliceSecret.toUHexString())
         assertContentEquals(aliceSecret, bobSecret)
     }
 
     @Test
-    fun `can get masked keys`() {
-        val alice = ECDH.generateKeyPair()
+    fun `can export and import public keys`() {
+        val alice = ECDH.Instance.generateKeyPair()
 
         println(alice)
-        val maskedPublicKey = alice.maskedPublicKey
-        println(maskedPublicKey.toUHexString())
-        assertEquals(0x04, maskedPublicKey.first())
-        println(alice.maskedShareKey.toUHexString())
+        val publicKey = ECDH.Instance.exportPublicKey(alice.public)
+        println(publicKey.toUHexString())
+        assertEquals(0x04, publicKey.first())
+
+        val importedAlicePubKey = ECDH.Instance.importPublicKey(publicKey)
+        assertEquals(alice.public, importedAlicePubKey)
     }
 
     /*

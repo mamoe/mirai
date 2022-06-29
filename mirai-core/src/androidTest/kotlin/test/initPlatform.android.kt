@@ -10,22 +10,11 @@
 package net.mamoe.mirai.internal.test
 
 import net.mamoe.mirai.utils.MiraiLogger
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import java.security.Security
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
 internal actual fun initPlatform() {
-    init
-}
 
-private val init: Unit by lazy {
-    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
-    }
-    Security.addProvider(BouncyCastleProvider())
-
-    Unit
 }
 
 internal actual class PlatformInitializationTest : AbstractTest() {
