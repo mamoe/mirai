@@ -389,6 +389,9 @@ public abstract class net/mamoe/mirai/console/command/CompositeCommand : net/mam
 	public fun getUsage ()Ljava/lang/String;
 }
 
+protected abstract interface annotation class net/mamoe/mirai/console/command/CompositeCommand$ChildCommand : java/lang/annotation/Annotation {
+}
+
 protected abstract interface annotation class net/mamoe/mirai/console/command/CompositeCommand$Description : java/lang/annotation/Annotation {
 	public abstract fun value ()Ljava/lang/String;
 }
