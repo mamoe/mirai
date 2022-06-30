@@ -248,9 +248,9 @@ Kotlin 展示。
 
 #### 子指令
 
-用 `@SubCommand` 标注的函数就是子指令。子指令将隶属于其主指令。注册于主指令 `main` 的名称为 `child`
-的指令在执行时需要使用 `/main child`，其中 `/` 表示指令前缀（如果需要）。`/main child arg1 arg2`
-中的 `arg1` 和 `arg2` 则表示传递给子指令的第一个和第二个参数。
+用 `@SubCommand` 标注的函数就是子指令。子指令将隶属于其主指令。定义于主指令 `main` 的名称为 `child`
+的子指令在执行时需要使用 `/main child`，其中 `/` 表示指令前缀（如果需要）。`/main child arg1 arg2`
+中的 `arg1` 和 `arg2` 则分别表示传递给子指令的第一个和第二个参数。
 
 子指令可以拥有多个名称，即 `@SubCommand("child1", "child2")` 可以由 `/main child1`
 或 `/main child2` 执行。
@@ -265,14 +265,14 @@ Kotlin 展示。
 #### 子指令参数
 
 子指令的第一个参数（在 Kotlin 也可以是接收者（`receiver`））可以是 `CommandContext`
-或 `CommandSender`，用来获取指令执行环境或发送人。与 `RawCommand`
+或 `CommandSender`，分别用来获取指令执行环境或发送人。与 `RawCommand`
 相同，如果需要使用原消息链，则使用 `CommandContext`，否则使用 `CommandSender` 的可以让实现更简单。
 
 在这个参数以外的就是是子指令的值参数。
-值参数将会对应消息链。例如 `@SubCommand fun foo(context: CommandContext, arg: String)`
-将会对应 /comp foo
+值参数将会对应消息链。例如定义于名称为 `comp` 的 `CompositeCommand` 中的子指令 `@SubCommand fun foo(context: CommandContext, arg1: String, arg2: Int)`
+在由 `/comp foo str 1` 执行时，`str` 将会传递给 `arg1`；`1` 将会传递给 `arg2`。将会在下文详细解释此内容。
 
-在 Kotlin，子指令既可以是 `suspend` 也可以不是。
+在 Kotlin，子指令既可以是 `suspend` 也可以不是。子指令在不是挂起函数时可以使用阻塞 IO（如 `File.readText`），因为子指令会在 IO 线程执行。
 
 #### 定义参数
 
