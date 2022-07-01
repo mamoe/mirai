@@ -216,7 +216,6 @@ internal class GroupImpl constructor(
                 picWidth = imageInfo.width,
                 picHeight = imageInfo.height,
                 picType = getIdByImageType(imageInfo.imageType),
-                originalPic = 1
             ), 5000, 2
         )
 

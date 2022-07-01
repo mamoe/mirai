@@ -76,7 +76,6 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
                     picWidth = width,
                     picHeight = height,
                     picType = getIdByImageType(type),
-                    originalPic = 1
                 )
             )
 
@@ -107,7 +106,8 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
                         imgHeight = height,
                         imgType = getIdByImageType(type),
                         fileName = "${md5.toUHexString("")}.${type.formatName}",
-                        imgOriginal = true,
+                        //For gif, using not original
+                        imgOriginal = (type != ImageType.GIF),
                         buildVer = bot.client.buildVer,
                     ),
                 )
@@ -138,7 +138,6 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
                     picWidth = width,
                     picHeight = height,
                     picType = getIdByImageType(type),
-                    originalPic = 1
                 )
             )
 

@@ -45,9 +45,8 @@ internal class ImgStore {
             filename: String = getRandomString(16) + ".gif", // make server happier
             srcTerm: Int = 5,
             platformType: Int = 9,
-            buType: Int = 2,
+            buType: Int = 1, // group 1, other 2
             appPicType: Int = 1006,
-            originalPic: Int = 1
         ) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
                 Cmd0x388.ReqBody.serializer(),
@@ -69,7 +68,12 @@ internal class ImgStore {
                             buildVer = client.buildVer,
                             srcTerm = srcTerm,
                             platformType = platformType,
-                            originalPic = originalPic,
+                            //For gif, not original there
+                            originalPic = if (picType == 2000) {
+                                0
+                            } else {
+                                1
+                            },
                             buType = buType
                         )
                     )
