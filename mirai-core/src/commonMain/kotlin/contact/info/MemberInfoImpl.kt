@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal.contact.info
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.data.GroupHonorType
+import net.mamoe.mirai.contact.active.GroupHonorFlag
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopMemberInfo
@@ -33,8 +33,8 @@ internal data class MemberInfoImpl(
     override val isOfficialBot: Boolean = false,
     override val rank: Int = 1,
     override val point: Int = 0,
-    override val honor: Set<GroupHonorType> = emptySet(),
-    override val active: Int = 0
+    override val honor: Set<GroupHonorFlag> = emptySet(),
+    override val temperature: Int = 0
 ) : MemberInfo {
     constructor(
         client: QQAndroidClient,
@@ -75,11 +75,11 @@ internal data class MemberInfoImpl(
                 val type = bytes[index]
                 if (type.toInt() == 8) {
                     val value = bytes.getOrNull(index + 1) ?: break
-                    add(GroupHonorType.deserializeFromInt(value.toInt()))
+                    add(GroupHonorFlag.deserializeFromInt(value.toInt()) ?: continue)
                 }
             }
         },
-        active = jceInfo.vecGroupHonor?.let { bytes ->
+        temperature = jceInfo.vecGroupHonor?.let { bytes ->
             for (index in bytes.indices step 2) {
                 val type = bytes[index]
                 if (type.toInt() == 16) {

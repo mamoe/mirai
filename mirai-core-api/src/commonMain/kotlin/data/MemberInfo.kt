@@ -11,6 +11,7 @@ package net.mamoe.mirai.data
 
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.active.GroupHonorFlag
 
 @LowLevelApi
 public interface MemberInfo : UserInfo {
@@ -52,12 +53,12 @@ public interface MemberInfo : UserInfo {
     public val point: Int
 
     /**
-     * 群荣誉
+     * 群荣誉标志
      */
-    public val honor: Set<GroupHonorType>
+    public val honor: Set<GroupHonorFlag>
 
     /**
      * 活跃度
      */
-    public val active: Int
+    public val temperature: Int
 }

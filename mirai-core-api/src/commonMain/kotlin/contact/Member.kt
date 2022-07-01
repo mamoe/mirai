@@ -14,7 +14,7 @@ package net.mamoe.mirai.contact
 
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.data.GroupHonorType
+import net.mamoe.mirai.contact.active.GroupHonorFlag
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.MemberNudge
@@ -87,14 +87,14 @@ public interface Member : User {
     /**
      * 群荣誉标识.
      */
-    public val honor: Set<GroupHonorType>
+    public val honor: Set<GroupHonorFlag>
 
     /**
      * 群荣誉等级. 取值为 0~100
      *
      * 这个等级是在 手机端 群荣誉功能中显示的等级
      */
-    public val active: Int
+    public val temperature: Int
 
     /**
      * 禁言这个群成员 [durationSeconds] 秒, 在机器人无权限操作时抛出 [PermissionDeniedException].

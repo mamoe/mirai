@@ -9,6 +9,9 @@
 
 package net.mamoe.mirai.contact.active
 
+/**
+ * 活跃度数据图表
+ */
 public interface ActiveChart {
     public val actives: Map<String, Int>
     public val sentences: Map<String, Int>

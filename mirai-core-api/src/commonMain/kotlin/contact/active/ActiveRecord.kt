@@ -11,10 +11,32 @@ package net.mamoe.mirai.contact.active
 
 import net.mamoe.mirai.contact.NormalMember
 
+/**
+ * 活跃数据记录
+ */
 public interface ActiveRecord {
+    /**
+     * 发言者名称
+     */
     public val senderName: String
+
+    /**
+     * 发言者 ID
+     */
     public val senderId: Long
+
+    /**
+     * 发言者的群员实例
+     */
     public val sender: NormalMember?
+
+    /**
+     * 活跃连续天数
+     */
     public val continuation: Int
+
+    /**
+     * 发言条数
+     */
     public val sentences: Int
 }
