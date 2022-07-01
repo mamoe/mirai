@@ -95,7 +95,8 @@ internal sealed class AbstractUser(
                     imgHeight = imageInfo.height,
                     imgType = getIdByImageType(imageInfo.imageType),
                     fileName = "${resource.md5.toUHexString("")}.${resource.formatName}",
-                    imgOriginal = true,
+                    //For gif, using not original
+                    imgOriginal = (imageInfo.imageType != ImageType.GIF),
                     buildVer = bot.client.buildVer,
                 ),
             ), 5000, 2
@@ -156,6 +157,7 @@ internal sealed class AbstractUser(
                             picWidth = imageInfo.width,
                             picHeight = imageInfo.height,
                             picType = getIdByImageType(imageInfo.imageType),
+                            buType = 2, // not group
                         )
                     )
 
