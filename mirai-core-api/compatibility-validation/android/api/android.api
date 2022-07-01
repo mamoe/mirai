@@ -427,7 +427,6 @@ public abstract interface class net/mamoe/mirai/contact/GroupSettings {
 }
 
 public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai/contact/User {
-	public abstract fun getActive ()I
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 	public abstract fun getHonor ()Ljava/util/Set;
 	public abstract fun getNameCard ()Ljava/lang/String;
@@ -435,6 +434,7 @@ public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai
 	public abstract fun getPoint ()I
 	public abstract fun getRank ()I
 	public abstract fun getSpecialTitle ()Ljava/lang/String;
+	public abstract fun getTemperature ()I
 	public fun mute (I)V
 	public abstract fun mute (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
@@ -648,6 +648,22 @@ public abstract interface class net/mamoe/mirai/contact/active/ActiveRecord {
 	public abstract fun getSenderId ()J
 	public abstract fun getSenderName ()Ljava/lang/String;
 	public abstract fun getSentences ()I
+}
+
+public final class net/mamoe/mirai/contact/active/GroupHonorFlag : java/lang/Enum {
+	public static final field Companion Lnet/mamoe/mirai/contact/active/GroupHonorFlag$Companion;
+	public static final field EMOTION Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
+	public static final field LEGEND Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
+	public static final field PERFORMER Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
+	public static final field STRONG_NEWBIE Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
+	public static final field TALKATIVE Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
+	public static final fun deserializeFromInt (I)Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
+	public static fun values ()[Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
+}
+
+public final class net/mamoe/mirai/contact/active/GroupHonorFlag$Companion {
+	public final fun deserializeFromInt (I)Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
 }
 
 public abstract interface class net/mamoe/mirai/contact/announcement/Announcement {
@@ -1566,10 +1582,6 @@ public final class net/mamoe/mirai/data/GroupHonorListData$Talkative$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class net/mamoe/mirai/data/GroupHonorType$Companion {
-	public final fun deserializeFromInt (I)Lnet/mamoe/mirai/data/GroupHonorType;
-}
-
 public abstract interface class net/mamoe/mirai/data/GroupInfo {
 	public abstract fun getAllowAnonymousChat ()Z
 	public abstract fun getAllowMemberInvite ()Z
@@ -1587,7 +1599,6 @@ public abstract interface class net/mamoe/mirai/data/GroupInfo {
 }
 
 public abstract interface class net/mamoe/mirai/data/MemberInfo : net/mamoe/mirai/data/UserInfo {
-	public abstract fun getActive ()I
 	public fun getAnonymousId ()Ljava/lang/String;
 	public abstract fun getHonor ()Ljava/util/Set;
 	public abstract fun getJoinTimestamp ()I
@@ -1598,6 +1609,7 @@ public abstract interface class net/mamoe/mirai/data/MemberInfo : net/mamoe/mira
 	public abstract fun getPoint ()I
 	public abstract fun getRank ()I
 	public abstract fun getSpecialTitle ()Ljava/lang/String;
+	public abstract fun getTemperature ()I
 	public abstract fun isOfficialBot ()Z
 }
 
