@@ -17,7 +17,8 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 // mirai-deps-test DEPENDS ON THE PATH.
 
 object Versions {
-    val project = System.getenv("mirai.build.project.version")
+    val project = System.getenv("mirai.build.project.version")?.takeIf { it.isNotBlank() }
+        ?: System.getProperty("mirai.build.project.version")?.takeIf { it.isNotBlank() }
         ?: /*PROJECT_VERSION_START*/"2.13.0"/*PROJECT_VERSION_END*/
 
     val core = project

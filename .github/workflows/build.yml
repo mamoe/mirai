@@ -1,6 +1,15 @@
 name: Build
 
-on: [ push, pull_request ]
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**/README*.md'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**/README*.md'
 
 jobs:
   build-mirai-jvm:
@@ -13,7 +22,7 @@ jobs:
           - windows-2022
           - macos-12
     env:
-      gradleArgs: --scan "-Dmirai.target=jvm;android;!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8"
+      gradleArgs: --scan "-Dmirai.target=jvm;android;!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx6000m -Dfile.encoding=UTF-8"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
@@ -37,7 +46,7 @@ jobs:
       - if: ${{ env.isWindows == 'true' }}
         name: Setup Memory Environment on Windows
         run: >
-          wmic pagefileset where name="D:\\pagefile.sys" set InitialSize=1024,MaximumSize=9216 &
+          wmic pagefileset where name="D:\\pagefile.sys" set InitialSize=1024,MaximumSize=18432 &
           net stop mongodb
         shell: cmd
         continue-on-error: true
@@ -233,6 +242,7 @@ jobs:
         os:
           - macos-12
     env:
+      enableLocalPublishingTest: 'false'
       gradleArgs: --scan
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
@@ -277,11 +287,21 @@ jobs:
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
+      - run: >
+          ./gradlew updateSnapshotVersion ${{ env.gradleArgs }}
+        env:
+          MIRAI_IS_SNAPSHOTS_PUBLISHING: true
+          SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
+          SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
+          SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          CURRENT_BRANCH_NAME: dev # always use -dev for now
+
       - name: "Assemble"
         run: ./gradlew assemble ${{ env.gradleArgs }}
 
       - name: Publish Local Artifacts
-        run: ./gradlew :mirai-deps-test:publishMiraiLocalArtifacts ${{ env.gradleArgs }}
+        if: ${{ env.enableLocalPublishingTest == 'true' }}
+        run: ./gradlew :mirai-deps-test:publishMiraiArtifactsToMavenLocal ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test"
 
       - name: "Check"
         run: ./gradlew check ${{ env.gradleArgs }}
@@ -290,6 +310,15 @@ jobs:
         name: Ensure KDoc valid
         run: ./gradlew dokkaHtmlMultiModule
 
+      - name: Publish Snapshots
+        if: ${{ env.isMac == 'true' }}
+        run: ./gradlew publishAllPublicationsToMiraiRepoRepository ${{ env.gradleArgs }}
+        env:
+          MIRAI_IS_SNAPSHOTS_PUBLISHING: true
+          SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
+          SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
+          SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          CURRENT_BRANCH_NAME: dev
 
   build-mirai-core-native:
     name: "Native (${{ matrix.os }})"
@@ -317,6 +346,7 @@ jobs:
     env:
       # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
       # > Declaration annotated with '@OptionalExpectation' can only be used in common module sources
+      enableLocalPublishingTest: 'false'
       gradleArgs: --scan  "-Dmirai.target=jvm;${{ matrix.targetName }};!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
@@ -398,6 +428,15 @@ jobs:
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
+      - run: >
+          ./gradlew updateSnapshotVersion ${{ env.gradleArgs }}
+        env:
+          MIRAI_IS_SNAPSHOTS_PUBLISHING: true
+          SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
+          SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
+          SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          CURRENT_BRANCH_NAME: dev # always use -dev for now
+
       - name: "Test mirai-core-utils for ${{ matrix.os }}"
         run: ./gradlew :mirai-core-utils:${{ matrix.targetName }}Test ${{ env.gradleArgs }}
 
@@ -408,7 +447,41 @@ jobs:
         run: ./gradlew :mirai-core:${{ matrix.targetName }}Test ${{ env.gradleArgs }}
 
       - name: Publish Local Artifacts
-        run: ./gradlew :mirai-deps-test:publishMiraiLocalArtifacts ${{ env.gradleArgs }}
+        if: ${{ env.enableLocalPublishingTest == 'true' }}
+        run: ./gradlew :mirai-deps-test:publishMiraiArtifactsToMavenLocal ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test"
 
       - name: Check Publication
         run: ./gradlew :mirai-deps-test:check ${{ env.gradleArgs }}
+
+      # Publish native snapshots. Other artifacts are published in build-mirai-all
+
+      - name: Publish MingwX64 Snapshots
+        if: ${{ env.isWindows == 'true' }}
+        run: ./gradlew publishMingwX64PublicationToMiraiRepoRepository ${{ env.gradleArgs }}
+        env:
+          MIRAI_IS_SNAPSHOTS_PUBLISHING: true
+          SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
+          SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
+          SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          CURRENT_BRANCH_NAME: dev
+
+      - name: Publish LinuxX64 Snapshots
+        if: ${{ env.isUbuntu == 'true' }}
+        run: ./gradlew publishLinuxX64PublicationToMiraiRepoRepository ${{ env.gradleArgs }}
+        env:
+          MIRAI_IS_SNAPSHOTS_PUBLISHING: true
+          SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
+          SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
+          SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          CURRENT_BRANCH_NAME: dev
+
+      - name: Publish macOSX64 Snapshots
+        if: ${{ env.isMac == 'true' }}
+        run: ./gradlew publishMacosX64PublicationToMiraiRepoRepository ${{ env.gradleArgs }}
+        env:
+          MIRAI_IS_SNAPSHOTS_PUBLISHING: true
+          SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
+          SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
+          SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          CURRENT_BRANCH_NAME: dev
+
