@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.utils.crypto
 
-internal actual fun OicqECDHInitialKey.verify(sign: String): Boolean {
+internal actual fun QQEcdhInitialPublicKey.verify(sign: String): Boolean {
     // FIXME
     return true
 }

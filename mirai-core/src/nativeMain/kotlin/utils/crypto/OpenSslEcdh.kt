@@ -96,8 +96,8 @@ internal class OpenSslECPrivateKey private constructor(val bn: CPointer<BIGNUM>)
     }
 }
 
-internal class OpenSslECDH : ECDH<OpenSslECPublicKey, OpenSslECPrivateKey> {
-    override fun generateKeyPair(): ECDHKeyPair<OpenSslECPublicKey, OpenSslECPrivateKey> {
+internal class OpenSslEcdh : Ecdh<OpenSslECPublicKey, OpenSslECPrivateKey> {
+    override fun generateKeyPair(): EcdhKeyPair<OpenSslECPublicKey, OpenSslECPrivateKey> {
         val key: CPointer<EC_KEY> = EC_KEY_new_by_curve_name(curveId)
             ?: throw IllegalStateException("Failed to create key curve, $errno")
         try {
@@ -108,7 +108,7 @@ internal class OpenSslECDH : ECDH<OpenSslECPublicKey, OpenSslECPrivateKey> {
                 OpenSslECPublicKey.copyFrom(EC_KEY_get0_public_key(key) ?: error("Failed EC_key_get0_public_key"))
             val private =
                 OpenSslECPrivateKey.copyFrom(EC_KEY_get0_private_key(key) ?: error("Failed EC_KEY_get0_private_key"))
-            return ECDHKeyPair(public, private)
+            return EcdhKeyPair(public, private)
         } finally {
             EC_KEY_free(key)
         }

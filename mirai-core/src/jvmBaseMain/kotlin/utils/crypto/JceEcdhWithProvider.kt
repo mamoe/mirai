@@ -15,7 +15,7 @@ import java.security.KeyPairGenerator
 import java.security.Provider
 import javax.crypto.KeyAgreement
 
-internal class JceECDHWithProvider(val provider: Provider): JceECDH() {
+internal class JceEcdhWithProvider(val provider: Provider): JceEcdh() {
     override fun newECKeyPairGenerator() = KeyPairGenerator.getInstance("EC", provider)
     override fun newECKeyFactory() = KeyFactory.getInstance("EC", provider)
     override fun newECAlgorithmParameters() = AlgorithmParameters.getInstance("EC", provider)

@@ -19,31 +19,31 @@ private val defaultPublicKey =
 private val defaultQQShareKey = "c129edba736f4909ecc4ab8e010f46a3".hexToBytes()
 
 @Serializable
-internal data class OicqECDHInitialKey(val version: Int = 1, val keyStr: String, val expireTime: Long = 0) {
+internal data class QQEcdhInitialPublicKey(val version: Int = 1, val keyStr: String, val expireTime: Long = 0) {
     @Transient
-    internal val key = ECDH.Instance.importPublicKey(keyStr.hexToBytes())
+    internal val key = Ecdh.Instance.importPublicKey(keyStr.hexToBytes())
     companion object {
-        internal val default: OicqECDHInitialKey by lazy {
-            OicqECDHInitialKey(keyStr = "04EBCA94D733E399B2DB96EACDD3F69A8BB0F74224E2B44E3357812211D2E62EFBC91BB553098E25E33A799ADC7F76FEB208DA7C6522CDB0719A305180CC54A82E")
+        internal val default: QQEcdhInitialPublicKey by lazy {
+            QQEcdhInitialPublicKey(keyStr = "04EBCA94D733E399B2DB96EACDD3F69A8BB0F74224E2B44E3357812211D2E62EFBC91BB553098E25E33A799ADC7F76FEB208DA7C6522CDB0719A305180CC54A82E")
         }
     }
 }
 
-internal expect fun OicqECDHInitialKey.verify(sign: String): Boolean
+internal expect fun QQEcdhInitialPublicKey.verify(sign: String): Boolean
 
-internal data class OicqECDH(private val initialPublicKey: OicqECDHInitialKey = OicqECDHInitialKey.default) {
+internal data class QQEcdh(private val initialPublicKey: QQEcdhInitialPublicKey = QQEcdhInitialPublicKey.default) {
     val version: Int = initialPublicKey.version
     private val keyPair = try {
-        ECDH.Instance.generateKeyPair()
+        Ecdh.Instance.generateKeyPair()
     } catch (e:Throwable){
         null
     }
     val publicKey: ByteArray = keyPair?.let {
-        ECDH.Instance.exportPublicKey(it.public)
+        Ecdh.Instance.exportPublicKey(it.public)
     } ?: defaultPublicKey
 
     val initialQQShareKey: ByteArray = keyPair?.let {
-        ECDH.Instance.calculateShareKey(initialPublicKey.key, it.private).copyOf(16).md5()
+        Ecdh.Instance.calculateShareKey(initialPublicKey.key, it.private).copyOf(16).md5()
     } ?: defaultQQShareKey
 
     val fallbackMode : Boolean = keyPair == null
@@ -55,6 +55,6 @@ internal data class OicqECDH(private val initialPublicKey: OicqECDHInitialKey = 
         check (keyPair != null) {
             "cannot calculate QQShareKey in fallback mode"
         }
-        return ECDH.Instance.calculateShareKey(peerKey.cast(), keyPair.private).copyOf(16).md5()
+        return Ecdh.Instance.calculateShareKey(peerKey.cast(), keyPair.private).copyOf(16).md5()
     }
 }

@@ -10,4 +10,4 @@
 package net.mamoe.mirai.internal.utils.crypto
 
 
-internal actual fun ECDH.Companion.create(): ECDH<*, *> = OpenSslECDH()
+internal actual fun Ecdh.Companion.create(): Ecdh<*, *> = OpenSslEcdh()

@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal.network.protocol.packet
 
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.utils.crypto.OicqECDH
+import net.mamoe.mirai.internal.utils.crypto.QQEcdh
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 
@@ -61,26 +61,26 @@ internal class EncryptMethodSessionKeyLoginState3(override val sessionKey: ByteA
     override val currentLoginState: Int get() = 3
 }
 
-internal class EncryptMethodECDH135(override val ecdh: OicqECDH) :
-    EncryptMethodECDH {
+internal class EncryptMethodEcdh135(override val ecdh: QQEcdh) :
+    EncryptMethodEcdh {
     override val id: Int get() = 135
 }
 
-internal class EncryptMethodECDH7(override val ecdh: OicqECDH) :
-    EncryptMethodECDH {
+internal class EncryptMethodEcdh7(override val ecdh: QQEcdh) :
+    EncryptMethodEcdh {
     override val id: Int get() = 7 // 135
 }
 
-internal interface EncryptMethodECDH : EncryptMethod {
+internal interface EncryptMethodEcdh : EncryptMethod {
     companion object {
-        operator fun invoke(ecdh: OicqECDH): EncryptMethodECDH {
+        operator fun invoke(ecdh: QQEcdh): EncryptMethodEcdh {
             return if (ecdh.fallbackMode) {
-                EncryptMethodECDH135(ecdh)
-            } else EncryptMethodECDH7(ecdh)
+                EncryptMethodEcdh135(ecdh)
+            } else EncryptMethodEcdh7(ecdh)
         }
     }
 
-    val ecdh: OicqECDH
+    val ecdh: QQEcdh
 
     override fun makeBody(client: QQAndroidClient, body: BytePacketBuilder.() -> Unit): ByteReadPacket = buildPacket {
         /* //new curve p-256
