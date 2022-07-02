@@ -57,7 +57,16 @@ tasks.register("generateBuildConfig") {
     group = "mirai"
 
     doLast {
-        val text = """
+        generateBuildConfig()
+    }
+    tasks.getByName("testClasses").dependsOn(this)
+    tasks.getByName("compileTestKotlin").dependsOn(this)
+}
+
+generateBuildConfig() // somehow "generateBuildConfig" won't execute
+
+fun generateBuildConfig() {
+    val text = """
             package net.mamoe.mirai.deps.test
             
             /**
@@ -70,14 +79,10 @@ tasks.register("generateBuildConfig") {
                 const val kotlinVersion = "${Versions.kotlinCompiler}"
             }
         """.trimIndent() + "\n"
-        val file = project.projectDir.resolve("src/BuildConfig.kt")
-        if (!file.exists() || file.readText() != text) {
-            file.writeText(text)
-        }
+    val file = project.projectDir.resolve("test/BuildConfig.kt")
+    if (!file.exists() || file.readText() != text) {
+        file.writeText(text)
     }
-    tasks.getByName("assemble").dependsOn(this) // if src is empty, compileKotlin will be skipped.
-    tasks.getByName("compileKotlin").dependsOn(this)
-    tasks.getByName("compileTestKotlin").dependsOn(this)
 }
 
 tasks.register("publishMiraiLocalArtifacts", Exec::class) {

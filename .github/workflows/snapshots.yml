@@ -12,6 +12,9 @@ on:
 jobs:
   publish-mirai:
     runs-on: macos-12 # 14G memory
+    env:
+      enableLocalPublishingTest: 'false'
+      gradleArgs: --scan  "-Dmirai.target=android,jvm;macosX64;!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dfile.encoding=UTF-8"
     steps:
       - uses: actions/checkout@v2
       - run: git submodule update --init --recursive
@@ -38,8 +41,8 @@ jobs:
         run: ./gradlew assemble --scan
 
       - name: Publish Local Artifacts
-        run: >
-          ./gradlew :mirai-deps-test:publishMiraiLocalArtifacts --scan
+        if: ${{ env.enableLocalPublishingTest == 'true' }}
+        run: ./gradlew :mirai-deps-test:publishMiraiArtifactsToMavenLocal ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test"
 
       - name: Check
         run: >
