@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - windows-2022
+#          - windows-2022
           - macos-12
     env:
       gradleArgs: --scan "-Dmirai.target=jvm;android;!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx6000m -Dfile.encoding=UTF-8"
