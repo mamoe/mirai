@@ -29,12 +29,15 @@ public interface FriendGroup {
 
     /**
      * 更改好友分组名称
+     * @return 返回 `false` 当分组不存在时
      * @throws IllegalStateException 当改名不成功时抛出
      */
     public suspend fun renameTo(newName: String): Boolean
 
     /**
      * 把一名好友移动至本分组内
+     * 当分组不存在时会自动移动该好友到 ID 为 0 的默认好友分组
+     * @return 返回 `false` 当分组不存在时
      * @throws IllegalStateException 当移动不成功时
      */
     public suspend fun moveIn(friend: Friend): Boolean
@@ -48,7 +51,6 @@ public interface FriendGroup {
 
     /**
      * 新建一个好友分组
-     * todo for review, 我不太清楚这个方法应该放哪, 要为这个写个factory吗
      * @throws IllegalStateException 当创建不成功时
      */
     public suspend fun new(name: String): FriendGroup
