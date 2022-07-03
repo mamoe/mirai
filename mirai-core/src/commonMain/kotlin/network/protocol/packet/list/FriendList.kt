@@ -362,6 +362,7 @@ internal class FriendList {
             return arr.sliceArray(index until arr.size)
         }
 
+        // 如果不成功会自动移动到id = 0的默认好友分组, result 还是会返回0
         class Response(
             // Success: result == 0x00
             val result: Byte,

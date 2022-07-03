@@ -40,14 +40,13 @@ internal class FriendGroupImpl constructor(
 
     override suspend fun moveIn(friend: Friend): Boolean {
         bot.network.sendAndExpect(FriendList.MoveGroupMemReqPack(bot.client, friend.id, id)).let {
-            println("Cannot move friend to $this, code=${it.result.toInt()}, errStr=${it.errStr}")
-            if (it.result.toInt() == 15) {
-                return false
-            }
             check(it.isSuccess) {
                 "Cannot move friend to $this, code=${it.result.toInt()}, errStr=${it.errStr}"
             }
         }
+        // todo for review 因为 MoveGroupMemReqPack 协议在测试里如果移动到不存在的分组，他会自动移动到 id = 0 的默认好友分组然后返回 result = 0
+        // 所以这里有必要写下面这一行确认吗?
+        if (friend.queryProfile().friendGroupId != this.id.toLong()) return false
         return true
     }
 
