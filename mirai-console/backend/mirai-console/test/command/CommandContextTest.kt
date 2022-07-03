@@ -36,39 +36,13 @@ internal class CommandContextTest : AbstractCommandTest() {
         companion object Key : AbstractMessageKey<MyMetadata>({ it.safeCast() })
     }
 
+
     ///////////////////////////////////////////////////////////////////////////
     // RawCommand
     ///////////////////////////////////////////////////////////////////////////
 
     @TestFactory
     fun `can execute with sender`(): List<DynamicTest> {
-        val containerCompositeCommand = object : CompositeCommand(owner, "test") {
-            @ChildCommand
-            val childFoo = object : CompositeCommand(owner, "useless") {
-                @SubCommand
-                fun CommandContext.childSub(arg: MessageChain) {
-                    Testing.ok(arg)
-                }
-            }
-            @SubCommand
-            fun CommandContext.containerSub(arg: MessageChain) {
-                Testing.ok(arg)
-            }
-        }
-        val jContainerCompositeCommand = object : JCompositeCommand(owner, "test") {
-            @ChildCommand
-            val childFoo = object : JCompositeCommand(owner, "useless") {
-                @SubCommand
-                fun childSub(context: CommandContext, arg: MessageChain) {
-                    Testing.ok(arg)
-                }
-            }
-            @SubCommand
-            fun containerSub(context: CommandContext, arg: MessageChain) {
-                Testing.ok(arg)
-            }
-        }
-
         return listOf(
             object : RawCommand(owner, "test") {
                 override suspend fun CommandContext.onCommand(args: MessageChain) {
@@ -87,8 +61,6 @@ internal class CommandContextTest : AbstractCommandTest() {
                     Testing.ok(arg)
                 }
             } to "/test sub foo",
-            containerCompositeCommand to "/test childSub foo",
-            containerCompositeCommand to "/test containerSub foo",
 
             object : JRawCommand(owner, "test") {
                 override fun onCommand(context: CommandContext, args: MessageChain) {
@@ -107,8 +79,6 @@ internal class CommandContextTest : AbstractCommandTest() {
                     Testing.ok(arg)
                 }
             } to "/test sub foo",
-            jContainerCompositeCommand to "/test childSub foo",
-            jContainerCompositeCommand to "/test containerSub foo",
         ).map { (instance, cmd) ->
             DynamicTest.dynamicTest(instance::class.supertypes.first().classifierAsKClass().simpleName) {
                 runBlocking {
@@ -127,33 +97,6 @@ internal class CommandContextTest : AbstractCommandTest() {
 
     @TestFactory
     fun `RawCommand can execute and get original chain`(): List<DynamicTest> {
-        val containerCompositeCommand = object : CompositeCommand(owner, "test") {
-            @ChildCommand
-            val childFoo = object : CompositeCommand(owner, "useless") {
-                @SubCommand
-                fun CommandContext.childSub(arg: MessageChain) {
-                    Testing.ok(originalMessage)
-                }
-            }
-            @SubCommand
-            fun CommandContext.containerSub(arg: MessageChain) {
-                Testing.ok(originalMessage)
-            }
-        }
-        val jContainerCompositeCommand = object : JCompositeCommand(owner, "test") {
-            @ChildCommand
-            val childFoo = object : JCompositeCommand(owner, "useless") {
-                @SubCommand
-                fun childSub(context: CommandContext, arg: MessageChain) {
-                    Testing.ok(context.originalMessage)
-                }
-            }
-            @SubCommand
-            fun containerSub(context: CommandContext, arg: MessageChain) {
-                Testing.ok(context.originalMessage)
-            }
-        }
-
         return listOf(
             object : RawCommand(owner, "test") {
                 override suspend fun CommandContext.onCommand(args: MessageChain) {
@@ -172,8 +115,6 @@ internal class CommandContextTest : AbstractCommandTest() {
                     Testing.ok(originalMessage)
                 }
             } to "/test sub foo",
-            containerCompositeCommand to "/test childSub foo",
-            containerCompositeCommand to "/test containerSub foo",
 
             object : JRawCommand(owner, "test") {
                 override fun onCommand(context: CommandContext, args: MessageChain) {
@@ -192,8 +133,6 @@ internal class CommandContextTest : AbstractCommandTest() {
                     Testing.ok(context.originalMessage)
                 }
             } to "/test sub foo",
-            jContainerCompositeCommand to "/test childSub foo",
-            jContainerCompositeCommand to "/test containerSub foo",
         ).map { (instance, cmd) ->
             DynamicTest.dynamicTest(instance::class.supertypes.first().classifierAsKClass().simpleName) {
                 runBlocking {
@@ -212,33 +151,6 @@ internal class CommandContextTest : AbstractCommandTest() {
 
     @TestFactory
     fun `can execute and get metadata`(): List<DynamicTest> {
-        val containerCompositeCommand = object : CompositeCommand(owner, "test") {
-            @ChildCommand
-            val childFoo = object : CompositeCommand(owner, "useless") {
-                @SubCommand
-                fun CommandContext.childSub(arg: MessageChain) {
-                    Testing.ok(originalMessage[MyMetadata])
-                }
-            }
-            @SubCommand
-            fun CommandContext.containerSub(arg: MessageChain) {
-                Testing.ok(originalMessage[MyMetadata])
-            }
-        }
-        val jContainerCompositeCommand = object : JCompositeCommand(owner, "test") {
-            @ChildCommand
-            val childFoo = object : JCompositeCommand(owner, "useless") {
-                @SubCommand
-                fun childSub(context: CommandContext, arg: MessageChain) {
-                    Testing.ok(context.originalMessage[MyMetadata])
-                }
-            }
-            @SubCommand
-            fun containerSub(context: CommandContext, arg: MessageChain) {
-                Testing.ok(context.originalMessage[MyMetadata])
-            }
-        }
-
         val metadata = MyMetadata()
         return listOf(
             object : RawCommand(owner, "test") {
@@ -258,8 +170,7 @@ internal class CommandContextTest : AbstractCommandTest() {
                     Testing.ok(originalMessage[MyMetadata])
                 }
             } to messageChainOf(PlainText("/test"), PlainText("sub"), metadata, PlainText("foo")),
-            containerCompositeCommand to messageChainOf(PlainText("/test"), PlainText("childSub"), metadata, PlainText("foo")),
-            containerCompositeCommand to messageChainOf(PlainText("/test"), PlainText("containerSub"), metadata, PlainText("foo")),
+
 
             object : JRawCommand(owner, "test") {
                 override fun onCommand(context: CommandContext, args: MessageChain) {
@@ -278,8 +189,6 @@ internal class CommandContextTest : AbstractCommandTest() {
                     Testing.ok(context.originalMessage[MyMetadata])
                 }
             } to messageChainOf(PlainText("/test"), PlainText("sub"), metadata, PlainText("foo")),
-            jContainerCompositeCommand to messageChainOf(PlainText("/test"), PlainText("childSub"), metadata, PlainText("foo")),
-            jContainerCompositeCommand to messageChainOf(PlainText("/test"), PlainText("containerSub"), metadata, PlainText("foo")),
         ).map { (instance, cmd) ->
             DynamicTest.dynamicTest(instance::class.supertypes.first().classifierAsKClass().simpleName) {
                 runBlocking {
@@ -298,33 +207,6 @@ internal class CommandContextTest : AbstractCommandTest() {
 
     @TestFactory
     fun `RawCommand can execute and get chain including metadata`(): List<DynamicTest> {
-        val containerCompositeCommand = object : CompositeCommand(owner, "test") {
-            @ChildCommand
-            val childFoo = object : CompositeCommand(owner, "useless") {
-                @SubCommand
-                fun CommandContext.childSub(arg: MessageChain) {
-                    Testing.ok(originalMessage)
-                }
-            }
-            @SubCommand
-            fun CommandContext.containerSub(arg: MessageChain) {
-                Testing.ok(originalMessage)
-            }
-        }
-        val jContainerCompositeCommand = object : JCompositeCommand(owner, "test") {
-            @ChildCommand
-            val childFoo = object : JCompositeCommand(owner, "useless") {
-                @SubCommand
-                fun childSub(context: CommandContext, arg: MessageChain) {
-                    Testing.ok(context.originalMessage)
-                }
-            }
-            @SubCommand
-            fun containerSub(context: CommandContext, arg: MessageChain) {
-                Testing.ok(context.originalMessage)
-            }
-        }
-
         val metadata = MyMetadata()
         return listOf(
             object : RawCommand(owner, "test") {
@@ -344,8 +226,6 @@ internal class CommandContextTest : AbstractCommandTest() {
                     Testing.ok(originalMessage)
                 }
             } to messageChainOf(PlainText("/test"), PlainText("sub"), metadata, PlainText("foo")),
-            containerCompositeCommand to messageChainOf(PlainText("/test"), PlainText("childSub"), metadata, PlainText("foo")),
-            containerCompositeCommand to messageChainOf(PlainText("/test"), PlainText("containerSub"), metadata, PlainText("foo")),
 
 
             object : JRawCommand(owner, "test") {
@@ -365,8 +245,6 @@ internal class CommandContextTest : AbstractCommandTest() {
                     Testing.ok(context.originalMessage)
                 }
             } to messageChainOf(PlainText("/test"), PlainText("sub"), metadata, PlainText("foo")),
-            jContainerCompositeCommand to messageChainOf(PlainText("/test"), PlainText("childSub"), metadata, PlainText("foo")),
-            jContainerCompositeCommand to messageChainOf(PlainText("/test"), PlainText("containerSub"), metadata, PlainText("foo")),
         ).map { (instance, cmd) ->
             DynamicTest.dynamicTest(instance::class.supertypes.first().classifierAsKClass().simpleName) {
                 runBlocking {

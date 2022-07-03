@@ -22,7 +22,6 @@ import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.FUNCTION
 import kotlin.annotation.AnnotationTarget.PROPERTY
 
-
 /**
  * 复合指令. 指令注册时候会通过反射构造指令解析器.
  *
@@ -118,6 +117,14 @@ public abstract class CompositeCommand(
     public override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
 
     /**
+     * 标记一个属性为子指令集合
+     */
+    @Retention(RUNTIME)
+    @Target(PROPERTY)
+    protected annotation class CombinedCommand(
+    )
+
+    /**
      * 标记一个函数为子指令, 当 [value] 为空时使用函数名.
      * @param value 子指令名
      */
@@ -125,14 +132,6 @@ public abstract class CompositeCommand(
     @Target(FUNCTION)
     protected annotation class SubCommand(
         @ResolveContext(COMMAND_NAME) vararg val value: String = [],
-    )
-
-    /**
-     * 标记一个属性为子指令集合
-     */
-    @Retention(RUNTIME)
-    @Target(PROPERTY)
-    protected annotation class ChildCommand(
     )
 
     /** 指令描述 */

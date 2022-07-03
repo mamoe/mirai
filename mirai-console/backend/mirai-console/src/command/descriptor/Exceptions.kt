@@ -42,6 +42,13 @@ public open class CommandDeclarationClashException(
     public val signatures: List<CommandSignature>,
 ) : CommandDeclarationException("Declaration clash for command '${command.primaryName}': \n${signatures.joinToString("\n")}")
 
+@ExperimentalCommandDescriptors
+public open class SubcommandDeclarationClashException(
+    public val owner: Any,
+    public val signatures: List<CommandSignature>,
+) : CommandDeclarationException("Declaration clash for owner '${owner::class.qualifiedName}': \n${signatures.joinToString("\n")}")
+
+
 public open class CommandDeclarationException : RuntimeException {
     public constructor() : super()
     public constructor(message: String?) : super(message)

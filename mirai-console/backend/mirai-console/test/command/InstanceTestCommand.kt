@@ -36,33 +36,37 @@ import java.time.temporal.TemporalAccessor
 import kotlin.reflect.KClass
 import kotlin.test.*
 
+
+
+
 class TestContainerCompositeCommand : CompositeCommand(
     owner,
     "testContainerComposite", "tsPC"
 ) {
 
-    class ChildCompositeCommand1 : CompositeCommand(owner, "useless") {
-        @SubCommand
-        fun foo(seconds: Int) {
+    class TopGroup : AbstractSubCommandGroup() {
+
+        class NestGroup : AbstractSubCommandGroup() {
+            @AnotherSubCommand
+            fun foo2(seconds: Int) {
+                Testing.ok(seconds)
+            }
+        }
+
+        @AnotherCombinedCommand
+        val provider: SubCommandGroup = NestGroup()
+
+        @AnotherSubCommand
+        fun foo1(seconds: Int) {
             Testing.ok(seconds)
         }
     }
 
-    class ChildCompositeCommand2 : CompositeCommand(owner, "useless") {
-        @SubCommand
-        fun bar(seconds: Int) {
-            Testing.ok(seconds)
-        }
-    }
-
-    @ChildCommand
-    val child1: ChildCompositeCommand1  = ChildCompositeCommand1()
-
-    @ChildCommand
-    val child2: ChildCompositeCommand2 = ChildCompositeCommand2()
+    @CombinedCommand
+    val provider: SubCommandGroup = TopGroup()
 
     @SubCommand
-    fun containerFoo(seconds: Int) {
+    fun foo0(seconds: Int) {
         Testing.ok(seconds)
     }
 
@@ -542,17 +546,14 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     @Test
     fun `container composite command executing`() = runBlocking {
         containerCompositeCommand.withRegistration {
-            assertEquals(1, withTesting {
-                assertSuccess(containerCompositeCommand.execute(sender, "containerFoo 1"))
+            assertEquals(0, withTesting {
+                assertSuccess(containerCompositeCommand.execute(sender, "foo0 0"))
             })
             assertEquals(1, withTesting {
-                assertSuccess(containerCompositeCommand.execute(sender, "containerBar 1"))
+                assertSuccess(containerCompositeCommand.execute(sender, "foo1 1"))
             })
             assertEquals(2, withTesting {
-                assertSuccess(containerCompositeCommand.execute(sender, "foo 2"))
-            })
-            assertEquals(2, withTesting {
-                assertSuccess(containerCompositeCommand.execute(sender, "bar 2"))
+                assertSuccess(containerCompositeCommand.execute(sender, "foo2 2"))
             })
         }
     }

@@ -72,6 +72,7 @@ public abstract class SimpleCommand(
         }
     }
 
+
     /**
      * 自动根据带有 [Handler] 注解的函数签名生成 [usage]. 也可以被覆盖.
      */

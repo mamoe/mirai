@@ -64,7 +64,7 @@ internal fun Any.flattenCommandComponents(): MessageChain = buildMessageChain {
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal object CompositeCommandSubCommandAnnotationResolver :
-    SubCommandAnnotationResolver {
+    SubCommandAnnotationResolver<Command> {
     override fun hasAnnotation(ownerCommand: Command, function: KFunction<*>) =
         function.hasAnnotation<CompositeCommand.SubCommand>()
 
@@ -80,14 +80,42 @@ internal object CompositeCommandSubCommandAnnotationResolver :
     override fun getDescription(ownerCommand: Command, function: KFunction<*>): String? =
         function.findAnnotation<CompositeCommand.Description>()?.value
 
-    override fun hasPropertyAnnotation(command: Command, property: KProperty<*>): Boolean =
-        property.hasAnnotation<CompositeCommand.ChildCommand>()
+    override fun hasPropertyAnnotation(command: Command, kProperty: KProperty<*>): Boolean =
+        kProperty.hasAnnotation<CompositeCommand.CombinedCommand>()
+
+}
+
+/*
+ * - 不看Function上的Annotation
+ * - 不从Function获取SubCommandNames
+ * - 看Property上的Annotation
+ */
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+internal object GroupedCommandSubCommandAnnotationResolver :
+    SubCommandAnnotationResolver<Any> {
+    override fun hasAnnotation(ownerCommand: Any, function: KFunction<*>) =
+        function.hasAnnotation<AbstractSubCommandGroup.AnotherSubCommand>()
+
+    override fun getSubCommandNames(ownerCommand: Any, function: KFunction<*>): Array<out String> {
+        val annotated = function.findAnnotation<AbstractSubCommandGroup.AnotherSubCommand>()!!.value
+        return if (annotated.isEmpty()) arrayOf(function.name)
+        else annotated
+    }
+
+    override fun getAnnotatedName(ownerCommand: Any, parameter: KParameter): String? =
+        parameter.findAnnotation<AbstractSubCommandGroup.AnotherName>()?.value
+
+    override fun getDescription(ownerCommand: Any, function: KFunction<*>): String? =
+        function.findAnnotation<AbstractSubCommandGroup.AnotherDescription>()?.value
+
+    override fun hasPropertyAnnotation(command: Any, kProperty: KProperty<*>): Boolean =
+        kProperty.hasAnnotation<AbstractSubCommandGroup.AnotherCombinedCommand>()
 
 }
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal object SimpleCommandSubCommandAnnotationResolver :
-    SubCommandAnnotationResolver {
+    SubCommandAnnotationResolver<Command> {
     override fun hasAnnotation(ownerCommand: Command, function: KFunction<*>) =
         function.hasAnnotation<SimpleCommand.Handler>()
 
@@ -103,12 +131,12 @@ internal object SimpleCommandSubCommandAnnotationResolver :
     override fun hasPropertyAnnotation(command: Command, kProperty: KProperty<*>): Boolean = false
 }
 
-internal interface SubCommandAnnotationResolver {
-    fun hasAnnotation(ownerCommand: Command, function: KFunction<*>): Boolean
-    fun getSubCommandNames(ownerCommand: Command, function: KFunction<*>): Array<out String>
-    fun getAnnotatedName(ownerCommand: Command, parameter: KParameter): String?
-    fun getDescription(ownerCommand: Command, function: KFunction<*>): String?
-    fun hasPropertyAnnotation(command: Command, kProperty: KProperty<*>): Boolean
+internal interface SubCommandAnnotationResolver<T> {
+    fun hasAnnotation(ownerCommand: T, function: KFunction<*>): Boolean
+    fun getSubCommandNames(ownerCommand: T, function: KFunction<*>): Array<out String>
+    fun getAnnotatedName(ownerCommand: T, parameter: KParameter): String?
+    fun getDescription(ownerCommand: T, function: KFunction<*>): String?
+    fun hasPropertyAnnotation(command: T, kProperty: KProperty<*>): Boolean
 }
 
 @ConsoleExperimentalApi
@@ -116,10 +144,10 @@ public class IllegalCommandDeclarationException : Exception {
     public override val message: String?
 
     public constructor(
-        ownerCommand: Command,
+        owner: Any,
         correspondingFunction: KFunction<*>,
         message: String?,
-    ) : super("Illegal command declaration: ${correspondingFunction.name} declared in ${ownerCommand::class.qualifiedName}") {
+    ) : super("Illegal command declaration: ${correspondingFunction.name} declared in ${owner::class.qualifiedName}") {
         this.message = message
     }
 
@@ -134,47 +162,8 @@ public class IllegalCommandDeclarationException : Exception {
 @OptIn(ExperimentalCommandDescriptors::class)
 internal class CommandReflector(
     val command: Command,
-    private val annotationResolver: SubCommandAnnotationResolver,
-) {
-
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun KFunction<*>.illegalDeclaration(
-        message: String,
-    ): Nothing {
-        throw IllegalCommandDeclarationException(command, this, message)
-    }
-
-    private fun KProperty<*>.isSubCommandProperty(): Boolean = annotationResolver.hasPropertyAnnotation(command, this)
-    private fun KFunction<*>.isSubCommandFunction(): Boolean = annotationResolver.hasAnnotation(command, this)
-    private fun KFunction<*>.checkExtensionReceiver() {
-        this.extensionReceiverParameter?.let { receiver ->
-            val classifier = receiver.type.classifierAsKClassOrNull()
-            if (classifier != null) {
-                if (!classifier.isSubclassOf(CommandSender::class) && !classifier.isSubclassOf(CommandContext::class)) {
-                    illegalDeclaration("Extension receiver parameter type is not subclass of CommandSender nor CommandContext.")
-                }
-            }
-        }
-    }
-
-    private fun KFunction<*>.checkNames() {
-        val names = annotationResolver.getSubCommandNames(command, this)
-        for (name in names) {
-            ILLEGAL_SUB_NAME_CHARS.find { it in name }?.let {
-                illegalDeclaration("'$it' is forbidden in command name.")
-            }
-        }
-    }
-
-    private fun KFunction<*>.checkModifiers() {
-        if (isInline) illegalDeclaration("Command function cannot be inline")
-        if (visibility == KVisibility.PRIVATE) illegalDeclaration("Command function must be accessible from Mirai Console, that is, effectively public.")
-        if (this.hasAnnotation<JvmStatic>()) illegalDeclaration("Command function must not be static.")
-
-        // should we allow abstract?
-
-        // if (isAbstract) illegalDeclaration("Command function cannot be abstract")
-    }
+    private val annotationResolver: SubCommandAnnotationResolver<Command>,
+) : SubCommandReflectible by SubCommandReflector(command, annotationResolver) {
 
     fun generateUsage(overloads: Iterable<CommandSignatureFromKFunction>): String {
         return generateUsage(command, annotationResolver, overloads)
@@ -183,7 +172,7 @@ internal class CommandReflector(
     companion object {
         fun generateUsage(
             command: Command,
-            annotationResolver: SubCommandAnnotationResolver?,
+            annotationResolver: SubCommandAnnotationResolver<Command>?,
             overloads: Iterable<CommandSignature>
         ): String {
             return overloads.joinToString("\n") { subcommand ->
@@ -224,8 +213,61 @@ internal class CommandReflector(
             }
         }
     }
+}
 
-    fun validate(signatures: List<CommandSignatureFromKFunction>) {
+@OptIn(ExperimentalCommandDescriptors::class)
+internal interface SubCommandReflectible {
+    @Throws(IllegalCommandDeclarationException::class)
+    fun findSubCommands(): List<CommandSignatureFromKFunction>
+    fun validate(signatures: List<CommandSignatureFromKFunction>)
+}
+
+@OptIn(ExperimentalCommandDescriptors::class)
+internal class SubCommandReflector<T: Any>(
+    val owner: T,
+    private val annotationResolver: SubCommandAnnotationResolver<T>,
+) : SubCommandReflectible {
+
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun KFunction<*>.illegalDeclaration(
+        message: String,
+    ): Nothing {
+        throw IllegalCommandDeclarationException(owner, this, message)
+    }
+
+    private fun KProperty<*>.isSubCommandProviderProperty(): Boolean = annotationResolver.hasPropertyAnnotation(owner, this)
+    private fun KFunction<*>.isSubCommandFunction(): Boolean = annotationResolver.hasAnnotation(owner, this)
+    private fun KFunction<*>.checkExtensionReceiver() {
+        this.extensionReceiverParameter?.let { receiver ->
+            val classifier = receiver.type.classifierAsKClassOrNull()
+            if (classifier != null) {
+                if (!classifier.isSubclassOf(CommandSender::class) && !classifier.isSubclassOf(CommandContext::class)) {
+                    illegalDeclaration("Extension receiver parameter type is not subclass of CommandSender nor CommandContext.")
+                }
+            }
+        }
+    }
+
+    private fun KFunction<*>.checkNames() {
+        val names = annotationResolver.getSubCommandNames(owner, this)
+        for (name in names) {
+            ILLEGAL_SUB_NAME_CHARS.find { it in name }?.let {
+                illegalDeclaration("'$it' is forbidden in command name.")
+            }
+        }
+    }
+
+    private fun KFunction<*>.checkModifiers() {
+        if (isInline) illegalDeclaration("Command function cannot be inline")
+        if (visibility == KVisibility.PRIVATE) illegalDeclaration("Command function must be accessible from Mirai Console, that is, effectively public.")
+        if (this.hasAnnotation<JvmStatic>()) illegalDeclaration("Command function must not be static.")
+
+        // should we allow abstract?
+
+        // if (isAbstract) illegalDeclaration("Command function cannot be abstract")
+    }
+
+    override fun validate(signatures: List<CommandSignatureFromKFunction>) {
 
         data class ErasedParameterInfo(
             val index: Int,
@@ -261,19 +303,20 @@ internal class CommandReflector(
             value.size > 1
         } ?: return
 
-        throw CommandDeclarationClashException(command, clashes.value.map { it.first })
+
+        throw SubcommandDeclarationClashException(owner, clashes.value.map { it.first })
     }
 
     @Throws(IllegalCommandDeclarationException::class)
-    fun findSubCommands(): List<CommandSignatureFromKFunction> {
-        val fromMemberFunctions = command::class.functions // exclude static later
+    override fun findSubCommands(): List<CommandSignatureFromKFunction> {
+        val fromMemberFunctions = owner::class.functions // exclude static later
             .asSequence()
             .filter { it.isSubCommandFunction() }
             .onEach { it.checkExtensionReceiver() }
             .onEach { it.checkModifiers() }
             .onEach { it.checkNames() }
             .flatMap { function ->
-                val names = annotationResolver.getSubCommandNames(command, function)
+                val names = annotationResolver.getSubCommandNames(owner, function)
                 if (names.isEmpty()) sequenceOf(createMapEntry(null, function))
                 else names.associateWith { function }.asSequence()
             }
@@ -317,11 +360,11 @@ internal class CommandReflector(
 
                     val instanceParameter = function.instanceParameter
                     if (instanceParameter != null) {
-                        check(instanceParameter.type.classifierAsKClass().isInstance(command)) {
+                        check(instanceParameter.type.classifierAsKClass().isInstance(owner)) {
                             "Bad command call resolved. " +
-                                    "Function expects instance parameter ${instanceParameter.type} whereas actual instance is ${command::class}."
+                                    "Function expects instance parameter ${instanceParameter.type} whereas actual instance is ${owner::class}."
                         }
-                        args[instanceParameter] = command
+                        args[instanceParameter] = owner
                     }
 
                     if (receiverParameter != null) {
@@ -349,14 +392,14 @@ internal class CommandReflector(
                 }
             }.toList()
 
-        val fromMemberProperties = command::class.declaredMemberProperties
+        val fromMemberProperties = owner::class.declaredMemberProperties
             .asSequence()
-            .filter { it.isSubCommandProperty() }
-            .map { it.getter.call(command) }
-            .filter { it is CompositeCommand }
+            .filter { it.isSubCommandProviderProperty() }
+            .map { it.getter.call(owner) }
+            .filter { it is SubCommandGroup }
             .flatMap { property ->
-                property as CompositeCommand
-                property.overloads
+                property as SubCommandGroup
+                property.provideOverloads
             }.toList()
 
         val list: MutableList<CommandSignatureFromKFunction> = ArrayList()
@@ -407,5 +450,5 @@ internal class CommandReflector(
     }
 
     private fun KParameter.nameForCommandParameter(): String? =
-        annotationResolver.getAnnotatedName(command, this) ?: this.name
+        annotationResolver.getAnnotatedName(owner, this) ?: this.name
 }
