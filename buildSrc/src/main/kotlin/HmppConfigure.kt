@@ -79,7 +79,8 @@ val ENABLED_TARGETS by lazy {
     System.getProperty(
         "mirai.target",
         if (IDEA_ACTIVE)
-            "jvm;android;${HOST_KIND.targetName};!other"
+            // "jvm;android;${HOST_KIND.targetName};!other"
+            "other" // we must enable all targets otherwise you won't be able to edit code for non-host targets
         else
             ""
     ).split(';').toSet()
@@ -352,6 +353,7 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
                 }
             }
         }
+        project.disableCrossCompile() // improve speed
     }
 }
 
@@ -378,6 +380,7 @@ fun Project.disableCrossCompile() {
 }
 
 private fun disableTargetLink(project: Project, target: String) {
+    // Don't disable compileKotlin tasks. These tasks ensure code syntax is correct.
     project.tasks.findByName("linkDebugTest${target.titlecase()}")?.enabled = false
     project.tasks.findByName("linkReleaseTest${target.titlecase()}")?.enabled = false
     project.tasks.findByName("linkDebugShared${target.titlecase()}")?.enabled = false
