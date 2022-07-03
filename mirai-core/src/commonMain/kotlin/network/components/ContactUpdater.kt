@@ -175,7 +175,7 @@ internal class ContactUpdaterImpl(
                 for (jceInfo in data.groupList) {
                     friendGroupInfos.add(
                         FriendGroupImpl(
-                            bot, FriendGroupInfoImpl(
+                            bot, FriendGroupInfo(
                                 jceInfo.groupId.toInt(),
                                 jceInfo.groupname,
                                 jceInfo.friendCount,

@@ -162,6 +162,7 @@ internal class FriendList {
             val selfInfo: FriendInfo?,
             val totalFriendCount: Short,
             val friendList: List<FriendInfo>,
+            // for FriendGroup
             val groupList: List<GroupInfo>,
             val totoalGroupCount: Short
         ) : Packet {
@@ -288,6 +289,7 @@ internal class FriendList {
         }
     }
 
+    // for FriendGroup
     internal object SetGroupReqPack : OutgoingPacketFactory<SetGroupReqPack.Response>("friendlist.SetGroupReq") {
         class Response(
             // Success: result == 0x00
@@ -304,7 +306,11 @@ internal class FriendList {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val pack = this.readUniPacket(SetGroupResp.serializer())
-            return Response(pack.result, pack.errorString, pack.vecBody?.get(8)?.toInt() ?: -1)
+            return if (pack.result.toInt() == 0) {
+                Response(pack.result, pack.errorString, pack.vecBody?.get(8)?.toInt() ?: -1)
+            } else {
+                Response(pack.result, pack.errorString, -1)
+            }
         }
 
         object New {
@@ -347,6 +353,7 @@ internal class FriendList {
         }
     }
 
+    // for FriendGroup
     internal object MoveGroupMemReqPack :
         OutgoingPacketFactory<MoveGroupMemReqPack.Response>("friendlist.MovGroupMemReq") {
         private fun Long.toByteArray2(): ByteArray {
@@ -389,7 +396,7 @@ internal class FriendList {
                         0x01,
                         0x00,
                         (id.toByteArray2().size + 1).toByte()
-                    ) + id.toByteArray2() + groupId.toByte() + 0x00 + 0x00
+                    ) + id.toByteArray2() + byteArrayOf(groupId.toByte(), 0x00, 0x00)
                 )
             )
         }

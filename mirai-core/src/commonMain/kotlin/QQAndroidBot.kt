@@ -73,7 +73,6 @@ internal open class QQAndroidBot constructor(
 ) : AbstractBot(configuration, account.id) {
     override val bot: QQAndroidBot get() = this
 
-    // for review, index != id
     override var friendGroups: MutableList<FriendGroup> = mutableListOf()
     val client get() = components[SsoProcessor].client
 

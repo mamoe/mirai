@@ -12,10 +12,8 @@ package net.mamoe.mirai.data
 import net.mamoe.mirai.contact.Friend
 
 public interface FriendGroup {
-    public val info: FriendGroupInfo
-
     /**
-     * 好友分组id
+     * 好友分组 ID
      */
     public val id: Int
 
@@ -27,25 +25,26 @@ public interface FriendGroup {
     /**
      * 好友分组内好友数量
      */
-    public val friendCount: Int
+    public val count: Int
 
     /**
      * 更改好友分组名称
-     * @throws IllegalStateException 当改名不成功时
+     * @throws IllegalStateException 当改名不成功时抛出
      */
-    public suspend fun rename(newName: String)
+    public suspend fun renameTo(newName: String): Boolean
 
     /**
      * 把一名好友移动至本分组内
      * @throws IllegalStateException 当移动不成功时
      */
-    public suspend fun moveIn(friend: Friend)
+    public suspend fun moveIn(friend: Friend): Boolean
 
     /**
      * 删除本分组
-     * @throws IllegalStateException 当删除不成功时
+     * @return 返回 `false` 当分组不存在时
+     * @throws IllegalStateException 当因为其他原因删除不成功时抛出
      */
-    public suspend fun delete()
+    public suspend fun delete(): Boolean
 
     /**
      * 新建一个好友分组

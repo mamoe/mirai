@@ -10,12 +10,11 @@
 package net.mamoe.mirai.internal.contact.info
 
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.data.FriendGroupInfo
 
 @Serializable
-internal data class FriendGroupInfoImpl(
-    override val groupId: Int,
-    override var groupName: String,
-    override val friendCount: Int,
-    override val onlineFriendCount: Int
-) : FriendGroupInfo
+internal data class FriendGroupInfo(
+    val groupId: Int,
+    var groupName: String,
+    val friendCount: Int,
+    val onlineFriendCount: Int
+)

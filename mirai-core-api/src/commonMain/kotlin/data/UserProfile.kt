@@ -28,9 +28,8 @@ public interface UserProfile {
     public val sex: Sex
 
     /**
-     * 好友分组, 在非好友情况下为0
+     * 好友分组 ID, 在非好友情况下为0
      */
-    // todo for review 这里应该是friendGroup对象还是Long
     public val friendGroupId: Long
 
     /**
