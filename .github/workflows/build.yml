@@ -5,11 +5,13 @@ on:
   push:
     paths-ignore:
       - 'docs/**'
-      - '**/README*.md'
+      - 'mirai-console/docs/**'
+      - '**/*.md'
   pull_request:
     paths-ignore:
       - 'docs/**'
-      - '**/README*.md'
+      - 'mirai-console/docs/**'
+      - '**/*.md'
 
 jobs:
   build-mirai-jvm:
@@ -22,7 +24,7 @@ jobs:
 #          - windows-2022
           - macos-12
     env:
-      gradleArgs: --scan "-Dmirai.target=jvm;android;!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx6000m -Dfile.encoding=UTF-8"
+      gradleArgs: --scan "-Dmirai.target=jvm;android;!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx6000m" "-Dfile.encoding=UTF-8"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
@@ -289,6 +291,7 @@ jobs:
 
       - run: >
           ./gradlew updateSnapshotVersion ${{ env.gradleArgs }}
+        if: github.event.push
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
@@ -308,10 +311,10 @@ jobs:
 
       - if: ${{ env.isMac == 'true' }}
         name: Ensure KDoc valid
-        run: ./gradlew dokkaHtmlMultiModule
+        run: ./gradlew dokkaHtmlMultiModule ${{ env.gradleArgs }}
 
       - name: Publish Snapshots
-        if: ${{ env.isMac == 'true' }}
+        if: ${{ github.event.push && env.isMac == 'true' }}
         run: ./gradlew publishAllPublicationsToMiraiRepoRepository ${{ env.gradleArgs }}
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
@@ -430,6 +433,7 @@ jobs:
 
       - run: >
           ./gradlew updateSnapshotVersion ${{ env.gradleArgs }}
+        if: github.event.push
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
@@ -451,12 +455,13 @@ jobs:
         run: ./gradlew :mirai-deps-test:publishMiraiArtifactsToMavenLocal ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test"
 
       - name: Check Publication
+        if: ${{ env.enableLocalPublishingTest == 'true' }}
         run: ./gradlew :mirai-deps-test:check ${{ env.gradleArgs }}
 
       # Publish native snapshots. Other artifacts are published in build-mirai-all
 
       - name: Publish MingwX64 Snapshots
-        if: ${{ env.isWindows == 'true' }}
+        if: ${{ github.event.push && env.isWindows == 'true' }}
         run: ./gradlew publishMingwX64PublicationToMiraiRepoRepository ${{ env.gradleArgs }}
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
@@ -466,7 +471,7 @@ jobs:
           CURRENT_BRANCH_NAME: dev
 
       - name: Publish LinuxX64 Snapshots
-        if: ${{ env.isUbuntu == 'true' }}
+        if: ${{ github.event.push && env.isUbuntu == 'true' }}
         run: ./gradlew publishLinuxX64PublicationToMiraiRepoRepository ${{ env.gradleArgs }}
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
@@ -476,7 +481,7 @@ jobs:
           CURRENT_BRANCH_NAME: dev
 
       - name: Publish macOSX64 Snapshots
-        if: ${{ env.isMac == 'true' }}
+        if: ${{ github.event.push && env.isMac == 'true' }}
         run: ./gradlew publishMacosX64PublicationToMiraiRepoRepository ${{ env.gradleArgs }}
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true

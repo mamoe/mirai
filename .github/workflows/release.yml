@@ -6,12 +6,14 @@ on:
       - 'v*' # 正式版本
     paths-ignore:
       - 'docs/**'
-      - '**/README*.md'
+      - 'mirai-console/docs/**'
+      - '**/*.md'
+
 
 jobs:
 
-  build-mirai-all:
-    name: "Everything (${{ matrix.os }})"
+  publish-others:
+    name: "Others (${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -20,7 +22,7 @@ jobs:
           - macos-12
     env:
       enableLocalPublishingTest: 'false'
-      gradleArgs: --scan
+      gradleArgs: --scan "-Dmirai.target=jvm;android;!other" "-Pkotlin.compiler.execution.strategy=in-process"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
@@ -94,7 +96,7 @@ jobs:
 
       - if: ${{ env.isMac == 'true' }}
         name: Ensure KDoc valid
-        run: ./gradlew dokkaHtmlMultiModule
+        run: ./gradlew dokkaHtmlMultiModule ${{ env.gradleArgs }}
 
       - name: Publish
         if: ${{ env.isMac == 'true' }}
@@ -106,7 +108,7 @@ jobs:
           -Dgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
           -Dgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }} -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }}
 
-  build-mirai-core-native:
+  publish-core-native:
     name: "Native (${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
     strategy:
@@ -115,19 +117,13 @@ jobs:
         os:
           - windows-2022
           - ubuntu-20.04
-          - ubuntu-18.04
           - macos-12
-          - macos-11
         include:
           - os: windows-2022
             targetName: mingwX64
           - os: ubuntu-20.04
             targetName: linuxX64
-          - os: ubuntu-18.04
-            targetName: linuxX64
           - os: macos-12
-            targetName: macosX64
-          - os: macos-11
             targetName: macosX64
     env:
       # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
@@ -265,8 +261,8 @@ jobs:
   close-repository:
     runs-on: macos-12
     needs:
-      - publish-mirai-others
-      - publish-mirai-core-native
+      - publish-others
+      - publish-core-native
     steps:
       - uses: actions/checkout@v2
         with:
