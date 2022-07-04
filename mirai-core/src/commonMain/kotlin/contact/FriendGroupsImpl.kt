@@ -18,7 +18,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 internal class FriendGroupsImpl(
     val bot: QQAndroidBot
 ) : Iterable<FriendGroup>, FriendGroups {
-    override var friendGroups: MutableList<FriendGroup> = mutableListOf()
+    var friendGroups: MutableList<FriendGroup> = mutableListOf()
 
     override suspend fun create(name: String): FriendGroup {
         val resp = bot.network.sendAndExpect(FriendList.SetGroupReqPack.New(bot.client, name))

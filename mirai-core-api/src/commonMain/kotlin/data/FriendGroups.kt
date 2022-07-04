@@ -10,11 +10,9 @@
 package net.mamoe.mirai.data
 
 public interface FriendGroups : Iterable<FriendGroup> {
-    public val friendGroups: List<FriendGroup>
-
     /**
      * 新建一个好友分组
-     * @throws IllegalStateException 当创建不成功时
+     * @throws IllegalStateException 当创建不成功时抛出
      */
     public suspend fun create(name: String): FriendGroup
 
