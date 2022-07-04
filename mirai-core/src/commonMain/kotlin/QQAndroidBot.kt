@@ -45,6 +45,7 @@ import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupNotificationProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupOrMemberListNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupRecallProcessor
+import net.mamoe.mirai.internal.network.notice.priv.FriendGroupNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.priv.FriendNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.priv.OtherClientNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageProcessor
@@ -194,6 +195,7 @@ internal open class QQAndroidBot constructor(
                 GroupOrMemberListNoticeProcessor(pipelineLogger.subLogger("GroupOrMemberListNoticeProcessor")),
                 GroupMessageProcessor(pipelineLogger.subLogger("GroupMessageProcessor")),
                 GroupNotificationProcessor(pipelineLogger.subLogger("GroupNotificationProcessor")),
+                FriendGroupNoticeProcessor(pipelineLogger.subLogger("FriendGroupNoticeProcessor")),
                 PrivateMessageProcessor(),
                 OtherClientNoticeProcessor(),
                 GroupRecallProcessor(),

@@ -599,7 +599,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         if (!accept) return
 
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        bot.friends.delegate.add(newFriend(bot, FriendInfoImpl(fromId, fromNick, "")))
+        bot.friends.delegate.add(newFriend(bot, FriendInfoImpl(fromId, fromNick, "", 0)))
     }
 
     override suspend fun solveBotInvitedJoinGroupRequestEvent(

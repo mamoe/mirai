@@ -14,14 +14,24 @@ import net.mamoe.mirai.data.FriendGroup
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendGroupInfo
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
+@OptIn(ExperimentalContracts::class)
+internal inline fun FriendGroup.impl(): FriendGroupImpl {
+    contract {
+        returns() implies (this@impl is FriendGroupImpl)
+    }
+    check(this is FriendGroupImpl) { "A FriendGroup instance is not instance of FriendGroupImpl. Your instance: ${this::class.qualifiedName}" }
+    return this
+}
 internal class FriendGroupImpl constructor(
     val bot: QQAndroidBot,
     val info: FriendGroupInfo
 ) : FriendGroup {
     override val id: Int by info::groupId
 
-    override val name: String by info::groupName
+    override var name: String by info::groupName
     override val count: Int by info::friendCount
 
 
