@@ -17,10 +17,10 @@ import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 
 internal class FriendGroupsImpl(
     val bot: QQAndroidBot
-) : FriendGroups {
+) : Iterable<FriendGroup>, FriendGroups {
     override var friendGroups: MutableList<FriendGroup> = mutableListOf()
 
-    override suspend fun new(name: String): FriendGroup {
+    override suspend fun create(name: String): FriendGroup {
         val resp = bot.network.sendAndExpect(FriendList.SetGroupReqPack.New(bot.client, name))
         check(resp.isSuccess) {
             "Cannot create friendGroup, code=${resp.result.toInt()}, errStr=${resp.errStr}"
@@ -41,6 +41,6 @@ internal class FriendGroupsImpl(
         return true
     }
 
-    override fun get(ID: Int): FriendGroup? = friendGroups.firstOrNull { it.id == ID }
-
+    override fun get(id: Int): FriendGroup? = friendGroups.firstOrNull { it.id == id }
+    override fun iterator(): Iterator<FriendGroup> = friendGroups.iterator()
 }

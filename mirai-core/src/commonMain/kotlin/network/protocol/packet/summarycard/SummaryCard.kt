@@ -35,7 +35,7 @@ internal data class UserProfileImpl(
     override val qLevel: Int,
     override val sex: UserProfile.Sex,
     override val sign: String,
-    override val friendGroupId: Long
+    override val friendGroupId: Int
 ) : Packet, UserProfile {
     override fun toString(): String {
         return "UserProfile(nickname=$nickname, email=$email, age=$age, qLevel=$qLevel, sex=$sex, sign=$sign)"
@@ -120,7 +120,7 @@ internal object SummaryCard {
                     else -> UserProfile.Sex.UNKNOWN
                 },
                 sign = sign,
-                friendGroupId = response.uFriendGroupId ?: 0
+                friendGroupId = response.uFriendGroupId?.toInt() ?: 0
             )
         }
     }

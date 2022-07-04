@@ -9,14 +9,14 @@
 
 package net.mamoe.mirai.data
 
-public interface FriendGroups {
+public interface FriendGroups : Iterable<FriendGroup> {
     public val friendGroups: List<FriendGroup>
 
     /**
      * 新建一个好友分组
      * @throws IllegalStateException 当创建不成功时
      */
-    public suspend fun new(name: String): FriendGroup
+    public suspend fun create(name: String): FriendGroup
 
     /**
      * 删除一个好友分组分组
@@ -28,5 +28,5 @@ public interface FriendGroups {
     /**
      * 获取指定 ID 的好友分组, 不存在时返回 null
      */
-    public operator fun get(ID: Int): FriendGroup?
+    public operator fun get(id: Int): FriendGroup?
 }

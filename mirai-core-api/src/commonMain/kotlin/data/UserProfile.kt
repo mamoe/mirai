@@ -30,7 +30,7 @@ public interface UserProfile {
     /**
      * 好友分组 ID, 在非好友情况下为0
      */
-    public val friendGroupId: Long
+    public val friendGroupId: Int
 
     /**
      * 个性签名
