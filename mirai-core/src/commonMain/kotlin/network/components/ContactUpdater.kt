@@ -211,11 +211,12 @@ internal class ContactUpdaterImpl(
             }
         }
 
-        for (friendInfoImpl in list) {
-            bot.addNewFriendAndRemoveStranger(friendInfoImpl)
-        }
-
         bot.friendGroups.friendGroups = refreshFriendGroupList()
+
+        for (friendInfoImpl in list) {
+            val friend = bot.addNewFriendAndRemoveStranger(friendInfoImpl)!!
+            bot.friendGroups[friendInfoImpl.friendGroupId]!!.friends.delegate.add(friend)
+        }
 
         initFriendOk = true
     }

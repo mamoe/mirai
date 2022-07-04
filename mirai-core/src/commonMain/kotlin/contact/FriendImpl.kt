@@ -97,6 +97,7 @@ internal class FriendImpl(
         bot.network.sendAndExpect(FriendList.DelFriend.invoke(bot.client, this@FriendImpl), 5000, 2).let {
             check(it.isSuccess) { "delete friend failed: ${it.resultCode}" }
         }
+        friendGroup?.friends?.remove(this.id)
     }
 
     override suspend fun sendMessage(message: Message): MessageReceipt<Friend> {

@@ -68,16 +68,16 @@ internal class FriendGroupNoticeProcessor(
                 return
             }
             bot.friendGroups[friend.impl().info.friendGroupId]?.let {
-                // todo remove friend from old friendGroup
-                it.impl()
+                // don't care result
+                it.impl().friends.delegate.remove(friend.impl())
             } ?: let {
                 logger.error { "fail to find FriendGroup(id=${body.fuin}) in Bot(id=${bot.id})" }
                 return
             }
             friend.info.friendGroupId = body.uint32NewGroupId.first()
             bot.friendGroups[friend.info.friendGroupId]?.let {
-                // todo add friend from new friendGroup
-                it.impl()
+                // don't care result
+                it.impl().friends.delegate.add(friend)
             } ?: let {
                 logger.error { "fail to find FriendGroup(id=${body.fuin}) in Bot(id=${bot.id})" }
                 return
