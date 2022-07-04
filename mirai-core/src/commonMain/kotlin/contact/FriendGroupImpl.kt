@@ -46,7 +46,7 @@ internal class FriendGroupImpl constructor(
         }
         // 因为 MoveGroupMemReqPack 协议在测试里如果移动到不存在的分组，他会自动移动好友到 id = 0 的默认好友分组然后返回 result = 0
         val id = friend.queryProfile().friendGroupId
-        if (id != this.id.toLong() && id == 0L) return false
+        if (id != this.id && id == 0) return false
         return true
     }
 
