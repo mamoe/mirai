@@ -85,11 +85,6 @@ internal object CompositeCommandSubCommandAnnotationResolver :
 
 }
 
-/*
- * - 不看Function上的Annotation
- * - 不从Function获取SubCommandNames
- * - 看Property上的Annotation
- */
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal object GroupedCommandSubCommandAnnotationResolver :
     SubCommandAnnotationResolver<Any> {
