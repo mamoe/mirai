@@ -46,7 +46,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  * * 每日退群人数 [ActiveChart.exit]
  */
 @NotStableForInheritance
-public expect interface Active {
+public actual interface Active {
 
     /**
      * 等级头衔列表，key 是 等级，value 是 头衔
@@ -56,7 +56,7 @@ public expect interface Active {
      * @see Member.rank
      */
     @MiraiExperimentalApi
-    public var rankTitles: Map<Int, String>
+    public actual var rankTitles: Map<Int, String>
 
     /**
      * 是否在群聊中显示等级头衔
@@ -66,17 +66,17 @@ public expect interface Active {
      * @see Member.rank
      */
     @MiraiExperimentalApi
-    public var rankShow: Boolean
+    public actual var rankShow: Boolean
 
     /**
      * 创建一个能获取该群内所有群活跃度记录的 [Flow]. 在 [Flow] 被使用时才会分页下载 [ActiveRecord].
      *
      * 异常不会抛出, 只会记录到网络日志. 当获取发生异常时将会终止获取, 不影响已经成功获取的 [ActiveRecord] 和 [Flow] 的[收集][Flow.collect].
      */
-    public fun asFlow(): Flow<ActiveRecord>
+    public actual fun asFlow(): Flow<ActiveRecord>
 
     /**
      * 获取活跃度图表数据
      */
-    public suspend fun getChart(): ActiveChart?
+    public actual suspend fun getChart(): ActiveChart?
 }

@@ -9,14 +9,12 @@
 
 package net.mamoe.mirai.internal.contact.active
 
-import net.mamoe.mirai.contact.NormalMember
-import net.mamoe.mirai.contact.active.ActiveRecord
+import net.mamoe.mirai.data.GroupInfo
+import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.utils.MiraiLogger
 
-
-internal data class ActiveRecordImpl(
-    override val senderId: Long,
-    override val senderName: String,
-    override val sender: NormalMember?,
-    override val sentences: Int,
-    override val continuation: Int
-) : ActiveRecord
+internal actual class ActiveImpl actual constructor(
+    group: GroupImpl,
+    logger: MiraiLogger,
+    groupInfo: GroupInfo,
+) : CommonActiveImpl(group, logger, groupInfo)

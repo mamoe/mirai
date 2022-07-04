@@ -15,6 +15,7 @@ package net.mamoe.mirai.contact
 import kotlinx.coroutines.CoroutineScope
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.active.Active
 import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
@@ -132,6 +133,13 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported 
      * @since 2.7
      */
     public val announcements: Announcements
+
+
+    /**
+     * 获取荣耀相关功能接口
+     *
+     */
+    public val active: Active
 
     /**
      * 获取群成员实例. 不存在时返回 `null`.

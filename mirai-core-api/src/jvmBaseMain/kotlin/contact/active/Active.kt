@@ -14,6 +14,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.utils.NotStableForInheritance
+import java.util.stream.Stream
 
 /**
  * 表示一个群活跃度管理.
@@ -31,7 +32,8 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  *
  * ### 活跃度记录
  *
- * 通过 [asFlow] 可以获取群活跃度记录*惰性*流.
+ * 通过 [asFlow] 或 [asStream] 可以获取群活跃度记录*惰性*流,
+ * 在从流中收集数据时才会请求服务器获取数据. 通常建议在 Kotlin 使用协程的 [asFlow], 在 Java 使用 [asStream].
  *
  * 若要获取全部活跃度记录, 可使用 [toList].
  *
@@ -46,7 +48,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  * * 每日退群人数 [ActiveChart.exit]
  */
 @NotStableForInheritance
-public expect interface Active {
+public actual interface Active {
 
     /**
      * 等级头衔列表，key 是 等级，value 是 头衔
@@ -56,7 +58,7 @@ public expect interface Active {
      * @see Member.rank
      */
     @MiraiExperimentalApi
-    public var rankTitles: Map<Int, String>
+    public actual var rankTitles: Map<Int, String>
 
     /**
      * 是否在群聊中显示等级头衔
@@ -66,17 +68,26 @@ public expect interface Active {
      * @see Member.rank
      */
     @MiraiExperimentalApi
-    public var rankShow: Boolean
+    public actual var rankShow: Boolean
 
     /**
      * 创建一个能获取该群内所有群活跃度记录的 [Flow]. 在 [Flow] 被使用时才会分页下载 [ActiveRecord].
      *
      * 异常不会抛出, 只会记录到网络日志. 当获取发生异常时将会终止获取, 不影响已经成功获取的 [ActiveRecord] 和 [Flow] 的[收集][Flow.collect].
      */
-    public fun asFlow(): Flow<ActiveRecord>
+    public actual fun asFlow(): Flow<ActiveRecord>
+
+    /**
+     * 创建一个能获取该群内所有群活跃度记录的 [Stream]. 在 [Stream] 被使用时才会分页下载 [ActiveRecord].
+     *
+     * 异常不会抛出, 只会记录到网络日志. 当获取发生异常时将会终止获取, 不影响已经成功获取的 [ActiveRecord] 和 [Stream] 的[收集][Stream.collect].
+     *
+     * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [asFlow], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [asFlow].
+     */
+    public fun asStream(): Stream<ActiveRecord>
 
     /**
      * 获取活跃度图表数据
      */
-    public suspend fun getChart(): ActiveChart?
+    public actual suspend fun getChart(): ActiveChart?
 }

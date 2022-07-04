@@ -11,14 +11,15 @@ package net.mamoe.mirai.internal.contact.active
 
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.active.ActiveChart
 import net.mamoe.mirai.contact.active.ActiveRecord
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.utils.*
@@ -86,13 +87,13 @@ internal data class GroupActiveData(
     )
 }
 
-@Suppress("DEPRECATION", "DEPRECATION_ERROR")
+@Suppress("DEPRECATION_ERROR")
 internal object GroupActiveProtocol {
 
     suspend fun QQAndroidBot.getRawGroupLevelInfo(
         groupCode: Long
     ): Either<DeserializationFailure, GroupLevelInfo> {
-        return Mirai.Http.get<String> {
+        return bot.components[HttpClientProvider].getHttpClient().get {
             url("https://qinfo.clt.qq.com/cgi-bin/qun_info/get_group_level_info")
             parameter("gc", groupCode)
             parameter("bkn", client.wLoginSigInfo.bkn)
@@ -105,23 +106,23 @@ internal object GroupActiveProtocol {
                     "uin=o${id}; skey=${sKey}"
                 )
             }
-        }.loadSafelyAs(GroupLevelInfo.serializer())
+        }.bodyAsText().loadSafelyAs(GroupLevelInfo.serializer())
     }
 
     suspend fun QQAndroidBot.setGroupLevelInfo(
         groupCode: Long,
         titles: Map<Int, String>
     ): Either<DeserializationFailure, SetResult> {
-        return Mirai.Http.post<String> {
+        return bot.components[HttpClientProvider].getHttpClient().post {
             url("https://qinfo.clt.qq.com/cgi-bin/qun_info/set_group_level_info")
-            body = FormDataContent(Parameters.build {
+            setBody(FormDataContent(Parameters.build {
                 titles.forEach { (index, name) ->
                     append("lvln$index", name)
                 }
                 append("gc", groupCode.toString())
                 append("src", "qinfo_v3")
                 append("bkn", client.wLoginSigInfo.bkn.toString())
-            })
+            }))
 
             headers {
                 // ktor bug
@@ -130,21 +131,21 @@ internal object GroupActiveProtocol {
                     "uin=o${id}; skey=${sKey}"
                 )
             }
-        }.loadSafelyAs(SetResult.serializer())
+        }.bodyAsText().loadSafelyAs(SetResult.serializer())
     }
 
     suspend fun QQAndroidBot.setGroupLevelInfo(
         groupCode: Long,
         show: Boolean
     ): Either<DeserializationFailure, SetResult> {
-        return Mirai.Http.post<String> {
+        return bot.components[HttpClientProvider].getHttpClient().post {
             url("https://qinfo.clt.qq.com/cgi-bin/qun_info/set_group_setting")
-            body = FormDataContent(Parameters.build {
+            setBody(FormDataContent(Parameters.build {
                 append("levelflag", if (show) "1" else "0")
                 append("gc", groupCode.toString())
                 append("src", "qinfo_v3")
                 append("bkn", client.wLoginSigInfo.bkn.toString())
-            })
+            }))
 
             headers {
                 // ktor bug
@@ -153,14 +154,14 @@ internal object GroupActiveProtocol {
                     "uin=o${id}; skey=${sKey}"
                 )
             }
-        }.loadSafelyAs(SetResult.serializer())
+        }.bodyAsText().loadSafelyAs(SetResult.serializer())
     }
 
     suspend fun QQAndroidBot.getRawGroupActiveData(
         groupCode: Long,
         page: Int? = null
     ): Either<DeserializationFailure, GroupActiveData> {
-        return Mirai.Http.get<String> {
+        return bot.components[HttpClientProvider].getHttpClient().get {
             url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
             parameter("bkn", client.wLoginSigInfo.bkn)
             parameter("gc", groupCode)
@@ -172,11 +173,11 @@ internal object GroupActiveProtocol {
                     "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
                 )
             }
-        }.loadSafelyAs(GroupActiveData.serializer())
+        }.bodyAsText().loadSafelyAs(GroupActiveData.serializer())
     }
 
     fun GroupActiveData.MostActive.toActiveRecord(group: Group): ActiveRecord {
-        return ActiveRecordImpl(
+        return ActiveRecord(
             senderId = uin,
             senderName = name,
             sentences = sentencesNum,
@@ -186,7 +187,7 @@ internal object GroupActiveProtocol {
     }
 
     fun GroupActiveData.ActiveInfo.toActiveChart(): ActiveChart {
-        return ActiveChartImpl(
+        return ActiveChart(
             actives = actNum?.associate { it.date to it.num }.orEmpty(),
             sentences = sentences?.associate { it.date to it.num }.orEmpty(),
             members = memNum?.associate { it.date to it.num }.orEmpty(),

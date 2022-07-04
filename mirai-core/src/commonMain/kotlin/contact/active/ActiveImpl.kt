@@ -13,7 +13,6 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.contact.active.Active
@@ -27,24 +26,23 @@ import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.setGroupLevel
 import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.toActiveChart
 import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.toActiveRecord
 import net.mamoe.mirai.internal.contact.groupCode
-import net.mamoe.mirai.internal.network.handler.logger
-import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.Either.Companion.onLeft
 import net.mamoe.mirai.utils.Either.Companion.onRight
 import net.mamoe.mirai.utils.Either.Companion.rightOrNull
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.stream
 import net.mamoe.mirai.utils.warning
-import java.util.stream.Stream
 
-internal class ActiveImpl(
-    private val group: GroupImpl,
+internal expect class ActiveImpl(
+    group: GroupImpl,
+    logger: MiraiLogger,
+    groupInfo: GroupInfo,
+) : CommonActiveImpl
+
+internal abstract class CommonActiveImpl(
+    protected val group: GroupImpl,
+    protected val logger: MiraiLogger,
     groupInfo: GroupInfo,
 ) : Active {
-
-    private val logger: MiraiLogger by lazy {
-        group.bot.network.logger.subLogger("Group ${group.id}")
-    }
 
     private var _rankTitles: Map<Int, String> = groupInfo.rankTitles
 
@@ -103,7 +101,7 @@ internal class ActiveImpl(
             }
         }
 
-    private suspend fun getGroupActiveData(page: Int?): GroupActiveData? {
+    protected suspend fun getGroupActiveData(page: Int?): GroupActiveData? {
         return group.bot.getRawGroupActiveData(group.id, page).onLeft {
             if (logger.isEnabled) { // createException
                 logger.warning(
@@ -128,22 +126,8 @@ internal class ActiveImpl(
         }.map { it.toActiveRecord(group) }
     }
 
-    override fun asStream(): Stream<ActiveRecord> {
-        return stream {
-            var page = 0
-            while (true) {
-                val result = runBlocking { getGroupActiveData(page = page) } ?: break
-
-                result.info.mostAct?.let { yieldAll(it) } ?: break
-
-                if (result.info.isEnd == 1) break
-                page++
-            }
-        }.map { it.toActiveRecord(group) }
-    }
-
     override suspend fun getChart(): ActiveChart {
-        return getGroupActiveData(page = null)?.info?.toActiveChart() ?: ActiveChartImpl(
+        return getGroupActiveData(page = null)?.info?.toActiveChart() ?: ActiveChart(
             actives = emptyMap(),
             sentences = emptyMap(),
             members = emptyMap(),
