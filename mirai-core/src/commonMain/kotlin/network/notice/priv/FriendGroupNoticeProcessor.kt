@@ -9,7 +9,9 @@
 
 package net.mamoe.mirai.internal.network.notice.priv
 
+import net.mamoe.mirai.internal.contact.FriendGroupImpl
 import net.mamoe.mirai.internal.contact.impl
+import net.mamoe.mirai.internal.contact.info.FriendGroupInfo
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.notice.NewContactSupport
@@ -32,13 +34,13 @@ internal class FriendGroupNoticeProcessor(
                     markAsConsumed(msgModInfo)
                     when {
                         msgModInfo.msgModFriendGroup != null -> handleFriendGroupChanged(
-                            msgModInfo.msgModFriendGroup,
-                            logger
+                            msgModInfo.msgModFriendGroup, logger
                         )
                         msgModInfo.msgModGroupName != null -> handleFriendGroupNameChanged(
-                            msgModInfo.msgModGroupName,
-                            logger
+                            msgModInfo.msgModGroupName, logger
                         )
+                        msgModInfo.msgDelGroup != null -> handleDelGroup(msgModInfo.msgDelGroup, logger)
+                        msgModInfo.msgAddGroup != null -> handleAddGroup(msgModInfo.msgAddGroup)
                         else -> markNotConsumed(msgModInfo)
                     }
                 }
@@ -46,12 +48,38 @@ internal class FriendGroupNoticeProcessor(
         }
     }
 
+    private fun NoticePipelineContext.handleAddGroup(
+        addGroup: Submsgtype0x27.SubMsgType0x27.AddGroup
+    ) {
+        bot.friendGroups.friendGroups.add(
+            FriendGroupImpl(
+                bot,
+                FriendGroupInfo(addGroup.groupid, String(addGroup.groupname), 0, 0)
+            )
+        )
+    }
+
+    private fun NoticePipelineContext.handleDelGroup(
+        delGroup: Submsgtype0x27.SubMsgType0x27.DelGroup, logger: MiraiLogger
+    ) {
+        bot.friendGroups[delGroup.groupid]?.let { friendGroup ->
+            val defaultFriendGroup = bot.friendGroups[0]!!
+            friendGroup.friends.forEach {
+                it.impl().info.friendGroupId = 0
+                defaultFriendGroup.friends.delegate.add(it)
+            }
+            bot.friendGroups.friendGroups.remove(friendGroup)
+        } ?: let {
+            logger.error { "fail to find FriendGroup(id=${delGroup.groupid}) in Bot(id=${bot.id})" }
+            return
+        }
+    }
+
     private fun NoticePipelineContext.handleFriendGroupNameChanged(
-        modFriendGroup: Submsgtype0x27.SubMsgType0x27.ModGroupName,
-        logger: MiraiLogger
+        modFriendGroup: Submsgtype0x27.SubMsgType0x27.ModGroupName, logger: MiraiLogger
     ) {
         bot.friendGroups[modFriendGroup.groupid]?.let {
-            it.impl().name = modFriendGroup.groupname.toString()
+            it.impl().name = String(modFriendGroup.groupname)
         } ?: let {
             logger.error { "fail to find FriendGroup(id=${modFriendGroup.groupid}) in Bot(id=${bot.id})" }
             return
@@ -67,7 +95,8 @@ internal class FriendGroupNoticeProcessor(
                 logger.error { "fail to find Friend(id=${body.fuin}) in Bot(id=${bot.id})" }
                 return
             }
-            bot.friendGroups[friend.impl().info.friendGroupId]?.let {
+            if (friend.impl().info.friendGroupId == body.uint32NewGroupId.first()) return@forEach
+            bot.friendGroups[friend.info.friendGroupId]?.let {
                 // don't care result
                 it.impl().friends.delegate.remove(friend.impl())
             } ?: let {

@@ -214,8 +214,7 @@ internal class ContactUpdaterImpl(
         bot.friendGroups.friendGroups = refreshFriendGroupList()
 
         for (friendInfoImpl in list) {
-            val friend = bot.addNewFriendAndRemoveStranger(friendInfoImpl)!!
-            bot.friendGroups[friendInfoImpl.friendGroupId]!!.friends.delegate.add(friend)
+            bot.addNewFriendAndRemoveStranger(friendInfoImpl)!!
         }
 
         initFriendOk = true

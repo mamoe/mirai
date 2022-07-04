@@ -38,6 +38,11 @@ internal class FriendGroupsImpl(
                 "Cannot delete friendGroup, code=${it.result.toInt()}, errStr=${it.errStr}"
             }
         }
+        val defaultFriendGroup = bot.friendGroups[0]!!
+        friendGroup.friends.forEach {
+            it.impl().info.friendGroupId = 0
+            defaultFriendGroup.friends.delegate.add(it)
+        }
         friendGroups.remove(friendGroup)
         return true
     }
