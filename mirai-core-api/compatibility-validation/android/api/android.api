@@ -976,7 +976,6 @@ public abstract interface class net/mamoe/mirai/data/FriendGroups : java/lang/It
 	public abstract fun create (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun delete (Lnet/mamoe/mirai/data/FriendGroup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun get (I)Lnet/mamoe/mirai/data/FriendGroup;
-	public abstract fun getFriendGroups ()Ljava/util/List;
 }
 
 public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mirai/data/UserInfo {

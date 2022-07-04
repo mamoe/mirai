@@ -14,6 +14,7 @@ import net.mamoe.mirai.data.FriendGroups
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendGroupInfo
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.utils.asImmutable
 
 internal class FriendGroupsImpl(
     val bot: QQAndroidBot
@@ -42,5 +43,5 @@ internal class FriendGroupsImpl(
     }
 
     override fun get(id: Int): FriendGroup? = friendGroups.firstOrNull { it.id == id }
-    override fun iterator(): Iterator<FriendGroup> = friendGroups.iterator()
+    override fun iterator(): Iterator<FriendGroup> = friendGroups.asImmutable().iterator()
 }
