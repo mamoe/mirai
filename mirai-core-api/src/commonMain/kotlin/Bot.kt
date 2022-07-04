@@ -15,7 +15,7 @@ package net.mamoe.mirai
 import kotlinx.coroutines.*
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.FriendGroup
+import net.mamoe.mirai.data.FriendGroups
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.action.BotNudge
@@ -116,7 +116,7 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     /**
      * 全部的好友分组
      */
-    public val friendGroups: List<FriendGroup>
+    public val friendGroups: FriendGroups
 
 
     /**

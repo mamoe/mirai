@@ -48,10 +48,4 @@ public interface FriendGroup {
      * @throws IllegalStateException 当因为其他原因删除不成功时抛出
      */
     public suspend fun delete(): Boolean
-
-    /**
-     * 新建一个好友分组
-     * @throws IllegalStateException 当创建不成功时
-     */
-    public suspend fun new(name: String): FriendGroup
 }

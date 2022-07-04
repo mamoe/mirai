@@ -12,11 +12,11 @@ package net.mamoe.mirai.internal
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.data.FriendGroup
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
+import net.mamoe.mirai.internal.contact.FriendGroupsImpl
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ComponentStorageDelegate
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
@@ -72,8 +72,8 @@ internal open class QQAndroidBot constructor(
     configuration: BotConfiguration,
 ) : AbstractBot(configuration, account.id) {
     override val bot: QQAndroidBot get() = this
+    override val friendGroups: FriendGroupsImpl by lazy { FriendGroupsImpl(this) }
 
-    override var friendGroups: MutableList<FriendGroup> = mutableListOf()
     val client get() = components[SsoProcessor].client
 
     override fun close(cause: Throwable?) {
