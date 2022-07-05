@@ -185,12 +185,13 @@ contact.sendMessage(PlainText("你要的图片是") + Image("{f8f1ab55-bf8e-4236
 contact.sendMessage(new PlainText("你要的图片是：").plus(Image.fromId("{f8f1ab55-bf8e-4236-b55e-955848d7069f}.png"))); // 一个纯文本加一个图片
 ```
 
-注: 当需要拼接的消息较多的时候, 建议使用 [构造消息链](#构造消息链) 而不是 `plus`
-  - `plus` 在需要拼接的元素较多的时候运行效率较慢
+注当需要拼接的消息元素较多时，建议[使用构建器](#构造消息链)。
+
+在 mirai 2.12 起，`plus` 在不同时涉及消息链以及元数据时，速度与构建器相当。而在这以前 `plus` 在很多情况下都比使用构建器慢。（备注：只要不是要连接数百个或更多元素，这个性能差距实际上也可以忽略）
 
 ### 构造消息链
 
-更复杂的消息则需要构造为消息链。
+多个消息元素可以作为消息链组合。
 
 #### 在 Kotlin 构造消息链
 
@@ -203,7 +204,7 @@ contact.sendMessage(new PlainText("你要的图片是：").plus(Image.fromId("{f
 | `fun messageChainOf(vararg Message): MessageChain`      |
 | `fun Message.plus(tail: Message): MessageChain`         |
 
-可以使用如上表格所示的方法构造，或使用 DSL builder。
+可以使用如上表格所示的方法构造，或使用 DSL 构建器。构建器的简单定义如下：
 ```kotlin
 class MessageChainBuilder : MutableList<SingleMessage>, Appendable {
     operator fun Message.unaryPlus()
@@ -211,6 +212,8 @@ class MessageChainBuilder : MutableList<SingleMessage>, Appendable {
     fun add(vararg messages: Message)
 }
 ```
+
+在 Kotlin 的使用示例：
 
 ```kotlin
 val chain = buildMessageChain {
@@ -252,9 +255,12 @@ MessageChain chain = new MessageChainBuilder()
 
 ### 作为字符串处理消息
 
-通常要把消息作为字符串处理，在 Kotlin 使用 `message.content` 或在 Java 使用 `message.contentToString()`。
-
+通常要把消息作为字符串处理，可在 Kotlin 使用 `message.content` 或在 Java 使用 `message.contentToString()`。
 获取到的字符串表示只包含各 [`MessageContent`] 以官方风格显示的消息内容。如 `"你本次测试的成绩是[图片]"`、`[语音]`、`[微笑]`。
+
+
+使用 `toString()` 对某些元素可以获得与 `contentToString()` 相似的结果，但 **`toString` 是不稳定**的，可能在未来版本变更。
+`contentToString()` 实际上也**没有**对所有元素都作出稳定性承诺，在开发时应尽可能避免基于复杂消息类型的字符串表示处理。
 
 ### 处理富文本消息
 
