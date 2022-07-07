@@ -9,11 +9,14 @@
 
 package net.mamoe.mirai.console.internal.plugin
 
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.ConsoleDataScope.Companion.get
+import net.mamoe.mirai.console.fontend.DownloadingProgress
 import net.mamoe.mirai.console.internal.MiraiConsoleBuildDependencies
 import net.mamoe.mirai.console.internal.data.builtins.DataScope
 import net.mamoe.mirai.console.internal.data.builtins.PluginDependenciesConfig
 import net.mamoe.mirai.console.plugin.PluginManager
+import net.mamoe.mirai.console.util.renderMemoryUsageNumber
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.verbose
@@ -41,6 +44,7 @@ import org.eclipse.aether.transfer.AbstractTransferListener
 import org.eclipse.aether.transfer.TransferEvent
 import org.eclipse.aether.transport.http.HttpTransporterFactory
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 
 @Suppress("DEPRECATION", "MemberVisibilityCanBePrivate")
@@ -96,14 +100,60 @@ internal class JvmPluginDependencyDownloader(
             session, LocalRepository(PluginManager.pluginLibrariesFolder)
         )
         session.transferListener = object : AbstractTransferListener() {
+            private val dwnProgresses: MutableMap<File, DownloadingProgress> = ConcurrentHashMap()
+
             override fun transferStarted(event: TransferEvent) {
                 logger.verbose {
                     "Downloading ${event.resource?.repositoryUrl}${event.resource?.resourceName}"
+                }
+                val nw = MiraiConsoleImplementation.getInstance().createNewDownloadingProgress()
+                dwnProgresses.put(
+                    event.resource.file, nw
+                )?.dispose()
+                nw.initProgress(event.resource.contentLength)
+                nw.updateText("Downloading ${event.resource.resourceName}....")
+            }
+
+            override fun transferSucceeded(event: TransferEvent) {
+                dwnProgresses.remove(event.resource.file)?.let { dp ->
+                    dp.updateText(buildString {
+                        append("Downloaded  ")
+                        append(event.resource.resourceName)
+                        append(" (")
+                        renderMemoryUsageNumber(this@buildString, event.resource.contentLength)
+                        append(")")
+                    })
+                    dp.dispose()
+                }
+            }
+
+            override fun transferProgressed(event: TransferEvent) {
+                dwnProgresses[event.resource.file]?.let { pg ->
+                    pg.updateProgress(event.transferredBytes)
+                    pg.updateText(buildString bs@{
+                        append("Downloading ")
+                        append(event.resource.resourceName)
+                        append(" (")
+                        val sz = this@bs.length
+                        renderMemoryUsageNumber(this@bs, event.transferredBytes)
+                        repeat(kotlin.math.max(0, 7 - (this@bs.length - sz))) {
+                            append(' ')
+                        }
+
+                        append(" / ")
+                        renderMemoryUsageNumber(this@bs, event.resource.contentLength)
+                        append(")")
+                    })
+                    pg.rerender()
                 }
             }
 
             override fun transferFailed(event: TransferEvent) {
                 logger.warning(event.exception)
+                dwnProgresses.remove(event.resource.file)?.let {
+                    it.markFailed()
+                    it.dispose()
+                }
             }
         }
         val userHome = System.getProperty("user.home")

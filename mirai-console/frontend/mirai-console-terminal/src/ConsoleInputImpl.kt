@@ -42,8 +42,10 @@ internal object ConsoleInputImpl : ConsoleInput {
             kotlin.runCatching {
                 thread.submit {
                     kotlin.runCatching {
+                        waitDownloadingProgressEmpty()
                         lineReader.readLine(
                             if (hint.isNotEmpty()) {
+                                prePrintNewLog()
                                 lineReader.printAbove(
                                     Ansi.ansi()
                                         .fgCyan()

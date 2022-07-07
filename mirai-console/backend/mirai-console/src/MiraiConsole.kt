@@ -19,6 +19,7 @@ import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.extensions.BotConfigurationAlterer
+import net.mamoe.mirai.console.fontend.DownloadingProgress
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.plugin.PluginManager
@@ -253,6 +254,25 @@ public interface MiraiConsole : CoroutineScope {
             GlobalScope.launch {
                 MiraiConsoleImplementation.shutdown()
             }
+        }
+
+        /**
+         * 创建一个新的下载进度条
+         *
+         * 注: 此 api 应该只在以下情况使用
+         *
+         * - 插件初始化 (包括 onLoad, onEnable)
+         * - 命令执行中 (控制台)
+         *
+         * 在其他情况使用可能会导致意外的情况
+         *
+         * // implementation note:
+         * 在 terminal 中, downloading progress 存在时会停止命令输入
+         */
+        @ConsoleExperimentalApi
+        @JvmStatic
+        public fun newDownloadingProgress(): DownloadingProgress {
+            return MiraiConsoleImplementation.getInstance().createNewDownloadingProgress()
         }
     }
 

@@ -22,13 +22,14 @@ import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.extension.ComponentStorage
+import net.mamoe.mirai.console.fontend.DefaultLoggingDownloadingProgress
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScopeImpl
+import net.mamoe.mirai.console.fontend.DownloadingProgress
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
 import net.mamoe.mirai.console.internal.pluginManagerImpl
-import net.mamoe.mirai.console.internal.shutdown.ShutdownDaemon
 import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
@@ -219,6 +220,11 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      * 因此不要在 [createLogger] 中调用 [net.mamoe.mirai.utils.MiraiLogger.create]
      */
     public fun createLogger(identity: String?): MiraiLogger
+
+    /** @see [MiraiConsole.newDownloadingProgress] */
+    public fun createNewDownloadingProgress(): DownloadingProgress {
+        return DefaultLoggingDownloadingProgress()
+    }
 
     /**
      * 该前端是否支持使用 Ansi 输出彩色信息
