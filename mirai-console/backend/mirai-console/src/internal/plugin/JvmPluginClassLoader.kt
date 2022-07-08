@@ -94,6 +94,10 @@ internal class DynLibClassLoader : URLClassLoader {
                 } catch (ignored: ClassNotFoundException) {
                 }
             }
+            try {
+                return Class.forName(name, false, JavaSystemPlatformClassLoader)
+            } catch (ignored: ClassNotFoundException) {
+            }
             return null
         }
     }
