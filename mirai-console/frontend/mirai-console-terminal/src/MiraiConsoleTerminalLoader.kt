@@ -308,7 +308,9 @@ internal fun overrideSTD(terminal: MiraiConsoleImplementation) {
 internal object ConsoleCommandSenderImplTerminal : MiraiConsoleImplementation.ConsoleCommandSenderImpl {
     override suspend fun sendMessage(message: String) {
         kotlin.runCatching {
+            prePrintNewLog()
             lineReader.printAbove(message + ANSI_RESET)
+            postPrintNewLog()
         }.onFailure { exception ->
             // If failed. It means JLine Terminal not working...
             PrintStream(FileOutputStream(FileDescriptor.err)).use {
