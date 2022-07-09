@@ -168,9 +168,10 @@ internal open class MultiMsgUploader(
                         msgId = 1,
                     ),
                     msgType = 82, // troop,
-                    groupInfo = if (contact is Group) MsgComm.GroupInfo(
-                        groupCode = contact.groupCode, groupCard = senderName // Cinnamon
-                    ) else null,
+                    groupInfo = MsgComm.GroupInfo(
+                        groupCode = if (contact is Group) contact.groupCode else 0L,
+                        groupCard = msg.senderName, // Cinnamon
+                    ),
                     isSrcMsg = false,
                 ), msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
