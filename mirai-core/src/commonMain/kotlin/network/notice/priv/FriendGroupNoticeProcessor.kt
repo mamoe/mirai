@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.context
 import net.mamoe.mirai.utils.error
+import net.mamoe.mirai.utils.warning
 
 internal class FriendGroupNoticeProcessor(
     private val logger: MiraiLogger,
@@ -70,7 +71,7 @@ internal class FriendGroupNoticeProcessor(
             }
             bot.friendGroups.friendGroups.remove(friendGroup)
         } ?: let {
-            logger.error { "fail to find FriendGroup(id=${delGroup.groupid}) in Bot(id=${bot.id})" }
+            logger.warning { "Detected friendGroup(id=${delGroup.groupid}) was removed but it isn't available in bot's friendGroups list" }
             return
         }
     }
@@ -81,7 +82,7 @@ internal class FriendGroupNoticeProcessor(
         bot.friendGroups[modFriendGroup.groupid]?.let {
             it.impl().name = String(modFriendGroup.groupname)
         } ?: let {
-            logger.error { "fail to find FriendGroup(id=${modFriendGroup.groupid}) in Bot(id=${bot.id})" }
+            logger.warning { "Detected friendGroup(id=${modFriendGroup.groupid}) was renamed but it cannot be found in bot's friendGroups list" }
             return
         }
     }
@@ -92,7 +93,7 @@ internal class FriendGroupNoticeProcessor(
     ) {
         modFriendGroup.msgFrdGroup.forEach { body ->
             val friend = bot.getFriend(body.fuin) ?: let {
-                logger.error { "fail to find Friend(id=${body.fuin}) in Bot(id=${bot.id})" }
+                logger.error { "Detected friend(id=${body.fuin}) was moved to friendGroup(id=${body.uint32NewGroupId}) but friend not found in bot's friends list" }
                 return
             }
             if (friend.impl().info.friendGroupId == body.uint32NewGroupId.first()) return@forEach
@@ -100,7 +101,7 @@ internal class FriendGroupNoticeProcessor(
                 // don't care result
                 it.impl().friends.delegate.remove(friend.impl())
             } ?: let {
-                logger.error { "fail to find FriendGroup(id=${body.fuin}) in Bot(id=${bot.id})" }
+                logger.warning { "Detected friend was moved from friendGroup(id=${friend.info.friendGroupId}) but it cannot be found in bot's friendGroups list" }
                 return
             }
             friend.info.friendGroupId = body.uint32NewGroupId.first()
@@ -108,7 +109,7 @@ internal class FriendGroupNoticeProcessor(
                 // don't care result
                 it.impl().friends.delegate.add(friend)
             } ?: let {
-                logger.error { "fail to find FriendGroup(id=${body.fuin}) in Bot(id=${bot.id})" }
+                logger.warning { "Detected friend was moved to friendGroup(id=${friend.info.friendGroupId}) but it cannot be found in bot's friendGroups list" }
                 return
             }
         }

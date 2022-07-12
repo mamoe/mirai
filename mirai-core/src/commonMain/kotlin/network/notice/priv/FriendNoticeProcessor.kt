@@ -264,7 +264,7 @@ internal class FriendNoticeProcessor(
                 uin = body.msgAddFrdNotify.fuin,
                 nick = body.msgAddFrdNotify.fuinNick,
                 remark = "",
-                friendGroupId = 0
+                friendGroupId = 0,
             )
 
             val removed = bot.removeStranger(info.uin)
