@@ -50,7 +50,7 @@ internal class FriendGroupImpl constructor(
         override fun iterator(): Iterator<Friend> = delegateSequence.iterator()
 
         override fun isEmpty(): Boolean {
-            return bot.friends.any { it.impl().info.friendGroupId == id }
+            return bot.friends.none { it.impl().info.friendGroupId == id }
         }
 
         override fun contains(element: Friend): Boolean {
