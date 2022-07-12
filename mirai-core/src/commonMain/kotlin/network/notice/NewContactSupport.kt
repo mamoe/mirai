@@ -76,7 +76,6 @@ internal interface NewContactSupport { // can be a marker interface when context
         strangers[info.uin]?.let { removeStranger(it.id) }
         val friend = Mirai.newFriend(bot, info).impl()
         friends.delegate.add(friend)
-        friendGroups[info.friendGroupId]!!.friends.delegate.add(friend)
         return friend
     }
 

@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.data
 
-import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.Friend
 
 public interface FriendGroup {
@@ -28,7 +27,10 @@ public interface FriendGroup {
      */
     public val count: Int
 
-    public val friends: ContactList<Friend>
+    /**
+     * 属于本分组的好友集合
+     */
+    public val friends: Collection<Friend>
 
     /**
      * 更改好友分组名称

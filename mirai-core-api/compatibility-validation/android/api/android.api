@@ -966,7 +966,7 @@ public abstract interface class net/mamoe/mirai/contact/roaming/RoamingSupported
 public abstract interface class net/mamoe/mirai/data/FriendGroup {
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getCount ()I
-	public abstract fun getFriends ()Lnet/mamoe/mirai/contact/ContactList;
+	public abstract fun getFriends ()Ljava/util/Collection;
 	public abstract fun getId ()I
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun moveIn (Lnet/mamoe/mirai/contact/Friend;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

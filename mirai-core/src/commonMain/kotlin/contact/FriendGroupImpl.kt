@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.contact
 
-import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.data.FriendGroup
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -26,6 +25,7 @@ internal inline fun FriendGroup.impl(): FriendGroupImpl {
     check(this is FriendGroupImpl) { "A FriendGroup instance is not instance of FriendGroupImpl. Your instance: ${this::class.qualifiedName}" }
     return this
 }
+
 internal class FriendGroupImpl constructor(
     val bot: QQAndroidBot,
     val info: FriendGroupInfo
@@ -34,7 +34,30 @@ internal class FriendGroupImpl constructor(
 
     override var name: String by info::groupName
     override val count: Int by info::friendCount
-    override val friends: ContactList<FriendImpl> = ContactList()
+    override val friends: Collection<Friend> = object : AbstractCollection<Friend>() {
+        override val size: Int
+            get() = bot.friends.count { it.impl().info.friendGroupId == id }
+
+        private val delegateSequence = sequence<Friend> {
+            bot.friends.forEach { friend ->
+                friend.impl()
+                if (friend.info.friendGroupId == id) {
+                    yield(friend)
+                }
+            }
+        }
+
+        override fun iterator(): Iterator<Friend> = delegateSequence.iterator()
+
+        override fun isEmpty(): Boolean {
+            return bot.friends.any { it.impl().info.friendGroupId == id }
+        }
+
+        override fun contains(element: Friend): Boolean {
+            if (element !is FriendImpl) return false
+            return element.info.friendGroupId == id
+        }
+    }
 
 
     override suspend fun renameTo(newName: String): Boolean {
@@ -58,9 +81,7 @@ internal class FriendGroupImpl constructor(
         }
         // 因为 MoveGroupMemReqPack 协议在测试里如果移动到不存在的分组，他会自动移动好友到 id = 0 的默认好友分组然后返回 result = 0
         val id = friend.queryProfile().friendGroupId
-        friend.friendGroup?.friends?.remove(friend.id)
         friend.impl().info.friendGroupId = id
-        friend.friendGroup?.friends?.delegate?.add(friend)
         if (id != this.id && id == 0) return false
         return true
     }

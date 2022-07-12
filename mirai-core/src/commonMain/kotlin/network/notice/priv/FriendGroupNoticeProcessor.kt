@@ -64,10 +64,8 @@ internal class FriendGroupNoticeProcessor(
         delGroup: Submsgtype0x27.SubMsgType0x27.DelGroup, logger: MiraiLogger
     ) {
         bot.friendGroups[delGroup.groupid]?.let { friendGroup ->
-            val defaultFriendGroup = bot.friendGroups[0]!!
             friendGroup.friends.forEach {
                 it.impl().info.friendGroupId = 0
-                defaultFriendGroup.friends.delegate.add(it)
             }
             bot.friendGroups.friendGroups.remove(friendGroup)
         } ?: let {
@@ -97,21 +95,7 @@ internal class FriendGroupNoticeProcessor(
                 return
             }
             if (friend.impl().info.friendGroupId == body.uint32NewGroupId.first()) return@forEach
-            bot.friendGroups[friend.info.friendGroupId]?.let {
-                // don't care result
-                it.impl().friends.delegate.remove(friend.impl())
-            } ?: let {
-                logger.warning { "Detected friend was moved from friendGroup(id=${friend.info.friendGroupId}) but it cannot be found in bot's friendGroups list" }
-                return
-            }
             friend.info.friendGroupId = body.uint32NewGroupId.first()
-            bot.friendGroups[friend.info.friendGroupId]?.let {
-                // don't care result
-                it.impl().friends.delegate.add(friend)
-            } ?: let {
-                logger.warning { "Detected friend was moved to friendGroup(id=${friend.info.friendGroupId}) but it cannot be found in bot's friendGroups list" }
-                return
-            }
         }
     }
 }
