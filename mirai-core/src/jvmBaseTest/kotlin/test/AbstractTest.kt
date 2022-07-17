@@ -13,15 +13,38 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.debug.DebugProbes
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.internal.network.framework.SynchronizedStdoutLogger
+import net.mamoe.mirai.internal.testFramework.DynamicTest
+import net.mamoe.mirai.internal.testFramework.TestFactory
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.setSystemProp
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.Timeout
 import java.util.concurrent.TimeUnit
+import kotlin.jvm.optionals.getOrNull
+import kotlin.reflect.full.functions
+import kotlin.reflect.full.hasAnnotation
 
 @Timeout(value = 7, unit = TimeUnit.MINUTES)
 internal actual abstract class AbstractTest actual constructor() : CommonAbstractTest() {
     @OptIn(ExperimentalCoroutinesApi::class)
     actual companion object {
+        @OptIn(ExperimentalStdlibApi::class)
+        @BeforeAll
+        private fun checkTestFactories(testInfo: TestInfo) {
+            val clazz = testInfo.testClass.getOrNull()?.kotlin ?: return
+            for (function in clazz.functions) {
+                if (function.hasAnnotation<TestFactory>()) {
+                    check(function.returnType.classifier == List::class) {
+                        "Illegal TestFactory function. A such function must return DynamicTestsResult."
+                    }
+                    check(function.returnType.arguments.singleOrNull()?.type?.classifier == DynamicTest::class) {
+                        "Illegal TestFactory function. A such function must return DynamicTestsResult."
+                    }
+                }
+            }
+        }
+
         init {
             initPlatform()
 
