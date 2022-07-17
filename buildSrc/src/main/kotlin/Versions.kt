@@ -64,7 +64,7 @@ object Versions {
     const val junit = "5.7.2"
 
     const val yamlkt = "0.12.0"
-    const val intellijGradlePlugin = "1.5.3"
+    const val intellijGradlePlugin = "1.7.0"
 
     //    const val kotlinIntellijPlugin = "211-1.5.20-release-284-IJ7442.40" // keep to newest as kotlinCompiler
     const val intellij = "2022.1" // don't update easily unless you want your disk space -= 500MB
