@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.message.protocol.serialization
 
 import kotlinx.serialization.KSerializer
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.message.data.SingleMessage
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -18,7 +19,8 @@ import kotlin.jvm.JvmInline
 import kotlin.reflect.KClass
 
 /**
- * Collectd in [MessageProtocol.collectProcessors]
+ * Collectd in [MessageProtocol.collectProcessors].
+ * @see ProcessorCollector.add
  */
 internal class MessageSerializer<T : Any>(
     /**
@@ -38,7 +40,7 @@ internal class MessageSerializer<T : Any>(
     // This can help native targets, which has no reflection support.
 
     companion object {
-        fun <T : SingleMessage, R> superclassesScope(
+        inline fun <T : SingleMessage, R> superclassesScope(
             vararg superclasses: KClass<in T>,
             block: SuperclassesScope<T>.() -> R
         ): R {

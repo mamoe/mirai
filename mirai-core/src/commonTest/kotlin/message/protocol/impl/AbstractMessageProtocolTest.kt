@@ -13,6 +13,14 @@ import io.ktor.utils.io.core.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.decodeStructure
+import kotlinx.serialization.encoding.encodeStructure
+import kotlinx.serialization.json.*
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
@@ -41,10 +49,14 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.internal.notice.processors.GroupExtensions
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.internal.testFramework.dynamicTest
+import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.reflect.KClass
 import kotlin.test.*
 
 @OptIn(TestOnly::class)
@@ -352,4 +364,294 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
             }
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // serialization
+    ///////////////////////////////////////////////////////////////////////////
+
+    open val format: Json
+        // `serializersModule` is volatile, always return new Json instances.
+        get() = Json {
+            prettyPrint = true
+            serializersModule = MessageSerializers.serializersModule
+        }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // serialization - polymorphism
+    ///////////////////////////////////////////////////////////////////////////
+
+    interface PolymorphicWrapper {
+        val message: SingleMessage
+    }
+
+    /**
+     * @param expectedSerialName also known as *poly discriminator*, give `null` to check for no discriminator's presence
+     */
+    protected open fun <M : SingleMessage, P : PolymorphicWrapper> testPolymorphicIn(
+        polySerializer: KSerializer<P>,
+        polyConstructor: (message: M) -> P,
+        data: M,
+        expectedSerialName: String?,
+        expectedInstance: M = data,
+    ) {
+        val string = format.encodeToString(
+            polySerializer,
+            polyConstructor(data)
+        )
+        println(string)
+        var element = format.parseToJsonElement(string)
+        element as JsonObject
+        element = element["message"] as JsonObject
+        if (expectedSerialName != null) {
+            assertEquals(expectedSerialName, element["type"]?.cast<JsonPrimitive>()?.content)
+        } else {
+            assertEquals(null, element["type"])
+        }
+        assertEquals(
+            expectedInstance,
+            format.decodeFromString(polySerializer, string).message
+        )
+    }
+
+    @Serializable
+    data class PolymorphicWrapperSingleMessage(
+        override val message: @Polymorphic SingleMessage
+    ) : PolymorphicWrapper
+
+    protected open fun <M : SingleMessage> testPolymorphicInSingleMessage(
+        data: M,
+        expectedSerialName: String,
+        expectedInstance: M = data,
+    ) = listOf(dynamicTest("testPolymorphicInSingleMessage") {
+        testPolymorphicIn(
+            polySerializer = PolymorphicWrapperSingleMessage.serializer(),
+            polyConstructor = ::PolymorphicWrapperSingleMessage,
+            data = data,
+            expectedSerialName = expectedSerialName,
+            expectedInstance = expectedInstance
+        )
+
+    })
+
+    @Serializable
+    data class PolymorphicWrapperMessageContent(
+        override val message: @Polymorphic MessageContent
+    ) : PolymorphicWrapper
+
+    protected open fun <M : MessageContent> testPolymorphicInMessageContent(
+        data: M,
+        expectedSerialName: String,
+        expectedInstance: M = data,
+    ) = listOf(dynamicTest("testPolymorphicInMessageContent") {
+        testPolymorphicIn(
+            polySerializer = PolymorphicWrapperMessageContent.serializer(),
+            polyConstructor = ::PolymorphicWrapperMessageContent,
+            data = data,
+            expectedSerialName = expectedSerialName,
+            expectedInstance = expectedInstance
+        )
+    })
+
+    @Serializable
+    data class PolymorphicWrapperMessageMetadata(
+        override val message: @Polymorphic MessageMetadata
+    ) : PolymorphicWrapper
+
+    protected open fun <M : MessageMetadata> testPolymorphicInMessageMetadata(
+        data: M,
+        expectedSerialName: String,
+        expectedInstance: M = data,
+    ) = listOf(dynamicTest("testPolymorphicInMessageMetadata") {
+        testPolymorphicIn(
+            polySerializer = PolymorphicWrapperMessageMetadata.serializer(),
+            polyConstructor = ::PolymorphicWrapperMessageMetadata,
+            data = data,
+            expectedSerialName = expectedSerialName,
+            expectedInstance = expectedInstance
+        )
+    })
+
+    ///////////////////////////////////////////////////////////////////////////
+    // serialization - in MessageChain
+    ///////////////////////////////////////////////////////////////////////////
+
+    protected open fun <M : SingleMessage> testInsideMessageChain(
+        data: M,
+        expectedSerialName: String,
+        expectedInstance: M = data,
+    ) = listOf(dynamicTest("testInsideMessageChain") {
+        val chain = messageChainOf(data)
+
+        val string = chain.serializeToJsonString(format)
+        println(string)
+        val element = format.parseToJsonElement(string).jsonArray.single().jsonObject
+        assertEquals(expectedSerialName, element["type"]?.cast<JsonPrimitive>()?.content)
+
+        assertEquals(
+            expectedInstance,
+            MessageChain.deserializeFromJsonString(string).single()
+        )
+    })
+
+    ///////////////////////////////////////////////////////////////////////////
+    // serialization - contextual
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Serializable
+    data class ContextualWrapper(
+        val message: @Contextual SingleMessage,
+    )
+
+    @Serializable
+    data class GenericTypedWrapper<T : SingleMessage>(
+        val message: T,
+    )
+
+    protected open fun <M : T, T : SingleMessage> testContextual(
+        data: M,
+        expectedSerialName: String,
+        expectedInstance: M = data,
+        targetType: KClass<out T> = data::class,
+    ) = listOf(
+        testContextualWithWrapper<M, T>(data, expectedSerialName, expectedInstance),
+        testContextualWithStaticType(targetType, data, expectedInstance),
+        testContextualGeneric(targetType, data, expectedInstance),
+        testContextualWithoutWrapper<M, T>(data, expectedInstance)
+    ).flatten()
+
+    private fun <M : T, T : SingleMessage> testContextualWithoutWrapper(
+        data: M,
+        expectedInstance: M
+    ) = listOf(dynamicTest("testContextualWithoutWrapper") {
+        @Suppress("UNCHECKED_CAST")
+        val serializer = ContextualSerializer(data::class) as KSerializer<M>
+        val string = format.encodeToString(serializer, data)
+        println(string)
+        val element = format.parseToJsonElement(string).jsonObject
+        assertEquals(null, element["type"])
+
+        assertEquals(
+            expectedInstance,
+            format.decodeFromString(serializer, string)
+        )
+    })
+
+    private fun <M : T, T : SingleMessage> testContextualGeneric(
+        targetType: KClass<out T>,
+        data: M,
+        expectedInstance: M
+    ) = listOf(dynamicTest("testContextualGeneric") {
+        val messageSerializer: ContextualSerializer<SingleMessage> = ContextualSerializer(targetType).cast()
+
+        /**
+         * ```
+         * data class StaticTypedWrapper(
+         *     val message: T
+         * )
+         * ```
+         * without concern of generic types.
+         */
+        /**
+         * ```
+         * data class StaticTypedWrapper(
+         *     val message: T
+         * )
+         * ```
+         * without concern of generic types.
+         */
+        val serializer = GenericTypedWrapper.serializer(messageSerializer)
+
+        val string = format.encodeToString(serializer, GenericTypedWrapper(data))
+        println(string)
+        val element = format.parseToJsonElement(string).jsonObject["message"]!!.jsonObject
+
+        assertEquals(null, element["type"]?.jsonPrimitive?.content)
+
+        assertEquals(
+            expectedInstance,
+            format.decodeFromString(serializer, string).message
+        )
+    })
+
+    private fun <M : T, T : SingleMessage> testContextualWithStaticType(
+        targetType: KClass<out T>,
+        data: M,
+        expectedInstance: M,
+    ) = listOf(dynamicTest("testContextualWithStaticType") {
+        val messageSerializer: ContextualSerializer<SingleMessage> = ContextualSerializer(targetType).cast()
+
+        /**
+         * ```
+         * data class StaticTypedWrapper(
+         *     val message: T
+         * )
+         * ```
+         * without concern of generic types.
+         */
+        /**
+         * ```
+         * data class StaticTypedWrapper(
+         *     val message: T
+         * )
+         * ```
+         * without concern of generic types.
+         */
+        val serializer = object : KSerializer<SingleMessage> {
+            override val descriptor: SerialDescriptor = buildClassSerialDescriptor("StaticTypedWrapper") {
+                element("message", messageSerializer.descriptor, listOf(Contextual()))
+            }
+
+            override fun deserialize(decoder: Decoder): SingleMessage {
+                decoder.decodeStructure(descriptor) {
+                    if (this.decodeSequentially()) {
+                        return this.decodeSerializableElement(
+                            descriptor.getElementDescriptor(0),
+                            0,
+                            messageSerializer
+                        )
+                    } else {
+                        val index = this.decodeElementIndex(descriptor)
+                        check(index == 0)
+                        return this.decodeSerializableElement(descriptor, index, messageSerializer)
+                    }
+                }
+            }
+
+            override fun serialize(encoder: Encoder, value: SingleMessage) {
+                encoder.encodeStructure(descriptor) {
+                    encodeSerializableElement(descriptor, 0, messageSerializer, value)
+                }
+            }
+        }
+
+        val string = format.encodeToString(serializer, data)
+        println(string)
+        val element = format.parseToJsonElement(string).jsonObject["message"]!!.jsonObject
+
+        assertEquals(null, element["type"]?.jsonPrimitive?.content)
+
+        assertEquals(
+            expectedInstance,
+            format.decodeFromString(serializer, string)
+        )
+    })
+
+    private fun <M : T, T : SingleMessage> testContextualWithWrapper(
+        data: M,
+        expectedSerialName: String,
+        expectedInstance: M,
+        afterSerialization: (element: JsonObject) -> Unit = {}
+    ) = listOf(dynamicTest("testContextualWithWrapper") {
+        val string = format.encodeToString(ContextualWrapper.serializer(), ContextualWrapper(data))
+        println(string)
+        val element = format.parseToJsonElement(string).jsonObject["message"]!!.jsonObject
+        afterSerialization(element)
+
+        assertEquals(expectedSerialName, element["type"]?.jsonPrimitive?.content)
+
+        assertEquals(
+            expectedInstance,
+            format.decodeFromString(ContextualWrapper.serializer(), string).message
+        )
+    })
 }

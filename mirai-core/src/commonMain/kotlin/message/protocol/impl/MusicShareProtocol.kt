@@ -36,7 +36,7 @@ internal class MusicShareProtocol : MessageProtocol() {
         add(Sender())
 
         MessageSerializer.superclassesScope(MessageContent::class, SingleMessage::class) {
-            add(MessageSerializer(MusicShare::class, MusicShare.serializer()))
+            add(MessageSerializer(MusicShare::class, MusicShare.serializer(), registerAlsoContextual = true))
         }
     }
 

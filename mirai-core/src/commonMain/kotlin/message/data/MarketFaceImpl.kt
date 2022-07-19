@@ -34,4 +34,8 @@ internal data class MarketFaceImpl internal constructor(
     override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
         return visitor.ex()?.visitMarketFaceImpl(this, data) ?: super.accept(visitor, data)
     }
+
+    companion object {
+        const val SERIAL_NAME = MarketFace.SERIAL_NAME
+    }
 }

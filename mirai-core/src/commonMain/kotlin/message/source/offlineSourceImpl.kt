@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.message.source
 
 import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.atomic
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
@@ -23,6 +24,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.OfflineMessageSource
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
@@ -42,7 +44,7 @@ internal class OfflineMessageSourceImplData(
     private val originalMessageLazy: Lazy<MessageChain>,
     override val internalIds: IntArray,
 ) : OfflineMessageSource(), MessageSourceInternal {
-    object Serializer : MessageSourceSerializerImpl("OfflineMessageSource")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OfflineMessageSource")
 
     override val sequenceIds: IntArray get() = ids
     override val originalMessage: MessageChain by originalMessageLazy

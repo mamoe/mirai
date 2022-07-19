@@ -10,10 +10,17 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import io.ktor.utils.io.core.*
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.internal.message.data.MarketFaceImpl
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.testFramework.DynamicTestsResult
+import net.mamoe.mirai.internal.testFramework.TestFactory
+import net.mamoe.mirai.internal.testFramework.dynamicTest
+import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.message.data.Dice
+import net.mamoe.mirai.message.data.MarketFace
 import net.mamoe.mirai.utils.hexToBytes
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -194,5 +201,84 @@ internal class MarketFaceProtocolTest : AbstractMessageProtocolTest() {
         }.doBothChecks()
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // serialization
+    ///////////////////////////////////////////////////////////////////////////
 
+    @Serializable
+    data class PolymorphicWrapperMarketFace(
+        override val message: @Polymorphic MarketFace
+    ) : PolymorphicWrapper
+
+    @Serializable
+    data class StaticWrapperDice(
+        override val message: Dice
+    ) : PolymorphicWrapper
+
+    private fun <M : MarketFace> testPolymorphicInMarketFace(
+        data: M,
+        expectedSerialName: String,
+        expectedInstance: M = data,
+    ) = listOf(dynamicTest("testPolymorphicInMarketFace") {
+        testPolymorphicIn(
+            polySerializer = PolymorphicWrapperMarketFace.serializer(),
+            polyConstructor = ::PolymorphicWrapperMarketFace,
+            data = data,
+            expectedSerialName = expectedSerialName, // MarketFaceImpl is 'MarketFace', Dice is 'Dice', should include discriminator
+            expectedInstance = expectedInstance,
+        )
+    })
+
+    private fun testStaticDice(
+        data: Dice,
+        expectedInstance: Dice = data,
+    ) = listOf(dynamicTest("testStaticDice") {
+        testPolymorphicIn(
+            polySerializer = StaticWrapperDice.serializer(),
+            polyConstructor = ::StaticWrapperDice,
+            data = data,
+            expectedSerialName = null,
+            expectedInstance = expectedInstance,
+        )
+    })
+
+    @TestFactory
+    fun `test serialization for MarketFaceImpl`(): DynamicTestsResult {
+        val data = MarketFaceImpl(
+            net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                faceName = "5B E5 8F 91 E5 91 86 5D".hexToBytes(),
+                itemType = 6,
+                faceInfo = 1,
+                faceId = "71 26 44 B5 27 94 46 11 99 8A EC 31 86 75 19 D2".hexToBytes(),
+                tabId = 10278,
+                subType = 3,
+                key = "726a53a5372b7289".toByteArray(), /* 37 32 36 61 35 33 61 35 33 37 32 62 37 32 38 39 */
+                imageWidth = 200,
+                imageHeight = 200,
+                pbReserve = "0A 06 08 C8 01 10 C8 01 10 64 1A 0B 51 51 E5 A4 A7 E9 BB 84 E8 84 B8 22 40 68 74 74 70 73 3A 2F 2F 7A 62 2E 76 69 70 2E 71 71 2E 63 6F 6D 2F 69 70 3F 5F 77 76 3D 31 36 37 37 38 32 34 31 26 66 72 6F 6D 3D 61 69 6F 45 6D 6F 6A 69 4E 65 77 26 69 64 3D 31 30 38 39 31 30 2A 06 E6 9D A5 E8 87 AA 30 B5 BB B4 E3 0D 38 B5 BB B4 E3 0D 40 01 50 00".hexToBytes(),
+            )
+        )
+        val serialName = MarketFaceImpl.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMarketFace(data, serialName),
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName, targetType = MarketFace::class),
+        )
+    }
+
+    @TestFactory
+    fun `test serialization for Dice`(): DynamicTestsResult {
+        val data = Dice(1)
+        val serialName = Dice.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMarketFace(data, serialName),
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName, targetType = Dice::class),
+            testStaticDice(data),
+        )
+    }
 }

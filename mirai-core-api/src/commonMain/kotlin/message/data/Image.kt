@@ -23,7 +23,11 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.decodeStructure
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
@@ -111,6 +115,7 @@ import kotlin.native.CName
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
+@Suppress("DEPRECATION", "DEPRECATION_ERROR")
 @Serializable(Image.Serializer::class)
 @NotStableForInheritance
 public interface Image : Message, MessageContent, CodableMessage {
@@ -183,17 +188,43 @@ public interface Image : Message, MessageContent, CodableMessage {
         deserialize = { Image(it) },
     )
 
-    public object Serializer : KSerializer<Image> by FallbackSerializer("Image")
+    @Deprecated(
+        message = "For internal use only. Deprecated for removal. Please retrieve serializer from MessageSerializers.serializersModule.",
+        level = DeprecationLevel.WARNING
+    )
+    @DeprecatedSinceMirai(warningSince = "2.13") // error since 2.15, hidden since 2.16
+    public object Serializer : KSerializer<Image> by FallbackSerializer(SERIAL_NAME)
 
+    // move to mirai-core in 2.16. Delegate Serializer to the implementation from MessageSerializers.
     @MiraiInternalApi
-    public open class FallbackSerializer(serialName: String) : KSerializer<Image> by Delegate.serializer().map(
-        buildClassSerialDescriptor(serialName) { element("imageId", String.serializer().descriptor) },
-        serialize = { Delegate(imageId) },
-        deserialize = { Image(imageId) },
-    ) {
+    public open class FallbackSerializer(serialName: String) : KSerializer<Image> {
+        override val descriptor: SerialDescriptor = buildClassSerialDescriptor(serialName) {
+            element("imageId", String.serializer().descriptor)
+        }
+
+        // Note: Manually written to overcome discriminator issues.
+        // Without this implementation you will need `ignoreUnknownKeys` on deserialization.
+        override fun deserialize(decoder: Decoder): Image {
+            decoder.decodeStructure(descriptor) {
+                if (this.decodeSequentially()) {
+                    val imageId = this.decodeStringElement(descriptor, 0)
+                    return Image(imageId)
+                } else {
+                    val index = this.decodeElementIndex(descriptor)
+                    check(index == 0)
+                    val imageId = this.decodeStringElement(descriptor, index)
+                    return Image(imageId)
+                }
+            }
+        }
+
+        override fun serialize(encoder: Encoder, value: Image) {
+            Delegate.serializer().serialize(encoder, Delegate(value.imageId))
+        }
+
         @SerialName(SERIAL_NAME)
         @Serializable
-        internal data class Delegate(
+        private data class Delegate(
             val imageId: String
         )
     }

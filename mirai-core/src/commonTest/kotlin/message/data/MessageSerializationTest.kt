@@ -195,7 +195,7 @@ internal class MessageSerializationTest : AbstractTest() {
             serializersModule = module
             ignoreUnknownKeys = true
         }
-        val source = j.decodeFromString(MessageSource.Serializer, a)
+        val source = j.decodeFromString(MessageSerializers.serializersModule.serializer<MessageSource>(), a)
         println(source.structureToString())
         assertEquals(
             expected = Mirai.buildMessageSource(692928873, MessageSourceKind.GROUP) {

@@ -11,6 +11,9 @@ package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.testFramework.DynamicTestsResult
+import net.mamoe.mirai.internal.testFramework.TestFactory
+import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.message.data.VipFace
 import net.mamoe.mirai.utils.hexToBytes
 import kotlin.test.BeforeTest
@@ -48,4 +51,24 @@ internal class VipFaceProtocolTest : AbstractMessageProtocolTest() {
             useOrdinaryEquality()
         }.doDecoderChecks()
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // serialization
+    ///////////////////////////////////////////////////////////////////////////
+
+    @TestFactory
+    fun `test serialization for VipFace`(): DynamicTestsResult {
+        val data = VipFace(
+            VipFace.LiuLian, 1
+        )
+
+        val serialName = VipFace.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
+
 }

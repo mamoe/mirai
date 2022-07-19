@@ -11,6 +11,9 @@ package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.testFramework.DynamicTestsResult
+import net.mamoe.mirai.internal.testFramework.TestFactory
+import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.AtAll
 import net.mamoe.mirai.message.data.PlainText
@@ -115,4 +118,51 @@ internal class TextProtocolTest : AbstractMessageProtocolTest() {
             })
         }.doBothChecks()
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // serialization
+    ///////////////////////////////////////////////////////////////////////////
+
+    @TestFactory
+    fun `test serialization for PlainText`(): DynamicTestsResult {
+        val data = PlainText(
+            content = """foo""",
+        )
+
+        val serialName = PlainText.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
+
+    @TestFactory
+    fun `test serialization for At`(): DynamicTestsResult {
+        val data = At(
+            100
+        )
+
+        val serialName = At.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
+
+    @TestFactory
+    fun `test serialization for AtAll`(): DynamicTestsResult {
+        val data = AtAll
+        val serialName = AtAll.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
+
 }

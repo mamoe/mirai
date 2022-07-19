@@ -10,13 +10,22 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import io.ktor.utils.io.core.*
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.internal.message.image.OfflineFriendImage
+import net.mamoe.mirai.internal.message.image.OfflineGroupImage
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.testFramework.DynamicTestsResult
+import net.mamoe.mirai.internal.testFramework.TestFactory
+import net.mamoe.mirai.internal.testFramework.dynamicTest
+import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.hexToBytes
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertIs
 
 internal class ImageProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> = arrayOf(ImageProtocol())
@@ -563,4 +572,67 @@ internal class ImageProtocolTest : AbstractMessageProtocolTest() {
     }
 
 
+    ///////////////////////////////////////////////////////////////////////////
+    // serialization
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Serializable
+    data class PolymorphicWrapperImage(
+        override val message: @Polymorphic Image
+    ) : PolymorphicWrapper
+
+    private fun <M : Image> testPolymorphicInImage(
+        data: M,
+        expectedInstance: M = data,
+    ) = listOf(dynamicTest("testPolymorphicInImage") {
+        testPolymorphicIn(
+            polySerializer = PolymorphicWrapperImage.serializer(),
+            polyConstructor = ::PolymorphicWrapperImage,
+            data = data,
+            expectedSerialName = null,
+            expectedInstance = expectedInstance,
+        )
+    })
+
+    @TestFactory
+    fun `test serialization for OfflineGroupImage`(): DynamicTestsResult {
+        val data = Image("{90CCED1C-2D64-313B-5D66-46625CAB31D7}.jpg")
+        assertIs<OfflineGroupImage>(data)
+        val serialName = Image.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInImage(data),
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
+
+    @TestFactory
+    fun `test serialization for OfflineFriendImage type 1`(): DynamicTestsResult {
+        val data = Image("/f8f1ab55-bf8e-4236-b55e-955848d7069f") // type 1
+        assertIs<OfflineFriendImage>(data)
+        val serialName = Image.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInImage(data),
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
+
+    @TestFactory
+    fun `test serialization for OfflineFriendImage type 2`(): DynamicTestsResult {
+        val data = Image("/000000000-3814297509-BFB7027B9354B8F899A062061D74E206") // type 1
+        assertIs<OfflineFriendImage>(data)
+        val serialName = Image.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInImage(data),
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
 }

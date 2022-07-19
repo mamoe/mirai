@@ -40,11 +40,11 @@ internal class ImageProtocol : MessageProtocol() {
         add(ImagePatcherForGroup())
 
         MessageSerializer.superclassesScope(MessageContent::class, SingleMessage::class) {
+            @Suppress("DEPRECATION", "DEPRECATION_ERROR")
             add(MessageSerializer(Image::class, Image.Serializer, registerAlsoContextual = true))
         }
 
         MessageSerializer.superclassesScope(Image::class, MessageContent::class, SingleMessage::class) {
-            add(MessageSerializer(Image::class, Image.Serializer))
             add(MessageSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer()))
             add(MessageSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer()))
             add(MessageSerializer(OnlineFriendImageImpl::class, OnlineFriendImageImpl.serializer()))
