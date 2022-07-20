@@ -160,7 +160,7 @@ val lineReader: LineReader by lazy {
         .build()
 }
 
-val terminalDisplay: Display by object : kotlin.properties.ReadOnlyProperty<Any?, Display> {
+internal val terminalDisplay: Display by object : kotlin.properties.ReadOnlyProperty<Any?, Display> {
     val delegate: () -> Display by lazy {
         val terminal = terminal
         if (terminal is NoConsole) {
