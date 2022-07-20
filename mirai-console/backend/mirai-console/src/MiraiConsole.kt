@@ -257,9 +257,9 @@ public interface MiraiConsole : CoroutineScope {
         }
 
         /**
-         * 创建一个新的下载进度条
+         * 创建一个新的下载进度, 此进度将会在前端显示, 并且此进度需要[手动关闭][DownloadingProgress.close]
          *
-         * 注: 此 api 应该只在以下情况使用
+         * 注: 此 API 应该只在以下情况使用
          *
          * - 插件初始化 (包括 onLoad, onEnable)
          * - 命令执行中 (控制台)
@@ -267,7 +267,7 @@ public interface MiraiConsole : CoroutineScope {
          * 在其他情况使用可能会导致意外的情况
          *
          * // implementation note:
-         * 在 terminal 中, downloading progress 存在时会停止命令输入
+         * 在 Terminal 前端中, 有下载进度存在时会停止命令输入 (即停止命令执行)
          */
         @ConsoleExperimentalApi
         @JvmStatic

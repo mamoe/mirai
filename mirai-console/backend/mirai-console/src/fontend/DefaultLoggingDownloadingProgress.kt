@@ -10,15 +10,13 @@
 package net.mamoe.mirai.console.fontend
 
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * [DownloadingProgress] 的简单实现, 前端应该自行实现 [DownloadingProgress]
  *
  * 此类为前端未实现 [DownloadingProgress] 时的缺省实现
  */
-@ConsoleExperimentalApi
-public class DefaultLoggingDownloadingProgress : DownloadingProgress {
+internal class DefaultLoggingDownloadingProgress : DownloadingProgress {
     private var message: String = ""
     private var lastDisplay = 0L
     private var changed: Boolean = false
@@ -33,13 +31,13 @@ public class DefaultLoggingDownloadingProgress : DownloadingProgress {
         changed = true
     }
 
-    override fun initProgress(totalSize: Long) {
+    override fun setTotalSize(totalSize: Long) {
     }
 
-    override fun updateProgress(processed: Long) {
+    override fun update(processed: Long) {
     }
 
-    override fun updateProgress(processed: Long, totalSize: Long) {
+    override fun update(processed: Long, totalSize: Long) {
     }
 
     override fun markFailed() {
@@ -61,7 +59,7 @@ public class DefaultLoggingDownloadingProgress : DownloadingProgress {
         }
     }
 
-    override fun dispose() {
+    override fun close() {
         if (failed) {
             logger.error(message)
         } else {

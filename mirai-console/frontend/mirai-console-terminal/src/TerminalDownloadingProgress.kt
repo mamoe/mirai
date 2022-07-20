@@ -39,17 +39,17 @@ internal class TerminalDownloadingProgress(
         needUpdateTxt = true
     }
 
-    override fun initProgress(totalSize: Long) {
+    override fun setTotalSize(totalSize: Long) {
         this.totalSize = totalSize
         needUpdateTxt = true
     }
 
-    override fun updateProgress(processed: Long) {
+    override fun update(processed: Long) {
         this.processed = processed
         needUpdateTxt = true
     }
 
-    override fun updateProgress(processed: Long, totalSize: Long) {
+    override fun update(processed: Long, totalSize: Long) {
         this.processed = processed
         this.totalSize = totalSize
         needUpdateTxt = true
@@ -109,7 +109,7 @@ internal class TerminalDownloadingProgress(
         updateTerminalDownloadingProgresses()
     }
 
-    override fun dispose() {
+    override fun close() {
         if (disposed) return
         disposed = true
 

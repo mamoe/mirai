@@ -109,8 +109,8 @@ internal class JvmPluginDependencyDownloader(
                 val nw = MiraiConsoleImplementation.getInstance().createNewDownloadingProgress()
                 dwnProgresses.put(
                     event.resource.file, nw
-                )?.dispose()
-                nw.initProgress(event.resource.contentLength)
+                )?.close()
+                nw.setTotalSize(event.resource.contentLength)
                 nw.updateText("Downloading ${event.resource.resourceName}....")
             }
 
@@ -123,13 +123,13 @@ internal class JvmPluginDependencyDownloader(
                         renderMemoryUsageNumber(this@buildString, event.resource.contentLength)
                         append(")")
                     })
-                    dp.dispose()
+                    dp.close()
                 }
             }
 
             override fun transferProgressed(event: TransferEvent) {
                 dwnProgresses[event.resource.file]?.let { pg ->
-                    pg.updateProgress(event.transferredBytes)
+                    pg.update(event.transferredBytes)
                     pg.updateText(buildString bs@{
                         append("Downloading ")
                         append(event.resource.resourceName)
@@ -152,7 +152,7 @@ internal class JvmPluginDependencyDownloader(
                 logger.warning(event.exception)
                 dwnProgresses.remove(event.resource.file)?.let {
                     it.markFailed()
-                    it.dispose()
+                    it.close()
                 }
             }
         }

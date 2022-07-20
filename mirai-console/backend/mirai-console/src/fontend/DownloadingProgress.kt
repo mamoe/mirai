@@ -11,41 +11,44 @@ package net.mamoe.mirai.console.fontend
 
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import java.io.Closeable
 
 /**
- * 一个下载进度条
+ * 一个下载进度
  *
  * @see MiraiConsole.newDownloadingProgress
  */
 // @ConsoleFrontEndImplementation
 @ConsoleExperimentalApi
-public interface DownloadingProgress {
+public interface DownloadingProgress : Closeable {
     /**
-     * 更新当前下载进度条的文本
+     * 更新当前下载进度的文本
      */
     public fun updateText(txt: String)
 
     /**
-     * 为下载进度条初始化最终大小
+     * 设置此进度的最终大小
      */
-    public fun initProgress(totalSize: Long)
+    public fun setTotalSize(totalSize: Long)
+
+    /**
+     * 更新下载进度的进度
+     *
+     * 在更新进度后需要[刷新显示][rerender]
+     */
+    public fun update(processed: Long)
 
     /**
      * 更新下载进度条的进度
      *
      * 在更新进度后需要[刷新显示][rerender]
      */
-    public fun updateProgress(processed: Long)
+    public fun update(processed: Long, totalSize: Long)
 
     /**
-     * 更新下载进度条的进度
+     * 将该进度标记为 已失败 / 出错
      *
-     * 在更新进度后需要[刷新显示][rerender]
-     */
-    public fun updateProgress(processed: Long, totalSize: Long)
-
-    /**
-     * 将该进度表标记为 已失败 / 出错
+     * 注: 即使此进度被标记为失败, 也需要[手动释放][close]
      */
     public fun markFailed()
 
@@ -57,5 +60,5 @@ public interface DownloadingProgress {
     /**
      * 释放此进度条, 相关资源和 UI 将会更新
      */
-    public fun dispose()
+    override fun close()
 }
