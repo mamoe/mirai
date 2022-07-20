@@ -14,6 +14,7 @@ package net.mamoe.mirai.internal.message.source
 import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
@@ -88,7 +89,7 @@ internal class OnlineMessageSourceToFriendImpl(
     override val sender: Bot,
     override val target: Friend,
 ) : OnlineMessageSource.Outgoing.ToFriend(), MessageSourceInternal, OutgoingMessageSourceInternal {
-    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToFriend")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToFriend")
 
     override val isOriginalMessageInitialized: Boolean
         get() = true
@@ -122,7 +123,7 @@ internal class OnlineMessageSourceToStrangerImpl(
         target: Stranger,
     ) : this(delegate.ids, delegate.internalIds, delegate.time, delegate.originalMessage, delegate.sender, target)
 
-    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToStranger")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToStranger")
 
     override val isOriginalMessageInitialized: Boolean
         get() = true
@@ -154,7 +155,7 @@ internal class OnlineMessageSourceToTempImpl(
         target: Member,
     ) : this(delegate.ids, delegate.internalIds, delegate.time, delegate.originalMessage, delegate.sender, target)
 
-    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToTemp")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToTemp")
 
     override val isOriginalMessageInitialized: Boolean
         get() = true
@@ -183,7 +184,7 @@ internal class OnlineMessageSourceToGroupImpl(
     override val target: Group,
     providedSequenceIds: IntArray? = null,
 ) : OnlineMessageSource.Outgoing.ToGroup(), MessageSourceInternal, OutgoingMessageSourceInternal {
-    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
 
     override val isOriginalMessageInitialized: Boolean
         get() = true

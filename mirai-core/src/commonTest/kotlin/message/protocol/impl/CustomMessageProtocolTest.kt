@@ -82,4 +82,17 @@ internal class CustomMessageProtocolTest : AbstractMessageProtocolTest() {
             message(MyCustomMessage(1))
         }.doEncoderChecks()
     }
+
+// not supported, see https://github.com/mamoe/mirai/issues/2144
+//    @TestFactory
+//    fun `test serialization`(): DynamicTestsResult {
+//        val data = MyCustomMessage(1)
+//        val serialName = "CustomMessage"
+//        return runDynamicTests(
+//            testPolymorphicInMessageMetadata(data, serialName),
+//            testPolymorphicInSingleMessage(data, serialName),
+//            testInsideMessageChain(data, serialName),
+//            testContextual(data),
+//        )
+//    }
 }

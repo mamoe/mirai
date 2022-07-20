@@ -134,4 +134,6 @@ internal class LongMessageProtocolTest : AbstractMessageProtocolTest() {
             }
         }
     }
+
+    // should add tests for refining received LongMessage to normal messages (with a MessageOrigin)
 }

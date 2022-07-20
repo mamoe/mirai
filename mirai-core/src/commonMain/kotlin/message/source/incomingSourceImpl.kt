@@ -13,6 +13,7 @@ package net.mamoe.mirai.internal.message.source
 
 import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.atomic
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
@@ -32,6 +33,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
@@ -45,7 +47,7 @@ internal class OnlineMessageSourceFromFriendImpl(
     override val bot: Bot,
     msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromFriend(), IncomingMessageSourceInternal {
-    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromFriend")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromFriend")
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
     override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
@@ -78,7 +80,7 @@ internal class OnlineMessageSourceFromStrangerImpl(
     override val bot: Bot,
     msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromStranger(), IncomingMessageSourceInternal {
-    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromStranger")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromStranger")
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
     override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
@@ -150,7 +152,7 @@ internal class OnlineMessageSourceFromTempImpl(
     override val bot: Bot,
     msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromTemp(), IncomingMessageSourceInternal {
-    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromTemp")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromTemp")
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
     override val internalIds: IntArray = msg.mapToIntArray { it.msgBody.richText.attr!!.random }
@@ -187,7 +189,7 @@ internal class OnlineMessageSourceFromGroupImpl(
     override val bot: Bot,
     msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromGroup(), IncomingMessageSourceInternal {
-    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceFromGroupImpl")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromGroupImpl")
 
     @Transient
     override var isRecalledOrPlanned: AtomicBoolean = atomic(false)

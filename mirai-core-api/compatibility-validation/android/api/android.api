@@ -4815,8 +4815,13 @@ public final class net/mamoe/mirai/message/data/MessageSource$Key : net/mamoe/mi
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class net/mamoe/mirai/message/data/MessageSource$Serializer : net/mamoe/mirai/internal/message/MessageSourceSerializerImpl {
+public final class net/mamoe/mirai/message/data/MessageSource$Serializer : kotlinx/serialization/KSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/MessageSource$Serializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/MessageSource;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/MessageSource;)V
 }
 
 public final class net/mamoe/mirai/message/data/MessageSourceAmender : net/mamoe/mirai/message/data/MessageSourceBuilder {
