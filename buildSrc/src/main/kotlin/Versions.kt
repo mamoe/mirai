@@ -23,14 +23,14 @@ object Versions {
 
     val core = project
     val console = project
-    val consoleIntellij = "221-$project-162-1" // idea-mirai-kotlin-patch
+    val consoleIntellij = "221-$project-171-1" // idea-mirai-kotlin-patch
     val consoleTerminal = project
 
     const val kotlinCompiler = "1.7.0"
     const val kotlinStdlib = kotlinCompiler
     const val dokka = "1.6.21"
 
-    const val kotlinCompilerForIdeaPlugin = "1.7.0"
+    const val kotlinCompilerForIdeaPlugin = "1.7.10"
 
     const val coroutines = "1.6.2"
     const val atomicFU = "0.17.2"
@@ -66,9 +66,9 @@ object Versions {
     const val yamlkt = "0.12.0"
     const val intellijGradlePlugin = "1.7.0"
 
-    //    const val kotlinIntellijPlugin = "211-1.5.20-release-284-IJ7442.40" // keep to newest as kotlinCompiler
-    const val intellij = "2022.1" // don't update easily unless you want your disk space -= 500MB
-
+    // don't update easily unless you want your disk space -= 1000 MB
+    // (700 MB for IDEA, 150 MB for sources, 150 MB for JBR)
+    const val intellij = "222.3345-EAP-CANDIDATE-SNAPSHOT"
 }
 
 @Suppress("unused")

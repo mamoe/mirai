@@ -28,7 +28,7 @@ description = "IntelliJ plugin for Mirai Console"
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     version.set(Versions.intellij)
-    downloadSources.set(true)
+    downloadSources.set(IDEA_ACTIVE)
     updateSinceUntilBuild.set(false)
 
     sandboxDir.set(projectDir.resolve("run/idea-sandbox").absolutePath)
@@ -71,8 +71,8 @@ kotlin.target.compilations.all {
 
 // https://plugins.jetbrains.com/docs/intellij/kotlin.html#kotlin-standard-library
 tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
-    sinceBuild.set("221.0")
-    untilBuild.set("221.999999")
+    sinceBuild.set("221")
+    untilBuild.set("222.*")
     pluginDescription.set(
         """
         Plugin development support for <a href='https://github.com/mamoe/mirai'>Mirai Console</a>
