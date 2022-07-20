@@ -251,7 +251,6 @@ internal fun updateTerminalDownloadingProgresses() {
                     lr.redisplay()
                 }
             }
-            containDownloadingProgress = false
             noticeDownloadingProgressEmpty()
         }
     }
@@ -286,6 +285,7 @@ internal fun postPrintNewLog() {
 
 private fun noticeDownloadingProgressEmpty() {
     synchronized(terminalDownloadingProgressesNoticer) {
+        containDownloadingProgress = false
         terminalDownloadingProgressesNoticer.notifyAll()
     }
 }

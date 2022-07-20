@@ -27,6 +27,13 @@ public interface DownloadingProgress : Closeable {
     public fun updateText(txt: String)
 
     /**
+     * 更新当前下载进度的文本
+     */
+    public fun updateText(txt: CharSequence) {
+        updateText(txt.toString())
+    }
+
+    /**
      * 设置此进度的最终大小
      */
     public fun setTotalSize(totalSize: Long)
