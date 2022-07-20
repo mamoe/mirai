@@ -129,7 +129,7 @@ $ ./gradlew :mirai-console:build # 编译和测试
 
 其中 `:mirai-console` 是目标项目的路径（path）。
 
-你也可以在 IDEA 等有 Gradle 支持 IDE 中在通过侧边栏等方式选择项目的 `assemble` 等任务：
+你也可以在 IDEA 等有 Gradle 支持的 IDE 中在通过侧边栏等方式选择项目的 `assemble` 等任务：
 
 ![](images/run-gradle-tasks-in-idea.png)
 
