@@ -15,11 +15,12 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendGroupInfo
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.utils.asImmutable
+import java.util.concurrent.ConcurrentLinkedDeque
 
 internal class FriendGroupsImpl(
     val bot: QQAndroidBot
 ) : Iterable<FriendGroup>, FriendGroups {
-    var friendGroups: MutableList<FriendGroup> = mutableListOf()
+    val friendGroups = ConcurrentLinkedDeque<FriendGroup>()
 
     override suspend fun create(name: String): FriendGroup {
         val resp = bot.network.sendAndExpect(FriendList.SetGroupReqPack.New(bot.client, name))
@@ -27,22 +28,6 @@ internal class FriendGroupsImpl(
             "Cannot create friendGroup, code=${resp.result.toInt()}, errStr=${resp.errStr}"
         }
         return FriendGroupImpl(bot, FriendGroupInfo(resp.groupId, name, 0, 0)).apply { friendGroups.add(this) }
-    }
-
-    override suspend fun delete(friendGroup: FriendGroup): Boolean {
-        bot.network.sendAndExpect(FriendList.SetGroupReqPack.Delete(bot.client, friendGroup.id)).let {
-            if (it.result.toInt() == 1) {
-                return false
-            }
-            check(it.isSuccess) {
-                "Cannot delete friendGroup, code=${it.result.toInt()}, errStr=${it.errStr}"
-            }
-        }
-        friendGroup.friends.forEach {
-            it.impl().info.friendGroupId = 0
-        }
-        friendGroups.remove(friendGroup)
-        return true
     }
 
     override fun get(id: Int): FriendGroup? = friendGroups.firstOrNull { it.id == id }

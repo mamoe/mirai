@@ -9,22 +9,19 @@
 
 package net.mamoe.mirai.data
 
+/**
+ * 好友分组构造工厂.
+ * @see FriendGroup
+ */
 public interface FriendGroups : Iterable<FriendGroup> {
     /**
-     * 新建一个好友分组
+     * 新建一个好友分组.
      * @throws IllegalStateException 当创建不成功时抛出
      */
     public suspend fun create(name: String): FriendGroup
 
     /**
-     * 删除一个好友分组分组
-     * @return 返回 `false` 当分组不存在时
-     * @throws IllegalStateException 当因为其他原因删除不成功时抛出
-     */
-    public suspend fun delete(friendGroup: FriendGroup): Boolean
-
-    /**
-     * 获取指定 ID 的好友分组, 不存在时返回 null
+     * 获取指定 ID 的好友分组, 不存在时返回 `null`
      */
     public operator fun get(id: Int): FriendGroup?
 }

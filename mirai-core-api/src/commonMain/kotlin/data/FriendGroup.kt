@@ -11,6 +11,11 @@ package net.mamoe.mirai.data
 
 import net.mamoe.mirai.contact.Friend
 
+/**
+ * 好友分组.
+ * 运行存在同名分组, 但是每个好友分组的 id 确保不一样.
+ * @see FriendGroups
+ */
 public interface FriendGroup {
     /**
      * 好友分组 ID
@@ -33,23 +38,25 @@ public interface FriendGroup {
     public val friends: Collection<Friend>
 
     /**
-     * 更改好友分组名称
-     * @return 返回 `false` 当分组不存在时
-     * @throws IllegalStateException 当改名不成功时抛出
+     * 更改好友分组名称.
+     * 允许存在同名分组.
+     * @return 当操作成功时返回 `true`; 当分组不存在时返回 `false`
+     * @throws IllegalStateException 当因为其他原因改名不成功时抛出
      */
     public suspend fun renameTo(newName: String): Boolean
 
     /**
-     * 把一名好友移动至本分组内
-     * 当分组不存在时会自动移动该好友到 ID 为 0 的默认好友分组
-     * @return 返回 `false` 当分组不存在时
-     * @throws IllegalStateException 当移动不成功时
+     * 把一名好友移动至本分组内.
+     * 当远程分组不存在时会自动移动该好友到 ID 为 0 的默认好友分组.
+     * @return 当操作成功时返回 `true`; 当分组不存在 (如已经在远程被删除) 时返回 `false`
+     * @throws IllegalStateException 当因为其他原因移动不成功时抛出
      */
     public suspend fun moveIn(friend: Friend): Boolean
 
     /**
-     * 删除本分组
-     * @return 返回 `false` 当分组不存在时
+     * 删除本分组.
+     * 删除后组内全部好友移动至 id 为 0 的默认好友分组.
+     * @return 当操作成功时返回 `true`; 当分组不存在时返回 `false`
      * @throws IllegalStateException 当因为其他原因删除不成功时抛出
      */
     public suspend fun delete(): Boolean

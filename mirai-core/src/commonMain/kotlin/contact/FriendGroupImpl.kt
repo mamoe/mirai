@@ -86,7 +86,21 @@ internal class FriendGroupImpl constructor(
         return true
     }
 
-    override suspend fun delete(): Boolean = bot.friendGroups.delete(this)
+    override suspend fun delete(): Boolean {
+        bot.network.sendAndExpect(FriendList.SetGroupReqPack.Delete(bot.client, id)).let {
+            if (it.result.toInt() == 1) {
+                return false
+            }
+            check(it.isSuccess) {
+                "Cannot delete friendGroup, code=${it.result.toInt()}, errStr=${it.errStr}"
+            }
+        }
+        friends.forEach {
+            it.impl().info.friendGroupId = 0
+        }
+        bot.friendGroups.friendGroups.remove(this)
+        return true
+    }
 
     override fun toString(): String {
         return "FriendGroup(id=$id, name=$name)"

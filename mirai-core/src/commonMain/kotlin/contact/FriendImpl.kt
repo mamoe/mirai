@@ -85,8 +85,8 @@ internal class FriendImpl(
             }
         }
     override var remark: String by info::remark
-    override val friendGroup: FriendGroup?
-        get() = bot.friendGroups[info.friendGroupId]
+    override val friendGroup: FriendGroup
+        get() = bot.friendGroups[info.friendGroupId] ?: bot.friendGroups[0]!!
 
     private val messageProtocolStrategy: MessageProtocolStrategy<FriendImpl> = FriendMessageProtocolStrategy(this)
 

@@ -211,7 +211,7 @@ internal class ContactUpdaterImpl(
             }
         }
 
-        bot.friendGroups.friendGroups = refreshFriendGroupList()
+        bot.friendGroups.friendGroups.addAll(refreshFriendGroupList())
 
         for (friendInfoImpl in list) {
             bot.addNewFriendAndRemoveStranger(friendInfoImpl)
