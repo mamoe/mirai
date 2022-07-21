@@ -27,7 +27,7 @@ internal class FriendGroupsImpl(
         check(resp.isSuccess) {
             "Cannot create friendGroup, code=${resp.result.toInt()}, errStr=${resp.errStr}"
         }
-        return FriendGroupImpl(bot, FriendGroupInfo(resp.groupId, name, 0, 0)).apply { friendGroups.add(this) }
+        return FriendGroupImpl(bot, FriendGroupInfo(resp.groupId, name)).apply { friendGroups.add(this) }
     }
 
     override fun get(id: Int): FriendGroup? = friendGroups.firstOrNull { it.id == id }

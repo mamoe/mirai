@@ -10,7 +10,7 @@
 package net.mamoe.mirai.data
 
 /**
- * 好友分组构造工厂.
+ * 好友分组列表 (管理器).
  * @see FriendGroup
  */
 public interface FriendGroups : Iterable<FriendGroup> {

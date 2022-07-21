@@ -975,7 +975,6 @@ public abstract interface class net/mamoe/mirai/data/FriendGroup {
 
 public abstract interface class net/mamoe/mirai/data/FriendGroups : java/lang/Iterable, kotlin/jvm/internal/markers/KMappedMarker {
 	public abstract fun create (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun delete (Lnet/mamoe/mirai/data/FriendGroup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun get (I)Lnet/mamoe/mirai/data/FriendGroup;
 }
 

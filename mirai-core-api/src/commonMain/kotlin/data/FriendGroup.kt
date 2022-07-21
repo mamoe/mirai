@@ -12,8 +12,8 @@ package net.mamoe.mirai.data
 import net.mamoe.mirai.contact.Friend
 
 /**
- * 好友分组.
- * 运行存在同名分组, 但是每个好友分组的 id 确保不一样.
+ * 一个好友分组.
+ * 可能同时存在多个相同[名称][name]的分组, 但是每个分组的 [id] 都是唯一的
  * @see FriendGroups
  */
 public interface FriendGroup {
@@ -55,7 +55,7 @@ public interface FriendGroup {
 
     /**
      * 删除本分组.
-     * 删除后组内全部好友移动至 id 为 0 的默认好友分组.
+     * 删除后组内全部好友移动至 id 为 0 的默认好友分组, 本分组的好友列表会被清空.
      * @return 当操作成功时返回 `true`; 当分组不存在时返回 `false`
      * @throws IllegalStateException 当因为其他原因删除不成功时抛出
      */

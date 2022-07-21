@@ -33,7 +33,8 @@ internal class FriendGroupImpl constructor(
     override val id: Int by info::groupId
 
     override var name: String by info::groupName
-    override val count: Int by info::friendCount
+    override val count: Int
+        get() = friends.size
     override val friends: Collection<Friend> = object : AbstractCollection<Friend>() {
         override val size: Int
             get() = bot.friends.count { it.impl().info.friendGroupId == id }
@@ -97,6 +98,7 @@ internal class FriendGroupImpl constructor(
         }
         friends.forEach {
             it.impl().info.friendGroupId = 0
+            bot.friendGroups[0]!!.impl().friends
         }
         bot.friendGroups.friendGroups.remove(this)
         return true

@@ -159,7 +159,7 @@ internal class ContactUpdaterImpl(
             return friendInfos
         }
 
-        suspend fun refreshFriendGroupList(): MutableList<FriendGroup> {
+        suspend fun refreshFriendGroupList(): List<FriendGroup> {
             logger.info { "Start loading friendGroup list..." }
             val friendGroupInfos = mutableListOf<FriendGroup>()
 
@@ -177,9 +177,7 @@ internal class ContactUpdaterImpl(
                         FriendGroupImpl(
                             bot, FriendGroupInfo(
                                 jceInfo.groupId.toInt(),
-                                jceInfo.groupname,
-                                jceInfo.friendCount,
-                                jceInfo.onlineFriendCount
+                                jceInfo.groupname
                             )
                         )
                     )
@@ -211,6 +209,7 @@ internal class ContactUpdaterImpl(
             }
         }
 
+        bot.friendGroups.friendGroups.clear()
         bot.friendGroups.friendGroups.addAll(refreshFriendGroupList())
 
         for (friendInfoImpl in list) {

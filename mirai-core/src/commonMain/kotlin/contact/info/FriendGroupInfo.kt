@@ -15,6 +15,6 @@ import kotlinx.serialization.Serializable
 internal data class FriendGroupInfo(
     val groupId: Int,
     var groupName: String,
-    val friendCount: Int,
-    val onlineFriendCount: Int
+    // val friendCount: Int,
+    // val onlineFriendCount: Int
 )

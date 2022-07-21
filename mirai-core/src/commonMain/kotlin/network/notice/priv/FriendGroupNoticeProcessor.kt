@@ -55,7 +55,7 @@ internal class FriendGroupNoticeProcessor(
         bot.friendGroups.friendGroups.add(
             FriendGroupImpl(
                 bot,
-                FriendGroupInfo(addGroup.groupid, String(addGroup.groupname), 0, 0)
+                FriendGroupInfo(addGroup.groupid, String(addGroup.groupname))
             )
         )
     }
