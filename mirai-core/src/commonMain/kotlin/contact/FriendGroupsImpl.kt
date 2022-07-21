@@ -14,8 +14,8 @@ import net.mamoe.mirai.data.FriendGroups
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendGroupInfo
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.utils.ConcurrentLinkedDeque
 import net.mamoe.mirai.utils.asImmutable
-import java.util.concurrent.ConcurrentLinkedDeque
 
 internal class FriendGroupsImpl(
     val bot: QQAndroidBot
