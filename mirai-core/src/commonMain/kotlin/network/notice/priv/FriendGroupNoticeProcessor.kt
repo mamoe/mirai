@@ -55,7 +55,7 @@ internal class FriendGroupNoticeProcessor(
         bot.friendGroups.friendGroups.add(
             FriendGroupImpl(
                 bot,
-                FriendGroupInfo(addGroup.groupid, String(addGroup.groupname))
+                FriendGroupInfo(addGroup.groupid, addGroup.groupname.decodeToString())
             )
         )
     }
@@ -78,7 +78,7 @@ internal class FriendGroupNoticeProcessor(
         modFriendGroup: Submsgtype0x27.SubMsgType0x27.ModGroupName, logger: MiraiLogger
     ) {
         bot.friendGroups[modFriendGroup.groupid]?.let {
-            it.impl().name = String(modFriendGroup.groupname)
+            it.impl().name = modFriendGroup.groupname.decodeToString()
         } ?: let {
             logger.warning { "Detected friendGroup(id=${modFriendGroup.groupid}) was renamed but it cannot be found in bot's friendGroups list" }
             return
