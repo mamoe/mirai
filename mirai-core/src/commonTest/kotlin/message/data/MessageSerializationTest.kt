@@ -124,6 +124,46 @@ internal class MessageSerializationTest : AbstractTest() {
         assertEquals(w, w.serialize(W.serializer()).deserialize(W.serializer()))
     }
 
+    @Test
+    fun `test Image serialization`() {
+        val string = image.serialize()
+        val element = string.deserialize<JsonElement>()
+        element as JsonObject
+        assertEquals(string.deserialize(), image)
+
+        val image2 = Image(image.imageId) {
+            type = ImageType.GIF
+            width = 123
+            height = 456
+        }
+        val string2 = image2.serialize()
+        val element2 = string2.deserialize<JsonElement>()
+        element2 as JsonObject
+        assertEquals(element2["imageType"]?.jsonPrimitive?.content, image2.imageType.name)
+        assertEquals(element2["width"]?.jsonPrimitive?.int, image2.width)
+        assertEquals(element2["height"]?.jsonPrimitive?.int, image2.height)
+        val decoded: Image = string2.deserialize()
+        decoded as Image
+        assertEquals(decoded.imageId, image2.imageId)
+        assertEquals(decoded.imageType, image2.imageType)
+        assertEquals(decoded.width, image2.width)
+        assertEquals(decoded.height, image2.height)
+
+        val string3 = """
+        {
+            "imageType": "GIF",
+            "width": 123,
+            "height": 456,
+            "imageId": "${image.imageId}"
+         }
+        """.trimIndent()
+        val decoded2: Image = string3.deserialize()
+        assertEquals(decoded2.imageId, image2.imageId)
+        assertEquals(decoded2.imageType, image2.imageType)
+        assertEquals(decoded2.width, image2.width)
+        assertEquals(decoded2.height, image2.height)
+    }
+
     @Serializable
     data class RichWrapper(
         val richMessage: RichMessage

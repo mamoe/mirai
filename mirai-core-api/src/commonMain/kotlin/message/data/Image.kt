@@ -25,6 +25,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
@@ -200,6 +201,11 @@ public interface Image : Message, MessageContent, CodableMessage {
     public open class FallbackSerializer(serialName: String) : KSerializer<Image> {
         override val descriptor: SerialDescriptor = buildClassSerialDescriptor(serialName) {
             element("imageId", String.serializer().descriptor)
+            element("size", Long.serializer().descriptor)
+            element("imageType", ImageType.serializer().descriptor)
+            element("width", Int.serializer().descriptor)
+            element("height", Int.serializer().descriptor)
+            element("isEmoji", Boolean.serializer().descriptor)
         }
 
         // Note: Manually written to overcome discriminator issues.
@@ -208,24 +214,61 @@ public interface Image : Message, MessageContent, CodableMessage {
             decoder.decodeStructure(descriptor) {
                 if (this.decodeSequentially()) {
                     val imageId = this.decodeStringElement(descriptor, 0)
-                    return Image(imageId)
+                    val size = this.decodeLongElement(descriptor, 1)
+                    val type = this.decodeSerializableElement(descriptor, 2, ImageType.serializer())
+                    val width = this.decodeIntElement(descriptor, 3)
+                    val height = this.decodeIntElement(descriptor, 4)
+                    val isEmoji = this.decodeBooleanElement(descriptor, 5)
+                    return Image(imageId) {
+                        this.size = size
+                        this.type = type
+                        this.width = width
+                        this.height = height
+                        this.isEmoji = isEmoji
+                    }
                 } else {
-                    val index = this.decodeElementIndex(descriptor)
-                    check(index == 0)
-                    val imageId = this.decodeStringElement(descriptor, index)
-                    return Image(imageId)
+                    return Image("") {
+                        while (true) {
+                            when (val index = this@decodeStructure.decodeElementIndex(descriptor)) {
+                                0 -> imageId = this@decodeStructure.decodeStringElement(descriptor, index)
+                                1 -> size = this@decodeStructure.decodeLongElement(descriptor, index)
+                                2 -> type = this@decodeStructure.decodeSerializableElement(
+                                    descriptor,
+                                    index,
+                                    ImageType.serializer()
+                                )
+                                3 -> width = this@decodeStructure.decodeIntElement(descriptor, index)
+                                4 -> height = this@decodeStructure.decodeIntElement(descriptor, index)
+                                5 -> isEmoji = this@decodeStructure.decodeBooleanElement(descriptor, index)
+                                CompositeDecoder.DECODE_DONE -> break
+                            }
+                        }
+                        check(imageId.isNotEmpty()) { "imageId must not empty" }
+                    }
                 }
             }
         }
 
         override fun serialize(encoder: Encoder, value: Image) {
-            Delegate.serializer().serialize(encoder, Delegate(value.imageId))
+            Delegate.serializer().serialize(encoder, Delegate(
+                value.imageId,
+                value.size,
+                value.imageType,
+                value.width,
+                value.height,
+                value.isEmoji
+            ))
         }
 
         @SerialName(SERIAL_NAME)
         @Serializable
         private data class Delegate(
-            val imageId: String
+            val imageId: String,
+            val size: Long,
+            val imageType: ImageType,
+            val width: Int,
+            val height: Int,
+            val isEmoji: Boolean
         )
     }
 
@@ -446,6 +489,7 @@ public inline fun Image(imageId: String): Image = Builder.newBuilder(imageId).bu
 public inline fun Image(imageId: String, builderAction: Builder.() -> Unit = {}): Image =
     Builder.newBuilder(imageId).apply(builderAction).build()
 
+@Serializable
 public enum class ImageType(
     /**
      * @since 2.9.0
