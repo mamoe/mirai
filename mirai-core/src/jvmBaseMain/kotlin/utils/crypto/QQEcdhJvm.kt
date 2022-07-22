@@ -18,7 +18,7 @@ internal val publicKeyForVerify by lazy {
         .generatePublic(X509EncodedKeySpec("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuJTW4abQJXeVdAODw1CamZH4QJZChyT08ribet1Gp0wpSabIgyKFZAOxeArcCbknKyBrRY3FFI9HgY1AyItH8DOUe6ajDEb6c+vrgjgeCiOiCVyum4lI5Fmp38iHKH14xap6xGaXcBccdOZNzGT82sPDM2Oc6QYSZpfs8EO7TYT7KSB2gaHz99RQ4A/Lel1Vw0krk+DescN6TgRCaXjSGn268jD7lOO23x5JS1mavsUJtOZpXkK9GqCGSTCTbCwZhI33CpwdQ2EHLhiP5RaXZCio6lksu+d8sKTWU1eEiEb3cQ7nuZXLYH7leeYFoPtbFV4RicIWp0/YG+RP7rLPCwIDAQAB".decodeBase64()))
 }
 
-internal actual fun OicqECDHInitialKey.verify(sign: String): Boolean {
+internal actual fun QQEcdhInitialPublicKey.verify(sign: String): Boolean {
     val arrayForVerify = "305$version$keyStr".toByteArray()
     val signInstance = Signature.getInstance("SHA256WithRSA").apply {
         initVerify(publicKeyForVerify)

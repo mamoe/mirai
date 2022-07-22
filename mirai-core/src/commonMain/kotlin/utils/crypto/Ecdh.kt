@@ -11,14 +11,10 @@ package net.mamoe.mirai.internal.utils.crypto
 
 import kotlin.jvm.JvmStatic
 
-internal interface ECDHPublicKeyLow {
-    fun toBytes(): ByteArray
-}
+internal data class EcdhKeyPair<TPublicKey, TPrivate>(val public: TPublicKey, val private: TPrivate)
 
-internal data class ECDHKeyPair<TPublicKey, TPrivate>(val public: TPublicKey, val private: TPrivate)
-
-internal interface ECDH<TPublicKey, TPrivate> {
-    fun generateKeyPair(): ECDHKeyPair<TPublicKey, TPrivate>
+internal interface Ecdh<TPublicKey, TPrivate> {
+    fun generateKeyPair(): EcdhKeyPair<TPublicKey, TPrivate>
     fun calculateShareKey(peerKey: TPublicKey, privateKey: TPrivate): ByteArray
 
     /**
@@ -41,8 +37,8 @@ internal interface ECDH<TPublicKey, TPrivate> {
         @JvmStatic
         val Instance by lazy {
             @Suppress("UNCHECKED_CAST")
-            ECDH.create() as ECDH<Any, Any>
+            Ecdh.create() as Ecdh<Any, Any>
         }
     }
 }
-internal expect fun ECDH.Companion.create() : ECDH<*, *>
+internal expect fun Ecdh.Companion.create() : Ecdh<*, *>

@@ -132,7 +132,7 @@ internal class SsoProcessorImpl(
         components[BdhSessionSyncer].loadServerListFromCache()
         try {
             if (client.wLoginSigInfoInitialized) {
-                ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyECDH()
+                ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyEcdh()
                 kotlin.runCatching {
                     FastLoginImpl(handler).doLogin()
                 }.onFailure { e ->
@@ -141,7 +141,7 @@ internal class SsoProcessorImpl(
                 }
             } else {
                 client = createClient(ssoContext.bot)
-                ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyECDH()
+                ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyEcdh()
                 SlowLoginImpl(handler).doLogin()
             }
         } catch (e: Exception) {

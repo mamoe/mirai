@@ -11,18 +11,18 @@ package net.mamoe.mirai.internal.utils.crypto
 
 import java.security.Security
 
-internal actual fun ECDH.Companion.create(): ECDH<*, *> =
+internal actual fun Ecdh.Companion.create(): Ecdh<*, *> =
     if (kotlin.runCatching {
             // When running tests on JVM desktop, `ClassNotFoundException` will be got
             android.os.Build.VERSION.SDK_INT >= 23
         }.getOrDefault(false)) {
         // For newer Android, BC is deprecated, but AndroidKeyStore (default) handles ECDH well
         // Do not specify a provider as Google recommends
-        JceECDH()
+        JceEcdh()
     } else {
         // For older Android, AndroidKeyStore (default) is buggy and cannot handle EC key generation without tricks
         // See https://developer.android.com/training/articles/keystore#SupportedKeyPairGenerators for details
 
         // Let's use BC instead, BC is bundled into older Android
-        JceECDHWithProvider(Security.getProvider("BC"))
+        JceEcdhWithProvider(Security.getProvider("BC"))
     }

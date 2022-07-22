@@ -17,7 +17,7 @@ import net.mamoe.mirai.internal.network.components.PacketCodec.Companion.PacketL
 import net.mamoe.mirai.internal.network.components.PacketCodecException.Kind.*
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.protocol.packet.*
-import net.mamoe.mirai.internal.utils.crypto.ECDH
+import net.mamoe.mirai.internal.utils.crypto.Ecdh
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.utils.*
 
@@ -254,20 +254,20 @@ internal class PacketCodecImpl : PacketCodec {
         val encryptionMethod = this.readUShort().toInt()
 
         this.discardExact(1)
-        val oicqECDH =
-            (client as QQAndroidClient).bot.components[EcdhInitialPublicKeyUpdater].getOicqECDH()
+        val qqEcdh =
+            (client as QQAndroidClient).bot.components[EcdhInitialPublicKeyUpdater].getQQEcdh()
         return when (encryptionMethod) {
             4 -> {
                 val size = (this.remaining - 1).toInt()
                 val data =
                     TEA.decrypt(
                         this.readBytes(),
-                        oicqECDH.initialQQShareKey,
+                        qqEcdh.initialQQShareKey,
                         length = size
                     )
 
                 val peerShareKey =
-                    oicqECDH.calculateQQShareKey(ECDH.Instance.importPublicKey(readUShortLVByteArray()))
+                    qqEcdh.calculateQQShareKey(Ecdh.Instance.importPublicKey(readUShortLVByteArray()))
                 TEA.decrypt(data, peerShareKey)
             }
             3 -> {
@@ -285,7 +285,7 @@ internal class PacketCodecImpl : PacketCodec {
                     val byteArrayBuffer = this.readBytes(size)
 
                     runCatching {
-                        TEA.decrypt(byteArrayBuffer, oicqECDH.initialQQShareKey, length = size)
+                        TEA.decrypt(byteArrayBuffer, qqEcdh.initialQQShareKey, length = size)
                     }.getOrElse {
                         TEA.decrypt(byteArrayBuffer, client.randomKey, length = size)
                     }

@@ -11,11 +11,11 @@ package net.mamoe.mirai.internal.utils.crypto
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 
-internal actual fun ECDH.Companion.create(): ECDH<*, *> =
+internal actual fun Ecdh.Companion.create(): Ecdh<*, *> =
     kotlin.runCatching {
         // try platform default EC/ECDH implementations first, which may have better performance
         // note that they may not work properly but being created successfully
-        JceECDH().apply {
+        JceEcdh().apply {
             val keyPair = generateKeyPair()
             calculateShareKey(keyPair.public, keyPair.private)
             val encoded = exportPublicKey(keyPair.public)
@@ -23,5 +23,5 @@ internal actual fun ECDH.Companion.create(): ECDH<*, *> =
         }
     }.getOrElse {
         // fallback to BouncyCastle
-        JceECDHWithProvider(BouncyCastleProvider())
+        JceEcdhWithProvider(BouncyCastleProvider())
     }

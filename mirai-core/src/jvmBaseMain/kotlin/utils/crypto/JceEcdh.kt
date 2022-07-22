@@ -21,13 +21,13 @@ import java.security.spec.ECPoint
 import java.security.spec.ECPublicKeySpec
 import javax.crypto.KeyAgreement
 
-internal open class JceECDH : ECDH<ECPublicKey, ECPrivateKey> {
+internal open class JceEcdh : Ecdh<ECPublicKey, ECPrivateKey> {
     protected open fun newECKeyPairGenerator() = KeyPairGenerator.getInstance("EC")
     protected open fun newECKeyFactory() = KeyFactory.getInstance("EC")
     protected open fun newECAlgorithmParameters() = AlgorithmParameters.getInstance("EC")
     protected open fun newECDHKeyAgreement() = KeyAgreement.getInstance("ECDH")
 
-    override fun generateKeyPair(): ECDHKeyPair<ECPublicKey, ECPrivateKey> {
+    override fun generateKeyPair(): EcdhKeyPair<ECPublicKey, ECPrivateKey> {
         return newECKeyPairGenerator()
             .apply {
                 // AKA. prime256v1
@@ -36,7 +36,7 @@ internal open class JceECDH : ECDH<ECPublicKey, ECPrivateKey> {
             }
             .genKeyPair()
             .let {
-                ECDHKeyPair(it.public as ECPublicKey, it.private as ECPrivateKey)
+                EcdhKeyPair(it.public as ECPublicKey, it.private as ECPrivateKey)
             }
     }
 
