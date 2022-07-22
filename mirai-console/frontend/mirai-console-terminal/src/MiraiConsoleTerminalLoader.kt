@@ -30,6 +30,7 @@ import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.verbose
 import org.jline.utils.Signals
 import java.io.FileDescriptor
@@ -40,6 +41,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.system.exitProcess
 
 /**
@@ -187,17 +189,32 @@ private val shutdownSignals = arrayOf(
 internal val signalHandler: (String) -> Unit = initSignalHandler()
 private fun initSignalHandler(): (String) -> Unit {
     val shutdownMonitorLock = AtomicBoolean(false)
+    val lastSignalTimestamp = AtomicLong(0)
     return handler@{ signalName ->
         // JLine may process other signals
         MiraiConsole.mainLogger.verbose { "Received signal $signalName" }
         if (signalName !in shutdownSignals) return@handler
 
         MiraiConsole.mainLogger.debug { "Handled  signal $signalName" }
+        kotlin.run multiSignalHandler@{
+            val crtTime = System.currentTimeMillis()
+            val last = lastSignalTimestamp.getAndSet(crtTime)
+            if (crtTime - last < 1000L) {
+                MiraiConsole.mainLogger.debug { "Multi    signal $signalName" }
+                MiraiConsole.mainLogger.info { "Process will be killed after 0.5s" }
+
+                @OptIn(DelicateCoroutinesApi::class)
+                GlobalScope.launch {
+                    delay(500L)
+                    exitProcessAndForceHalt(-5)
+                }
+            }
+        }
         MiraiConsole.shutdown()
 
         // Shutdown by signal requires process be killed
         if (shutdownMonitorLock.compareAndSet(false, true)) {
-            val pool = Executors.newFixedThreadPool(2, object : ThreadFactory {
+            val pool = Executors.newFixedThreadPool(4, object : ThreadFactory {
                 private val counter = AtomicInteger()
                 override fun newThread(r: Runnable): Thread {
                     return Thread(r, "Mirai Console Signal-Shutdown Daemon #" + counter.getAndIncrement()).also {
@@ -210,6 +227,12 @@ private fun initSignalHandler(): (String) -> Unit {
                 MiraiConsole.job.join()
 
                 delay(15000)
+                // Force kill process if plugins started non-daemon threads
+                exitProcessAndForceHalt(-5)
+            }
+            @OptIn(DelicateCoroutinesApi::class)
+            GlobalScope.launch(pool.asCoroutineDispatcher()) {
+                delay(1000L * 60) // timed out
                 // Force kill process if plugins started non-daemon threads
                 exitProcessAndForceHalt(-5)
             }
