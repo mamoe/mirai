@@ -46,7 +46,7 @@ public interface DownloadingProgress : Closeable {
     public fun update(processed: Long)
 
     /**
-     * 更新下载进度条的进度
+     * 更新下载进度的进度
      *
      * 在更新进度后需要[刷新显示][rerender]
      */
@@ -60,12 +60,12 @@ public interface DownloadingProgress : Closeable {
     public fun markFailed()
 
     /**
-     * 立即重新渲染此进度条
+     * 立即重新渲染此进度
      */
     public fun rerender()
 
     /**
-     * 释放此进度条, 相关资源和 UI 将会更新
+     * 释放此进度, 相关资源和 UI 将会更新
      */
     override fun close()
 }
