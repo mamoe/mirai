@@ -575,9 +575,17 @@ Central
 > 如果没法输入命令, 请确认 Gradle 任务视图没有被聚焦至 `:runConsole`,
 > 必须选择整个 Gradle 任务视图才可执行命令。
 
+### 排错
+
+详见 [JVMPlugin Debug](JVMPlugin-Debug.md)
+
 ## 发布插件到 mirai-console-loader
 
 插件中心仍在开发中。
+
+## 多插件间数据交换
+
+见 [JVMPlugin - Data Exchange](JVMPlugin-DataExchange.md)
 
 > 下一步，[Commands](../Commands.md#mirai-console-backend---commands)
 >
