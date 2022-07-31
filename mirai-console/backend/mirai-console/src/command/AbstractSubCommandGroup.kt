@@ -10,15 +10,8 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.descriptor.*
-import net.mamoe.mirai.console.compiler.common.ResolveContext
-import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.internal.command.GroupedCommandSubCommandAnnotationResolver
 import net.mamoe.mirai.console.internal.command.SubCommandReflector
-import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import kotlin.annotation.AnnotationRetention.RUNTIME
-import kotlin.annotation.AnnotationTarget.FUNCTION
-import kotlin.annotation.AnnotationTarget.PROPERTY
 
 public abstract class AbstractSubCommandGroup(
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext,
@@ -32,35 +25,6 @@ public abstract class AbstractSubCommandGroup(
             reflector.validate(it)
         }
     }
-
-    /**
-     * 标记一个属性为子指令集合
-     */
-    @Retention(RUNTIME)
-    @Target(PROPERTY)
-    protected annotation class AnotherCombinedCommand(
-    )
-
-    /**
-     * 标记一个函数为子指令, 当 [value] 为空时使用函数名.
-     * @param value 子指令名
-     */
-    @Retention(RUNTIME)
-    @Target(FUNCTION)
-    protected annotation class AnotherSubCommand(
-        @ResolveContext(COMMAND_NAME) vararg val value: String = [],
-    )
-
-    /** 指令描述 */
-    @Retention(RUNTIME)
-    @Target(FUNCTION)
-    protected annotation class AnotherDescription(val value: String)
-
-    /** 参数名, 由具体Command决定用途 */
-    @ConsoleExperimentalApi("Classname might change")
-    @Retention(RUNTIME)
-    @Target(AnnotationTarget.VALUE_PARAMETER)
-    protected annotation class AnotherName(val value: String)
 
     /**
      * 智能参数解析环境

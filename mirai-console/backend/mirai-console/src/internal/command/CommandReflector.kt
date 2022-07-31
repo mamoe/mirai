@@ -65,56 +65,75 @@ internal fun Any.flattenCommandComponents(): MessageChain = buildMessageChain {
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal object CompositeCommandSubCommandAnnotationResolver :
     SubCommandAnnotationResolver<Command> {
-    override fun hasAnnotation(ownerCommand: Command, function: KFunction<*>) =
-        function.hasAnnotation<CompositeCommand.SubCommand>()
+    override fun isDeclaredSubCommand(ownerCommand: Command, function: KFunction<*>) =
+        function.hasAnnotation<SubCommandGroup.SubCommand>()
 
-    override fun getSubCommandNames(ownerCommand: Command, function: KFunction<*>): Array<out String> {
-        val annotated = function.findAnnotation<CompositeCommand.SubCommand>()!!.value
+    override fun getDeclaredSubCommandNames(ownerCommand: Command, function: KFunction<*>): Array<out String> {
+        val annotated = function.findAnnotation<SubCommandGroup.SubCommand>()!!.value
         return if (annotated.isEmpty()) arrayOf(function.name)
         else annotated
     }
 
     override fun getAnnotatedName(ownerCommand: Command, parameter: KParameter): String? =
-        parameter.findAnnotation<CompositeCommand.Name>()?.value
+        parameter.findAnnotation<SubCommandGroup.Name>()?.value
 
     override fun getDescription(ownerCommand: Command, function: KFunction<*>): String? =
-        function.findAnnotation<CompositeCommand.Description>()?.value
+        function.findAnnotation<SubCommandGroup.Description>()?.value
 
-    override fun isCombinedCommand(command: Command, kProperty: KProperty<*>): Boolean =
-        kProperty.hasAnnotation<CompositeCommand.CombinedCommand>()
+    override fun isCombinedSubCommands(command: Command, kProperty: KProperty<*>): Boolean =
+        kProperty.hasAnnotation<SubCommandGroup.FlattenSubCommands>() || kProperty.hasAnnotation<SubCommandGroup.SubCommand>()
 
+    override fun getCombinedAdditionNames(command: Command, kProperty: KProperty<*>): Array<out String> {
+        return if (kProperty.hasAnnotation<SubCommandGroup.FlattenSubCommands>()) {
+            emptyArray()
+        } else {
+            val annotated = kProperty.findAnnotation<SubCommandGroup.SubCommand>()!!.value
+            if (annotated.isEmpty()) arrayOf(kProperty.name)
+            else annotated
+        }
+    }
 }
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal object GroupedCommandSubCommandAnnotationResolver :
     SubCommandAnnotationResolver<Any> {
-    override fun hasAnnotation(ownerCommand: Any, function: KFunction<*>) =
-        function.hasAnnotation<AbstractSubCommandGroup.AnotherSubCommand>()
+    override fun isDeclaredSubCommand(ownerCommand: Any, function: KFunction<*>) =
+        function.hasAnnotation<SubCommandGroup.SubCommand>()
 
-    override fun getSubCommandNames(ownerCommand: Any, function: KFunction<*>): Array<out String> {
-        val annotated = function.findAnnotation<AbstractSubCommandGroup.AnotherSubCommand>()!!.value
+    override fun getDeclaredSubCommandNames(ownerCommand: Any, function: KFunction<*>): Array<out String> {
+        val annotated = function.findAnnotation<SubCommandGroup.SubCommand>()!!.value
         return if (annotated.isEmpty()) arrayOf(function.name)
         else annotated
     }
 
     override fun getAnnotatedName(ownerCommand: Any, parameter: KParameter): String? =
-        parameter.findAnnotation<AbstractSubCommandGroup.AnotherName>()?.value
+        parameter.findAnnotation<SubCommandGroup.Name>()?.value
 
     override fun getDescription(ownerCommand: Any, function: KFunction<*>): String? =
-        function.findAnnotation<AbstractSubCommandGroup.AnotherDescription>()?.value
+        function.findAnnotation<SubCommandGroup.Description>()?.value
 
-    override fun isCombinedCommand(command: Any, kProperty: KProperty<*>): Boolean =
-        kProperty.hasAnnotation<AbstractSubCommandGroup.AnotherCombinedCommand>()
+    override fun isCombinedSubCommands(command: Any, kProperty: KProperty<*>): Boolean =
+        kProperty.hasAnnotation<SubCommandGroup.FlattenSubCommands>() || kProperty.hasAnnotation<SubCommandGroup.SubCommand>()
+
+    override fun getCombinedAdditionNames(command: Any, kProperty: KProperty<*>): Array<out String> {
+        return if (kProperty.hasAnnotation<SubCommandGroup.FlattenSubCommands>()) {
+            emptyArray()
+        } else {
+            val annotated = kProperty.findAnnotation<SubCommandGroup.SubCommand>()!!.value
+            if (annotated.isEmpty()) arrayOf(kProperty.name)
+            else annotated
+        }
+    }
 
 }
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal object SimpleCommandSubCommandAnnotationResolver :
     SubCommandAnnotationResolver<Command> {
-    override fun hasAnnotation(ownerCommand: Command, function: KFunction<*>) =
+    override fun isDeclaredSubCommand(ownerCommand: Command, function: KFunction<*>) =
         function.hasAnnotation<SimpleCommand.Handler>()
 
-    override fun getSubCommandNames(ownerCommand: Command, function: KFunction<*>): Array<out String> =
+    override fun getDeclaredSubCommandNames(ownerCommand: Command, function: KFunction<*>): Array<out String> =
         emptyArray()
 
     override fun getAnnotatedName(ownerCommand: Command, parameter: KParameter): String? =
@@ -123,15 +142,20 @@ internal object SimpleCommandSubCommandAnnotationResolver :
     override fun getDescription(ownerCommand: Command, function: KFunction<*>): String =
         ownerCommand.description
 
-    override fun isCombinedCommand(command: Command, kProperty: KProperty<*>): Boolean = false
+    override fun isCombinedSubCommands(command: Command, kProperty: KProperty<*>): Boolean = false
+
+    override fun getCombinedAdditionNames(command: Command, kProperty: KProperty<*>): Array<out String> =
+        emptyArray()
+
 }
 
 internal interface SubCommandAnnotationResolver<T> {
-    fun hasAnnotation(ownerCommand: T, function: KFunction<*>): Boolean
-    fun getSubCommandNames(ownerCommand: T, function: KFunction<*>): Array<out String>
+    fun isDeclaredSubCommand(ownerCommand: T, function: KFunction<*>): Boolean
+    fun getDeclaredSubCommandNames(ownerCommand: T, function: KFunction<*>): Array<out String>
     fun getAnnotatedName(ownerCommand: T, parameter: KParameter): String?
     fun getDescription(ownerCommand: T, function: KFunction<*>): String?
-    fun isCombinedCommand(command: T, kProperty: KProperty<*>): Boolean
+    fun isCombinedSubCommands(command: T, kProperty: KProperty<*>): Boolean
+    fun getCombinedAdditionNames(command: T, kProperty: KProperty<*>): Array<out String>
 }
 
 @ConsoleExperimentalApi
@@ -230,8 +254,9 @@ internal class SubCommandReflector<T: Any>(
         throw IllegalCommandDeclarationException(owner, this, message)
     }
 
-    private fun KProperty<*>.isSubCommandProviderProperty(): Boolean = annotationResolver.isCombinedCommand(owner, this)
-    private fun KFunction<*>.isSubCommandFunction(): Boolean = annotationResolver.hasAnnotation(owner, this)
+    private fun KProperty<*>.isSubCommandProviderProperty(): Boolean = annotationResolver.isCombinedSubCommands(owner, this)
+    private fun KFunction<*>.isSubCommandFunction(): Boolean = annotationResolver.isDeclaredSubCommand(owner, this)
+    private fun KProperty<*>.getCombinedAdditionNames(): Array<out String> = annotationResolver.getCombinedAdditionNames(owner, this)
     private fun KFunction<*>.checkExtensionReceiver() {
         this.extensionReceiverParameter?.let { receiver ->
             val classifier = receiver.type.classifierAsKClassOrNull()
@@ -244,7 +269,7 @@ internal class SubCommandReflector<T: Any>(
     }
 
     private fun KFunction<*>.checkNames() {
-        val names = annotationResolver.getSubCommandNames(owner, this)
+        val names = annotationResolver.getDeclaredSubCommandNames(owner, this)
         for (name in names) {
             ILLEGAL_SUB_NAME_CHARS.find { it in name }?.let {
                 illegalDeclaration("'$it' is forbidden in command name.")
@@ -302,6 +327,92 @@ internal class SubCommandReflector<T: Any>(
         throw SubcommandDeclarationClashException(owner, clashes.value.map { it.first })
     }
 
+    private fun generateCommandSignatureFromKFunctionImplWithAdditionName(name: String?, origin: CommandSignatureFromKFunction): CommandSignatureFromKFunctionImpl {
+        val functionNameAsValueParameter =
+            name?.split(' ')?.mapIndexed { index, s -> createStringConstantParameterForName(index, s) }
+                .orEmpty()
+
+        return CommandSignatureFromKFunctionImpl(
+            receiverParameter = origin.receiverParameter,
+            valueParameters = functionNameAsValueParameter + origin.valueParameters,
+            originFunction = origin.originFunction
+        ) { call ->
+            origin.call(call)
+        }
+    }
+
+    private fun generateCommandSignatureFromKFunctionImplWithAdditionName(name: String?, function: KFunction<*>): CommandSignatureFromKFunctionImpl {
+        val functionNameAsValueParameter =
+            name?.split(' ')?.mapIndexed { index, s -> createStringConstantParameterForName(index, s) }
+                .orEmpty()
+
+        val valueParameters = function.valueParameters.toMutableList()
+        var receiverParameter = function.extensionReceiverParameter
+        if (receiverParameter == null && valueParameters.isNotEmpty()) {
+            val valueFirstParameter = valueParameters[0]
+            val classifier = valueFirstParameter.type.classifierAsKClassOrNull()
+            if (classifier != null && isAcceptableReceiverType(classifier)
+            ) {
+                receiverParameter = valueFirstParameter
+                valueParameters.removeAt(0)
+            }
+        }
+
+        val functionValueParameters =
+            valueParameters.associateBy { it.toUserDefinedCommandParameter() }
+
+        return CommandSignatureFromKFunctionImpl(
+            receiverParameter = receiverParameter?.toCommandReceiverParameter(),
+            valueParameters = functionNameAsValueParameter + functionValueParameters.keys,
+            originFunction = function
+        ) { call ->
+            val args = LinkedHashMap<KParameter, Any?>()
+
+            for ((commandParameter, value) in call.resolvedValueArguments) {
+                if (commandParameter is AbstractCommandValueParameter.StringConstant) {
+                    continue
+                }
+                val functionParameter =
+                    functionValueParameters[commandParameter]
+                        ?: error("Could not find a corresponding function parameter '${commandParameter.name}'")
+                args[functionParameter] = value
+            }
+
+            val instanceParameter = function.instanceParameter
+            if (instanceParameter != null) {
+                check(instanceParameter.type.classifierAsKClass().isInstance(owner)) {
+                    "Bad command call resolved. " +
+                            "Function expects instance parameter ${instanceParameter.type} whereas actual instance is ${owner::class}."
+                }
+                args[instanceParameter] = owner
+            }
+
+            if (receiverParameter != null) {
+
+                val receiverType = receiverParameter.type.classifierAsKClass()
+
+                if (receiverType.isSubclassOf(CommandContext::class)) {
+                    args[receiverParameter] = CommandContextImpl(call.caller, call.originalMessage)
+                } else {
+                    check(receiverType.isInstance(call.caller)) {
+                        "Bad command call resolved. " +
+                                "Function expects receiver parameter ${receiverParameter.type} whereas actual is ${call.caller::class}."
+                    }
+                    args[receiverParameter] = call.caller
+                }
+
+            }
+
+            // mirai-console#341
+            if (function.isSuspend) {
+                function.callSuspendBy(args)
+            } else {
+                runBIO { function.callBy(args) }
+            }
+        }
+    }
+
+
     @Throws(IllegalCommandDeclarationException::class)
     override fun findSubCommands(): List<CommandSignatureFromKFunction> {
         val fromMemberFunctions = owner::class.functions // exclude static later
@@ -311,91 +422,32 @@ internal class SubCommandReflector<T: Any>(
             .onEach { it.checkModifiers() }
             .onEach { it.checkNames() }
             .flatMap { function ->
-                val names = annotationResolver.getSubCommandNames(owner, function)
+                val names = annotationResolver.getDeclaredSubCommandNames(owner, function)
                 if (names.isEmpty()) sequenceOf(createMapEntry(null, function))
                 else names.associateWith { function }.asSequence()
             }
             .map { (name, function) ->
-
-                val functionNameAsValueParameter =
-                    name?.split(' ')?.mapIndexed { index, s -> createStringConstantParameterForName(index, s) }
-                        .orEmpty()
-
-                val valueParameters = function.valueParameters.toMutableList()
-                var receiverParameter = function.extensionReceiverParameter
-                if (receiverParameter == null && valueParameters.isNotEmpty()) {
-                    val valueFirstParameter = valueParameters[0]
-                    val classifier = valueFirstParameter.type.classifierAsKClassOrNull()
-                    if (classifier != null && isAcceptableReceiverType(classifier)
-                    ) {
-                        receiverParameter = valueFirstParameter
-                        valueParameters.removeAt(0)
-                    }
-                }
-
-                val functionValueParameters =
-                    valueParameters.associateBy { it.toUserDefinedCommandParameter() }
-
-                CommandSignatureFromKFunctionImpl(
-                    receiverParameter = receiverParameter?.toCommandReceiverParameter(),
-                    valueParameters = functionNameAsValueParameter + functionValueParameters.keys,
-                    originFunction = function
-                ) { call ->
-                    val args = LinkedHashMap<KParameter, Any?>()
-
-                    for ((commandParameter, value) in call.resolvedValueArguments) {
-                        if (commandParameter is AbstractCommandValueParameter.StringConstant) {
-                            continue
-                        }
-                        val functionParameter =
-                            functionValueParameters[commandParameter]
-                                ?: error("Could not find a corresponding function parameter '${commandParameter.name}'")
-                        args[functionParameter] = value
-                    }
-
-                    val instanceParameter = function.instanceParameter
-                    if (instanceParameter != null) {
-                        check(instanceParameter.type.classifierAsKClass().isInstance(owner)) {
-                            "Bad command call resolved. " +
-                                    "Function expects instance parameter ${instanceParameter.type} whereas actual instance is ${owner::class}."
-                        }
-                        args[instanceParameter] = owner
-                    }
-
-                    if (receiverParameter != null) {
-
-                        val receiverType = receiverParameter.type.classifierAsKClass()
-
-                        if (receiverType.isSubclassOf(CommandContext::class)) {
-                            args[receiverParameter] = CommandContextImpl(call.caller, call.originalMessage)
-                        } else {
-                            check(receiverType.isInstance(call.caller)) {
-                                "Bad command call resolved. " +
-                                        "Function expects receiver parameter ${receiverParameter.type} whereas actual is ${call.caller::class}."
-                            }
-                            args[receiverParameter] = call.caller
-                        }
-
-                    }
-
-                    // mirai-console#341
-                    if (function.isSuspend) {
-                        function.callSuspendBy(args)
-                    } else {
-                        runBIO { function.callBy(args) }
-                    }
-                }
+                generateCommandSignatureFromKFunctionImplWithAdditionName(name, function)
             }.toList()
 
         val fromMemberProperties = owner::class.declaredMemberProperties
             .asSequence()
             .filter { it.isSubCommandProviderProperty() }
-            .map { it.getter.call(owner) }
-            .filter { it is SubCommandGroup }
-            .flatMap { property ->
-                property as SubCommandGroup
-                property.overloads
-            }.toList()
+            .filter { it.getter.call(owner) is SubCommandGroup }
+            .flatMap {
+                val names = it.getCombinedAdditionNames()
+                val originOverloads = (it.getter.call(owner) as SubCommandGroup).overloads
+                if (names.isEmpty()) sequenceOf(createMapEntry(null, originOverloads))
+                else names.associateWith { originOverloads }.asSequence()
+            }
+            .map { (name, originOverloads) ->
+                originOverloads
+                    .map { originOverload ->
+                        generateCommandSignatureFromKFunctionImplWithAdditionName(name, originOverload)
+                    }
+            }
+            .flatten()
+            .toList()
 
         val list: MutableList<CommandSignatureFromKFunction> = ArrayList()
         list.addAll(fromMemberFunctions)

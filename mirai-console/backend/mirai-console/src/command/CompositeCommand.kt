@@ -18,9 +18,9 @@ import net.mamoe.mirai.console.internal.command.CommandReflector
 import net.mamoe.mirai.console.internal.command.CompositeCommandSubCommandAnnotationResolver
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import kotlin.DeprecationLevel.*
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.FUNCTION
-import kotlin.annotation.AnnotationTarget.PROPERTY
 
 /**
  * 复合指令. 指令注册时候会通过反射构造指令解析器.
@@ -92,7 +92,7 @@ public abstract class CompositeCommand(
     parentPermission: Permission = owner.parentPermission,
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext,
 ) : Command, AbstractCommand(owner, primaryName, secondaryNames = secondaryNames, description, parentPermission),
-    CommandArgumentContextAware {
+    CommandArgumentContextAware, SubCommandGroup {
 
     private val reflector by lazy { CommandReflector(this, CompositeCommandSubCommandAnnotationResolver) }
 
@@ -116,34 +116,30 @@ public abstract class CompositeCommand(
      */ // open since 2.12
     public override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
 
-    /**
-     * 标记一个属性为子指令集合
-     */
-    @Retention(RUNTIME)
-    @Target(PROPERTY)
-    protected annotation class CombinedCommand(
-    )
 
-    /**
+/*    *//**
      * 标记一个函数为子指令, 当 [value] 为空时使用函数名.
      * @param value 子指令名
-     */
+     *//*
     @Retention(RUNTIME)
     @Target(FUNCTION)
+    @Deprecated(level = HIDDEN, message = "use SubCommandGroup.SubCommand")
     protected annotation class SubCommand(
         @ResolveContext(COMMAND_NAME) vararg val value: String = [],
     )
 
-    /** 指令描述 */
+    *//** 指令描述 *//*
     @Retention(RUNTIME)
     @Target(FUNCTION)
+    @Deprecated(level = HIDDEN, message = "use SubCommandGroup.Description")
     protected annotation class Description(val value: String)
 
-    /** 参数名, 将参与构成 [usage] */
+    *//** 参数名, 将参与构成 [usage] *//*
     @ConsoleExperimentalApi("Classname might change")
     @Retention(RUNTIME)
     @Target(AnnotationTarget.VALUE_PARAMETER)
-    protected annotation class Name(val value: String)
+    @Deprecated(level = HIDDEN, message = "use SubCommandGroup.Name")
+    protected annotation class Name(val value: String)*/
 }
 
 

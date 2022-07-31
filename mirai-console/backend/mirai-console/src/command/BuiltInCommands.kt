@@ -20,6 +20,9 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.ConsoleDataScope.Companion.get
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.allRegisteredCommands
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
+import net.mamoe.mirai.console.command.SubCommandGroup.Description
+import net.mamoe.mirai.console.command.SubCommandGroup.Name
+import net.mamoe.mirai.console.command.SubCommandGroup.SubCommand
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser.Companion.map
 import net.mamoe.mirai.console.command.descriptor.PermissionIdValueArgumentParser
