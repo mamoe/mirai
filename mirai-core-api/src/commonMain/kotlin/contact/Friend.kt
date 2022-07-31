@@ -34,6 +34,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  *
  * @see FriendMessageEvent
  */
+@Suppress("RedundantSetter")
 @NotStableForInheritance
 public interface Friend : User, CoroutineScope, AudioSupported, RoamingSupported {
 
@@ -46,6 +47,10 @@ public interface Friend : User, CoroutineScope, AudioSupported, RoamingSupported
      * @see FriendRemarkChangeEvent
      */
     override var remark: String
+        /**
+         * @since 2.13
+         */
+        set
 
     /**
      * 向这个对象发送消息.
