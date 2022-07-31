@@ -26,12 +26,7 @@ import net.mamoe.mirai.mock.resserver.TmpResourceServer
 import net.mamoe.mirai.mock.userprofile.UserProfileService
 import net.mamoe.mirai.mock.utils.NameGenerator
 import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.cast
-import java.util.function.Consumer
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
-import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.random.Random
 
 /**
@@ -64,7 +59,7 @@ public interface MockBot : Bot, MockContactOrBot, MockUserOrBot {
     @set:MockBotDSL
     override var avatarUrl: String
 
-    /// Contract API override
+    /// Contact API override
     override fun getFriend(id: Long): MockFriend? = super.getFriend(id)?.cast()
 
     override fun getFriendOrFail(id: Long): MockFriend = super.getFriendOrFail(id).cast()

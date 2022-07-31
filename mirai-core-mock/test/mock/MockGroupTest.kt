@@ -17,12 +17,12 @@ import net.mamoe.mirai.contact.isBotMuted
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.FileMessage
+import net.mamoe.mirai.mock.MockActions.nameCardChangesTo
+import net.mamoe.mirai.mock.MockActions.permissionChangesTo
+import net.mamoe.mirai.mock.MockActions.specialTitleChangesTo
 import net.mamoe.mirai.mock.contact.announcement.MockOnlineAnnouncement
 import net.mamoe.mirai.mock.test.MockBotTestBase
 import net.mamoe.mirai.mock.userprofile.MockMemberInfoBuilder
-import net.mamoe.mirai.mock.utils.MockActions.nameCardChangesTo
-import net.mamoe.mirai.mock.utils.MockActions.permissionChangesTo
-import net.mamoe.mirai.mock.utils.MockActions.specialTitleChangesTo
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.cast
@@ -233,12 +233,14 @@ internal class MockGroupTest : MockBotTestBase() {
     @Test
     fun testBotGroupPermissionChangeEvent() = runTest {
         runAndReceiveEventBroadcast {
-            bot.addGroup(1, "")
-                .appendMember(MockMemberInfoBuilder.create {
-                    uin(1).nick("o")
-                    permission(MemberPermission.OWNER)
-                })
-                .botAsMember.permissionChangesTo(MemberPermission.ADMINISTRATOR)
+            permissionChangesTo(
+                bot.addGroup(1, "")
+                    .appendMember(MockMemberInfoBuilder.create {
+                        uin(1).nick("o")
+                        permission(MemberPermission.OWNER)
+                    })
+                    .botAsMember, MemberPermission.ADMINISTRATOR
+            )
             bot.addGroup(2, "")
                 .appendMember(MockMemberInfoBuilder.create {
                     uin(1).nick("o")
@@ -448,9 +450,10 @@ internal class MockGroupTest : MockBotTestBase() {
     @Test
     fun testMemberSpecialTitleChangeEvent() = runTest {
         runAndReceiveEventBroadcast {
-            bot.addGroup(1, "")
-                .addMember(2, "")
-                .specialTitleChangesTo("Hello")
+            specialTitleChangesTo(
+                bot.addGroup(1, "")
+                    .addMember(2, ""), "Hello"
+            )
         }.let { events ->
             assertEquals(1, events.size)
             assertIsInstance<MemberSpecialTitleChangeEvent>(events[0]) {

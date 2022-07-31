@@ -17,11 +17,9 @@ import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.messageChainOf
 import net.mamoe.mirai.message.data.source
+import net.mamoe.mirai.mock.MockActions.mockFireRecalled
+import net.mamoe.mirai.mock.MockActions.nudged
 import net.mamoe.mirai.mock.test.MockBotTestBase
-import net.mamoe.mirai.mock.utils.MockActions.mockFireRecalled
-import net.mamoe.mirai.mock.utils.MockActions.nudged
-import net.mamoe.mirai.mock.utils.MockActions.nudgedBy
-import net.mamoe.mirai.mock.utils.MockActions.says
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -159,7 +157,7 @@ internal class MessagingTest: MockBotTestBase() {
         runAndReceiveEventBroadcast {
             sender.says("Test").mockFireRecalled()
             sender.says("Admin recall").mockFireRecalled(admin)
-            group.sendMessage("Hello world").mockFireRecalled(admin)
+            mockFireRecalled(group.sendMessage("Hello world"), admin)
             sender.says("Hi").recall()
             admin.says("I'm admin").let { resp ->
                 resp.recall()

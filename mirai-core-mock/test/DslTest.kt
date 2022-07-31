@@ -10,15 +10,13 @@
 package net.mamoe.mirai.mock.test
 
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.mock.MockActions.nameCardChangesTo
+import net.mamoe.mirai.mock.MockActions.nudged
+import net.mamoe.mirai.mock.MockActions.permissionChangesTo
+import net.mamoe.mirai.mock.MockActions.saysMessage
+import net.mamoe.mirai.mock.MockActions.specialTitleChangesTo
 import net.mamoe.mirai.mock.MockBotFactory
 import net.mamoe.mirai.mock.userprofile.MockMemberInfoBuilder
-import net.mamoe.mirai.mock.utils.MockActions.nameCardChangesTo
-import net.mamoe.mirai.mock.utils.MockActions.nudged
-import net.mamoe.mirai.mock.utils.MockActions.nudgedBy
-import net.mamoe.mirai.mock.utils.MockActions.permissionChangesTo
-import net.mamoe.mirai.mock.utils.MockActions.says
-import net.mamoe.mirai.mock.utils.MockActions.saysMessage
-import net.mamoe.mirai.mock.utils.MockActions.specialTitleChangesTo
 import net.mamoe.mirai.mock.utils.mockUploadAsOnlineAudio
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.io.File

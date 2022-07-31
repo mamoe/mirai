@@ -123,6 +123,11 @@ internal class RootRemoteFile(
 
     override suspend fun toMessage(): FileMessage? = null
 
+    @Deprecated(
+        "Use uploadAndSend instead.",
+        replaceWith = ReplaceWith("this.uploadAndSend(resource, callback)"),
+        level = DeprecationLevel.ERROR
+    )
     override suspend fun upload(resource: ExternalResource, callback: RemoteFile.ProgressionCallback?): FileMessage {
         error("Uploading as root directory")
     }
@@ -316,7 +321,7 @@ internal class MockRemoteFile(
     }
 
     @MiraiExperimentalApi
-    @Suppress("DEPRECATION", "DEPRECATION_ERROR", "OVERRIDE_DEPRECATION", "OverridingDeprecatedMember")
+    @Suppress("DEPRECATION_ERROR", "OverridingDeprecatedMember")
     override suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact> {
         return contact.sendMessage(upload(resource))
     }

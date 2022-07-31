@@ -55,7 +55,7 @@ internal class MockAnonymousMemberImpl(
         throw AssertionError()
     }
 
-    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
+    @Suppress("DEPRECATION_ERROR")
     override suspend fun sendMessage(message: Message): Nothing = super<MockAnonymousMember>.sendMessage(message)
     override suspend fun uploadImage(resource: ExternalResource): Image =
         super<AbstractMockContact>.uploadImage(resource)

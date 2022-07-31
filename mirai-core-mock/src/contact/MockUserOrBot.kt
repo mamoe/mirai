@@ -13,19 +13,6 @@ package net.mamoe.mirai.mock.contact
 
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.UserOrBot
-import net.mamoe.mirai.mock.MockBotDSL
-import net.mamoe.mirai.mock.utils.MockActions.nudged
-import net.mamoe.mirai.mock.utils.NudgeDsl
-import net.mamoe.mirai.utils.JavaFriendlyAPI
-import java.util.function.Consumer
-import kotlin.internal.LowPriorityInOverloadResolution
 
 @JvmBlockingBridge
-public interface MockUserOrBot : MockContactOrBot, UserOrBot {
-    @JavaFriendlyAPI
-    @LowPriorityInOverloadResolution
-    @MockBotDSL
-    public suspend fun nudgedBy(actor: MockUserOrBot, action: Consumer<NudgeDsl>) {
-        actor.nudged(this) { action.accept(this) }
-    }
-}
+public interface MockUserOrBot : MockContactOrBot, UserOrBot

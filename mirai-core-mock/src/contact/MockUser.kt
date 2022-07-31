@@ -16,9 +16,10 @@ import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.mock.MockActions
+import net.mamoe.mirai.mock.MockActions.mockFireRecalled
 import net.mamoe.mirai.mock.MockBotDSL
-import net.mamoe.mirai.mock.utils.MockActions
-import net.mamoe.mirai.mock.utils.MockActions.mockFireRecalled
+import net.mamoe.mirai.mock.utils.broadcastMockEvents
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -33,7 +34,9 @@ public interface MockUser : MockContact, MockUserOrBot, User {
      */
     @MockBotDSL
     public suspend fun recallMessage(message: MessageChain) {
-        message.mockFireRecalled(this)
+        broadcastMockEvents {
+            message.recalledBy(this@MockUser)
+        }
     }
 
     /**
@@ -43,7 +46,9 @@ public interface MockUser : MockContact, MockUserOrBot, User {
      */
     @MockBotDSL
     public suspend fun recallMessage(message: MessageSource) {
-        message.mockFireRecalled(this)
+        broadcastMockEvents {
+            message.recalledBy(this@MockUser)
+        }
     }
 
     /**
@@ -53,7 +58,7 @@ public interface MockUser : MockContact, MockUserOrBot, User {
      */
     @MockBotDSL
     public suspend fun recallMessage(message: MessageReceipt<*>) {
-        message.mockFireRecalled(this)
+        mockFireRecalled(message, this)
     }
 
 
