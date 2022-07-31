@@ -63,6 +63,7 @@ internal abstract class CommonNetworkHandler<Conn>(
                     setState { StateClosed(error) }
                     return
                 }
+
                 PacketCodecException.Kind.PROTOCOL_UPDATED -> passToExceptionHandler()
                 PacketCodecException.Kind.OTHER -> passToExceptionHandler()
             }
@@ -76,7 +77,7 @@ internal abstract class CommonNetworkHandler<Conn>(
     ///////////////////////////////////////////////////////////////////////////
 
     /**
-     * Creates a connection
+     * Creates a connection.
      */
     protected abstract suspend fun createConnection(): Conn
 
@@ -85,9 +86,17 @@ internal abstract class CommonNetworkHandler<Conn>(
      */
     protected abstract fun Conn.writeAndFlushOrCloseAsync(packet: OutgoingPacket)
 
-    @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+    /**
+     * Close this connection for general reason, immediately. Immediately means any live objects with lifecycle must be marked *cancelled*, *dead* or any terminate state.
+     */
+    @Suppress("EXTENSION_SHADOWED_BY_MEMBER", "KotlinRedundantDiagnosticSuppress") // can happen on some platforms
     protected abstract fun Conn.close()
 
+    /**
+     * *Single-thread* event-loop packet decoder.
+     *
+     * Call [PacketDecodePipeline.send] to submit a decoding job.
+     */
     internal inner class PacketDecodePipeline(parentContext: CoroutineContext) :
         CoroutineScope by parentContext.childScope() {
         private val packetCodec: PacketCodec by lazy { context[PacketCodec] }

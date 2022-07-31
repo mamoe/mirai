@@ -88,7 +88,7 @@ internal class PacketCodecException(
         OTHER,
     }
 
-    // not available in native
+//     not available in native
 //    override fun getStackTrace(): Array<StackTraceElement> {
 //        return targetException.stackTrace
 //    }

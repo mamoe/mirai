@@ -35,7 +35,7 @@ import kotlin.jvm.Volatile
 import kotlin.reflect.KClass
 
 /**
- * Implements basic logics of [NetworkHandler]
+ * Implements a state-based [NetworkHandler].
  */
 internal abstract class NetworkHandlerSupport(
     final override val context: NetworkHandlerContext,
@@ -45,14 +45,24 @@ internal abstract class NetworkHandlerSupport(
         additionalCoroutineContext.childScopeContext(SupervisorJob(context.bot.coroutineContext.job))
             .plus(CoroutineExceptionHandler.fromMiraiLogger(logger))
 
+    /**
+     * Creates an instance of the initial state. This is guaranteed to be called at most once.
+     */
     protected abstract fun initialState(): BaseStateImpl
 
     /**
-     * It's not guaranteed whether this function sends the packet in-place or launches a coroutine for it.
-     * Caller should not rely on this property.
+     * Performs network IO or launches a coroutine for that, to send the [packet].
+     *
+     * **Node**: It's not guaranteed whether this function sends the packet in-place or launches a coroutine for it.
+     * Caller should not rely on this characteristic.
      */
     protected abstract suspend fun sendPacketImpl(packet: OutgoingPacket)
 
+    /**
+     * Handles *unknown* [RawIncomingPacket]s. Packets with unrecognized [RawIncomingPacket.commandName] are considered *unknown*.
+     *
+     * Can be called by implementation
+     */
     protected fun collectUnknownPacket(raw: RawIncomingPacket) {
         packetLogger.debug { "Unknown packet: commandName=${raw.commandName}, body=${raw.body.toUHexString()}" }
         // may add hooks here (to context)
@@ -137,6 +147,9 @@ internal abstract class NetworkHandlerSupport(
         sendPacketImpl(packet)
     }
 
+    /**
+     * Listens for the resultant packet from server.
+     */
     protected class PacketListener(
         val commandName: String,
         val sequenceId: Int,
@@ -231,7 +244,7 @@ internal abstract class NetworkHandlerSupport(
     /**
      * State is *lazy*, initialized only if requested.
      *
-     * You need to call setter inside `synchronized(this) { }`.
+     * You must not set this property directly, but use [setState].
      */
     @Suppress("PropertyName")
     protected var _state: BaseStateImpl by lateinitMutableProperty { initialState() }

@@ -11,6 +11,9 @@ package net.mamoe.mirai.utils
 
 import kotlin.jvm.JvmName
 
+/**
+ * An object with name for debugging purposes. Handy for states.
+ */
 public class Symbol private constructor(name: String) {
     private val str = "Symbol($name)"
     override fun toString(): String = str
