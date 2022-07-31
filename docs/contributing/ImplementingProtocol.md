@@ -374,7 +374,7 @@ mirai 提供 `MessageSerializers` 来支持消息元素的多态序列化。
 `OfflineVideoImpl` 的序列化很简单，只需要添加两个注解：
 
 ```kotlin
-@SerialName(OfflineAudio.SERIAL_NAME)
+@SerialName(OfflineVideo.SERIAL_NAME)
 @Serializable // 编译器将会自动生成序列化器
 internal class OfflineVideoImpl(
     override val filename: String,
@@ -407,7 +407,7 @@ internal class VideoProtocol : MessageProtocol() {
 由于 `OnlineVideoImpl` 拥有 `ImMsgBody.VideoFile?` 属性，
 
 ```kotlin
-@SerialName(OnlineAudio.SERIAL_NAME)
+@SerialName(OnlineVideo.SERIAL_NAME)
 @Serializable // 编译器将会自动生成序列化器
 internal class OnlineVideoImpl(
     override val filename: String,
@@ -453,47 +453,12 @@ internal class VideoProtocol : MessageProtocol() {
 
 ### 9. 添加序列化测试
 
-请在 `net.mamoe.mirai.internal.message.data.MessageSerializationTest`
+请在第 7 步实现的你的 `MessageProtocolTest` 中添加
 添加序列化测试。
 
-你可以仿照已有的测试如 `test Audio standard` 编写你的测试。
-
-对于 `Video` 示例，由于我们将 `ImMsgBody.VideoFile` 以十六进制字符串序列化，则需要额外添加测试保证这一性质：
-
-```kotlin
-internal class VideoTest : AbstractTest() {
-    @Test
-    fun `test Video original serialized as hex string`() {
-        val origin = OnlineAudioImpl(
-            "name",
-            1,
-            ImMsgBody.VideoFile(fileName = "name", fileTime = 1)
-        )
-        val result =
-            format.parseToJsonElement(origin.serialize()).jsonObject
-
-        assertNotNull(origin.original)
-        assertContentEquals(
-            origin.extraData,
-            result["original"]!!.jsonPrimitive!!.string.hexToBytes()
-        )
-    }
-
-    @Test
-    fun `test Video original deserialized from hex string`() {
-        val origin = OnlineAudioImpl(
-            "name",
-            1,
-            ImMsgBody.VideoFile(fileName = "name", fileTime = 1)
-        )
-        assertNotNull(origin.original)
-        assertEquals(
-            origin,
-            origin.serialize().deserialize()
-        )
-    }
-}
-```
+你可以仿照已有的测试如 `TextProtocolTest`
+等编写你的序列化测试。通常只需要添加一个类似于 `TextProtocolTest`
+的 `test serialization for AtAll` 的函数即可。
 
 ### 10. 提交 PR
 
