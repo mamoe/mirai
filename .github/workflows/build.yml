@@ -291,7 +291,7 @@ jobs:
 
       - run: >
           ./gradlew updateSnapshotVersion ${{ env.gradleArgs }}
-        if: github.event.push
+        if: github.event.pusher
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
@@ -314,7 +314,7 @@ jobs:
         run: ./gradlew dokkaHtmlMultiModule ${{ env.gradleArgs }}
 
       - name: Publish Snapshots
-        if: ${{ github.event.push && env.isMac == 'true' }}
+        if: ${{ github.event.pusher && env.isMac == 'true' }}
         run: ./gradlew publishAllPublicationsToMiraiRepoRepository ${{ env.gradleArgs }}
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
@@ -433,7 +433,7 @@ jobs:
 
       - run: >
           ./gradlew updateSnapshotVersion ${{ env.gradleArgs }}
-        if: github.event.push
+        if: github.event.pusher
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
@@ -461,7 +461,7 @@ jobs:
       # Publish native snapshots. Other artifacts are published in build-mirai-all
 
       - name: Publish MingwX64 Snapshots
-        if: ${{ github.event.push && env.isWindows == 'true' }}
+        if: ${{ github.event.pusher && env.isWindows == 'true' }}
         run: ./gradlew publishMingwX64PublicationToMiraiRepoRepository ${{ env.gradleArgs }}
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
@@ -471,7 +471,7 @@ jobs:
           CURRENT_BRANCH_NAME: dev
 
       - name: Publish LinuxX64 Snapshots
-        if: ${{ github.event.push && env.isUbuntu == 'true' }}
+        if: ${{ github.event.pusher && env.isUbuntu == 'true' }}
         run: ./gradlew publishLinuxX64PublicationToMiraiRepoRepository ${{ env.gradleArgs }}
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
@@ -481,7 +481,7 @@ jobs:
           CURRENT_BRANCH_NAME: dev
 
       - name: Publish macOSX64 Snapshots
-        if: ${{ github.event.push && env.isMac == 'true' }}
+        if: ${{ github.event.pusher && env.isMac == 'true' }}
         run: ./gradlew publishMacosX64PublicationToMiraiRepoRepository ${{ env.gradleArgs }}
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
