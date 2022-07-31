@@ -988,6 +988,7 @@ public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mira
 
 public class net/mamoe/mirai/data/FriendInfoImpl : net/mamoe/mirai/data/FriendInfo {
 	public fun <init> (JLjava/lang/String;Ljava/lang/String;I)V
+	public synthetic fun <init> (JLjava/lang/String;Ljava/lang/String;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun getFriendGroupId ()I
 	public fun getNick ()Ljava/lang/String;
 	public fun getRemark ()Ljava/lang/String;
