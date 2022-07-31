@@ -31,7 +31,8 @@ internal actual abstract class AbstractTest actual constructor() : CommonAbstrac
     actual companion object {
         @OptIn(ExperimentalStdlibApi::class)
         @BeforeAll
-        private fun checkTestFactories(testInfo: TestInfo) {
+        @JvmStatic
+        fun checkTestFactories(testInfo: TestInfo) {
             val clazz = testInfo.testClass.getOrNull()?.kotlin ?: return
             for (function in clazz.functions) {
                 if (function.hasAnnotation<TestFactory>()) {
