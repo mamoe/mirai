@@ -80,7 +80,7 @@ internal object CompositeCommandSubCommandAnnotationResolver :
     override fun getDescription(ownerCommand: Command, function: KFunction<*>): String? =
         function.findAnnotation<CompositeCommand.Description>()?.value
 
-    override fun hasPropertyAnnotation(command: Command, kProperty: KProperty<*>): Boolean =
+    override fun isCombinedCommand(command: Command, kProperty: KProperty<*>): Boolean =
         kProperty.hasAnnotation<CompositeCommand.CombinedCommand>()
 
 }
