@@ -30,7 +30,7 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
-import net.mamoe.mirai.console.fontend.DownloadingProgress
+import net.mamoe.mirai.console.fontend.ProcessProgress
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.terminal.ConsoleInputImpl.requestInput
@@ -139,14 +139,14 @@ open class MiraiConsoleImplementationTerminal
         }
     }
 
-    override fun createNewDownloadingProgress(): DownloadingProgress {
-        if (terminal is NoConsole) return super.createNewDownloadingProgress()
+    override fun createNewProcessProgress(): ProcessProgress {
+        if (terminal is NoConsole) return super.createNewProcessProgress()
 
         containDownloadingProgress = true
         kotlin.runCatching {
             downloadingProgressCoroutine?.resumeWith(Result.success(Unit))
         }
-        return TerminalDownloadingProgress(lineReader).also { terminalDownloadingProgresses.add(it) }
+        return TerminalProcessProgress(lineReader).also { terminalDownloadingProgresses.add(it) }
     }
 }
 
@@ -191,8 +191,9 @@ internal val terminalExecuteLock: java.util.concurrent.locks.Lock by lazy {
 }
 private val terminalDownloadingProgressesNoticer = Object()
 private var containDownloadingProgress: Boolean = false
+    get() = field || terminalDownloadingProgresses.isNotEmpty()
 
-internal val terminalDownloadingProgresses = mutableListOf<TerminalDownloadingProgress>()
+internal val terminalDownloadingProgresses = mutableListOf<TerminalProcessProgress>()
 private var downloadingProgressCoroutine: Continuation<Unit>? = null
 private suspend fun downloadingProgressDaemonStub() {
     delay(500L)
@@ -286,13 +287,15 @@ internal fun postPrintNewLog() {
 private fun noticeDownloadingProgressEmpty() {
     synchronized(terminalDownloadingProgressesNoticer) {
         containDownloadingProgress = false
-        terminalDownloadingProgressesNoticer.notifyAll()
+        if (terminalDownloadingProgresses.isEmpty()) {
+            terminalDownloadingProgressesNoticer.notifyAll()
+        }
     }
 }
 
 internal fun waitDownloadingProgressEmpty() {
     synchronized(terminalDownloadingProgressesNoticer) {
-        if (containDownloadingProgress || terminalDownloadingProgresses.isNotEmpty()) {
+        if (containDownloadingProgress) {
             terminalDownloadingProgressesNoticer.wait()
         }
     }

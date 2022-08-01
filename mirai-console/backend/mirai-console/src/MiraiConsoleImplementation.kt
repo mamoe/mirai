@@ -22,11 +22,11 @@ import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.extension.ComponentStorage
-import net.mamoe.mirai.console.fontend.DefaultLoggingDownloadingProgress
+import net.mamoe.mirai.console.fontend.DefaultLoggingProcessProgress
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScopeImpl
-import net.mamoe.mirai.console.fontend.DownloadingProgress
+import net.mamoe.mirai.console.fontend.ProcessProgress
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
 import net.mamoe.mirai.console.internal.pluginManagerImpl
@@ -221,9 +221,9 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      */
     public fun createLogger(identity: String?): MiraiLogger
 
-    /** @see [MiraiConsole.newDownloadingProgress] */
-    public fun createNewDownloadingProgress(): DownloadingProgress {
-        return DefaultLoggingDownloadingProgress()
+    /** @see [MiraiConsole.newProcessProgress] */
+    public fun createNewProcessProgress(): ProcessProgress {
+        return DefaultLoggingProcessProgress()
     }
 
     /**

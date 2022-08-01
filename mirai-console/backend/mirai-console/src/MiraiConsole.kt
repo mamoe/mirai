@@ -19,7 +19,7 @@ import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.extensions.BotConfigurationAlterer
-import net.mamoe.mirai.console.fontend.DownloadingProgress
+import net.mamoe.mirai.console.fontend.ProcessProgress
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.plugin.PluginManager
@@ -257,7 +257,7 @@ public interface MiraiConsole : CoroutineScope {
         }
 
         /**
-         * 创建一个新的下载进度, 此进度将会在前端显示, 并且此进度需要[手动关闭][DownloadingProgress.close]
+         * 创建一个新的处理进度, 此进度将会在前端显示, 并且此进度需要[手动关闭][ProcessProgress.close]
          *
          * 注: 此 API 应该只在以下情况使用
          *
@@ -267,12 +267,12 @@ public interface MiraiConsole : CoroutineScope {
          * 在其他情况使用可能会导致意外的情况
          *
          * // implementation note:
-         * 在 Terminal 前端中, 有下载进度存在时会停止命令输入 (即停止命令执行)
+         * 在 Terminal 前端中, 有处理进度存在时会停止命令输入 (即停止命令执行)
          */
         @ConsoleExperimentalApi
         @JvmStatic
-        public fun newDownloadingProgress(): DownloadingProgress {
-            return MiraiConsoleImplementation.getInstance().createNewDownloadingProgress()
+        public fun newProcessProgress(): ProcessProgress {
+            return MiraiConsoleImplementation.getInstance().createNewProcessProgress()
         }
     }
 

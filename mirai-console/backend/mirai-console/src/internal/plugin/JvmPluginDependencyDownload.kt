@@ -11,7 +11,7 @@ package net.mamoe.mirai.console.internal.plugin
 
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.ConsoleDataScope.Companion.get
-import net.mamoe.mirai.console.fontend.DownloadingProgress
+import net.mamoe.mirai.console.fontend.ProcessProgress
 import net.mamoe.mirai.console.internal.MiraiConsoleBuildDependencies
 import net.mamoe.mirai.console.internal.data.builtins.DataScope
 import net.mamoe.mirai.console.internal.data.builtins.PluginDependenciesConfig
@@ -100,13 +100,13 @@ internal class JvmPluginDependencyDownloader(
             session, LocalRepository(PluginManager.pluginLibrariesFolder)
         )
         session.transferListener = object : AbstractTransferListener() {
-            private val dwnProgresses: MutableMap<File, DownloadingProgress> = ConcurrentHashMap()
+            private val dwnProgresses: MutableMap<File, ProcessProgress> = ConcurrentHashMap()
 
             override fun transferStarted(event: TransferEvent) {
                 logger.verbose {
                     "Downloading ${event.resource?.repositoryUrl}${event.resource?.resourceName}"
                 }
-                val nw = MiraiConsoleImplementation.getInstance().createNewDownloadingProgress()
+                val nw = MiraiConsoleImplementation.getInstance().createNewProcessProgress()
                 dwnProgresses.put(
                     event.resource.file, nw
                 )?.close()

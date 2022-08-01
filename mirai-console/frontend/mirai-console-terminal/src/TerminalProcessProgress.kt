@@ -9,14 +9,14 @@
 
 package net.mamoe.mirai.console.terminal
 
-import net.mamoe.mirai.console.fontend.DownloadingProgress
+import net.mamoe.mirai.console.fontend.ProcessProgress
 import org.jline.utils.AttributedString
 import org.jline.utils.AttributedStringBuilder
 import org.jline.utils.AttributedStyle
 
-internal class TerminalDownloadingProgress(
+internal class TerminalProcessProgress(
     private val reader: org.jline.reader.LineReader,
-) : DownloadingProgress {
+) : ProcessProgress {
     private var totalSize: Long = 1
     private var processed: Long = 0
     private val txt: StringBuilder = StringBuilder()

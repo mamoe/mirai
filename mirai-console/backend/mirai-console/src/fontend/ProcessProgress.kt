@@ -16,11 +16,11 @@ import java.io.Closeable
 /**
  * 一个下载进度
  *
- * @see MiraiConsole.newDownloadingProgress
+ * @see MiraiConsole.newProcessProgress
  */
 // @ConsoleFrontEndImplementation
 @ConsoleExperimentalApi
-public interface DownloadingProgress : Closeable {
+public interface ProcessProgress : Closeable {
     /**
      * 更新当前下载进度的文本
      */

@@ -12,18 +12,18 @@ package net.mamoe.mirai.console.fontend
 import net.mamoe.mirai.console.MiraiConsole
 
 /**
- * [DownloadingProgress] 的简单实现, 前端应该自行实现 [DownloadingProgress]
+ * [ProcessProgress] 的简单实现, 前端应该自行实现 [ProcessProgress]
  *
- * 此类为前端未实现 [DownloadingProgress] 时的缺省实现
+ * 此类为前端未实现 [ProcessProgress] 时的缺省实现
  */
-internal class DefaultLoggingDownloadingProgress : DownloadingProgress {
+internal class DefaultLoggingProcessProgress : ProcessProgress {
     private var message: String = ""
     private var lastDisplay = 0L
     private var changed: Boolean = false
     private var failed: Boolean = false
 
     private companion object {
-        private val logger by lazy { MiraiConsole.createLogger("DownloadingProgress") }
+        private val logger by lazy { MiraiConsole.createLogger("ProcessProgress") }
     }
 
     override fun updateText(txt: String) {
