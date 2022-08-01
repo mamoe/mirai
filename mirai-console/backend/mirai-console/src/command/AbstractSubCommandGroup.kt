@@ -27,7 +27,7 @@ public abstract class AbstractSubCommandGroup(
     private val reflector by lazy { SubCommandReflector(this, GroupedCommandSubCommandAnnotationResolver) }
 
     @ExperimentalCommandDescriptors
-    public final override val provideOverloads: List<CommandSignatureFromKFunction> by lazy {
+    public final override val overloads: List<CommandSignatureFromKFunction> by lazy {
         reflector.findSubCommands().also {
             reflector.validate(it)
         }

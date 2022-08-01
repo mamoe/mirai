@@ -103,7 +103,7 @@ internal object GroupedCommandSubCommandAnnotationResolver :
     override fun getDescription(ownerCommand: Any, function: KFunction<*>): String? =
         function.findAnnotation<AbstractSubCommandGroup.AnotherDescription>()?.value
 
-    override fun hasPropertyAnnotation(command: Any, kProperty: KProperty<*>): Boolean =
+    override fun isCombinedCommand(command: Any, kProperty: KProperty<*>): Boolean =
         kProperty.hasAnnotation<AbstractSubCommandGroup.AnotherCombinedCommand>()
 
 }
@@ -123,7 +123,7 @@ internal object SimpleCommandSubCommandAnnotationResolver :
     override fun getDescription(ownerCommand: Command, function: KFunction<*>): String =
         ownerCommand.description
 
-    override fun hasPropertyAnnotation(command: Command, kProperty: KProperty<*>): Boolean = false
+    override fun isCombinedCommand(command: Command, kProperty: KProperty<*>): Boolean = false
 }
 
 internal interface SubCommandAnnotationResolver<T> {
@@ -131,7 +131,7 @@ internal interface SubCommandAnnotationResolver<T> {
     fun getSubCommandNames(ownerCommand: T, function: KFunction<*>): Array<out String>
     fun getAnnotatedName(ownerCommand: T, parameter: KParameter): String?
     fun getDescription(ownerCommand: T, function: KFunction<*>): String?
-    fun hasPropertyAnnotation(command: T, kProperty: KProperty<*>): Boolean
+    fun isCombinedCommand(command: T, kProperty: KProperty<*>): Boolean
 }
 
 @ConsoleExperimentalApi
@@ -230,7 +230,7 @@ internal class SubCommandReflector<T: Any>(
         throw IllegalCommandDeclarationException(owner, this, message)
     }
 
-    private fun KProperty<*>.isSubCommandProviderProperty(): Boolean = annotationResolver.hasPropertyAnnotation(owner, this)
+    private fun KProperty<*>.isSubCommandProviderProperty(): Boolean = annotationResolver.isCombinedCommand(owner, this)
     private fun KFunction<*>.isSubCommandFunction(): Boolean = annotationResolver.hasAnnotation(owner, this)
     private fun KFunction<*>.checkExtensionReceiver() {
         this.extensionReceiverParameter?.let { receiver ->
@@ -394,7 +394,7 @@ internal class SubCommandReflector<T: Any>(
             .filter { it is SubCommandGroup }
             .flatMap { property ->
                 property as SubCommandGroup
-                property.provideOverloads
+                property.overloads
             }.toList()
 
         val list: MutableList<CommandSignatureFromKFunction> = ArrayList()
