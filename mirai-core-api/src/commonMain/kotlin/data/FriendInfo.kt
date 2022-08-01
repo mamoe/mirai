@@ -34,5 +34,6 @@ public open class FriendInfoImpl(
     override val uin: Long,
     override var nick: String,
     override var remark: String,
-    override val friendGroupId: Int = 0,
-) : FriendInfo
+) : FriendInfo {
+    override var friendGroupId: Int = 0
+}
