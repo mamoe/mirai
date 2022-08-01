@@ -13,8 +13,7 @@
 
 package net.mamoe.mirai.internal.utils.io.serialization
 
-import kotlinx.io.core.*
-import kotlinx.io.streams.asInput
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -30,10 +29,11 @@ import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.DebugLogger
 import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.TarsDecoder
 import net.mamoe.mirai.internal.utils.printStructure
 import net.mamoe.mirai.utils.*
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmInline
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 internal typealias KtProtoBuf = kotlinx.serialization.protobuf.ProtoBuf
 
@@ -69,36 +69,36 @@ private fun <T : JceStruct> ByteArray.doLoadAs(
     length: Int,
 ): T {
     try {
-        return this.inputStream(offset = offset, length = length).asInput().use { input ->
+        return this.toReadPacket(offset = offset, length = length).use { input ->
             Tars.UTF_8.load(deserializer, input)
         }
     } catch (originalException: Exception) {
-        val log = ByteArrayOutputStream()
-        try {
-            val value = PrintStream(log).use { stream ->
-                stream.println("\nData: ")
-                stream.println(this.toUHexString(offset = offset, length = length))
-                stream.println("Trace:")
+        BytePacketBuilder().use { log ->
+            val build by lazy { log.build() }
+            try {
+                log.appendLine("\nData: ")
+                log.appendLine(this.toUHexString(offset = offset, length = length))
+                log.appendLine("Trace:")
 
-                this.inputStream(offset = offset, length = length).asInput().use { input ->
-                    Tars.UTF_8.load(deserializer, input, debugLogger = DebugLogger(stream))
+                val value = this.toReadPacket(offset = offset, length = length).use { input ->
+                    Tars.UTF_8.load(deserializer, input, debugLogger = DebugLogger(log))
                 }
-            }
-            return value.also {
-                TarsDecoder.logger.warning(
-                    contextualBugReportException(
-                        "解析 " + deserializer.descriptor.serialName,
-                        "启用 debug 模式后解析正常: $value \n\n${log.toByteArray().decodeToString()}",
-                        originalException
+                return value.also {
+                    TarsDecoder.logger.warning(
+                        contextualBugReportException(
+                            "解析 " + deserializer.descriptor.serialName,
+                            "启用 debug 模式后解析正常: $value \n\n${build.readText()}",
+                            originalException
+                        )
                     )
+                }
+            } catch (secondFailure: Exception) {
+                throw contextualBugReportException(
+                    "解析 " + deserializer.descriptor.serialName,
+                    build.readAllText(),
+                    ExceptionCollector.compressExceptions(originalException, secondFailure)
                 )
             }
-        } catch (secondFailure: Exception) {
-            throw contextualBugReportException(
-                "解析 " + deserializer.descriptor.serialName,
-                log.toByteArray().decodeToString(),
-                ExceptionCollector.compressExceptions(originalException, secondFailure)
-            )
         }
     }
 }

@@ -23,12 +23,12 @@ import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Co
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.CONTACT
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePreprocessor
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.network.protocol.data.proto.CustomFace
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.ImagePatcher
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.message.data.ImageType
-import net.mamoe.mirai.message.data.ShowImageFlag
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.generateImageId
 import net.mamoe.mirai.utils.toUHexString
 
@@ -38,6 +38,18 @@ internal class ImageProtocol : MessageProtocol() {
         add(ImageDecoder())
 
         add(ImagePatcherForGroup())
+
+        MessageSerializer.superclassesScope(MessageContent::class, SingleMessage::class) {
+            @Suppress("DEPRECATION", "DEPRECATION_ERROR")
+            add(MessageSerializer(Image::class, Image.Serializer, registerAlsoContextual = true))
+        }
+
+        MessageSerializer.superclassesScope(Image::class, MessageContent::class, SingleMessage::class) {
+            add(MessageSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer()))
+            add(MessageSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer()))
+            add(MessageSerializer(OnlineFriendImageImpl::class, OnlineFriendImageImpl.serializer()))
+            add(MessageSerializer(OnlineGroupImageImpl::class, OnlineGroupImageImpl.serializer()))
+        }
     }
 
     private class ImagePatcherForGroup : OutgoingMessagePreprocessor {

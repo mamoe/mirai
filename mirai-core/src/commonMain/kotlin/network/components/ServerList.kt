@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.components
@@ -12,11 +12,13 @@ package net.mamoe.mirai.internal.network.components
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.ServerList.Companion.DEFAULT_SERVER_LIST
+import net.mamoe.mirai.internal.network.handler.SocketAddress
+import net.mamoe.mirai.internal.network.handler.createSocketAddress
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.info
-import java.net.InetSocketAddress
-import java.util.*
+import kotlin.jvm.Synchronized
+import kotlin.jvm.Volatile
 
 @Serializable
 internal data class ServerAddress(
@@ -32,7 +34,7 @@ internal data class ServerAddress(
         return "$host:$port"
     }
 
-    fun toSocketAddress(): InetSocketAddress = InetSocketAddress.createUnresolved(host, port)
+    fun toSocketAddress(): SocketAddress = createSocketAddress(host, port)
 }
 
 /**
@@ -111,7 +113,7 @@ internal class ServerListImpl(
     private var preferred: Set<ServerAddress> = DEFAULT_SERVER_LIST
 
     @Volatile
-    private var current: Queue<ServerAddress> = ArrayDeque(initial)
+    private var current: ArrayDeque<ServerAddress> = ArrayDeque(initial)
 
     @Volatile
     private var lastPolledAddress: ServerAddress? = null
@@ -147,7 +149,7 @@ internal class ServerListImpl(
      */
     @Synchronized
     override fun pollCurrent(): ServerAddress? {
-        return current.poll()?.also { address ->
+        return current.removeFirstOrNull()?.also { address ->
             lastPolledAddress = address
         }
     }
@@ -158,7 +160,7 @@ internal class ServerListImpl(
     @Synchronized
     override fun pollAny(): ServerAddress {
         if (current.isEmpty()) refresh()
-        return current.remove().also { address ->
+        return current.removeFirst().also { address ->
             lastPolledAddress = address
         }
     }

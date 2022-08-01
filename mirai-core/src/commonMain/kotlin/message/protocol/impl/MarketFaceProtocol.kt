@@ -17,10 +17,12 @@ import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.collectGeneralFlags
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.message.data.Dice
-import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.copy
 import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.map
 
 
 internal class MarketFaceProtocol : MessageProtocol() {
@@ -29,6 +31,40 @@ internal class MarketFaceProtocol : MessageProtocol() {
         add(MarketFaceImplEncoder())
 
         add(MarketFaceDecoder())
+
+
+        // Serialization overview:
+        // Using MarketFace as serial type:
+        // - convert data to MarketFaceImpl on serialization. Convert them back to subtypes on deserialization.
+        // - serial name is always "MarketFace"
+        // Using subtypes:
+        // - serial name is name of subtype, i.e. "MarketFace" / "Dice".
+        // - Note that we don't use MarketFaceImpl but MarketFace for compatibility concerns.
+
+        add(
+            MessageSerializer(
+                MarketFace::class, MarketFaceImpl.serializer().map(
+                    resultantDescriptor = MarketFaceImpl.serializer().descriptor.copy(MarketFace.SERIAL_NAME),
+                    deserialize = {
+                        it.delegate.toDiceOrNull() ?: it
+                    },
+                    serialize = {
+                        when (it) {
+                            is Dice -> MarketFaceImpl(it.toJceStruct())
+                            is MarketFaceImpl -> it
+                            else -> {
+                                error("Unsupported MarketFace type ${it::class.qualifiedName}")
+                            }
+                        }
+                    }
+                ), emptyArray()
+            )
+        )
+
+        MessageSerializer.superclassesScope(MarketFace::class, MessageContent::class, SingleMessage::class) {
+            add(MessageSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer()))
+            add(MessageSerializer(Dice::class, Dice.serializer()))
+        }
     }
 
     private class MarketFaceImplEncoder : MessageEncoder<MarketFaceImpl> {

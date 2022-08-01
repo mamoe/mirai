@@ -34,9 +34,8 @@ import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.*
-import java.util.stream.Stream
+import kotlin.jvm.*
 import kotlin.reflect.KProperty
-import kotlin.streams.asSequence
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_ABSTRACT_MESSAGE_KEYS as RAMK
 
 /**
@@ -364,7 +363,10 @@ public fun emptyMessageChain(): MessageChain = EmptyMessageChain
     replaceWith = ReplaceWith("emptyMessageChain()", "net.mamoe.mirai.message.data.emptyMessageChain")
 )
 @DeprecatedSinceMirai(warningSince = "2.12")
-public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList(), MessageChainImpl {
+@Suppress("EXPOSED_SUPER_CLASS")
+public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList(),
+    AbstractMessageChain(), DirectSizeAccess, DirectToStringAccess {
+
     override val size: Int get() = 0
 
     override fun toString(): String = ""
@@ -378,9 +380,6 @@ public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList
     @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
     }
-
-    override fun equals(other: Any?): Boolean = other === this
-    override fun hashCode(): Int = 1
 
     override fun iterator(): Iterator<SingleMessage> = EmptyMessageChainIterator
 
@@ -491,12 +490,6 @@ public inline fun messageChainOf(vararg messages: Message): MessageChain = messa
 @JvmName("newChain")
 public fun Sequence<Message>.toMessageChain(): MessageChain =
     LinearMessageChainImpl.create(ConstrainSingleHelper.constrainSingleMessages(this))
-
-/**
- * 扁平化 [this] 并创建一个 [MessageChain].
- */
-@JvmName("newChain")
-public fun Stream<Message>.toMessageChain(): MessageChain = this.asSequence().toMessageChain()
 
 /**
  * 扁平化 [this] 并创建一个 [MessageChain].

@@ -16,6 +16,7 @@ import net.mamoe.mirai.utils.coroutineName
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.systemProp
 import kotlin.coroutines.coroutineContext
+import kotlin.native.concurrent.ThreadLocal
 
 internal class LoggingStateObserver(
     val logger: MiraiLogger,
@@ -50,7 +51,7 @@ internal class LoggingStateObserver(
         previousState: NetworkHandlerSupport.BaseStateImpl,
         exception: Throwable,
     ) {
-        logger.debug { "State changed: ${previousState.correspondingState} -> $exception" }
+        logger.debug { "State exception: ${previousState.correspondingState} -> $exception" }
     }
 
     override suspend fun beforeStateResume(networkHandler: NetworkHandler, state: NetworkHandlerSupport.BaseStateImpl) {
@@ -72,6 +73,7 @@ internal class LoggingStateObserver(
         )
     }
 
+    @ThreadLocal
     companion object {
         /**
          * - `on`/`true` for simple logging

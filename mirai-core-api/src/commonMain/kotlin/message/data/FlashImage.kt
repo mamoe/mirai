@@ -18,6 +18,9 @@ import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
+import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmSynthetic
+import kotlin.native.CName
 
 /**
  * 闪照. 闪照的内容取决于 [image] 代表的图片.
@@ -93,6 +96,7 @@ public data class FlashImage(
  * 将普通图片转换为闪照.
  */
 @JvmSynthetic
+@CName("", "FlashImage_new")
 public inline fun FlashImage(imageId: String): FlashImage = FlashImage.from(imageId)
 
 /**

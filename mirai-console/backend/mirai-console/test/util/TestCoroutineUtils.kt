@@ -1,17 +1,17 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 
 package net.mamoe.mirai.console.util
 
 //import kotlinx.coroutines.*
-//import org.junit.jupiter.api.Test
+//import kotlin.test.Test
 //import java.util.concurrent.atomic.AtomicInteger
 //import kotlin.coroutines.resume
 //import kotlin.test.assertEquals
@@ -23,7 +23,7 @@ internal class TestCoroutineUtils {
     // TODO TestCoroutineUtils disabled manually: on CI real time measurement is not precise causing tests to fail.
 
 //    @Test
-//    fun `test launchTimedTask 0 time`() = runBlocking {
+//    fun `test launchTimedTask 0 time`() = runTest {
 //        val scope = CoroutineScope(SupervisorJob())
 //
 //        val result = withTimeoutOrNull(6000) {
@@ -39,7 +39,7 @@ internal class TestCoroutineUtils {
 //    }
 //
 //    @Test
-//    fun `test launchTimedTask finishes 1 time`() = runBlocking {
+//    fun `test launchTimedTask finishes 1 time`() = runTest {
 //        val scope = CoroutineScope(SupervisorJob())
 //
 //        withTimeout(4000) {
@@ -55,7 +55,7 @@ internal class TestCoroutineUtils {
 //    }
 //
 //    @Test
-//    fun `test launchTimedTask finishes multiple times`() = runBlocking {
+//    fun `test launchTimedTask finishes multiple times`() = runTest {
 //        val scope = CoroutineScope(SupervisorJob())
 //
 //        val resumedTimes = AtomicInteger(0)
@@ -77,7 +77,7 @@ internal class TestCoroutineUtils {
 //    }
 //
 //    @Test
-//    fun `test launchTimedTask interval less than delay`() = runBlocking {
+//    fun `test launchTimedTask interval less than delay`() = runTest {
 //        val scope = CoroutineScope(SupervisorJob())
 //
 //        withTimeout(5000) {

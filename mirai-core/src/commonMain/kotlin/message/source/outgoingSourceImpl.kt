@@ -11,7 +11,10 @@
 
 package net.mamoe.mirai.internal.message.source
 
+import kotlinx.atomicfu.AtomicBoolean
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
@@ -32,7 +35,6 @@ import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.loadService
 import net.mamoe.mirai.utils.toLongUnsigned
-import java.util.concurrent.atomic.AtomicBoolean
 
 
 private fun <T> T.toJceDataImpl(subject: ContactOrBot?): ImMsgBody.SourceMsg
@@ -87,7 +89,7 @@ internal class OnlineMessageSourceToFriendImpl(
     override val sender: Bot,
     override val target: Friend,
 ) : OnlineMessageSource.Outgoing.ToFriend(), MessageSourceInternal, OutgoingMessageSourceInternal {
-    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToFriend")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToFriend")
 
     override val isOriginalMessageInitialized: Boolean
         get() = true
@@ -96,7 +98,7 @@ internal class OnlineMessageSourceToFriendImpl(
         get() = sender
     override val ids: IntArray
         get() = sequenceIds
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
     private val jceData: ImMsgBody.SourceMsg by lazy { toJceDataImpl(subject) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 
@@ -121,7 +123,7 @@ internal class OnlineMessageSourceToStrangerImpl(
         target: Stranger,
     ) : this(delegate.ids, delegate.internalIds, delegate.time, delegate.originalMessage, delegate.sender, target)
 
-    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToStranger")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToStranger")
 
     override val isOriginalMessageInitialized: Boolean
         get() = true
@@ -129,7 +131,7 @@ internal class OnlineMessageSourceToStrangerImpl(
         get() = sender
     override val ids: IntArray
         get() = sequenceIds
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
     private val jceData: ImMsgBody.SourceMsg by lazy { toJceDataImpl(subject) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 
@@ -153,7 +155,7 @@ internal class OnlineMessageSourceToTempImpl(
         target: Member,
     ) : this(delegate.ids, delegate.internalIds, delegate.time, delegate.originalMessage, delegate.sender, target)
 
-    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToTemp")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToTemp")
 
     override val isOriginalMessageInitialized: Boolean
         get() = true
@@ -162,7 +164,7 @@ internal class OnlineMessageSourceToTempImpl(
         get() = sender
     override val ids: IntArray
         get() = sequenceIds
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
     private val jceData: ImMsgBody.SourceMsg by lazy { toJceDataImpl(subject) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 
@@ -182,7 +184,7 @@ internal class OnlineMessageSourceToGroupImpl(
     override val target: Group,
     providedSequenceIds: IntArray? = null,
 ) : OnlineMessageSource.Outgoing.ToGroup(), MessageSourceInternal, OutgoingMessageSourceInternal {
-    object Serializer : MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
 
     override val isOriginalMessageInitialized: Boolean
         get() = true
@@ -191,7 +193,7 @@ internal class OnlineMessageSourceToGroupImpl(
         get() = sequenceIds
     override val bot: Bot
         get() = sender
-    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
 
     /**
      * Note that in tests result of this Deferred is always `null`. See TestMessageSourceSequenceIdAwaiter.

@@ -52,7 +52,7 @@ internal class TimeBasedHeartbeatSchedulerImpl(
         val timeout = configuration.heartbeatTimeoutMillis
 
         val list = mutableListOf<Job>()
-        when (context[SsoProcessorContext].configuration.heartbeatStrategy) {
+        when (val hb = context[SsoProcessorContext].configuration.heartbeatStrategy) {
             STAT_HB -> {
                 list += launchHeartbeatJobAsync(
                     scope = scope,
@@ -75,6 +75,7 @@ internal class TimeBasedHeartbeatSchedulerImpl(
             }
             NONE -> {
             }
+            else -> throw IllegalStateException("Unexpected HeartbeatStrategy: $hb")
         }
 
         list += launchHeartbeatJobAsync(

@@ -14,25 +14,11 @@ package net.mamoe.mirai.internal.event
 import kotlinx.coroutines.*
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.event.*
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import java.util.concurrent.Executors
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertIs
-import kotlin.test.assertTrue
+import net.mamoe.mirai.internal.test.runBlockingUnit
+import kotlin.test.*
 
 @JvmBlockingBridge
 internal class NextEventTest : AbstractEventTest() {
-    private val dispatcher = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
-
-    @AfterEach
-    fun stopDispatcher() {
-        dispatcher.close()
-    }
-
-
     data class TE(
         val x: Int
     ) : AbstractEvent()
@@ -46,88 +32,78 @@ internal class NextEventTest : AbstractEventTest() {
     ///////////////////////////////////////////////////////////////////////////
 
     @Test
-    suspend fun `nextEvent can receive`() {
+    fun `nextEvent can receive`() = runBlockingUnit {
         val channel = GlobalEventChannel
 
-        withContext(dispatcher) {
-            val deferred = async(start = CoroutineStart.UNDISPATCHED) {
-                channel.nextEvent<TE>()
-            }
+        val deferred = async(start = CoroutineStart.UNDISPATCHED) {
+            channel.nextEvent<TE>()
+        }
 
-            TE(1).broadcast()
-            yield()
-            assertTrue { deferred.isCompleted }
-            assertEquals(TE(1), deferred.await())
+        TE(1).broadcast()
+        yield()
+        assertTrue { deferred.isCompleted }
+        assertEquals(TE(1), deferred.await())
+    }
+
+    @Test
+    fun `nextEvent can filter type`() = runBlockingUnit {
+        val channel = GlobalEventChannel
+
+        val deferred = async(start = CoroutineStart.UNDISPATCHED) {
+            channel.nextEvent<TE>()
+        }
+
+        TE2(1).broadcast()
+        yield()
+        assertFalse { deferred.isCompleted }
+
+        TE(1).broadcast()
+        yield()
+        assertTrue { deferred.isCompleted }
+        assertEquals(TE(1), deferred.await())
+    }
+
+    @Test
+    fun `nextEvent can filter by filter`() = runBlockingUnit {
+        val channel = GlobalEventChannel
+
+        val deferred = async(start = CoroutineStart.UNDISPATCHED) {
+            channel.nextEvent<TE> { it.x == 2 }
+        }
+
+        TE(1).broadcast()
+        yield()
+        assertFalse { deferred.isCompleted }
+
+        TE(2).broadcast()
+        yield()
+        assertTrue { deferred.isCompleted }
+        assertEquals(TE(2), deferred.await())
+    }
+
+    @Test
+    fun `nextEvent can timeout`() = runBlockingUnit {
+        val channel = GlobalEventChannel
+
+        assertFailsWith<TimeoutCancellationException> {
+            withTimeout(timeMillis = 1) { channel.nextEvent<TE>(EventPriority.MONITOR) }
         }
     }
 
     @Test
-    suspend fun `nextEvent can filter type`() {
+    fun `nextEvent can cancel`() = runBlockingUnit {
         val channel = GlobalEventChannel
 
-        withContext(dispatcher) {
-            val deferred = async(start = CoroutineStart.UNDISPATCHED) {
-                channel.nextEvent<TE>()
+        coroutineScope {
+            val job = launch {
+                val result = kotlin.runCatching { channel.nextEvent<TE>(EventPriority.MONITOR) }
+                assertTrue { result.isFailure }
+                assertIs<CancellationException>(result.exceptionOrNull())
+                throw result.exceptionOrNull()!!
             }
-
-            TE2(1).broadcast()
-            yield()
-            assertFalse { deferred.isCompleted }
-
-            TE(1).broadcast()
-            yield()
-            assertTrue { deferred.isCompleted }
-            assertEquals(TE(1), deferred.await())
-        }
-    }
-
-    @Test
-    suspend fun `nextEvent can filter by filter`() {
-        val channel = GlobalEventChannel
-
-        withContext(dispatcher) {
-            val deferred = async(start = CoroutineStart.UNDISPATCHED) {
-                channel.nextEvent<TE> { it.x == 2 }
-            }
-
-            TE(1).broadcast()
-            yield()
-            assertFalse { deferred.isCompleted }
-
-            TE(2).broadcast()
-            yield()
-            assertTrue { deferred.isCompleted }
-            assertEquals(TE(2), deferred.await())
-        }
-    }
-
-    @Test
-    suspend fun `nextEvent can timeout`() {
-        val channel = GlobalEventChannel
-
-        withContext(dispatcher) {
-            assertThrows<TimeoutCancellationException> {
-                withTimeout(timeMillis = 1) { channel.nextEvent<TE>(EventPriority.MONITOR) }
-            }
-        }
-    }
-
-    @Test
-    suspend fun `nextEvent can cancel`() {
-        val channel = GlobalEventChannel
-
-        withContext(dispatcher) {
-            coroutineScope {
-                val job = launch {
-                    val result = kotlin.runCatching { channel.nextEvent<TE>(EventPriority.MONITOR) }
-                    assertTrue { result.isFailure }
-                    assertIs<CancellationException>(result.exceptionOrNull())
-                    throw result.exceptionOrNull()!!
-                }
-                assertTrue { job.isActive }
-                job.cancelAndJoin()
-                assertTrue { job.isCancelled }
-            }
+            assertTrue { job.isActive }
+            job.cancelAndJoin()
+            assertTrue { job.isCancelled }
         }
     }
 
@@ -136,60 +112,52 @@ internal class NextEventTest : AbstractEventTest() {
     ///////////////////////////////////////////////////////////////////////////
 
     @Test
-    suspend fun `nextEventOrNull can receive`() {
-        withContext(dispatcher) {
-            val deferred = async(start = CoroutineStart.UNDISPATCHED) {
-                withTimeoutOrNull<TE>(5000) { globalEventChannel().nextEvent(EventPriority.MONITOR) }
-            }
-
-            TE(1).broadcast()
-            yield()
-            assertTrue { deferred.isCompleted }
-            assertEquals(TE(1), deferred.await())
+    fun `nextEventOrNull can receive`() = runBlockingUnit {
+        val deferred = async(start = CoroutineStart.UNDISPATCHED) {
+            withTimeoutOrNull<TE>(5000) { globalEventChannel().nextEvent(EventPriority.MONITOR) }
         }
+
+        TE(1).broadcast()
+        yield()
+        assertTrue { deferred.isCompleted }
+        assertEquals(TE(1), deferred.await())
     }
 
     @Test
-    suspend fun `nextEventOrNull can filter type`() {
-        withContext(dispatcher) {
-            val deferred = async(start = CoroutineStart.UNDISPATCHED) {
-                withTimeoutOrNull<TE>(5000) { globalEventChannel().nextEvent(EventPriority.MONITOR) }
-            }
-
-            TE2(1).broadcast()
-            yield()
-            assertFalse { deferred.isCompleted }
-
-            TE(1).broadcast()
-            yield()
-            assertTrue { deferred.isCompleted }
-            assertEquals(TE(1), deferred.await())
+    fun `nextEventOrNull can filter type`() = runBlockingUnit {
+        val deferred = async(start = CoroutineStart.UNDISPATCHED) {
+            withTimeoutOrNull<TE>(5000) { globalEventChannel().nextEvent(EventPriority.MONITOR) }
         }
+
+        TE2(1).broadcast()
+        yield()
+        assertFalse { deferred.isCompleted }
+
+        TE(1).broadcast()
+        yield()
+        assertTrue { deferred.isCompleted }
+        assertEquals(TE(1), deferred.await())
     }
 
     @Test
-    suspend fun `nextEventOrNull can filter by filter`() {
-        withContext(dispatcher) {
-            val deferred = async(start = CoroutineStart.UNDISPATCHED) {
-                withTimeoutOrNull<TE>(5000) { globalEventChannel().nextEvent(EventPriority.MONITOR) { it.x == 2 } }
-            }
-
-            TE(1).broadcast()
-            yield()
-            assertFalse { deferred.isCompleted }
-
-            TE(2).broadcast()
-            yield()
-            assertTrue { deferred.isCompleted }
-            assertEquals(TE(2), deferred.await())
+    fun `nextEventOrNull can filter by filter`() = runBlockingUnit {
+        val deferred = async(start = CoroutineStart.UNDISPATCHED) {
+            withTimeoutOrNull<TE>(5000) { globalEventChannel().nextEvent(EventPriority.MONITOR) { it.x == 2 } }
         }
+
+        TE(1).broadcast()
+        yield()
+        assertFalse { deferred.isCompleted }
+
+        TE(2).broadcast()
+        yield()
+        assertTrue { deferred.isCompleted }
+        assertEquals(TE(2), deferred.await())
     }
 
     @Test
-    suspend fun `nextEventOrNull can timeout`() {
-        withContext(dispatcher) {
-            assertEquals(null,
-                withTimeoutOrNull<TE>(timeMillis = 1) { globalEventChannel().nextEvent(EventPriority.MONITOR) })
-        }
+    fun `nextEventOrNull can timeout`() = runBlockingUnit {
+        assertEquals(null,
+            withTimeoutOrNull<TE>(timeMillis = 1) { globalEventChannel().nextEvent(EventPriority.MONITOR) })
     }
 }

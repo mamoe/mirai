@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.CompletableDeferred
-import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
+import kotlinx.coroutines.test.runTest
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
@@ -23,20 +23,19 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.Pa
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.utils.md5
 import net.mamoe.mirai.utils.toUHexString
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCommandDescriptors::class)
-@JvmBlockingBridge
 internal class LoginCommandTest : AbstractCommandTest() {
 
     @Test
-    suspend fun `login with provided password`() {
+    fun `login with provided password`() = runTest {
         val myId = 123L
         val myPwd = "password001"
 
-        val bot = awaitDeferred<QQAndroidBot> { cont ->
+        val bot = awaitDeferred { cont ->
             val command = object : LoginCommandImpl() {
                 override suspend fun doLogin(bot: Bot) {
                     cont.complete(bot as QQAndroidBot)
@@ -52,7 +51,7 @@ internal class LoginCommandTest : AbstractCommandTest() {
     }
 
     @Test
-    suspend fun `login with saved plain password`() {
+    fun `login with saved plain password`() = runTest {
         val myId = 123L
         val myPwd = "password001"
 
@@ -65,7 +64,7 @@ internal class LoginCommandTest : AbstractCommandTest() {
             )
         })
 
-        val bot = awaitDeferred<QQAndroidBot> { cont ->
+        val bot = awaitDeferred { cont ->
             val command = object : LoginCommandImpl() {
                 override suspend fun doLogin(bot: Bot) {
                     cont.complete(bot as QQAndroidBot)
@@ -81,7 +80,7 @@ internal class LoginCommandTest : AbstractCommandTest() {
     }
 
     @Test
-    suspend fun `login with saved md5 password`() {
+    fun `login with saved md5 password`() = runTest {
         val myId = 123L
         val myPwd = "password001"
 

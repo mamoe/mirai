@@ -9,15 +9,13 @@
 
 package net.mamoe.mirai.internal.pipeline
 
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
 import net.mamoe.mirai.internal.network.components.NoticeProcessor
 import net.mamoe.mirai.internal.utils.structureToStringAndDesensitizeIfAvailable
 import net.mamoe.mirai.utils.*
-import java.io.Closeable
-import java.util.*
-import java.util.concurrent.ConcurrentLinkedDeque
-import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.jvm.JvmInline
 
 internal interface Processor<C : ProcessorPipelineContext<D, *>, D> : PipelineConsumptionMarker {
     val origin: Any get() = this
@@ -156,24 +154,24 @@ internal abstract class AbstractProcessorPipelineContext<D, R>(
     override val attributes: TypeSafeMap,
     private val traceLogging: MiraiLogger,
 ) : ProcessorPipelineContext<D, R> {
-    private val consumers: Stack<Any> = Stack()
+    private val consumers: ArrayDeque<Any> = ArrayDeque()
 
     override val isConsumed: Boolean get() = consumers.isNotEmpty()
     override fun PipelineConsumptionMarker.markAsConsumed(marker: Any) {
         traceLogging.info { "markAsConsumed: marker=$marker" }
-        consumers.push(marker)
+        consumers.addFirst(marker)
     }
 
     override fun PipelineConsumptionMarker.markNotConsumed(marker: Any) {
-        if (consumers.peek() === marker) {
-            consumers.pop()
+        if (consumers.firstOrNull() === marker) {
+            consumers.removeFirst()
             traceLogging.info { "markNotConsumed: Y, marker=$marker" }
         } else {
             traceLogging.info { "markNotConsumed: N, marker=$marker" }
         }
     }
 
-    override val collected: MutablePipelineResult<R> = MutablePipelineResult(ConcurrentLinkedQueue())
+    override val collected: MutablePipelineResult<R> = MutablePipelineResult(ConcurrentLinkedDeque())
 
     override fun collect(result: R) {
         collected.data.add(result)
@@ -200,7 +198,7 @@ protected constructor(
     /**
      * Must be ordered
      */
-    override val processors: ConcurrentLinkedDeque<ProcessorBox<P>> = ConcurrentLinkedDeque()
+    override val processors: MutableDeque<ProcessorBox<P>> = ConcurrentLinkedDeque()
 
     override fun registerProcessor(processor: P): ProcessorPipeline.DisposableRegistry {
         val box = ProcessorBox(processor)
@@ -212,7 +210,7 @@ protected constructor(
 
     override fun registerBefore(processor: P): ProcessorPipeline.DisposableRegistry {
         val box = ProcessorBox(processor)
-        processors.addFirst(box)
+        processors.add(box)
         return ProcessorPipeline.DisposableRegistry {
             processors.remove(box)
         }

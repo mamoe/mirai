@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -29,14 +29,21 @@ abstract class AbstractTest {
     lateinit var propertiesFile: File
 
 
-    fun gradleRunner(): GradleRunner {
-        println(PluginUnderTestMetadataReading.readImplementationClasspath())
-        return GradleRunner.create()
+    @OptIn(ExperimentalStdlibApi::class)
+    fun runGradle(vararg arguments: String) {
+        System.gc()
+        GradleRunner.create()
             .withProjectDir(tempDir)
             .withPluginClasspath()
             .withGradleVersion("7.2")
             .forwardOutput()
             .withEnvironment(System.getenv())
+            .withArguments(buildList {
+                addAll(arguments)
+                add("-Pkotlin.compiler.execution.strategy=in-process")
+                add("-Dorg.gradle.jvmargs=-Xmx256m -Dfile.encoding=UTF-8")
+            })
+            .build()
     }
 
     @BeforeEach
@@ -58,10 +65,12 @@ abstract class AbstractTest {
 
         File(tempDir, "gradle.properties").apply {
             delete()
-            writeText("""
+            writeText(
+                """
                 org.gradle.daemon=false
                 org.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
 
         buildFile = File(tempDir, "build.gradle")

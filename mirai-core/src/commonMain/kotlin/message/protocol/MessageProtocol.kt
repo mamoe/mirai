@@ -15,6 +15,7 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePostpro
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePreprocessor
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageTransformer
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.systemProp
@@ -44,7 +45,7 @@ internal abstract class MessageProtocol(
     }
 
     object PriorityComparator : Comparator<MessageProtocol> {
-        override fun compare(o1: MessageProtocol, o2: MessageProtocol): Int {
+        override fun compare(a: MessageProtocol, b: MessageProtocol): Int {
 
             // Do not use o1.compareTo
             // > Task :mirai-core:checkAndroidApiLevel
@@ -53,7 +54,7 @@ internal abstract class MessageProtocol(
             //      > Invoke method java/lang/Integer.compareUnsigned(II)I
             //          Couldn't access java/lang/Integer.compareUnsigned(II)I: java/lang/Integer.compareUnsigned(II)I since api level 26
 
-            return uintCompare(o1.priority.toInt(), o2.priority.toInt())
+            return uintCompare(a.priority.toInt(), b.priority.toInt())
         }
 
         private fun uintCompare(v1: Int, v2: Int): Int = (v1 xor Int.MIN_VALUE).compareTo(v2 xor Int.MIN_VALUE)
@@ -73,6 +74,8 @@ internal abstract class ProcessorCollector {
     abstract fun add(transformer: OutgoingMessageTransformer)
     abstract fun add(sender: OutgoingMessageSender)
     abstract fun add(postprocessor: OutgoingMessagePostprocessor)
+
+    abstract fun <T : Any> add(serializer: MessageSerializer<T>)
 }
 
 

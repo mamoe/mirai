@@ -1,129 +1,74 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
+
+@file:JvmName("PlatformSocketKt_common")
 
 package net.mamoe.mirai.internal.utils
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runInterruptible
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Closeable
-import kotlinx.io.streams.readPacketAtMost
-import kotlinx.io.streams.writePacket
+import io.ktor.utils.io.core.*
+import io.ktor.utils.io.errors.*
+import net.mamoe.mirai.internal.network.handler.SocketAddress
+import net.mamoe.mirai.internal.network.handler.getHost
+import net.mamoe.mirai.internal.network.handler.getPort
 import net.mamoe.mirai.internal.network.highway.HighwayProtocolChannel
-import net.mamoe.mirai.utils.withUse
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
-import java.io.IOException
-import java.net.NoRouteToHostException
-import java.net.Socket
-import java.net.UnknownHostException
-import java.util.concurrent.Executors
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
+import kotlin.jvm.JvmName
 
 /**
  * TCP Socket.
  */
-internal class PlatformSocket : Closeable, HighwayProtocolChannel {
-    private lateinit var socket: Socket
-
+internal expect class PlatformSocket : Closeable, HighwayProtocolChannel {
     val isOpen: Boolean
-        get() =
-            if (::socket.isInitialized)
-                socket.isConnected
-            else false
 
-    override fun close() {
-        if (::socket.isInitialized) {
-            socket.close()
-        }
-        thread.shutdownNow()
-        kotlin.runCatching { writeChannel.close() }
-        kotlin.runCatching { readChannel.close() }
-    }
+    override fun close()
 
-    @PublishedApi
-    internal lateinit var writeChannel: BufferedOutputStream
-
-    @PublishedApi
-    internal lateinit var readChannel: BufferedInputStream
-
-    suspend fun send(packet: ByteArray, offset: Int, length: Int) {
-        runInterruptible(Dispatchers.IO) {
-            writeChannel.write(packet, offset, length)
-            writeChannel.flush()
-        }
-    }
+    suspend fun send(packet: ByteArray, offset: Int, length: Int)
 
     /**
      * @throws SendPacketInternalException
      */
-    override suspend fun send(packet: ByteReadPacket) {
-        runInterruptible(Dispatchers.IO) {
-            try {
-                writeChannel.writePacket(packet)
-                writeChannel.flush()
-            } catch (e: IOException) {
-                throw SendPacketInternalException(e)
-            }
-        }
-    }
-
-    private val thread = Executors.newSingleThreadExecutor()
+    override suspend fun send(packet: ByteReadPacket)
 
     /**
      * @throws ReadPacketInternalException
      */
-    override suspend fun read(): ByteReadPacket = suspendCancellableCoroutine { cont ->
-        val task = thread.submit {
-            kotlin.runCatching {
-                readChannel.readPacketAtMost(Long.MAX_VALUE)
-            }.let {
-                cont.resumeWith(it)
-            }
-        }
-        cont.invokeOnCancellation {
-            kotlin.runCatching { task.cancel(true) }
-        }
-    }
-
-    suspend fun connect(serverHost: String, serverPort: Int) {
-        runInterruptible(Dispatchers.IO) {
-            socket = Socket(serverHost, serverPort)
-            readChannel = socket.getInputStream().buffered()
-            writeChannel = socket.getOutputStream().buffered()
-        }
-    }
+    override suspend fun read(): ByteReadPacket
 
     companion object {
         suspend fun connect(
             serverIp: String,
             serverPort: Int,
-        ): PlatformSocket {
-            val socket = PlatformSocket()
-            socket.connect(serverIp, serverPort)
-            return socket
-        }
+        ): PlatformSocket
 
         suspend inline fun <R> withConnection(
             serverIp: String,
             serverPort: Int,
             block: PlatformSocket.() -> R,
-        ): R {
-            contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-            return connect(serverIp, serverPort).withUse(block)
-        }
+        ): R
     }
 }
 
+internal suspend inline fun PlatformSocket.Companion.connect(address: SocketAddress): PlatformSocket {
+    return connect(address.getHost(), address.getPort())
+}
 
-internal typealias SocketException = java.net.SocketException
-internal typealias NoRouteToHostException = NoRouteToHostException
-internal typealias UnknownHostException = UnknownHostException
+
+internal expect class SocketException : IOException {
+    constructor()
+    constructor(message: String)
+}
+
+internal expect class NoRouteToHostException : IOException {
+    constructor()
+    constructor(message: String)
+}
+
+internal expect class UnknownHostException : IOException {
+    constructor()
+    constructor(message: String)
+}

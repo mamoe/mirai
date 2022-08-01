@@ -14,6 +14,9 @@ import net.mamoe.mirai.internal.message.LightMessageRefiner.dropMiraiInternalFla
 import net.mamoe.mirai.internal.message.data.ForwardMessageInternal
 import net.mamoe.mirai.internal.message.flags.IgnoreLengthCheck
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.testFramework.DynamicTestsResult
+import net.mamoe.mirai.internal.testFramework.TestFactory
+import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.castUp
@@ -98,7 +101,7 @@ internal class ForwardMessageProtocolTest : AbstractMessageProtocolTest() {
     // // TODO: 2022/5/23 test for download ForwardMessage
 //    @Test
 //    fun `can receive and download ForwardMessage`() {
-//        val message = runBlocking {
+//        val message = runTest {
 //            runWithFacade {
 //                net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
 //                    msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
@@ -143,4 +146,23 @@ internal class ForwardMessageProtocolTest : AbstractMessageProtocolTest() {
 //            }
 //        }
 //    }
+
+    @TestFactory
+    fun `test serialization`(): DynamicTestsResult {
+        val data = buildForwardMessage(defaultTarget.castUp()) {
+            add(1, "senderName", time = 123, message = PlainText("simple text"))
+            add(1, "senderName", time = 123) {
+                +PlainText("simple")
+                +Face(1)
+                +Image("{90CCED1C-2D64-313B-5D66-46625CAB31D7}.jpg")
+            }
+        }
+        val serialName = ForwardMessage.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
 }

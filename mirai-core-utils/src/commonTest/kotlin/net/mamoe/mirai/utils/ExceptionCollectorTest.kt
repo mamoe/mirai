@@ -1,19 +1,15 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.utils
 
-import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @OptIn(TestOnly::class)
 internal class ExceptionCollectorTest {
@@ -36,7 +32,7 @@ internal class ExceptionCollectorTest {
         collector.collect(IllegalStateException())
 
         assertIs<IllegalStateException>(collector.getLast())
-        assertTrue { collector.getLast()!!.suppressed.single() is IllegalArgumentException }
+        assertTrue { collector.getLast()!!.suppressedExceptions.single() is IllegalArgumentException }
         assertEquals(2, collector.asSequence().count())
     }
 
@@ -44,13 +40,13 @@ internal class ExceptionCollectorTest {
     fun `can collect suppressed nested`() {
         val collector = ExceptionCollector()
 
-        collector.collect(StackOverflowError())
+        collector.collect(IndexOutOfBoundsException())
         collector.collect(IllegalArgumentException())
         collector.collect(IllegalStateException())
 
         assertIs<IllegalStateException>(collector.getLast())
-        assertTrue { collector.getLast()!!.suppressed.single() is IllegalArgumentException }
-        assertTrue { collector.getLast()!!.suppressed.single()!!.suppressed.single() is StackOverflowError }
+        assertTrue { collector.getLast()!!.suppressedExceptions.single() is IllegalArgumentException }
+        assertTrue { collector.getLast()!!.suppressedExceptions.single().suppressedExceptions.single() is IndexOutOfBoundsException }
         assertEquals(3, collector.asSequence().count())
     }
 
@@ -65,7 +61,7 @@ internal class ExceptionCollectorTest {
         collector.collect(exception)
 
         assertSame(exception, collector.asSequence().last())
-        assertEquals(0, collector.getLast()!!.suppressed.size)
+        assertEquals(0, collector.getLast()!!.suppressedExceptions.size)
         assertEquals(1, collector.asSequence().count())
     }
 
@@ -83,7 +79,7 @@ internal class ExceptionCollectorTest {
             collector.collect(exception)
         }
 
-        assertEquals(0, collector.getLast()!!.suppressed.size)
+        assertEquals(0, collector.getLast()!!.suppressedExceptions.size)
         assertEquals(1, collector.asSequence().count())
         assertSame(exceptions.first(), collector.getLast())
         assertEquals("#0", collector.getLast()!!.message)

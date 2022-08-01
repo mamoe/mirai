@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -12,12 +12,12 @@
 
 package net.mamoe.mirai.contact.file
 
-import kotlinx.io.errors.IOException
+import io.ktor.utils.io.errors.*
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.utils.NotStableForInheritance
-import java.io.File
+import kotlin.jvm.JvmStatic
 
 /**
  * 绝对文件或目录标识. 精确表示一个远程文件. 不会受同名文件或目录的影响.
@@ -174,7 +174,7 @@ public sealed interface AbsoluteFileFolder {
          *
          * 不会包含 `:*?"<>|/\` 任一字符.
          *
-         * @see File.extension
+         * @see java.io.File.extension
          */
         @get:JvmStatic
         public val AbsoluteFileFolder.extension: String

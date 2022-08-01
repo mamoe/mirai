@@ -9,12 +9,13 @@
 
 package net.mamoe.mirai.internal.event
 
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
+import kotlinx.coroutines.test.runTest
 import net.mamoe.mirai.event.*
-import org.junit.jupiter.api.AfterEach
-import java.util.concurrent.Executor
-import java.util.concurrent.atomic.AtomicInteger
+import net.mamoe.mirai.utils.childScope
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -25,7 +26,7 @@ class TestEvent : AbstractEvent() {
 internal class EventTests : AbstractEventTest() {
     var scope = CoroutineScope(EmptyCoroutineContext)
 
-    @AfterEach
+    @AfterTest
     fun finallyReset() {
         resetEventListeners()
     }
@@ -60,11 +61,12 @@ internal class EventTests : AbstractEventTest() {
     fun `test concurrent listening`() {
         resetEventListeners()
         var listeners = 0
-        val counter = AtomicInteger(0)
+        val counter = atomic(0)
+        val channel = scope.globalEventChannel()
         for (p in EventPriority.values()) {
             repeat(2333) {
                 listeners++
-                scope.globalEventChannel().subscribeAlways<ParentEvent> {
+                channel.subscribeAlways<ParentEvent> {
                     counter.getAndIncrement()
                 }
             }
@@ -72,7 +74,7 @@ internal class EventTests : AbstractEventTest() {
         runBlocking {
             ParentEvent().broadcast()
         }
-        val called = counter.get()
+        val called = counter.value
         println("Registered $listeners listeners and $called called")
         if (listeners != called) {
             throw IllegalStateException("Registered $listeners listeners but only $called called")
@@ -83,8 +85,8 @@ internal class EventTests : AbstractEventTest() {
     fun `test concurrent listening 3`() {
         resetEventListeners()
         runBlocking {
-            val called = AtomicInteger()
-            val registered = AtomicInteger()
+            val called = atomic(0)
+            val registered = atomic(0)
             coroutineScope {
                 println("Step 0")
                 for (priority in EventPriority.values()) {
@@ -105,17 +107,17 @@ internal class EventTests : AbstractEventTest() {
             println("Step 2")
             ParentEvent().broadcast()
             println("Step 3")
-            check(called.get() == registered.get())
+            check(called.value == registered.value)
             println("Done")
-            println("Called ${called.get()}, registered ${registered.get()}")
+            println("Called ${called.value}, registered ${registered.value}")
         }
     }
 
     @Test
-    fun `test concurrent listening 2`() = runBlocking {
+    fun `test concurrent listening 2`() = runTest {
         resetEventListeners()
-        val registered = AtomicInteger()
-        val called = AtomicInteger()
+        val registered = atomic(0)
+        val called = atomic(0)
 
         val supervisor = CoroutineScope(SupervisorJob())
 
@@ -142,8 +144,8 @@ internal class EventTests : AbstractEventTest() {
             }
         }
 
-        val calledCount = called.get()
-        val shouldCalled = registered.get() * postCount
+        val calledCount = called.value
+        val shouldCalled = registered.value * postCount
         supervisor.cancel()
 
         println("Should call $shouldCalled times and $called called")
@@ -190,15 +192,11 @@ internal class EventTests : AbstractEventTest() {
     open class PriorityTestEvent : AbstractEvent()
 
     private fun singleThreaded(step: StepUtil, invoke: suspend EventChannel<Event>.() -> Unit) {
-        // runBlocking 会完全堵死, 没法退出
-        val scope = CoroutineScope(Executor { it.run() }.asCoroutineDispatcher())
-        val job = scope.launch {
+        runTest(borrowSingleThreadDispatcher()) {
+            val scope = this.childScope()
             invoke(scope.globalEventChannel())
+            scope.cancel()
         }
-        runBlocking {
-            job.join()
-        }
-        scope.cancel()
         step.throws()
     }
 

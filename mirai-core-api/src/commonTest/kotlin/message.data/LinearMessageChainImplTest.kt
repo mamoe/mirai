@@ -11,7 +11,7 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.message.data.visitor.MessageVisitorUnit
 import net.mamoe.mirai.message.data.visitor.acceptChildren
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 

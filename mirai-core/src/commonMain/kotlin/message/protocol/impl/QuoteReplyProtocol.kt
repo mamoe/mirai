@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
@@ -22,13 +23,12 @@ import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.contact
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePreprocessor
-import net.mamoe.mirai.internal.message.source.MessageSourceInternal
-import net.mamoe.mirai.internal.message.source.OfflineMessageSourceImplData
-import net.mamoe.mirai.internal.message.source.ensureSequenceIdAvailable
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
+import net.mamoe.mirai.internal.message.source.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.message.data.At
-import net.mamoe.mirai.message.data.OnlineMessageSource
-import net.mamoe.mirai.message.data.QuoteReply
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.copy
+import net.mamoe.mirai.utils.map
 
 internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
     override fun ProcessorCollector.collectProcessorsImpl() {
@@ -38,6 +38,101 @@ internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
         add(OutgoingMessagePreprocessor {
             currentMessageChain[QuoteReply]?.source?.ensureSequenceIdAvailable()
         })
+
+        val baseSourceSerializer = MessageSourceSerializerImpl(MessageSource.SERIAL_NAME)
+        MessageSerializer.superclassesScope(MessageSource::class, MessageMetadata::class, SingleMessage::class) {
+            add(
+                MessageSerializer(
+                    OnlineMessageSourceFromGroupImpl::class,
+                    OnlineMessageSourceFromGroupImpl.serializer()
+                )
+            )
+            add(
+                MessageSerializer(
+                    OnlineMessageSourceFromFriendImpl::class,
+                    OnlineMessageSourceFromFriendImpl.serializer()
+                )
+            )
+            add(
+                MessageSerializer(
+                    OnlineMessageSourceFromTempImpl::class,
+                    OnlineMessageSourceFromTempImpl.serializer()
+                )
+            )
+            add(
+                MessageSerializer(
+                    OnlineMessageSourceFromStrangerImpl::class,
+                    OnlineMessageSourceFromStrangerImpl.serializer()
+                )
+            )
+            add(
+                MessageSerializer(
+                    OnlineMessageSourceToGroupImpl::class,
+                    OnlineMessageSourceToGroupImpl.serializer()
+                )
+            )
+            add(
+                MessageSerializer(
+                    OnlineMessageSourceToFriendImpl::class,
+                    OnlineMessageSourceToFriendImpl.serializer()
+                )
+            )
+            add(
+                MessageSerializer(
+                    OnlineMessageSourceToTempImpl::class,
+                    OnlineMessageSourceToTempImpl.serializer()
+                )
+            )
+            add(
+                MessageSerializer(
+                    OnlineMessageSourceToStrangerImpl::class,
+                    OnlineMessageSourceToStrangerImpl.serializer()
+                )
+            )
+            add(
+                MessageSerializer(
+                    OfflineMessageSourceImplData::class,
+                    OfflineMessageSourceImplData.serializer()
+                )
+            )
+
+        }
+
+        MessageSerializer.superclassesScope(MessageMetadata::class, SingleMessage::class) {
+            @Suppress("DEPRECATION")
+            add(
+                MessageSerializer(
+                    MessageSource::class,
+                    OfflineMessageSourceImplData.serializer().map(
+                        OfflineMessageSourceImplData.serializer().descriptor.copy(MessageSource.SERIAL_NAME),
+                        { it },
+                        {
+                            OfflineMessageSourceImplData(
+                                kind, ids, botId, time, fromId, targetId,
+                                originalMessage, internalIds
+                            )
+                        }
+                    ),
+                    registerAlsoContextual = true
+                )
+            )
+        }
+
+//        add(
+//            MessageSerializer(
+//                MessageSource::class,
+//                PolymorphicSerializer(MessageSource::class),
+//                emptyArray(),
+//                registerAlsoContextual = true
+//            )
+//        )
+
+        MessageSerializer.superclassesScope(MessageMetadata::class, SingleMessage::class) {
+            add(MessageSerializer(QuoteReply::class, QuoteReply.serializer()))
+            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+            add(MessageSerializer(ShowImageFlag::class, ShowImageFlag.Serializer))
+            add(MessageSerializer(MessageOrigin::class, MessageOrigin.serializer()))
+        }
     }
 
     private class Decoder : MessageDecoder {

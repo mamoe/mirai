@@ -12,6 +12,9 @@
 
 package net.mamoe.mirai.utils
 
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+
 public inline fun <A, reified B> Array<A>.mapToArray(block: (element: A) -> B): Array<B> {
     val result = arrayOfNulls<B>(size)
     this.forEachIndexed { index, element ->
@@ -33,5 +36,13 @@ public inline fun <A> Collection<A>.mapToIntArray(block: (element: A) -> Int): I
     this.forEachIndexed { index, element ->
         result[index] = block(element)
     }
-    return result.cast()
+    return result
+}
+
+public inline fun <A> Collection<A>.mapToByteArray(block: (element: A) -> Byte): ByteArray {
+    val result = ByteArray(size)
+    this.forEachIndexed { index, element ->
+        result[index] = block(element)
+    }
+    return result
 }

@@ -7,12 +7,11 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:JvmName("TextProtocol_common")
+
 package net.mamoe.mirai.internal.message.protocol.impl
 
-import kotlinx.io.core.buildPacket
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
-import kotlinx.io.core.readUInt
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
@@ -24,11 +23,12 @@ import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.CONTACT
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.isForward
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.originalMessage
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.read
 import net.mamoe.mirai.utils.safeCast
-import net.mamoe.mirai.utils.withUse
+import kotlin.jvm.JvmName
 
 /**
  * For [PlainText] and [At]
@@ -40,6 +40,13 @@ internal class TextProtocol : MessageProtocol() {
         add(AtAllEncoder())
 
         add(Decoder())
+
+        MessageSerializer.superclassesScope(MessageContent::class, SingleMessage::class) {
+            add(MessageSerializer(PlainText::class, PlainText.serializer(), registerAlsoContextual = true))
+            add(MessageSerializer(At::class, At.serializer(), registerAlsoContextual = true))
+            add(MessageSerializer(AtAll::class, AtAll.serializer(), registerAlsoContextual = true))
+            add(MessageSerializer(Face::class, Face.serializer(), registerAlsoContextual = true))
+        }
     }
 
     private class Decoder : MessageDecoder {
@@ -138,10 +145,7 @@ internal class TextProtocol : MessageProtocol() {
 
             @Suppress("RegExpSingleCharAlternation", "RegExpRedundantEscape")
             private val EMOJI_PATTERN: Regex? = runCatching {
-                val resource =
-                    AtEncoder::class.java.classLoader.getResourceAsStream("emoji-pattern.regex")
-                        ?.withUse { readBytes().decodeToString() }
-                        ?: return@runCatching null
+                val resource = getEmojiPatternResourceOrNull() ?: return@runCatching null
                 Regex(resource)
             }.getOrNull() // May some java runtime unsupported
 
@@ -180,3 +184,5 @@ internal class TextProtocol : MessageProtocol() {
         }
     }
 }
+
+internal expect fun getEmojiPatternResourceOrNull(): String?

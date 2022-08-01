@@ -11,11 +11,14 @@ package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.decodeAndRefineLight
+import net.mamoe.mirai.internal.testFramework.DynamicTestsResult
+import net.mamoe.mirai.internal.testFramework.TestFactory
+import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.message.data.Face
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.messageChainOf
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 internal class FaceProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> = arrayOf(FaceProtocol())
@@ -60,4 +63,15 @@ internal class FaceProtocolTest : AbstractMessageProtocolTest() {
 
     }
 
+    @TestFactory
+    fun `test serialization`(): DynamicTestsResult {
+        val data = Face(1)
+        val serialName = Face.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
 }

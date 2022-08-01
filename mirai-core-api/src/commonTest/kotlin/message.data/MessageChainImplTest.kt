@@ -9,17 +9,17 @@
 
 package net.mamoe.mirai.message.data
 
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertIs
 
 internal class MessageChainImplTest {
     @OptIn(MessageChainConstructor::class)
     @Test
     fun allInternalImplementationsOfMessageChainAreMessageChainImpl() {
-        assertIs<MessageChainImpl>(CombinedMessage(AtAll, AtAll, false))
-        assertIs<MessageChainImpl>(emptyMessageChain())
+        assertIs<AbstractMessageChain>(CombinedMessage(AtAll, AtAll, false))
+        assertIs<AbstractMessageChain>(emptyMessageChain())
         val linear = LinearMessageChainImpl.create(listOf(AtAll), true)
         assertIs<LinearMessageChainImpl>(linear)
-        assertIs<MessageChainImpl>(linear)
+        assertIs<AbstractMessageChain>(linear)
     }
 }

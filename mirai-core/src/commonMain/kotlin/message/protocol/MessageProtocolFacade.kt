@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.internal.message.protocol
 
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.internal.contact.AbstractContact
@@ -28,6 +30,7 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelin
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.ORIGINAL_MESSAGE
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.ORIGINAL_MESSAGE_AS_CHAIN
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.STEP
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.buildComponentStorage
@@ -38,11 +41,11 @@ import net.mamoe.mirai.internal.pipeline.ProcessResult
 import net.mamoe.mirai.internal.utils.runCoroutineInPlace
 import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.visitor.RecursiveMessageVisitor
 import net.mamoe.mirai.message.data.visitor.accept
 import net.mamoe.mirai.utils.*
-import java.util.*
 import kotlin.reflect.KClass
 
 internal interface MessageProtocolFacade {
@@ -52,6 +55,7 @@ internal interface MessageProtocolFacade {
     val decoderPipeline: MessageDecoderPipeline
     val preprocessorPipeline: OutgoingMessagePipeline
     val outgoingPipeline: OutgoingMessagePipeline
+    val serializers: Collection<MessageSerializer<*>>
 
     val loaded: List<MessageProtocol>
 
@@ -134,13 +138,34 @@ internal interface MessageProtocolFacade {
         bot: Bot,
     ): MessageChain = buildMessageChain { decode(elements, groupIdOrZero, messageSourceKind, bot, this, null) }
 
+
+    fun createSerializersModule(): SerializersModule = SerializersModule {
+        serializers.forEach { ms ->
+            @Suppress("UNCHECKED_CAST")
+            ms as MessageSerializer<SingleMessage>
+            for (superclass in ms.superclasses) {
+                polymorphic(superclass) {
+                    subclass(ms.forClass, ms.serializer)
+                }
+            }
+            if (ms.registerAlsoContextual) {
+                contextual(ms.forClass, ms.serializer)
+            }
+//            contextual(ms.forClass, ms.serializer)
+        }
+    }
+
     fun copy(): MessageProtocolFacade
 
     /**
      * The default global instance.
      */
     companion object INSTANCE : MessageProtocolFacade by MessageProtocolFacadeImpl(),
-        ComponentKey<MessageProtocolFacade>
+        ComponentKey<MessageProtocolFacade> {
+        init {
+            MessageSerializers.registerSerializers(createSerializersModule())
+        }
+    }
 }
 
 internal fun MessageProtocolFacade.decodeAndRefineLight(
@@ -161,17 +186,18 @@ internal suspend fun MessageProtocolFacade.decodeAndRefineDeep(
 
 
 internal class MessageProtocolFacadeImpl(
-    private val protocols: Iterable<MessageProtocol> = ServiceLoader.load(MessageProtocol::class.java),
+    private val protocols: Iterable<MessageProtocol> = loadServices(MessageProtocol::class).asIterable(),
     override val remark: String = "MessageProtocolFacade"
 ) : MessageProtocolFacade {
     override val encoderPipeline: MessageEncoderPipeline = MessageEncoderPipelineImpl()
     override val decoderPipeline: MessageDecoderPipeline = MessageDecoderPipelineImpl()
     override val preprocessorPipeline: OutgoingMessagePipeline = OutgoingMessagePipelineImpl()
     override val outgoingPipeline: OutgoingMessagePipeline = OutgoingMessagePipelineImpl()
+    override val serializers: MutableCollection<MessageSerializer<*>> = ArrayList(10)
 
     override val loaded: List<MessageProtocol> = kotlin.run {
-        val instances: PriorityQueue<MessageProtocol> = protocols
-            .toCollection(PriorityQueue(MessageProtocol.PriorityComparator.reversed()))
+        val instances = protocols
+            .sortedWith(MessageProtocol.PriorityComparator.reversed())
         for (instance in instances) {
             instance.collectProcessors(object : ProcessorCollector() {
                 override fun <T : SingleMessage> add(encoder: MessageEncoder<T>, elementType: KClass<T>) {
@@ -201,6 +227,10 @@ internal class MessageProtocolFacadeImpl(
 
                 override fun add(postprocessor: OutgoingMessagePostprocessor) {
                     outgoingPipeline.registerProcessor(OutgoingMessageProcessorAdapter(postprocessor))
+                }
+
+                override fun <T : Any> add(serializer: MessageSerializer<T>) {
+                    serializers.add(serializer)
                 }
             })
         }

@@ -7,15 +7,15 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:JvmName("MiraiImplKt_common")
+
 package net.mamoe.mirai.internal
 
 import io.ktor.client.*
-import io.ktor.client.engine.okhttp.*
-import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
+import io.ktor.client.statement.*
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -33,25 +33,14 @@ import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl.Companion.impl
 import net.mamoe.mirai.internal.event.EventChannelToEventDispatcherAdapter
 import net.mamoe.mirai.internal.event.InternalEventMechanism
-import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
+import net.mamoe.mirai.internal.message.EmptyRefineContext
+import net.mamoe.mirai.internal.message.RefineContext
+import net.mamoe.mirai.internal.message.SimpleRefineContext
 import net.mamoe.mirai.internal.message.data.*
-import net.mamoe.mirai.internal.message.data.FileMessageImpl
-import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
-import net.mamoe.mirai.internal.message.data.OnlineAudioImpl
-import net.mamoe.mirai.internal.message.data.UnsupportedMessageImpl
 import net.mamoe.mirai.internal.message.image.*
-import net.mamoe.mirai.internal.message.image.OfflineGroupImage
-import net.mamoe.mirai.internal.message.image.OnlineFriendImageImpl
-import net.mamoe.mirai.internal.message.image.OnlineGroupImageImpl
 import net.mamoe.mirai.internal.message.source.*
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromFriendImpl
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromGroupImpl
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromStrangerImpl
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceFromTempImpl
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToFriendImpl
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToStrangerImpl
-import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToTempImpl
+import net.mamoe.mirai.internal.message.toMessageChainNoSource
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.ResourceKind
@@ -75,80 +64,28 @@ import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
+import kotlin.jvm.JvmName
 
 internal fun getMiraiImpl() = Mirai as MiraiImpl
+
+internal expect fun createDefaultHttpClient(): HttpClient
+
+@Suppress("FunctionName")
+internal expect fun _MiraiImpl_static_init()
 
 @OptIn(LowLevelApi::class)
 // not object for ServiceLoader.
 internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
+    init {
+        _MiraiImpl_static_init() // companion object is lazily initialized on native
+    }
+
     companion object {
         init {
-            MessageSerializers.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
-            MessageSerializers.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
-            MessageSerializers.registerSerializer(OnlineFriendImageImpl::class, OnlineFriendImageImpl.serializer())
-            MessageSerializers.registerSerializer(OnlineGroupImageImpl::class, OnlineGroupImageImpl.serializer())
-
-            MessageSerializers.registerSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer())
-            MessageSerializers.registerSerializer(FileMessageImpl::class, FileMessageImpl.serializer())
-
-            // MessageSource
-
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceFromGroupImpl::class,
-                OnlineMessageSourceFromGroupImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceFromFriendImpl::class,
-                OnlineMessageSourceFromFriendImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceFromTempImpl::class,
-                OnlineMessageSourceFromTempImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceFromStrangerImpl::class,
-                OnlineMessageSourceFromStrangerImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceToGroupImpl::class,
-                OnlineMessageSourceToGroupImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceToFriendImpl::class,
-                OnlineMessageSourceToFriendImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceToTempImpl::class,
-                OnlineMessageSourceToTempImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineMessageSourceToStrangerImpl::class,
-                OnlineMessageSourceToStrangerImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OfflineMessageSourceImplData::class,
-                OfflineMessageSourceImplData.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OfflineMessageSourceImplData::class,
-                OfflineMessageSourceImplData.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                UnsupportedMessageImpl::class,
-                UnsupportedMessageImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OnlineAudioImpl::class,
-                OnlineAudioImpl.serializer()
-            )
-            MessageSerializers.registerSerializer(
-                OfflineAudioImpl::class,
-                OfflineAudioImpl.serializer()
-            )
+            _MiraiImpl_static_init()
         }
     }
 
@@ -157,14 +94,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override var FileCacheStrategy: FileCacheStrategy = net.mamoe.mirai.utils.FileCacheStrategy.PlatformDefault
 
-    @Deprecated("Mirai is not going to use ktor. This is deprecated for removal.", level = DeprecationLevel.WARNING)
-    override var Http: HttpClient = HttpClient(OkHttp) {
-        install(HttpTimeout) {
-            this.requestTimeoutMillis = 30_0000
-            this.connectTimeoutMillis = 30_0000
-            this.socketTimeoutMillis = 30_0000
-        }
-    }
+    @Suppress("PrivatePropertyName")
+    private val httpClient: HttpClient = createDefaultHttpClient()
 
     override suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent) {
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
@@ -468,7 +399,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         source.ensureSequenceIdAvailable()
 
         @Suppress("BooleanLiteralArgument", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER") // false positive
-        check(!source.isRecalledOrPlanned.get() && source.isRecalledOrPlanned.compareAndSet(false, true)) {
+        check(!source.isRecalledOrPlanned.value && source.isRecalledOrPlanned.compareAndSet(false, true)) {
             "$source had already been recalled."
         }
 
@@ -600,8 +531,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun getRawGroupActiveData(bot: Bot, groupId: Long, page: Int): GroupActiveData =
         bot.asQQAndroidBot().run {
             val rep = network.run {
-                @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-                Mirai.Http.get<String> {
+                httpClient.get() {
                     url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
                     parameter("bkn", client.wLoginSigInfo.bkn)
                     parameter("gc", groupId)
@@ -617,7 +547,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     }
                 }
             }
-            return json.decodeFromString(GroupActiveData.serializer(), rep)
+            return json.decodeFromString(GroupActiveData.serializer(), rep.bodyAsText())
         }
 
     @LowLevelApi
@@ -628,8 +558,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         type: GroupHonorType
     ): GroupHonorListData? = bot.asQQAndroidBot().run {
         val rep = network.run {
-            @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-            Mirai.Http.get<String> {
+            httpClient.get {
                 url("https://qun.qq.com/interactive/honorlist")
                 parameter("gc", groupId)
                 parameter("type", type.value)
@@ -645,7 +574,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 }
             }
         }
-        val jsonText = Regex("""window.__INITIAL_STATE__=(.+?)</script>""").find(rep)?.groupValues?.get(1)
+        val jsonText = Regex("""window.__INITIAL_STATE__=(.+?)</script>""").find(rep.bodyAsText())?.groupValues?.get(1)
         return jsonText?.let { json.decodeFromString(GroupHonorListData.serializer(), it) }
     }
 
@@ -740,16 +669,17 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         seconds: Int
     ) {
         bot as QQAndroidBot
-        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-        val response = Mirai.Http.post<String> {
+        val response = httpClient.post {
             url("https://qqweb.qq.com/c/anonymoustalk/blacklist")
-            body = MultiPartFormDataContent(formData {
-                append("anony_id", anonymousId)
-                append("group_code", groupId)
-                append("seconds", seconds)
-                append("anony_nick", anonymousNick)
-                append("bkn", bot.client.wLoginSigInfo.bkn)
-            })
+            setBody(
+                MultiPartFormDataContent(formData {
+                    append("anony_id", anonymousId)
+                    append("group_code", groupId)
+                    append("seconds", seconds)
+                    append("anony_nick", anonymousNick)
+                    append("bkn", bot.client.wLoginSigInfo.bkn)
+                })
+            )
             headers {
                 // ktor bug
                 append(
@@ -757,7 +687,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     "uin=o${bot.id}; skey=${bot.sKey};"
                 )
             }
-        }
+        }.bodyAsText()
         val jsonObj = Json.decodeFromString(JsonObject.serializer(), response)
         if ((jsonObj["retcode"] ?: jsonObj["cgicode"] ?: error("missing response code")).jsonPrimitive.long != 0L) {
             throw IllegalStateException(response)
@@ -872,17 +802,21 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return main.toForwardMessageNodes(bot, context)
     }
 
-    protected open suspend fun MsgComm.Msg.toNode(bot: Bot, refineContext: RefineContext): ForwardMessage.Node {
+    private suspend fun MsgComm.Msg.toNode(bot: Bot, refineContext: RefineContext): ForwardMessage.Node {
         val msg = this
+
+        @Suppress("USELESS_CAST") // compiler bug, do not remove
+        val senderName = (msg.msgHead.groupInfo?.groupCard
+            ?: msg.msgHead.fromNick.takeIf { it.isNotEmpty() }
+            ?: msg.msgHead.fromUin.toString()) as String
+        val chain = listOf(msg)
+            .toMessageChainNoSource(bot, 0, MessageSourceKind.GROUP)
+            .refineDeep(bot, refineContext)
         return ForwardMessage.Node(
             senderId = msg.msgHead.fromUin,
             time = msg.msgHead.msgTime,
-            senderName = msg.msgHead.groupInfo?.groupCard
-                ?: msg.msgHead.fromNick.takeIf { it.isNotEmpty() }
-                ?: msg.msgHead.fromUin.toString(),
-            messageChain = listOf(msg)
-                .toMessageChainNoSource(bot, 0, MessageSourceKind.GROUP)
-                .refineDeep(bot, refineContext)
+            senderName = senderName,
+            messageChain = chain
         )
     }
 
@@ -894,8 +828,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         bot.asQQAndroidBot()
         when (val resp = bot.network.sendAndExpect(MultiMsg.ApplyDown(bot.client, 2, resourceId, 1))) {
             is MultiMsg.ApplyDown.Response.RequireDownload -> {
-                @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-                val http = Mirai.Http
                 val origin = resp.origin
 
                 val data: ByteArray = if (origin.msgExternInfo?.channelType == 2) {
@@ -907,16 +839,16 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         resourceKind = resourceKind,
                         channelKind = ChannelKind.HTTP
                     ) { host, _ ->
-                        http.get("$host${origin.thumbDownPara}")
-                    }
+                        httpClient.get("$host${origin.thumbDownPara}")
+                    }.readBytes()
                 } else tryServersDownload(
                     bot = bot,
                     servers = origin.uint32DownIp.zip(origin.uint32DownPort),
                     resourceKind = resourceKind,
                     channelKind = ChannelKind.HTTP
                 ) { ip, port ->
-                    http.get("http://$ip:$port${origin.thumbDownPara}")
-                }
+                    httpClient.get("http://$ip:$port${origin.thumbDownPara}")
+                }.readBytes()
 
                 val body = data.read {
                     check(readByte() == 40.toByte()) {

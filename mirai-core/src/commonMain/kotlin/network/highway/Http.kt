@@ -15,12 +15,12 @@ import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.util.*
 import io.ktor.utils.io.*
-import io.ktor.utils.io.jvm.javaio.*
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.copyTo
 import net.mamoe.mirai.utils.toUHexString
 import net.mamoe.mirai.utils.withUse
-import java.io.InputStream
 
 
 /**
@@ -32,7 +32,7 @@ internal fun ExternalResource.consumeAsWriteChannelContent(contentType: ContentT
         override val contentLength: Long = size
 
         override suspend fun writeTo(channel: ByteWriteChannel) {
-            inputStream().withUse { copyTo(channel) }
+            input().withUse { copyTo(channel) }
         }
     }
 }
@@ -49,7 +49,7 @@ internal suspend fun HttpClient.postImage(
     groupcode: Long?,
     imageInput: ExternalResource,
     uKeyHex: String,
-): Boolean = post<HttpStatusCode> {
+): Boolean = post {
     url {
         protocol = URLProtocol.HTTP
         host = serverIp // "htdata2.qq.com"
@@ -71,7 +71,7 @@ internal suspend fun HttpClient.postImage(
     }
 
     body = imageInput.consumeAsWriteChannelContent(ContentType.Image.Any)
-} == HttpStatusCode.OK
+}.status == HttpStatusCode.OK
 
 internal suspend fun HttpClient.postPtt(
     serverIp: String,
@@ -80,7 +80,7 @@ internal suspend fun HttpClient.postPtt(
     uKey: ByteArray,
     fileKey: ByteArray,
 ) {
-    post<String> {
+    post {
         url("http://$serverIp:$serverPort")
         parameter("ver", 4679)
         parameter("ukey", uKey.toUHexString(""))
@@ -89,6 +89,6 @@ internal suspend fun HttpClient.postPtt(
         parameter("bmd5", resource.md5.toUHexString(""))
         parameter("mType", "pttDu")
         parameter("voice_encodec", resource.voiceCodec)
-        body = resource.consumeAsWriteChannelContent(null)
+        setBody(resource.consumeAsWriteChannelContent(null))
     }
 }

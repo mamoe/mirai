@@ -13,7 +13,7 @@ import net.mamoe.mirai.console.intellij.diagnostics.adjustToClassName
 import net.mamoe.mirai.console.intellij.diagnostics.isValidPackageName
 import net.mamoe.mirai.console.intellij.diagnostics.isValidQualifiedClassName
 import net.mamoe.mirai.console.intellij.diagnostics.isValidSimpleClassName
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

@@ -23,6 +23,8 @@ import net.mamoe.mirai.internal.event.VerboseEvent
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiInternalApi
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 
 /**

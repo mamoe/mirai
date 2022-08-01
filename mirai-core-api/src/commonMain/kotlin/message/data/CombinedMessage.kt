@@ -19,11 +19,12 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  * @since 2.12
  */
 @MiraiInternalApi
+@Suppress("EXPOSED_SUPER_CLASS")
 public class CombinedMessage @MessageChainConstructor constructor(
     @MiraiInternalApi public val element: Message,
     @MiraiInternalApi public val tail: Message,
     @MiraiInternalApi public override val hasConstrainSingle: Boolean
-) : MessageChainImpl, List<SingleMessage> {
+) : AbstractMessageChain(), List<SingleMessage> {
     override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
         return visitor.visitCombinedMessage(this, data)
     }
@@ -161,27 +162,6 @@ public class CombinedMessage @MessageChainConstructor constructor(
                 }
             })
         }
-    }
-
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as CombinedMessage
-
-        if (element != other.element) return false
-        if (tail != other.tail) return false
-        if (hasConstrainSingle != other.hasConstrainSingle) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = element.hashCode()
-        result = 31 * result + tail.hashCode()
-        result = 31 * result + hasConstrainSingle.hashCode()
-        return result
     }
 
 

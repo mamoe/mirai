@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.data.proto
 
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoIntegerType
 import kotlinx.serialization.protobuf.ProtoNumber
@@ -19,7 +20,9 @@ import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.structureToStringIfAvailable
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.utils.unzip
+import net.mamoe.mirai.utils.inflate
+import net.mamoe.mirai.utils.isSameType
+import kotlin.jvm.JvmField
 
 @Serializable
 internal class ImCommon : ProtoBuf {
@@ -555,7 +558,7 @@ internal class ImMsgBody : ProtoBuf {
 
             return when (byteArray[0].toInt()) {
                 0 -> byteArrayOf(0) + byteArray.decodeToString(startIndex = 1).toByteArray()
-                1 -> byteArrayOf(0) + byteArray.unzip(offset = 1).decodeToString().toByteArray()
+                1 -> byteArrayOf(0) + byteArray.inflate(offset = 1)
                 else -> error("unknown compression flag=${byteArray[0]}")
             }
         }
@@ -605,9 +608,7 @@ internal class ImMsgBody : ProtoBuf {
         @Suppress("DuplicatedCode")
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as MarketFace
+            if (!isSameType(this, other)) return false
 
             if (!faceName.contentEquals(other.faceName)) return false
             if (itemType != other.itemType) return false
@@ -793,9 +794,7 @@ internal class ImMsgBody : ProtoBuf {
     ) : ProtoBuf {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as Ptt
+            if (!isSameType(this, other)) return false
 
             if (fileType != other.fileType) return false
             if (srcUin != other.srcUin) return false

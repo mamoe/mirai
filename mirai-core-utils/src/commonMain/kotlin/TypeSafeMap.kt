@@ -12,9 +12,9 @@
 package net.mamoe.mirai.utils
 
 import kotlinx.serialization.Serializable
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmInline
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -175,13 +175,13 @@ internal class MutableTypeSafeMapImpl(
     }
 }
 
-public fun TypeSafeMap.toMutableTypeSafeMap(): MutableTypeSafeMap = MutableTypeSafeMap(this.toMap())
+public fun TypeSafeMap.toMutableTypeSafeMap(): MutableTypeSafeMap = createMutableTypeSafeMap(this.toMap())
 
-public inline fun MutableTypeSafeMap(): MutableTypeSafeMap = MutableTypeSafeMapImpl()
-public inline fun MutableTypeSafeMap(map: Map<String, Any>): MutableTypeSafeMap =
+public inline fun createMutableTypeSafeMap(): MutableTypeSafeMap = MutableTypeSafeMapImpl()
+public inline fun createMutableTypeSafeMap(map: Map<String, Any>): MutableTypeSafeMap =
     MutableTypeSafeMapImpl().also { it.map.putAll(map) }
 
-public inline fun TypeSafeMap(): TypeSafeMap = TypeSafeMap.EMPTY
+public inline fun createTypeSafeMap(): TypeSafeMap = TypeSafeMap.EMPTY
 
 public inline fun buildTypeSafeMap(block: MutableTypeSafeMap.() -> Unit): MutableTypeSafeMap {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }

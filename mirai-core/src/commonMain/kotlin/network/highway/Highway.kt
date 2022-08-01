@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,16 +9,13 @@
 
 package net.mamoe.mirai.internal.network.highway
 
+import io.ktor.utils.io.core.*
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.produceIn
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.buildPacket
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -34,11 +31,10 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.retryWithServers
 import net.mamoe.mirai.internal.utils.sizeToString
 import net.mamoe.mirai.utils.*
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.Volatile
 import kotlin.math.roundToInt
-import kotlin.system.measureTimeMillis
 
 internal object Highway {
 
@@ -385,9 +381,9 @@ internal fun highwayPacketSession(
     ByteArrayPool.checkBufferSize(sizePerPacket)
     //   require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
 
-    val ticket = AtomicReference(initialTicket)
+    val ticket = atomic(initialTicket)
 
-    return ChunkedFlowSession(data.inputStream(), ByteArray(sizePerPacket), callback) { buffer, size, offset ->
+    return ChunkedFlowSession(data.input(), ByteArray(sizePerPacket), callback) { buffer, size, offset ->
         val head = CSDataHighwayHead.ReqDataHighwayHead(
             msgBasehead = CSDataHighwayHead.DataHighwayHead(
                 version = 1,
@@ -405,7 +401,7 @@ internal fun highwayPacketSession(
                 datalength = size,
                 dataoffset = offset,
                 filesize = data.size,
-                serviceticket = ticket.get(),
+                serviceticket = ticket.value,
                 md5 = buffer.md5(0, size),
                 fileMd5 = fileMd5,
                 flag = 0,

@@ -9,9 +9,9 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.io.core.readUShort
 import net.mamoe.mirai.internal.contact.SendMessageStep
 import net.mamoe.mirai.internal.message.data.FileMessageImpl
 import net.mamoe.mirai.internal.message.data.checkIsImpl
@@ -26,6 +26,7 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelin
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.components
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageTransformer
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.ObjMsg
@@ -33,6 +34,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageContent
+import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.visitor.RecursiveMessageVisitor
 import net.mamoe.mirai.message.data.visitor.acceptChildren
 import net.mamoe.mirai.utils.read
@@ -51,6 +54,15 @@ internal class FileMessageProtocol : MessageProtocol() {
         })
 
         add(FileMessageSender())
+
+        MessageSerializer.superclassesScope(FileMessage::class, MessageContent::class, SingleMessage::class) {
+            add(
+                MessageSerializer(
+                    FileMessageImpl::class,
+                    FileMessageImpl.serializer()
+                )
+            )
+        }
     }
 
     companion object {

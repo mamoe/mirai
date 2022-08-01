@@ -1,0 +1,8 @@
+/target
+Cargo.lock
+myrust.h
+
+*.iml
+
+src/bindings.rs
+/*.h

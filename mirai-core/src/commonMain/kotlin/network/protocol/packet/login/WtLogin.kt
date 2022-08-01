@@ -1,16 +1,16 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.protocol.packet.login
 
 
-import kotlinx.io.core.*
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.events.BotEvent
@@ -388,24 +388,24 @@ internal class WtLogin {
 
                     if (client.wLoginSigInfoInitialized) {
                         client.wLoginSigInfo.apply {
-                            superKey = tlvMap119.getOrDefault(0x16d, superKey)
+                            superKey = tlvMap119.getOrElse(0x16d) { superKey }
                             d2 = KeyWithExpiry(
-                                tlvMap119.getOrDefault(0x143, d2.data),
+                                tlvMap119.getOrElse(0x143) { d2.data },
                                 creationTime,
-                                creationTime + changeTokenTimeMap.getOrDefault(0x143, 1728000L)
+                                creationTime + changeTokenTimeMap.getOrElse(0x143) { 1728000L }
                             )
-                            d2Key = tlvMap119.getOrDefault(0x305, d2Key)
-                            tgt = tlvMap119.getOrDefault(0x10a, tgt)
-                            tgtKey = tlvMap119.getOrDefault(0x10d, tgtKey)
-                            a2ExpiryTime = creationTime + changeTokenTimeMap.getOrDefault(0x10a, 2160000L)
+                            d2Key = tlvMap119.getOrElse(0x305) { d2Key }
+                            tgt = tlvMap119.getOrElse(0x10a) { tgt }
+                            tgtKey = tlvMap119.getOrElse(0x10d) { tgtKey }
+                            a2ExpiryTime = creationTime + changeTokenTimeMap.getOrElse(0x10a) { 2160000L }
                             userStWebSig = KeyWithExpiry(
-                                tlvMap119.getOrDefault(0x103, userStWebSig.data),
+                                tlvMap119.getOrElse(0x103) { userStWebSig.data },
                                 creationTime,
-                                creationTime + changeTokenTimeMap.getOrDefault(0x103, 6000L)
+                                creationTime + changeTokenTimeMap.getOrElse(0x103) { 6000L }
                             )
-                            userStKey = tlvMap119.getOrDefault(0x10e, userStKey)
+                            userStKey = tlvMap119.getOrElse(0x10e) { userStKey }
                             userStSig =
-                                KeyWithCreationTime((tlvMap119.getOrDefault(0x114, userStSig.data)), creationTime)
+                                KeyWithCreationTime((tlvMap119.getOrElse(0x114) { userStSig.data }), creationTime)
                             appPri = tlvMap119[0x11f]?.let {
                                 it.read {
                                     //change interval (int time)
@@ -417,22 +417,23 @@ internal class WtLogin {
                             sKey = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x120),
                                 creationTime,
-                                creationTime + changeTokenTimeMap.getOrDefault(0x120, 86400L)
+                                creationTime + changeTokenTimeMap.getOrElse(0x120) { 86400L }
                             )
                             wtSessionTicket = KeyWithCreationTime(
-                                tlvMap119.getOrDefault(
-                                    0x133,
+                                tlvMap119.getOrElse(
+                                    0x133
+                                ) {
                                     client.wLoginSigInfo.wtSessionTicket.data
-                                ), creationTime
+                                }, creationTime
                             )
 
-                            wtSessionTicketKey = tlvMap119.getOrDefault(0x134, client.wLoginSigInfo.wtSessionTicketKey)
-                            deviceToken = tlvMap119.getOrDefault(0x322, deviceToken)
+                            wtSessionTicketKey = tlvMap119.getOrElse(0x134) { client.wLoginSigInfo.wtSessionTicketKey }
+                            deviceToken = tlvMap119.getOrElse(0x322) { deviceToken }
                             encryptedDownloadSession = tlvMap119[0x11d]?.let {
                                 client.analysisTlv11d(it)
                             } ?: encryptedDownloadSession
-                            encryptA1 = tlvMap119.getOrDefault(0x106, encryptA1)
-                            noPicSig = tlvMap119.getOrDefault(0x16a, noPicSig)
+                            encryptA1 = tlvMap119.getOrElse(0x106) { encryptA1 }
+                            noPicSig = tlvMap119.getOrElse(0x16a) { noPicSig }
                             psKeyMap.putAll(outPSKeyMap.orEmpty().toMutableMap())
                             pt4TokenMap.putAll(outPt4TokenMap.orEmpty().toMutableMap())
                         }
@@ -464,10 +465,11 @@ internal class WtLogin {
                                 }
                             }
                                 ?: 4294967295L, // defaults {}, from asyncContext._G
-                            a2ExpiryTime = creationTime + changeTokenTimeMap.getOrDefault(
-                                0x10a,
+                            a2ExpiryTime = creationTime + changeTokenTimeMap.getOrElse(
+                                0x10a
+                            ) {
                                 2160000L
-                            ), // or from asyncContext._t403.get_body_data()
+                            }, // or from asyncContext._t403.get_body_data()
                             loginBitmap = 0,
                             tgt = tlvMap119.getOrFail(0x10a),
                             a2CreationTime = creationTime,
@@ -477,23 +479,23 @@ internal class WtLogin {
                             userStWebSig = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x103),
                                 creationTime,
-                                creationTime + changeTokenTimeMap.getOrDefault(0x103, 6000L)
+                                creationTime + changeTokenTimeMap.getOrElse(0x103) { 6000L }
                             ),
                             userA5 = KeyWithCreationTime(tlvMap119.getOrEmpty(0x10b), creationTime),
                             userA8 = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x102),
                                 creationTime,
-                                creationTime + changeTokenTimeMap.getOrDefault(0x102, 72000L)
+                                creationTime + changeTokenTimeMap.getOrElse(0x102) { 72000L }
                             ),
                             lsKey = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x11c),
                                 creationTime,
-                                creationTime + changeTokenTimeMap.getOrDefault(0x11c, 1641600L)
+                                creationTime + changeTokenTimeMap.getOrElse(0x11c) { 1641600L }
                             ),
                             sKey = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x120),
                                 creationTime,
-                                creationTime + changeTokenTimeMap.getOrDefault(0x120, 86400L)
+                                creationTime + changeTokenTimeMap.getOrElse(0x120) { 86400L }
                             ),
                             userSig64 = KeyWithCreationTime(tlvMap119.getOrEmpty(0x121), creationTime),
                             openId = openId.orEmpty(),
@@ -501,19 +503,19 @@ internal class WtLogin {
                             vKey = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x136),
                                 creationTime,
-                                creationTime + changeTokenTimeMap.getOrDefault(0x136, 1728000L)
+                                creationTime + changeTokenTimeMap.getOrElse(0x136) { 1728000L }
                             ),
                             accessToken = KeyWithCreationTime(tlvMap119.getOrEmpty(0x136), creationTime),
                             d2 = KeyWithExpiry(
                                 tlvMap119.getOrFail(0x143),
                                 creationTime,
-                                creationTime + changeTokenTimeMap.getOrDefault(0x143, 1728000L)
+                                creationTime + changeTokenTimeMap.getOrElse(0x143) { 1728000L }
                             ),
                             d2Key = tlvMap119.getOrEmpty(0x305),
                             sid = KeyWithExpiry(
                                 tlvMap119.getOrEmpty(0x164),
                                 creationTime,
-                                creationTime + changeTokenTimeMap.getOrDefault(0x164, 1728000L)
+                                creationTime + changeTokenTimeMap.getOrElse(0x164) { 1728000L }
                             ),
                             aqSig = KeyWithCreationTime(tlvMap119.getOrEmpty(0x171), creationTime),
                             psKeyMap = outPSKeyMap.orEmpty().toMutableMap(),

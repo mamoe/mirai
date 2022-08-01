@@ -9,10 +9,9 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
@@ -43,7 +42,6 @@ import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.getRandomUnsignedInt
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.math.absoluteValue
@@ -58,6 +56,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         object MessageTooLarge : Response() {
             override fun toString(): String = "MessageSvcPbSendMsg.Response.MessageTooLarge"
         }
+
         object ServiceUnavailable : Response() {
             override fun toString(): String = "MessageSvcPbSendMsg.Response.ServiceUnavailable"
         }
@@ -106,6 +105,10 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         return results
     }
 
+    class LateinitBox<T : Any> {
+        lateinit var value: T
+    }
+
     internal inline fun buildOutgoingMessageCommon(
         client: QQAndroidClient,
         message: MessageChain,
@@ -116,9 +119,9 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             msgRand: Int,
             contentHead: MsgComm.ContentHead,
         ) -> MsgSvc.PbSendMsgReq,
-        sequenceIds: AtomicReference<IntArray>,
+        sequenceIds: LateinitBox<IntArray>,
         sequenceIdsInitializer: (Int) -> IntArray,
-        randIds: AtomicReference<IntArray>,
+        randIds: LateinitBox<IntArray>,
         doFragmented: Boolean = true,
         postInit: () -> Unit,
     ): List<OutgoingPacket> {
@@ -132,8 +135,9 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
 
         val seqIds = sequenceIdsInitializer(pkgNum)
         val randIds0 = IntArray(pkgNum) { getRandomUnsignedInt() }
-        sequenceIds.set(seqIds)
-        randIds.set(randIds0)
+
+        sequenceIds.value = seqIds
+        randIds.value = randIds0
         postInit()
         fragmented.forEachIndexed { pkgIndex, fMsg ->
             response.add(
@@ -191,8 +195,8 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         source: (OnlineMessageSourceToStrangerImpl) -> Unit,
     ): List<OutgoingPacket> {
 
-        val sequenceIds = AtomicReference<IntArray>()
-        val randIds = AtomicReference<IntArray>()
+        val sequenceIds = LateinitBox<IntArray>()
+        val randIds = LateinitBox<IntArray>()
         return buildOutgoingMessageCommon(
             client = client,
             message = message,
@@ -222,11 +226,11 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             postInit = {
                 source(
                     OnlineMessageSourceToStrangerImpl(
-                        internalIds = randIds.get(),
+                        internalIds = randIds.value,
                         sender = client.bot,
                         target = target,
                         time = client.bot.clock.server.currentTimeSeconds().toInt(),
-                        sequenceIds = sequenceIds.get(),
+                        sequenceIds = sequenceIds.value,
                         originalMessage = originalMessage,
                     ),
                 )
@@ -251,8 +255,8 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
         }
 
-        val sequenceIds = AtomicReference<IntArray>()
-        val randIds = AtomicReference<IntArray>()
+        val sequenceIds = LateinitBox<IntArray>()
+        val randIds = LateinitBox<IntArray>()
         return buildOutgoingMessageCommon(
             client = client,
             message = message,
@@ -287,11 +291,11 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             postInit = {
                 sourceCallback(
                     OnlineMessageSourceToFriendImpl(
-                        internalIds = randIds.get(),
+                        internalIds = randIds.value,
                         sender = client.bot,
                         target = targetFriend,
                         time = client.bot.clock.server.currentTimeSeconds().toInt(),
-                        sequenceIds = sequenceIds.get(),
+                        sequenceIds = sequenceIds.value,
                         originalMessage = originalMessage,
                     ),
                 )
@@ -378,8 +382,8 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         fragmented: Boolean,
         crossinline sourceCallback: (OnlineMessageSourceToGroupImpl) -> Unit,
     ): List<OutgoingPacket> {
-        val sequenceIds = AtomicReference<IntArray>()
-        val randIds = AtomicReference<IntArray>()
+        val sequenceIds = LateinitBox<IntArray>()
+        val randIds = LateinitBox<IntArray>()
         return buildOutgoingMessageCommon(
             client = client,
             message = message,
@@ -417,11 +421,11 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                 IntArray(size) { client.atomicNextMessageSequenceId() }
             },
             postInit = {
-                randIds.get().forEach { id -> client.syncController.syncGroupMessageReceipt(id) }
+                randIds.value.forEach { id -> client.syncController.syncGroupMessageReceipt(id) }
                 sourceCallback(
                     OnlineMessageSourceToGroupImpl(
                         targetGroup,
-                        internalIds = randIds.get(),
+                        internalIds = randIds.value,
                         sender = client.bot,
                         target = targetGroup,
                         time = client.bot.clock.server.currentTimeSeconds().toInt(),

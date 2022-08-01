@@ -17,17 +17,14 @@ package net.mamoe.mirai.utils
 
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.event.events.BotOfflineEvent
-import java.io.File
-import java.io.InputStream
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.jvm.*
+import kotlin.native.CName
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * [Bot] 配置. 用于 [BotFactory.newBot]
@@ -53,18 +50,13 @@ import kotlin.time.Duration.Companion.milliseconds
  * ```
  */
 @Suppress("PropertyName")
-public open class BotConfiguration { // open for Java
-    /**
-     * 工作目录. 默认为 "."
-     */
-    public var workingDir: File = File(".")
-
+public expect open class BotConfiguration() { // open for Java
     ///////////////////////////////////////////////////////////////////////////
     // Coroutines
     ///////////////////////////////////////////////////////////////////////////
 
     /** 父 [CoroutineContext]. [Bot] 创建后会使用 [SupervisorJob] 覆盖其 [Job], 但会将这个 [Job] 作为父 [Job] */
-    public var parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
+    public var parentCoroutineContext: CoroutineContext
 
     /**
      * 使用当前协程的 [coroutineContext] 作为 [parentCoroutineContext].
@@ -120,9 +112,7 @@ public open class BotConfiguration { // open for Java
      */
     @JvmSynthetic
     @ConfigurationDsl
-    public suspend inline fun inheritCoroutineContext() {
-        parentCoroutineContext = coroutineContext
-    }
+    public suspend inline fun inheritCoroutineContext()
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -130,7 +120,7 @@ public open class BotConfiguration { // open for Java
     ///////////////////////////////////////////////////////////////////////////
 
     /** 连接心跳包周期. 过长会导致被服务器断开连接. */
-    public var heartbeatPeriodMillis: Long = 60.secondsToMillis
+    public var heartbeatPeriodMillis: Long
 
     /**
      * 状态心跳包周期. 过长会导致掉线.
@@ -138,19 +128,19 @@ public open class BotConfiguration { // open for Java
      * @since 2.6
      * @see heartbeatStrategy
      */
-    public var statHeartbeatPeriodMillis: Long = 300.secondsToMillis
+    public var statHeartbeatPeriodMillis: Long
 
     /**
      * 心跳策略.
      * @since 2.6.3
      */
-    public var heartbeatStrategy: HeartbeatStrategy = HeartbeatStrategy.STAT_HB
+    public var heartbeatStrategy: HeartbeatStrategy
 
     /**
      * 心跳策略.
      * @since 2.6.3
      */
-    public enum class HeartbeatStrategy {
+    public enum class HeartbeatStrategy { // IN ACTUAL DECLARATION DO NOT ADD EXTRA ELEMENTS.
         /**
          * 使用 2.6.0 增加的*状态心跳* (Stat Heartbeat). 通常推荐这个模式.
          *
@@ -178,7 +168,7 @@ public open class BotConfiguration { // open for Java
      * 每次心跳时等待结果的时间.
      * 一旦心跳超时, 整个网络服务将会重启 (将消耗约 1s). 除正在进行的任务 (如图片上传) 会被中断外, 事件和插件均不受影响.
      */
-    public var heartbeatTimeoutMillis: Long = 5.secondsToMillis
+    public var heartbeatTimeoutMillis: Long
 
     /** 心跳失败后的第一次重连前的等待时间. */
     @Deprecated(
@@ -186,7 +176,7 @@ public open class BotConfiguration { // open for Java
         level = DeprecationLevel.HIDDEN
     ) // deprecated since 2.7, error since 2.8
     @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.8", hiddenSince = "2.10")
-    public var firstReconnectDelayMillis: Long = 5.secondsToMillis
+    public var firstReconnectDelayMillis: Long
 
     /** 重连失败后, 继续尝试的每次等待时间 */
     @Deprecated(
@@ -194,10 +184,10 @@ public open class BotConfiguration { // open for Java
         level = DeprecationLevel.HIDDEN
     ) // deprecated since 2.7, error since 2.8
     @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.8", hiddenSince = "2.10")
-    public var reconnectPeriodMillis: Long = 5.secondsToMillis
+    public var reconnectPeriodMillis: Long
 
     /** 最多尝试多少次重连 */
-    public var reconnectionRetryTimes: Int = Int.MAX_VALUE
+    public var reconnectionRetryTimes: Int
 
     /**
      * 在被挤下线时 ([BotOfflineEvent.Force]) 自动重连. 默认为 `false`.
@@ -206,7 +196,7 @@ public open class BotConfiguration { // open for Java
      *
      * @since 2.1
      */
-    public var autoReconnectOnForceOffline: Boolean = false
+    public var autoReconnectOnForceOffline: Boolean
 
     /**
      * 验证码处理器
@@ -218,10 +208,10 @@ public open class BotConfiguration { // open for Java
      *
      * @see LoginSolver
      */
-    public var loginSolver: LoginSolver? = LoginSolver.Default
+    public var loginSolver: LoginSolver?
 
     /** 使用协议类型 */
-    public var protocol: MiraiProtocol = MiraiProtocol.ANDROID_PHONE
+    public var protocol: MiraiProtocol
 
     public enum class MiraiProtocol {
         /**
@@ -265,23 +255,21 @@ public open class BotConfiguration { // open for Java
      *
      * @since 2.2
      */
-    public var highwayUploadCoroutineCount: Int = Runtime.getRuntime().availableProcessors()
+    public var highwayUploadCoroutineCount: Int
 
     /**
      * 设置 [autoReconnectOnForceOffline] 为 `true`, 即在被挤下线时自动重连.
      * @since 2.1
      */
     @ConfigurationDsl
-    public fun autoReconnectOnForceOffline() {
-        autoReconnectOnForceOffline = true
-    }
+    public fun autoReconnectOnForceOffline()
 
     ///////////////////////////////////////////////////////////////////////////
     // Device
     ///////////////////////////////////////////////////////////////////////////
 
     @JvmField
-    internal var accountSecrets: Boolean = true
+    internal var accountSecrets: Boolean
 
     /**
      * 禁止保存 `account.secrets`.
@@ -291,16 +279,14 @@ public open class BotConfiguration { // open for Java
      *
      * @since 2.11
      */
-    public fun disableAccountSecretes() {
-        accountSecrets = false
-    }
+    public fun disableAccountSecretes()
 
     /**
      * 设备信息覆盖. 在没有手动指定时将会通过日志警告, 并使用随机设备信息.
      * @see fileBasedDeviceInfo 使用指定文件存储设备信息
      * @see randomDeviceInfo 使用随机设备信息
      */
-    public var deviceInfo: ((Bot) -> DeviceInfo)? = deviceInfoStub // allows user to set `null` manually.
+    public var deviceInfo: ((Bot) -> DeviceInfo)?
 
     /**
      * 使用随机设备信息.
@@ -308,9 +294,7 @@ public open class BotConfiguration { // open for Java
      * @see deviceInfo
      */
     @ConfigurationDsl
-    public fun randomDeviceInfo() {
-        deviceInfo = null
-    }
+    public fun randomDeviceInfo()
 
     /**
      * 使用特定由 [DeviceInfo] 序列化产生的 JSON 的设备信息
@@ -318,11 +302,7 @@ public open class BotConfiguration { // open for Java
      * @see deviceInfo
      */
     @ConfigurationDsl
-    public fun loadDeviceInfoJson(json: String) {
-        deviceInfo = {
-            Companion.json.decodeFromString(DeviceInfo.serializer(), json)
-        }
-    }
+    public fun loadDeviceInfoJson(json: String)
 
     /**
      * 使用文件存储设备信息.
@@ -333,9 +313,7 @@ public open class BotConfiguration { // open for Java
      */
     @JvmOverloads
     @ConfigurationDsl
-    public fun fileBasedDeviceInfo(filepath: String = "device.json") {
-        deviceInfo = getFileBasedDeviceInfoSupplier { workingDir.resolve(filepath) }
-    }
+    public fun fileBasedDeviceInfo(filepath: String = "device.json")
 
     ///////////////////////////////////////////////////////////////////////////
     // Logging
@@ -351,9 +329,7 @@ public open class BotConfiguration { // open for Java
      *
      * @see MiraiLogger
      */
-    public var botLoggerSupplier: ((Bot) -> MiraiLogger) = {
-        MiraiLogger.Factory.create(Bot::class, "Bot ${it.id}")
-    }
+    public var botLoggerSupplier: ((Bot) -> MiraiLogger)
 
     /**
      * 网络层日志构造器
@@ -365,94 +341,22 @@ public open class BotConfiguration { // open for Java
      *
      * @see MiraiLogger
      */
-    public var networkLoggerSupplier: ((Bot) -> MiraiLogger) = {
-        MiraiLogger.Factory.create(Bot::class, "Net ${it.id}")
-    }
-
-
-    /**
-     * 重定向 [网络日志][networkLoggerSupplier] 到指定目录. 若目录不存在将会自动创建 ([File.mkdirs])
-     * 默认目录路径为 "$workingDir/logs/".
-     * @see DirectoryLogger
-     * @see redirectNetworkLogToDirectory
-     */
-    @JvmOverloads
-    @ConfigurationDsl
-    public fun redirectNetworkLogToDirectory(
-        dir: File = File("logs"),
-        retain: Long = 1.weeksToMillis,
-        identity: (bot: Bot) -> String = { "Net ${it.id}" }
-    ) {
-        require(!dir.isFile) { "dir must not be a file" }
-        networkLoggerSupplier = { DirectoryLogger(identity(it), workingDir.resolve(dir), retain) }
-    }
-
-    /**
-     * 重定向 [网络日志][networkLoggerSupplier] 到指定文件. 默认文件路径为 "$workingDir/mirai.log".
-     * 日志将会逐行追加到此文件. 若文件不存在将会自动创建 ([File.createNewFile])
-     * @see SingleFileLogger
-     * @see redirectNetworkLogToDirectory
-     */
-    @JvmOverloads
-    @ConfigurationDsl
-    public fun redirectNetworkLogToFile(
-        file: File = File("mirai.log"),
-        identity: (bot: Bot) -> String = { "Net ${it.id}" }
-    ) {
-        require(!file.isDirectory) { "file must not be a dir" }
-        networkLoggerSupplier = { SingleFileLogger(identity(it), workingDir.resolve(file)) }
-    }
-
-    /**
-     * 重定向 [Bot 日志][botLoggerSupplier] 到指定文件.
-     * 日志将会逐行追加到此文件. 若文件不存在将会自动创建 ([File.createNewFile])
-     * @see SingleFileLogger
-     * @see redirectBotLogToDirectory
-     */
-    @JvmOverloads
-    @ConfigurationDsl
-    public fun redirectBotLogToFile(
-        file: File = File("mirai.log"),
-        identity: (bot: Bot) -> String = { "Bot ${it.id}" }
-    ) {
-        require(!file.isDirectory) { "file must not be a dir" }
-        botLoggerSupplier = { SingleFileLogger(identity(it), workingDir.resolve(file)) }
-    }
-
-
-    /**
-     * 重定向 [Bot 日志][botLoggerSupplier] 到指定目录. 若目录不存在将会自动创建 ([File.mkdirs])
-     * @see DirectoryLogger
-     * @see redirectBotLogToFile
-     */
-    @JvmOverloads
-    @ConfigurationDsl
-    public fun redirectBotLogToDirectory(
-        dir: File = File("logs"),
-        retain: Long = 1.weeksToMillis,
-        identity: (bot: Bot) -> String = { "Bot ${it.id}" }
-    ) {
-        require(!dir.isFile) { "dir must not be a file" }
-        botLoggerSupplier = { DirectoryLogger(identity(it), workingDir.resolve(dir), retain) }
-    }
+    public var networkLoggerSupplier: ((Bot) -> MiraiLogger)
 
     /**
      * 不显示网络日志. 不推荐.
      * @see networkLoggerSupplier 更多日志处理方式
      */
     @ConfigurationDsl
-    public fun noNetworkLog() {
-        networkLoggerSupplier = { _ -> SilentLogger }
-    }
+    public fun noNetworkLog()
+
 
     /**
      * 不显示 [Bot] 日志. 不推荐.
      * @see botLoggerSupplier 更多日志处理方式
      */
     @ConfigurationDsl
-    public fun noBotLog() {
-        botLoggerSupplier = { _ -> SilentLogger }
-    }
+    public fun noBotLog()
 
     /**
      * 是否显示过于冗长的事件日志
@@ -461,34 +365,17 @@ public open class BotConfiguration { // open for Java
      *
      * @since 2.8
      */
-    public var isShowingVerboseEventLog: Boolean = false
+    public var isShowingVerboseEventLog: Boolean
 
     ///////////////////////////////////////////////////////////////////////////
     // Cache
     //////////////////////////////////////////////////////////////////////////
 
     /**
-     * 缓存数据目录, 相对于 [workingDir].
-     *
-     * 缓存目录保存的内容均属于不稳定的 Mirai 内部数据, 请不要手动修改它们. 清空缓存不会影响功能. 只会导致一些操作如读取全部群列表要重新进行.
-     * 默认启用的缓存可以加快登录过程.
-     *
-     * 注意: 这个目录只存储能在 [BotConfiguration] 配置的内容, 即包含:
-     * - 联系人列表
-     * - 登录服务器列表
-     * - 资源服务秘钥
-     *
-     * 其他内容如通过 [InputStream] 发送图片时的缓存使用 [FileCacheStrategy], 默认使用系统临时文件且会在关闭时删除文件.
-     *
-     * @since 2.4
-     */
-    public var cacheDir: File = File("cache")
-
-    /**
      * 联系人信息缓存配置. 将会保存在 [cacheDir] 中 `contacts` 目录
      * @since 2.4
      */
-    public var contactListCache: ContactListCache = ContactListCache()
+    public var contactListCache: ContactListCache
 
     /**
      * 联系人信息缓存配置
@@ -501,26 +388,22 @@ public open class BotConfiguration { // open for Java
         /**
          * 在有修改时自动保存间隔. 默认 60 秒. 在每次登录完成后有修改时都会立即保存一次.
          */
-        public var saveIntervalMillis: Long = 60_000
+        public var saveIntervalMillis: Long
 
         /**
          * 在有修改时自动保存间隔. 默认 60 秒. 在每次登录完成后有修改时都会立即保存一次.
          */ // was @ExperimentalTime before 2.9
-        public inline var saveInterval: Duration
-            @JvmSynthetic inline get() = saveIntervalMillis.milliseconds
-            @JvmSynthetic inline set(v) {
-                saveIntervalMillis = v.inWholeMilliseconds
-            }
+        public var saveInterval: Duration
 
         /**
          * 开启好友列表缓存.
          */
-        public var friendListCacheEnabled: Boolean = false
+        public var friendListCacheEnabled: Boolean
 
         /**
          * 开启群成员列表缓存.
          */
-        public var groupMemberListCacheEnabled: Boolean = false
+        public var groupMemberListCacheEnabled: Boolean
     }
 
     /**
@@ -534,29 +417,21 @@ public open class BotConfiguration { // open for Java
      * @since 2.4
      */
     @JvmSynthetic
-    public inline fun contactListCache(action: ContactListCache.() -> Unit) {
-        action.invoke(this.contactListCache)
-    }
+    public inline fun contactListCache(action: ContactListCache.() -> Unit)
 
     /**
      * 禁用好友列表和群成员列表的缓存.
      * @since 2.4
      */
     @ConfigurationDsl
-    public fun disableContactCache() {
-        contactListCache.friendListCacheEnabled = false
-        contactListCache.groupMemberListCacheEnabled = false
-    }
+    public fun disableContactCache()
 
     /**
      * 启用好友列表和群成员列表的缓存.
      * @since 2.4
      */
     @ConfigurationDsl
-    public fun enableContactCache() {
-        contactListCache.friendListCacheEnabled = true
-        contactListCache.groupMemberListCacheEnabled = true
-    }
+    public fun enableContactCache()
 
     /**
      * 登录缓存.
@@ -570,38 +445,14 @@ public open class BotConfiguration { // open for Java
      *
      * @since 2.6
      */
-    public var loginCacheEnabled: Boolean = true
+    public var loginCacheEnabled: Boolean
 
     ///////////////////////////////////////////////////////////////////////////
     // Misc
     ///////////////////////////////////////////////////////////////////////////
 
     @Suppress("DuplicatedCode")
-    public fun copy(): BotConfiguration {
-        return BotConfiguration().also { new ->
-            // To structural order
-            new.workingDir = workingDir
-            @Suppress("DEPRECATION_ERROR")
-            new.parentCoroutineContext = parentCoroutineContext
-            new.heartbeatPeriodMillis = heartbeatPeriodMillis
-            new.heartbeatTimeoutMillis = heartbeatTimeoutMillis
-            new.statHeartbeatPeriodMillis = statHeartbeatPeriodMillis
-            new.heartbeatStrategy = heartbeatStrategy
-            new.reconnectionRetryTimes = reconnectionRetryTimes
-            new.autoReconnectOnForceOffline = autoReconnectOnForceOffline
-            new.loginSolver = loginSolver
-            new.protocol = protocol
-            new.highwayUploadCoroutineCount = highwayUploadCoroutineCount
-            new.accountSecrets = accountSecrets
-            new.deviceInfo = deviceInfo
-            new.botLoggerSupplier = botLoggerSupplier
-            new.networkLoggerSupplier = networkLoggerSupplier
-            new.cacheDir = cacheDir
-            new.contactListCache = contactListCache
-            new.convertLineSeparator = convertLineSeparator
-            new.isShowingVerboseEventLog = isShowingVerboseEventLog
-        }
-    }
+    public fun copy(): BotConfiguration
 
     /**
      * 是否处理接受到的特殊换行符, 默认为 `true`
@@ -612,28 +463,17 @@ public open class BotConfiguration { // open for Java
      * @since 2.4
      */
     @get:JvmName("isConvertLineSeparator")
-    public var convertLineSeparator: Boolean = true
+    public var convertLineSeparator: Boolean
 
     /** 标注一个配置 DSL 函数 */
     @Target(AnnotationTarget.FUNCTION)
     @DslMarker
-    public annotation class ConfigurationDsl
+    public annotation class ConfigurationDsl()
 
     public companion object {
         /** 默认的配置实例. 可以进行修改 */
         @JvmStatic
-        public val Default: BotConfiguration = BotConfiguration()
-
-        internal val json: Json = kotlin.runCatching {
-            Json {
-                isLenient = true
-                ignoreUnknownKeys = true
-                prettyPrint = true
-            }
-        }.getOrElse {
-            @Suppress("JSON_FORMAT_REDUNDANT_DEFAULT") // compatibility for older versions
-            Json {}
-        }
+        public val Default: BotConfiguration
     }
 }
 
@@ -644,6 +484,7 @@ public open class BotConfiguration { // open for Java
  * @since 2.3
  */
 @JvmSynthetic
+@CName("", "BotConfiguration_new2")
 public inline fun BotConfiguration(block: BotConfiguration.() -> Unit): BotConfiguration {
     return BotConfiguration().apply(block)
 }

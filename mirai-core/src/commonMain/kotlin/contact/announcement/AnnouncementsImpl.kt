@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,20 +13,17 @@ package net.mamoe.mirai.internal.contact.announcement
 
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.util.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.announcement.*
 import net.mamoe.mirai.contact.checkBotPermission
+import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.OnlineAnnouncementImpl
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.deleteGroupAnnouncement
@@ -35,6 +32,8 @@ import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.getRaw
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.sendGroupAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toGroupAnnouncement
+import net.mamoe.mirai.internal.network.client
+import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.ResourceKind
 import net.mamoe.mirai.internal.network.highway.tryServersUpload
@@ -44,15 +43,19 @@ import net.mamoe.mirai.internal.utils.io.writeResource
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.onLeft
 import net.mamoe.mirai.utils.Either.Companion.rightOrNull
-import java.util.stream.Stream
 
-internal class AnnouncementsImpl(
-    private val group: GroupImpl,
-    private val logger: MiraiLogger,
+internal expect class AnnouncementsImpl(
+    group: GroupImpl,
+    logger: MiraiLogger,
+) : CommonAnnouncementsImpl
+
+internal abstract class CommonAnnouncementsImpl(
+    protected val group: GroupImpl,
+    protected val logger: MiraiLogger,
 ) : Announcements {
     inline val bot get() = group.bot
 
-    private suspend fun getGroupAnnouncementList(i: Int): GroupAnnouncementList? {
+    protected suspend fun getGroupAnnouncementList(i: Int): GroupAnnouncementList? {
         return bot.getRawGroupAnnouncements(group.id, i).onLeft {
             if (logger.isEnabled) { // createException
                 logger.warning(
@@ -77,19 +80,6 @@ internal class AnnouncementsImpl(
         }.map { it.toAnnouncement(group) }
     }
 
-    override fun asStream(): Stream<OnlineAnnouncement> {
-        return stream {
-            var i = 1
-            while (true) {
-                val result = runBlocking { getGroupAnnouncementList(i++) } ?: break
-
-                if (result.inst.isNullOrEmpty() && result.feeds.isNullOrEmpty()) break
-
-                result.inst?.let { yieldAll(it) }
-                result.feeds?.let { yieldAll(it) }
-            }
-        }.map { it.toAnnouncement(group) }
-    }
 
     override suspend fun delete(fid: String): Boolean {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission to delete group announcement" }
@@ -164,31 +154,32 @@ internal object AnnouncementProtocol {
     ) : CheckableResponseA(), JsonStruct
 
     suspend fun uploadGroupAnnouncementImage(
-        bot: Bot,
+        bot: AbstractBot,
         resource: ExternalResource
-    ): AnnouncementImage = bot.asQQAndroidBot().run {
-        @OptIn(InternalAPI::class) // ktor bug
-        val resp = Mirai.Http.post<String> {
+    ): AnnouncementImage = bot.run {
+        val resp = bot.components[HttpClientProvider].getHttpClient().post {
             url("https://web.qun.qq.com/cgi-bin/announce/upload_img")
-            body = MultiPartFormDataContent(formData {
-                append("\"bkn\"", client.wLoginSigInfo.bkn)
-                append("\"source\"", "troopNotice")
-                append("m", "0")
-                append(
-                    "\"pic_up\"",
-                    headers = Headers.build {
-                        append(HttpHeaders.ContentType, ContentType.Image.PNG)
-                        append(HttpHeaders.ContentDisposition, "filename=\"temp_uploadFile.png\"")
+            setBody(
+                MultiPartFormDataContent(formData {
+                    append("\"bkn\"", client.wLoginSigInfo.bkn)
+                    append("\"source\"", "troopNotice")
+                    append("m", "0")
+                    append(
+                        "\"pic_up\"",
+                        headers = Headers.build {
+                            append(HttpHeaders.ContentType, ContentType.Image.PNG)
+                            append(HttpHeaders.ContentDisposition, "filename=\"temp_uploadFile.png\"")
+                        }
+                    ) {
+                        writeResource(resource)
                     }
-                ) {
-                    writeResource(resource)
-                }
-            })
+                })
+            )
             cookie("uin", "o$id")
             cookie("p_uin", "o$id")
             cookie("skey", sKey)
             cookie("p_skey", psKey("qun.qq.com"))
-        }.loadSafelyAs(UploadImageResp.serializer()).check()
+        }.bodyAsText().loadSafelyAs(UploadImageResp.serializer()).check()
         return resp.id.replace("&quot;", "\"").loadSafelyAs(GroupAnnouncementImage.serializer()).check().toPublic()
     }
 
@@ -204,7 +195,7 @@ internal object AnnouncementProtocol {
         announcement: GroupAnnouncement,
         image: AnnouncementImage?,
     ): String {
-        return Mirai.Http.post<String> {
+        return bot.components[HttpClientProvider].getHttpClient().post {
             url(
                 "https://web.qun.qq.com/cgi-bin/announce/add_qun_" + if (announcement.type == 20) {
                     "instruction"
@@ -212,28 +203,30 @@ internal object AnnouncementProtocol {
                     "notice"
                 }
             )
-            body = MultiPartFormDataContent(formData {
-                append("qid", groupId)
-                append("bkn", client.wLoginSigInfo.bkn)
-                append("text", announcement.msg.text)
-                append("pinned", announcement.pinned)
-                image?.let {
-                    append("pic", image.id)
-                    append("imgWidth", image.width)
-                    append("imgHeight", image.height)
-                }
-                append(
-                    "settings",
-                    announcement.settings.toJsonString(GroupAnnouncementSettings.serializer()),
-                )
-                append("format", "json")
-                // append("type", announcement.type.toString())
-            })
+            setBody(
+                MultiPartFormDataContent(formData {
+                    append("qid", groupId)
+                    append("bkn", client.wLoginSigInfo.bkn)
+                    append("text", announcement.msg.text)
+                    append("pinned", announcement.pinned)
+                    image?.let {
+                        append("pic", image.id)
+                        append("imgWidth", image.width)
+                        append("imgHeight", image.height)
+                    }
+                    append(
+                        "settings",
+                        announcement.settings.toJsonString(GroupAnnouncementSettings.serializer()),
+                    )
+                    append("format", "json")
+                    // append("type", announcement.type.toString())
+                })
+            )
             cookie("uin", "o$id")
             cookie("p_uin", "o$id")
             cookie("skey", sKey)
             cookie("p_skey", psKey("qun.qq.com"))
-        }.loadSafelyAs(SendGroupAnnouncementResp.serializer()).check().fid
+        }.bodyAsText().loadSafelyAs(SendGroupAnnouncementResp.serializer()).check().fid
     }
 
     suspend fun QQAndroidBot.getRawGroupAnnouncements(
@@ -241,20 +234,22 @@ internal object AnnouncementProtocol {
         page: Int,
         amount: Int = 10
     ): Either<DeserializationFailure, GroupAnnouncementList> {
-        return Mirai.Http.post<String> {
+        return bot.components[HttpClientProvider].getHttpClient().post {
             url("https://web.qun.qq.com/cgi-bin/announce/list_announce")
-            body = MultiPartFormDataContent(formData {
-                append("qid", groupId)
-                append("bkn", client.wLoginSigInfo.bkn)
-                append("ft", 23)  //好像是一个用来识别应用的参数
-                append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
-                append("n", amount)
-                append("ni", if (page == 1) 1 else 0)
-                append("format", "json")
-            })
+            setBody(
+                MultiPartFormDataContent(formData {
+                    append("qid", groupId)
+                    append("bkn", client.wLoginSigInfo.bkn)
+                    append("ft", 23)  //好像是一个用来识别应用的参数
+                    append("s", if (page == 1) 0 else -(page * amount + 1))  // 第一页这里的参数应该是-1
+                    append("n", amount)
+                    append("ni", if (page == 1) 1 else 0)
+                    append("format", "json")
+                })
+            )
             cookie("uin", "o$id")
             cookie("skey", sKey)
-        }.loadSafelyAs(GroupAnnouncementList.serializer())
+        }.bodyAsText().loadSafelyAs(GroupAnnouncementList.serializer())
     }
 
     @Serializable
@@ -264,25 +259,25 @@ internal object AnnouncementProtocol {
     ) : CheckableResponseA(), JsonStruct
 
     suspend fun QQAndroidBot.deleteGroupAnnouncement(groupId: Long, fid: String): Boolean {
-        Mirai.Http.post<String> {
+        components[HttpClientProvider].getHttpClient().post {
             url("https://web.qun.qq.com/cgi-bin/announce/del_feed")
-            body = feedBody(groupId, fid)
+            setBody(feedBody(groupId, fid))
             cookie("uin", "o$id")
             cookie("p_uin", "o$id")
             cookie("skey", sKey)
             cookie("p_skey", psKey("qun.qq.com"))
-        }.loadSafelyAs(DeleteResp.serializer()).check()
+        }.bodyAsText().loadSafelyAs(DeleteResp.serializer()).check()
         return true
     }
 
     suspend fun QQAndroidBot.getGroupAnnouncement(groupId: Long, fid: String): GroupAnnouncement {
-        return Mirai.Http.post<String> {
+        return bot.components[HttpClientProvider].getHttpClient().post {
             url("https://web.qun.qq.com/cgi-bin/announce/get_feed")
-            body = feedBody(groupId, fid)
+            setBody(feedBody(groupId, fid))
             cookie("uin", "o$id")
             cookie("p_uin", "o$id")
             cookie("skey", sKey)
-        }.loadAs(GroupAnnouncement.serializer())
+        }.bodyAsText().loadAs(GroupAnnouncement.serializer())
     }
 
     private fun QQAndroidBot.feedBody(

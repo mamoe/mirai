@@ -14,7 +14,7 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.read
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 internal class ReadJceStructTest : AbstractTest() {
 

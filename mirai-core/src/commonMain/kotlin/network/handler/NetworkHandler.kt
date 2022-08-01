@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
+import net.mamoe.mirai.internal.network.protocol.packet.PacketFactory
 import net.mamoe.mirai.utils.MiraiLogger
 
 /**
@@ -127,12 +128,6 @@ internal interface NetworkHandler : CoroutineScope {
     suspend fun resumeConnection()
 
 
-    suspend fun <P : Packet?> sendAndExpect(
-        packet: OutgoingPacketWithRespType<P>,
-        timeout: Long = 5000,
-        attempts: Int = 2
-    ): P
-
     /**
      * Sends [packet], suspends and expects to receive a response from the server.
      *
@@ -145,15 +140,27 @@ internal interface NetworkHandler : CoroutineScope {
      *
      * @param attempts ranges `1..INFINITY`
      */
+    suspend fun <P : Packet?> sendAndExpect(
+        packet: OutgoingPacketWithRespType<P>,
+        timeout: Long = 5000,
+        attempts: Int = 2
+    ): P
+
+    /**
+     * Sends [packet], suspends and expects to receive a response from the server.
+     *
+     * Note that it's corresponding [PacketFactory]'s responsibility to decode the returned date from server to give resultant [Packet],
+     * and that packet is cast to [P], hence unsafe (vulnerable for [ClassCastException]).
+     * Always use [sendAndExpect] with [OutgoingPacketWithRespType], use this unsafe overload only for legacy code.
+     */
     suspend fun <P : Packet?> sendAndExpect(packet: OutgoingPacket, timeout: Long = 5000, attempts: Int = 2): P
 
     /**
      * Sends [packet] and does not expect any response.
      *
-     * Response is still being processed but not passed as a return value of this function, so it does not suspends this function (due to awaiting for the response).
-     * However, coroutine is still suspended if connection is not yet available,
-     * and [IllegalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final.
-     * legalStateException] is thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final.
+     * Response is still being processed but not passed as a return value of this function, so it does not suspend this function (due to awaiting for the response).
+     * However, coroutine is still suspended if connection is not yet available.
+     * [IllegalStateException] will be thrown if [NetworkHandler] is already in [State.CLOSED] since closure is final, since closure is final.
      *
      * @throws CancellationException if the [NetworkHandler] is closed, with the last cause for closure.
      */
@@ -174,13 +181,16 @@ internal interface NetworkHandler : CoroutineScope {
 internal val NetworkHandler.logger: MiraiLogger get() = context.logger
 
 /**
- * Suspend coroutine to wait for the state [suspendUntil].
+ * Suspends coroutine to wait for the state [suspendUntil].
  */
 internal suspend fun NetworkHandler.awaitState(suspendUntil: NetworkHandler.State) {
     if (this.state == suspendUntil) return
     stateChannel.consumeAsFlow().takeWhile { it != suspendUntil }.collect()
 }
 
+/**
+ * Suspends coroutine to wait for a state change. Returns immediately after [NetworkHandler.state] has changed.
+ */
 internal suspend fun NetworkHandler.awaitStateChange() {
     stateChannel.consumeAsFlow().first()
 }

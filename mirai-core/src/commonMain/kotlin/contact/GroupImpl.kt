@@ -15,7 +15,6 @@ package net.mamoe.mirai.internal.contact
 import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelApi
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.file.RemoteFiles
@@ -36,6 +35,7 @@ import net.mamoe.mirai.internal.message.image.getImageTypeById
 import net.mamoe.mirai.internal.message.protocol.outgoing.GroupMessageProtocolStrategy
 import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.network.components.BdhSession
+import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.highway.ChannelKind
 import net.mamoe.mirai.internal.network.highway.Highway
@@ -52,14 +52,12 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
 import net.mamoe.mirai.internal.utils.ImagePatcher
-import net.mamoe.mirai.internal.utils.RemoteFileImpl
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.spi.AudioToSilkService
 import net.mamoe.mirai.utils.*
-import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
@@ -81,7 +79,7 @@ internal fun GroupImpl(
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>,
 ): GroupImpl {
-    return GroupImpl(bot, parentCoroutineContext, id, groupInfo, ContactList(ConcurrentLinkedQueue())).apply Group@{
+    return GroupImpl(bot, parentCoroutineContext, id, groupInfo, ContactList(ConcurrentLinkedDeque())).apply Group@{
         members.forEach { info ->
             if (info.uin == bot.id) {
                 botAsMember = newNormalMember(info)
@@ -112,14 +110,24 @@ internal fun GroupImpl(
 }
 
 private val logger by lazy {
-    MiraiLogger.Factory.create(GroupImpl::class.java, "Group")
+    MiraiLogger.Factory.create(GroupImpl::class, "Group")
 }
 
 internal fun Bot.nickIn(context: Contact): String =
     if (context is Group) context.botAsMember.nameCardOrNick else bot.nick
 
+internal expect class GroupImpl constructor(
+    bot: QQAndroidBot,
+    parentCoroutineContext: CoroutineContext,
+    id: Long,
+    groupInfo: GroupInfo,
+    members: ContactList<NormalMemberImpl>,
+) : Group, CommonGroupImpl {
+    companion object
+}
+
 @Suppress("PropertyName")
-internal class GroupImpl constructor(
+internal abstract class CommonGroupImpl constructor(
     bot: QQAndroidBot,
     parentCoroutineContext: CoroutineContext,
     override val id: Long,
@@ -129,31 +137,27 @@ internal class GroupImpl constructor(
     companion object
 
     val uin: Long = groupInfo.uin
-    override val settings: GroupSettingsImpl = GroupSettingsImpl(this, groupInfo)
-    override var name: String by settings::name
+    final override val settings: GroupSettingsImpl = GroupSettingsImpl(this.cast(), groupInfo)
+    final override var name: String by settings::name
 
-    override lateinit var owner: NormalMemberImpl
-    override lateinit var botAsMember: NormalMemberImpl
+    final override lateinit var owner: NormalMemberImpl
+    final override lateinit var botAsMember: NormalMemberImpl
     internal val botAsMemberInitialized get() = ::botAsMember.isInitialized
 
-    @Suppress("DEPRECATION")
-    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"), level = DeprecationLevel.WARNING)
-    @DeprecatedSinceMirai(warningSince = "2.8")
-    override val filesRoot: RemoteFile by lazy { RemoteFileImpl(this, "/") }
-    override val files: RemoteFiles by lazy { RemoteFilesImpl(this) }
+    final override val files: RemoteFiles by lazy { RemoteFilesImpl(this) }
 
     val lastTalkative = atomic<NormalMemberImpl?>(null)
 
-    override val announcements: Announcements by lazy {
+    final override val announcements: Announcements by lazy {
         AnnouncementsImpl(
-            this,
+            this as GroupImpl,
             bot.network.logger.subLogger("Group $id")
         )
     }
 
     val groupPkgMsgParsingCache = GroupPkgMsgParsingCache()
 
-    private val messageProtocolStrategy: MessageProtocolStrategy<GroupImpl> = GroupMessageProtocolStrategy(this)
+    private val messageProtocolStrategy: MessageProtocolStrategy<GroupImpl> = GroupMessageProtocolStrategy(this.cast())
 
     override suspend fun quit(): Boolean {
         check(botPermission != MemberPermission.OWNER) { "An owner cannot quit from a owning group" }
@@ -163,11 +167,11 @@ internal class GroupImpl constructor(
         }
 
         val response: ProfileService.GroupMngReq.GroupMngReqResponse = bot.network.sendAndExpect(
-            ProfileService.GroupMngReq(bot.client, this@GroupImpl.id), 5000, 2
+            ProfileService.GroupMngReq(bot.client, this@CommonGroupImpl.id), 5000, 2
         )
         check(response.errorCode == 0) {
             "Group.quit failed: $response".also {
-                bot.groups.delegate.add(this@GroupImpl)
+                bot.groups.delegate.add(this@CommonGroupImpl.castUp())
             }
         }
         BotLeaveEvent.Active(this).broadcast()
@@ -187,7 +191,7 @@ internal class GroupImpl constructor(
         check(!isBotMuted) { throw BotIsBeingMutedException(this, message) }
         return sendMessageImpl(
             message,
-            messageProtocolStrategy,
+            messageProtocolStrategy.castUp(),
             ::GroupMessagePreSendEvent,
             ::GroupMessagePostSendEvent.cast()
         )
@@ -216,13 +220,13 @@ internal class GroupImpl constructor(
                 picWidth = imageInfo.width,
                 picHeight = imageInfo.height,
                 picType = getIdByImageType(imageInfo.imageType),
-                originalPic = 1
             ), 5000, 2
         )
 
         when (response) {
             is ImgStore.GroupPicUp.Response.Failed -> {
-                ImageUploadEvent.Failed(this@GroupImpl, resource, response.resultCode, response.message).broadcast()
+                ImageUploadEvent.Failed(this@CommonGroupImpl, resource, response.resultCode, response.message)
+                    .broadcast()
                 if (response.message == "over file size max") throw OverFileSizeMaxException()
                 error("upload group image failed with reason ${response.message}")
             }
@@ -241,7 +245,7 @@ internal class GroupImpl constructor(
                         it.fileId = response.fileId.toInt()
                     }
                     .also { it.putIntoCache() }
-                    .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
+                    .also { ImageUploadEvent.Succeed(this@CommonGroupImpl, resource, it).broadcast() }
             }
             is ImgStore.GroupPicUp.Response.RequireUpload -> {
                 // val servers = response.uploadIpList.zip(response.uploadPortList)
@@ -270,7 +274,7 @@ internal class GroupImpl constructor(
                     )
                 }.also { it.fileId = response.fileId.toInt() }
                     .also { it.putIntoCache() }
-                    .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
+                    .also { ImageUploadEvent.Succeed(this@CommonGroupImpl, resource, it).broadcast() }
             }
         }
     }
@@ -318,8 +322,8 @@ internal class GroupImpl constructor(
                         GROUP_AUDIO,
                         ChannelKind.HTTP
                     ) { ip, port ->
-                        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-                        Mirai.Http.postPtt(ip, port, resource, resp.uKey, resp.fileKey)
+                        bot.components[HttpClientProvider].getHttpClient()
+                            .postPtt(ip, port, resource, resp.uKey, resp.fileKey)
                     }
                 }
             }
@@ -352,7 +356,7 @@ internal class GroupImpl constructor(
         val result = bot.network.sendAndExpect(
             TroopEssenceMsgManager.SetEssence(
                 bot.client,
-                this@GroupImpl.uin,
+                this@CommonGroupImpl.uin,
                 source.internalIds.first(),
                 source.ids.first()
             ), 5000, 2

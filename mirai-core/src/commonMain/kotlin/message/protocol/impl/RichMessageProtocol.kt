@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
-import kotlinx.io.core.toByteArray
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.message.data.ForwardMessageInternal
 import net.mamoe.mirai.internal.message.data.LightAppInternal
 import net.mamoe.mirai.internal.message.data.LongMessageInternal
@@ -20,13 +20,11 @@ import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.collectGeneralFlags
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.message.runWithBugReport
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.hexToBytes
-import net.mamoe.mirai.utils.toUHexString
-import net.mamoe.mirai.utils.unzip
-import net.mamoe.mirai.utils.zip
+import net.mamoe.mirai.utils.*
 
 /**
  * Handles:
@@ -45,12 +43,27 @@ internal class RichMessageProtocol : MessageProtocol() {
         add(LightAppDecoder())
 
         add(Encoder())
+
+        MessageSerializer.superclassesScope(
+            ServiceMessage::class,
+            RichMessage::class,
+            MessageContent::class,
+            SingleMessage::class
+        ) {
+            add(MessageSerializer(SimpleServiceMessage::class, SimpleServiceMessage.serializer()))
+        }
+
+        MessageSerializer.superclassesScope(RichMessage::class, MessageContent::class, SingleMessage::class) {
+            add(MessageSerializer(LightApp::class, LightApp.serializer()))
+        }
+
+        add(MessageSerializer(MessageOriginKind::class, MessageOriginKind.serializer(), emptyArray()))
     }
 
     private class Encoder : MessageEncoder<RichMessage> {
         override suspend fun MessageEncoderContext.process(data: RichMessage) {
             markAsConsumed()
-            val content = data.content.toByteArray().zip()
+            val content = data.content.toByteArray().deflate()
             var longTextResId: String? = null
             when (data) {
                 is ForwardMessageInternal -> {
@@ -127,7 +140,7 @@ internal class RichMessageProtocol : MessageProtocol() {
                 { "resId=" + lightApp.msgResid + "data=" + lightApp.data.toUHexString() }) {
                 when (lightApp.data[0].toInt()) {
                     0 -> lightApp.data.decodeToString(startIndex = 1)
-                    1 -> lightApp.data.unzip(1).decodeToString()
+                    1 -> lightApp.data.toReadPacket(offset = 1).inflateInput().readAllText()
                     else -> error("unknown compression flag=${lightApp.data[0]}")
                 }
             }
@@ -146,7 +159,7 @@ internal class RichMessageProtocol : MessageProtocol() {
             val content = runWithBugReport("解析 richMsg", { richMsg.template1.toUHexString() }) {
                 when (richMsg.template1[0].toInt()) {
                     0 -> richMsg.template1.decodeToString(startIndex = 1)
-                    1 -> richMsg.template1.unzip(1).decodeToString()
+                    1 -> richMsg.template1.toReadPacket(offset = 1).inflateInput().readAllText()
                     else -> error("unknown compression flag=${richMsg.template1[0]}")
                 }
             }

@@ -57,6 +57,9 @@ dependencies {
     api(asm("tree"))
     api(asm("util"))
     api(asm("commons"))
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+
+    api("gradle.plugin.com.google.gradle:osdetector-gradle-plugin:1.7.0")
 
     api(gradleApi())
 }

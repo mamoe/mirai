@@ -13,9 +13,13 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.core.ByteReadPacket
+import io.ktor.utils.io.core.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmSynthetic
 
 
 @JvmOverloads
@@ -117,12 +121,16 @@ public fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, len
     }
 }
 
-public inline fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset): ByteReadPacket =
-    ByteReadPacket(this, offset = offset, length = length)
+public inline fun ByteArray.toReadPacket(
+    offset: Int = 0,
+    length: Int = this.size - offset,
+    noinline release: (ByteArray) -> Unit = {}
+): ByteReadPacket =
+    ByteReadPacket(this, offset = offset, length = length, block = release)
 
 public inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R {
     contract {
         callsInPlace(t, InvocationKind.EXACTLY_ONCE)
     }
-    return this.toReadPacket().withUse(t)
+    return this.toReadPacket().use(t)
 }

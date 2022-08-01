@@ -142,6 +142,7 @@ public suspend inline fun <reified E : Event, R : Any> EventChannel<*>.syncFromE
     }
 }
 
+// Can't move to JVM, filename clashes
 
 /**
  * @since 2.10

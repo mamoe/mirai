@@ -11,15 +11,18 @@ package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.testFramework.DynamicTestsResult
+import net.mamoe.mirai.internal.testFramework.TestFactory
+import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 
 internal class FileMessageProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> = arrayOf(FileMessageProtocol(), TextProtocol())
 
-    @BeforeEach
+    @BeforeTest
     fun `init group`() {
         defaultTarget = bot.addGroup(123, 1230003).apply {
             addMember(1230003, "user3", MemberPermission.OWNER)
@@ -60,5 +63,17 @@ internal class FileMessageProtocolTest : AbstractMessageProtocolTest() {
             message(FileMessage("/843527d8-d915-11ec-b240-5452007bdaa4", 102, "session.lock", 8))
             useOrdinaryEquality()
         }.doDecoderChecks()
+    }
+
+    @TestFactory
+    fun `test serialization`(): DynamicTestsResult {
+        val data = FileMessage("id", 1, "name", 2)
+        val serialName = FileMessage.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
     }
 }

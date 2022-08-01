@@ -9,6 +9,9 @@
 
 package net.mamoe.mirai.internal.network.handler
 
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.reentrantLock
+import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -22,18 +25,17 @@ import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
-import net.mamoe.mirai.internal.utils.SingleEntrantLock
 import net.mamoe.mirai.internal.utils.fromMiraiLogger
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.fold
-import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.Volatile
 import kotlin.reflect.KClass
 
 /**
- * Implements basic logics of [NetworkHandler]
+ * Implements a state-based [NetworkHandler].
  */
 internal abstract class NetworkHandlerSupport(
     final override val context: NetworkHandlerContext,
@@ -43,14 +45,24 @@ internal abstract class NetworkHandlerSupport(
         additionalCoroutineContext.childScopeContext(SupervisorJob(context.bot.coroutineContext.job))
             .plus(CoroutineExceptionHandler.fromMiraiLogger(logger))
 
+    /**
+     * Creates an instance of the initial state. This is guaranteed to be called at most once.
+     */
     protected abstract fun initialState(): BaseStateImpl
 
     /**
-     * It's not guaranteed whether this function sends the packet in-place or launches a coroutine for it.
-     * Caller should not rely on this property.
+     * Performs network IO or launches a coroutine for that, to send the [packet].
+     *
+     * **Node**: It's not guaranteed whether this function sends the packet in-place or launches a coroutine for it.
+     * Caller should not rely on this characteristic.
      */
     protected abstract suspend fun sendPacketImpl(packet: OutgoingPacket)
 
+    /**
+     * Handles *unknown* [RawIncomingPacket]s. Packets with unrecognized [RawIncomingPacket.commandName] are considered *unknown*.
+     *
+     * Can be called by implementation
+     */
     protected fun collectUnknownPacket(raw: RawIncomingPacket) {
         packetLogger.debug { "Unknown packet: commandName=${raw.commandName}, body=${raw.body.toUHexString()}" }
         // may add hooks here (to context)
@@ -135,6 +147,9 @@ internal abstract class NetworkHandlerSupport(
         sendPacketImpl(packet)
     }
 
+    /**
+     * Listens for the resultant packet from server.
+     */
     protected class PacketListener(
         val commandName: String,
         val sequenceId: Int,
@@ -148,7 +163,7 @@ internal abstract class NetworkHandlerSupport(
             this.commandName == packet.commandName && this.sequenceId == packet.sequenceId
     }
 
-    private val packetListeners = ConcurrentLinkedQueue<PacketListener>()
+    private val packetListeners = ConcurrentLinkedDeque<PacketListener>()
 
     ///////////////////////////////////////////////////////////////////////////
     // state impl
@@ -160,6 +175,12 @@ internal abstract class NetworkHandlerSupport(
      * CoroutineScope is cancelled when switched to another state.
      *
      * State can only be changed inside [setState].
+     *
+     * **IMPORTANT implementation notes:**
+     *
+     * You must create subclasses of [BaseStateImpl] for EVERY SINGLE [NetworkHandler.State].
+     * **DO NOT** use same type for more than one [NetworkHandler.State],
+     * otherwise [setState] will refuse updating state in some concurrent situations and will be very difficult to debug.
      *
      * **IMPORTANT notes to lifecycle:**
      *
@@ -176,7 +197,10 @@ internal abstract class NetworkHandlerSupport(
         final override val coroutineContext: CoroutineContext =
             this@NetworkHandlerSupport.coroutineContext + Job(this@NetworkHandlerSupport.coroutineContext.job)
 
+        // Important: read the above doc before implementing BaseStateImpl.
+
         // Do not use init blocks to launch anything. Do use [startState]
+
 
         /**
          * Starts things that should be done in this state.
@@ -220,7 +244,7 @@ internal abstract class NetworkHandlerSupport(
     /**
      * State is *lazy*, initialized only if requested.
      *
-     * You need to call setter inside `synchronized(this) { }`.
+     * You must not set this property directly, but use [setState].
      */
     @Suppress("PropertyName")
     protected var _state: BaseStateImpl by lateinitMutableProperty { initialState() }
@@ -246,8 +270,7 @@ internal abstract class NetworkHandlerSupport(
      * You may need to call [BaseStateImpl.resumeConnection] to activate the new state, as states are lazy.
      */
     protected inline fun <reified S : BaseStateImpl> setState(noinline new: () -> S): S? =
-        @OptIn(TestOnly::class)
-        setStateImpl(S::class as KClass<S>?, new)
+        _state.setState(new)
 
     /**
      * Attempts to change state if current state is [this].
@@ -258,54 +281,82 @@ internal abstract class NetworkHandlerSupport(
      */
     protected inline fun <reified S : BaseStateImpl> BaseStateImpl.setState(
         noinline new: () -> S,
-    ): S? = synchronized(lockForSetStateWithOldInstance) {
+    ): S? = lock.withLock {
         if (_state === this) {
-            this@NetworkHandlerSupport.setState(new)
+            @OptIn(TestOnly::class)
+            this@NetworkHandlerSupport.setStateImpl(S::class, new)
         } else {
             null
         }
     }
 
-    private val lock = SingleEntrantLock()
-    private val lockForSetStateWithOldInstance = Any()
+    private val lock = reentrantLock()
+    internal val lockForSetStateWithOldInstance = SynchronizedObject()
+
+    @Volatile
+    private var changingState: KClass<out BaseStateImpl>? = null
 
     /**
-     * This can only be called by [setState] or in tests.
-     *
-     * [newType] can be `null` **iff in tests**, to ignore checks.
+     * This can only be called by [setState] or in tests. Note:
      */
     //
     @TestOnly
-    internal fun <S : BaseStateImpl> setStateImpl(newType: KClass<S>?, new: () -> S): S? =
-        lock.withLock(newType ?: lock) {
+    internal fun <S : BaseStateImpl> setStateImpl(newType: KClass<S>, new: () -> S): S? =
+        lock.withLock {
             val old = _state
-            if (newType != null && old::class == newType) return@withLock null // already set to expected state by another thread. Avoid replications.
+            if (old::class == newType) return@withLock null // already set to expected state by another thread. Avoid replications.
             if (old.correspondingState == NetworkHandler.State.CLOSED) return@withLock null // CLOSED is final.
 
-            val stateObserver = context.getOrNull(StateObserver)
-
-            val impl = try {
-                new()
-            } catch (e: Throwable) {
-                stateObserver?.exceptionOnCreatingNewState(this, old, e)
-                throw e
+            val changingState = changingState
+            if (changingState != null) {
+                if (changingState == newType) {
+                    // no duplicates
+                    return null
+                } else {
+                    error("New state ${newType.simpleName} clashes with current switching process, changingState = ${changingState.simpleName}.")
+                }
             }
 
-            check(old !== impl) { "Old and new states cannot be the same." }
+            this.changingState = newType
 
-            stateObserver?.beforeStateChanged(this, old, impl)
+            try {
 
-            // We should startState before expose it publicly because State.resumeConnection may wait for some jobs that are launched in startState.
-            // We cannot close old state before changing the 'public' _state to be the new one, otherwise every client will get some kind of exceptions (unspecified, maybe CancellationException).
-            impl.startState() // launch jobs
-            _state = impl // update current state
-            old.cancel(StateSwitchingException(old, impl)) // close old
-            impl.afterUpdated() // now do post-update things.
+                val stateObserver = context.getOrNull(StateObserver)
 
-            stateObserver?.stateChanged(this, old, impl) // notify observer
-            _stateChannel.trySend(impl.correspondingState) // notify selector
+                val impl = try {
+                    new()
+                } catch (e: Throwable) {
+                    stateObserver?.exceptionOnCreatingNewState(this, old, e)
+                    throw e
+                }
 
-            return@withLock impl
+                try {
+                    check(old !== impl) { "Old and new states cannot be the same." }
+
+                    stateObserver?.beforeStateChanged(this, old, impl)
+
+                    // We should startState before expose it publicly because State.resumeConnection may wait for some jobs that are launched in startState.
+                    // We cannot close old state before changing the 'public' _state to be the new one, otherwise every client will get some kind of exceptions (unspecified, maybe CancellationException).
+                    impl.startState() // launch jobs
+                } catch (e: Throwable) {
+                    throw e
+                }
+
+                // No further change
+
+                _state = impl // update current state
+                // After _state is updated, we are safe.
+
+                old.cancel(StateSwitchingException(old, impl)) // close old
+                impl.afterUpdated() // now do post-update things.
+
+                stateObserver?.stateChanged(this, old, impl) // notify observer
+                _stateChannel.trySend(impl.correspondingState) // notify selector
+
+                return@withLock impl
+            } finally {
+                this.changingState = null
+            }
         }
 
     final override suspend fun resumeConnection() {

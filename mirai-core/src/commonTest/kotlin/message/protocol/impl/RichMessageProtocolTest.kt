@@ -9,16 +9,23 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
+import net.mamoe.mirai.internal.testFramework.DynamicTestsResult
+import net.mamoe.mirai.internal.testFramework.TestFactory
+import net.mamoe.mirai.internal.testFramework.dynamicTest
+import net.mamoe.mirai.internal.testFramework.runDynamicTests
+import net.mamoe.mirai.message.data.RichMessage
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 
 internal class RichMessageProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> = arrayOf(TextProtocol(), RichMessageProtocol())
 
-    @BeforeEach
+    @BeforeTest
     fun `init group`() {
         defaultTarget = bot.addGroup(123, 1230003).apply {
             addMember(1230003, "user3", MemberPermission.OWNER)
@@ -80,4 +87,66 @@ internal class RichMessageProtocolTest : AbstractMessageProtocolTest() {
     }
 
     // no encoder. specially handled, no test for now.
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // serialization
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    @Serializable
+    data class PolymorphicWrapperRichMessage(
+        override val message: @Polymorphic RichMessage
+    ) : PolymorphicWrapper
+
+    private fun <M : RichMessage> testPolymorphicInRichMessage(
+        data: M,
+        expectedSerialName: String,
+        expectedInstance: M = data,
+    ) = listOf(dynamicTest("testPolymorphicInRichMessage") {
+        testPolymorphicIn(
+            polySerializer = PolymorphicWrapperRichMessage.serializer(),
+            polyConstructor = ::PolymorphicWrapperRichMessage,
+            data = data,
+            expectedSerialName = expectedSerialName,
+            expectedInstance = expectedInstance
+        )
+    })
+
+    @TestFactory
+    fun `test serialization for RichMessage`(): DynamicTestsResult {
+        val data = net.mamoe.mirai.message.data.SimpleServiceMessage(
+            serviceId = 1,
+            content = """
+                    <?xml version='1.0' encoding='UTF-8' standalone='yes' ?><msg serviceID="1" templateID="123" action="" brief="[分享]ジェリーフィッシュ" sourceMsgId="0" url="https://y.music.163.com/m/song?id=562591636&amp;uct=QK0IOc%2FSCIO8gBNG%2Bwcbsg%3D%3D&amp;app_version=8.7.46" flag="0" adverSign="0" multiMsgFlag="0"><item layout="2" advertiser_id="0" aid="0"><picture cover="http://p1.music.126.net/KaYSb9oYQzhl2XBeJcj8Rg==/109951165125601702.jpg" w="0" h="0" /><title>ジェリーフィッシュ</title><summary>Yunomi/ローラーガール</summary></item><source name="网易云音乐" icon="https://i.gtimg.cn/open/app_icon/00/49/50/85/100495085_100_m.png" action="" a_actionData="tencent100495085://" appid="100495085" /></msg>
+                """.trimIndent()
+        )
+
+        val serialName = net.mamoe.mirai.message.data.SimpleServiceMessage.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInRichMessage(data, serialName),
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
+
+    @TestFactory
+    fun `test serialization for LightApp`(): DynamicTestsResult {
+        val data = net.mamoe.mirai.message.data.LightApp(
+            content = """
+                    <?xml version='1.0' encoding='UTF-8' standalone='yes' ?><msg serviceID="1" templateID="123" action="" brief="[分享]ジェリーフィッシュ" sourceMsgId="0" url="https://y.music.163.com/m/song?id=562591636&amp;uct=QK0IOc%2FSCIO8gBNG%2Bwcbsg%3D%3D&amp;app_version=8.7.46" flag="0" adverSign="0" multiMsgFlag="0"><item layout="2" advertiser_id="0" aid="0"><picture cover="http://p1.music.126.net/KaYSb9oYQzhl2XBeJcj8Rg==/109951165125601702.jpg" w="0" h="0" /><title>ジェリーフィッシュ</title><summary>Yunomi/ローラーガール</summary></item><source name="网易云音乐" icon="https://i.gtimg.cn/open/app_icon/00/49/50/85/100495085_100_m.png" action="" a_actionData="tencent100495085://" appid="100495085" /></msg>
+                """.trimIndent()
+        )
+
+        val serialName = net.mamoe.mirai.message.data.LightApp.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInRichMessage(data, serialName),
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
 }

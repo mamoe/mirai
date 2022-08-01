@@ -16,10 +16,15 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.*
-import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinSingleTargetExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 
 fun Project.useIr() {
@@ -40,7 +45,6 @@ fun Project.preConfigureJvmTarget() {
     val defaultVer = jvmVersion()
 
     tasks.withType(KotlinJvmCompile::class.java) {
-        kotlinOptions.languageVersion = "1.6"
         kotlinOptions.jvmTarget = defaultVer.toString()
         kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
 
@@ -56,14 +60,16 @@ fun Project.preConfigureJvmTarget() {
         targetCompatibility = defaultVer.toString()
     }
 }
+
 fun Project.configureJvmTarget() {
     val defaultVer = jvmVersion()
 
-    tasks.withType(KotlinJvmCompile::class)
-        .filter { it.name.startsWith("compileTestKotlin") }
-        .forEach { task ->
-            task.kotlinOptions.freeCompilerArgs += "-Xopt-in=net.mamoe.mirai.utils.TestOnly"
+    configure(kotlinSourceSets.orEmpty()) {
+        languageSettings {
+            optIn("net.mamoe.mirai.utils.TestOnly")
+            optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
         }
+    }
 
     extensions.findByType(JavaPluginExtension::class.java)?.run {
         sourceCompatibility = defaultVer
@@ -105,8 +111,8 @@ fun Project.configureKotlinTestSettings() {
             dependencies {
                 "testImplementation"(kotlin("test-junit5"))?.because(b)
 
-                "testApi"("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")?.because(b)
-                "testRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")?.because(b)
+                "testApi"(`junit-jupiter-api`)?.because(b)
+                "testRuntimeOnly"(`junit-jupiter-engine`)?.because(b)
             }
         }
         isKotlinMpp -> {
@@ -115,8 +121,8 @@ fun Project.configureKotlinTestSettings() {
                     sourceSet.dependencies {
                         implementation(kotlin("test-junit5"))?.because(b)
 
-                        implementation("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")?.because(b)
-                        runtimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")?.because(b)
+                        implementation(`junit-jupiter-api`)?.because(b)
+                        runtimeOnly(`junit-jupiter-engine`)?.because(b)
                     }
                 }
 
@@ -125,7 +131,7 @@ fun Project.configureKotlinTestSettings() {
 
                 when {
                     sourceSet.name == "commonTest" -> {
-                        if (target?.platformType == KotlinPlatformType.jvm || target?.platformType == KotlinPlatformType.androidJvm) {
+                        if (isJvmLikePlatform(target)) {
                             configureJvmTest(sourceSet)
                         } else {
                             sourceSet.dependencies {
@@ -135,13 +141,18 @@ fun Project.configureKotlinTestSettings() {
                         }
                     }
                     sourceSet.name.contains("test", ignoreCase = true) -> {
-                        configureJvmTest(sourceSet)
+                        if (isJvmLikePlatform(target)) {
+                            configureJvmTest(sourceSet)
+                        }
                     }
                 }
             }
         }
     }
 }
+
+private fun isJvmLikePlatform(target: KotlinTarget?) =
+    target?.platformType == KotlinPlatformType.jvm || target?.platformType == KotlinPlatformType.androidJvm
 
 val testExperimentalAnnotations = arrayOf(
     "kotlin.ExperimentalUnsignedTypes",
@@ -166,7 +177,7 @@ val experimentalAnnotations = arrayOf(
     "net.mamoe.mirai.console.util.ConsoleInternalApi",
     "net.mamoe.mirai.console.util.ConsoleExperimentalApi",
 
-    "kotlinx.io.core.internal.DangerousInternalIoApi"
+    "io.ktor.utils.io.core.internal.DangerousInternalIoApi"
 )
 
 fun Project.configureKotlinExperimentalUsages() {

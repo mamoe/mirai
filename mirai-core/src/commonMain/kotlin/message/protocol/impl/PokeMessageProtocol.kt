@@ -15,12 +15,15 @@ import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.PokeMessage
+import net.mamoe.mirai.message.data.SingleMessage
 
 internal class PokeMessageProtocol : MessageProtocol() {
     companion object {
@@ -30,6 +33,10 @@ internal class PokeMessageProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(Encoder())
         add(Decoder())
+
+        MessageSerializer.superclassesScope(MessageContent::class, SingleMessage::class) {
+            add(MessageSerializer(PokeMessage::class, PokeMessage.serializer()))
+        }
     }
 
     private class Encoder : MessageEncoder<PokeMessage> {

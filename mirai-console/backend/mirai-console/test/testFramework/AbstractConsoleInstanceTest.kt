@@ -19,14 +19,14 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
+import kotlin.test.BeforeTest
 
 abstract class AbstractConsoleInstanceTest {
     val mockPlugin by lazy { mockKotlinPlugin() }
     private lateinit var implementation: MiraiConsoleImplementation
     val consoleImplementation: MiraiConsoleImplementation by ::implementation
 
-    @BeforeEach
+    @BeforeTest
     protected open fun initializeConsole() {
         this.implementation = MockConsoleImplementation().apply { start() }
         CommandManager

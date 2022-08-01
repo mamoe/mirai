@@ -10,7 +10,7 @@
 package net.mamoe.mirai.internal.message.protocol
 
 import net.mamoe.mirai.internal.test.AbstractTest
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class MessageProtocolFacadeTest : AbstractTest() {
@@ -21,21 +21,22 @@ internal class MessageProtocolFacadeTest : AbstractTest() {
         assertEquals(
             """
                 QuoteReplyProtocol
+                AudioProtocol
                 CustomMessageProtocol
+                FaceProtocol
                 FileMessageProtocol
                 FlashImageProtocol
-                FaceProtocol
                 ImageProtocol
                 MarketFaceProtocol
                 MusicShareProtocol
                 PokeMessageProtocol
-                IgnoredMessagesProtocol
                 PttMessageProtocol
                 RichMessageProtocol
                 TextProtocol
                 VipFaceProtocol
                 ForwardMessageProtocol
                 LongMessageProtocol
+                IgnoredMessagesProtocol
                 UnsupportedMessageProtocol
                 GeneralMessageSenderProtocol
             """.trimIndent(),

@@ -30,6 +30,8 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 
 [iTXTech/mirai-kts]: https://github.com/iTXTech/mirai-kts
 
+[AliceBot]: https://github.com/st1020/alicebot
+
 [GraiaProject/Ariadne]: https://github.com/GraiaProject/Ariadne
 
 [GraiaProject/Avilla]: https://github.com/GraiaProject/Avilla
@@ -133,6 +135,7 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 | `JavaScript` / TypeScript | [nepsyn/miraipie]                    |
 | `Julia`                   | [MiraiBots.jl]                       |
 | `PHP`                     | [nkxingxh/miraiez]                   |
+| `Python`                  | [AliceBot]                           |
 | `Python`                  | [Ariadne][GraiaProject/Ariadne]      |
 | `Python`                  | [Avilla][GraiaProject/Avilla]        |
 | `Python`                  | [Edoves][ArcletProject/Edoves]       |

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -19,8 +19,7 @@ import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.ProgressionCallback
-import java.io.File
-import java.util.stream.Stream
+import kotlin.jvm.JvmOverloads
 
 /**
  * 表示远程文件列表 (管理器).
@@ -46,7 +45,7 @@ import java.util.stream.Stream
  *
  * # 绝对路径与相对路径
  *
- * mirai 文件系统的绝对路径与相对路径与 Java [File] 实现的相同.
+ * mirai 文件系统的绝对路径与相对路径与 Java [java.io.File] 实现的相同.
  *
  * 以 `/` 起始的路径表示绝对路径, 基于根目录 [root] 处理. 其他路径均表示相对路径.
  *
@@ -64,11 +63,11 @@ import java.util.stream.Stream
  *
  * 一个目录 ([AbsoluteFolder]) 可以包含多个子文件, 根目录还可以包含多个子目录 (详见下文 '目录结构限制').
  *
- * 使用 [AbsoluteFolder.children] 可以获得其内子目录和文件列表 [Flow]. [AbsoluteFolder.childrenStream] 提供适合 Java 的 [Stream] 实现.
+ * 使用 [AbsoluteFolder.children] 可以获得其内子目录和文件列表 [Flow]. [AbsoluteFolder.childrenStream] 提供适合 Java 的 [java.util.stream.Stream] 实现.
  * 使用 [AbsoluteFolder.folders] 或 [AbsoluteFolder.files] 可以特定地只获取子目录或文件列表. 这些函数也有其 `*Stream` 实现.
  *
  * 若要根据确定的文件或目录名称获取其 [AbsoluteFileFolder] 实例, 可使用 [AbsoluteFolder.resolveFiles] 或 [AbsoluteFolder.resolveFiles].
- * 注意 [AbsoluteFolder.resolveFiles] 返回 [Flow] (其 Stream 版返回 [Stream]), 因为服务器允许多个文件有相同名称. (详见下文 '允许重名').
+ * 注意 [AbsoluteFolder.resolveFiles] 返回 [Flow] (其 Stream 版返回 [java.util.stream.Stream]), 因为服务器允许多个文件有相同名称. (详见下文 '允许重名').
  *
  * 若已知文件 [AbsoluteFile.id], 可通过 [AbsoluteFolder.resolveFileById] 获得该文件.
  *

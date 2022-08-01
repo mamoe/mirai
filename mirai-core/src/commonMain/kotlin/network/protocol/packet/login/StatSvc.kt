@@ -1,19 +1,19 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.protocol.packet.login
 
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.withLock
-import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.ClientKind
@@ -34,7 +34,7 @@ import net.mamoe.mirai.internal.network.components.ServerList
 import net.mamoe.mirai.internal.network.getRandomByteArray
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
-import net.mamoe.mirai.internal.network.impl.netty.HeartbeatFailedException
+import net.mamoe.mirai.internal.network.impl.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
@@ -43,7 +43,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.internal.utils.structureToString
-import net.mamoe.mirai.internal.utils.toIpV4Long
 import net.mamoe.mirai.utils.*
 
 @Suppress("EnumEntryName", "unused")
@@ -417,4 +416,11 @@ internal class StatSvc {
             )
         }
     }
+}
+
+internal fun String.toIpV4Long(): Long {
+    if (isEmpty()) return 0
+    val split = split('.')
+    if (split.size != 4) return 0
+    return split.mapToByteArray { it.toUByte().toByte() }.toInt().toLongUnsigned()
 }

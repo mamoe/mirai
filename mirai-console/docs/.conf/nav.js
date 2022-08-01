@@ -40,6 +40,8 @@ module.exports = {
                 {text: '内置命令', link: '/BuiltInCommands.html'},
                 {text: 'Mirai Console 附录', link: '/Appendix.html'},
                 {text: "插件 - JVM Plugin - 附录", link: "/plugin/JVMPlugin-Appendix.html"},
+                {text: "插件 - JVM Plugin - 多插件数据交换", link: "/plugin/JVMPlugin-DataExchange.html"},
+                {text: "插件 - JVM Plugin - 排错", link: "/plugin/JVMPlugin-Debug.html"},
             ]
         },
     ]

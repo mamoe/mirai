@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,8 +10,6 @@
 package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.MiraiLogger
-import org.apache.logging.log4j.Marker
-import org.apache.logging.log4j.MarkerManager
 
 /**
  * 内部添加 [Marker] 支持, 并兼容旧 [MiraiLogger] API.
@@ -39,14 +37,18 @@ internal fun Marker(name: String, vararg parents: Marker?): Marker {
 
 internal val MiraiLogger.markerOrNull get() = (this as? MarkedMiraiLogger)?.marker
 
-/**
- * Create a marked logger whose marker is a child of this' marker.
- *
- * Calling [MarkedMiraiLogger.subLogger] if possible, and creating [MiraiLoggerMarkedWrapper] otherwise.
- */
-internal fun MiraiLogger.subLogger(name: String): MiraiLogger {
-    return subLoggerImpl(this, name)
-}
+// This clashes with the same declaration in mirai-core (same package), for native.
+//
+///**
+// * Create a marked logger whose marker is a child of this' marker.
+// *
+// * Calling [MarkedMiraiLogger.subLogger] if possible, and creating [MiraiLoggerMarkedWrapper] otherwise.
+// */
+//@JvmName("subLoggerImpl2")
+//@CName("", "subLogger2")
+//internal fun MiraiLogger.subLogger(name: String): MiraiLogger {
+//    return subLoggerImpl(this, name)
+//}
 
 // used by mirai-core
 internal fun subLoggerImpl(origin: MiraiLogger, name: String): MiraiLogger {

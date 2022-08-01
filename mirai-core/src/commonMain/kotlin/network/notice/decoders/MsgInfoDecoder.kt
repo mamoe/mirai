@@ -1,17 +1,15 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.notice.decoders
 
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
-import kotlinx.io.core.readUInt
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.getGroupByUin
@@ -26,10 +24,7 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.OnlinePushPack.SvcReqPushMsg
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.read
-import net.mamoe.mirai.utils.toUHexString
+import net.mamoe.mirai.utils.*
 
 /**
  * Decodes [SvcReqPushMsg] to [MsgInfo] then re-fire [MsgType0x210] or [MsgType0x2DC]
@@ -89,9 +84,7 @@ internal data class MsgType0x2DC(
 ) : ProtocolStruct, BaseMsgType0x2DC<ByteArray> {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as MsgType0x2DC
+        if (!isSameType(this, other)) return false
 
         if (kind != other.kind) return false
         if (group != other.group) return false

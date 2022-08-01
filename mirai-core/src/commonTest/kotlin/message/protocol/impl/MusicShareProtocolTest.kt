@@ -16,6 +16,9 @@ import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageProcessorAdapter
 import net.mamoe.mirai.internal.pipeline.replaceProcessor
+import net.mamoe.mirai.internal.testFramework.DynamicTestsResult
+import net.mamoe.mirai.internal.testFramework.TestFactory
+import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.message.data.LightApp
 import net.mamoe.mirai.message.data.MessageOrigin
 import net.mamoe.mirai.message.data.MessageOriginKind
@@ -23,15 +26,15 @@ import net.mamoe.mirai.message.data.MusicKind.NeteaseCloudMusic
 import net.mamoe.mirai.message.data.MusicShare
 import net.mamoe.mirai.utils.castUp
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertTrue
 
 internal class MusicShareProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> =
         arrayOf(TextProtocol(), MusicShareProtocol(), RichMessageProtocol(), GeneralMessageSenderProtocol())
 
-    @BeforeEach
+    @BeforeTest
     fun `init group`() {
         defaultTarget = bot.addGroup(123, 1230003).apply {
             addMember(1230003, "user3", MemberPermission.OWNER)
@@ -115,5 +118,27 @@ internal class MusicShareProtocolTest : AbstractMessageProtocolTest() {
             }
         }
     }
+
+    @TestFactory
+    fun `test serialization for MusicShare`(): DynamicTestsResult {
+        val data = MusicShare(
+            kind = NeteaseCloudMusic,
+            title = "ジェリーフィッシュ",
+            summary = "Yunomi/ローラーガール",
+            jumpUrl = "https://y.music.163.com/m/song?id=562591636&uct=QK0IOc%2FSCIO8gBNG%2Bwcbsg%3D%3D&app_version=8.7.46",
+            pictureUrl = "http://p1.music.126.net/KaYSb9oYQzhl2XBeJcj8Rg==/109951165125601702.jpg",
+            musicUrl = "http://music.163.com/song/media/outer/url?id=562591636&userid=324076307&sc=wmv&tn=",
+            brief = "[分享]ジェリーフィッシュ",
+        )
+
+        val serialName = MusicShare.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
+
 
 }

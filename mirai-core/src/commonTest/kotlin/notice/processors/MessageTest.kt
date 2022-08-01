@@ -11,17 +11,16 @@
 
 package net.mamoe.mirai.internal.notice.processors
 
+import io.ktor.utils.io.core.*
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.GroupTempMessageEvent
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.KEY_FROM_SYNC
-import net.mamoe.mirai.message.data.MessageSource
-import net.mamoe.mirai.message.data.OnlineMessageSource
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.content
-import org.junit.jupiter.api.Test
+import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.message.data.*
+import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -29,7 +28,7 @@ import kotlin.test.assertIs
 internal class MessageTest : AbstractNoticeProcessorTest() {
 
     @Test
-    suspend fun `group message test`() {
+    fun `group message test`() = runBlockingUnit {
         suspend fun runTest() = use {
             net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush.PbPushMsg(
                 msg = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
@@ -122,7 +121,7 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
                     assertEquals(1630, time)
                     assertEquals(1230001, fromId)
                     assertEquals(2230203, targetId)
-                    assertEquals(event.message.filterNot { it is MessageSource }, originalMessage)
+                    assertEquals(event.message.filterNot { it is MessageSource }.toMessageChain(), originalMessage)
                 }
                 assertIs<PlainText>(get(1))
                 assertEquals("hello", get(1).content)
@@ -132,7 +131,7 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
 
 
     @Test
-    suspend fun `friend message test`() {
+    fun `friend message test`() = runBlockingUnit {
         suspend fun runTest() = use(KEY_FROM_SYNC to false) {
             net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
                 msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
@@ -203,7 +202,7 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
                     assertEquals(1630, time)
                     assertEquals(1230001, fromId)
                     assertEquals(1230003, targetId)
-                    assertEquals(event.message.filterNot { it is MessageSource }, originalMessage)
+                    assertEquals(event.message.filterNot { it is MessageSource }.toMessageChain(), originalMessage)
                 }
                 assertIs<PlainText>(get(1))
                 assertEquals("123", get(1).content)
@@ -212,7 +211,7 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
     }
 
     @Test
-    suspend fun `group temp message test`() {
+    fun `group temp message test`() = runBlockingUnit {
         suspend fun runTest() = use(KEY_FROM_SYNC to false) {
             net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
                 msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
@@ -296,7 +295,7 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
                     assertEquals(1630, time)
                     assertEquals(1230001, fromId)
                     assertEquals(1230003, targetId)
-                    assertEquals(event.message.filterNot { it is MessageSource }, originalMessage)
+                    assertEquals(event.message.filterNot { it is MessageSource }.toMessageChain(), originalMessage)
                 }
                 assertIs<PlainText>(get(1))
                 assertEquals("hello", get(1).content)
@@ -306,7 +305,7 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
 
     // for #1410
     @Test
-    suspend fun `group temp message test for issue 1410`() {
+    fun `group temp message test for issue 1410`() = runBlockingUnit {
         suspend fun runTest() = use(KEY_FROM_SYNC to false) {
             net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.Msg(
                 msgHead = net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm.MsgHead(
@@ -390,7 +389,7 @@ internal class MessageTest : AbstractNoticeProcessorTest() {
                     assertEquals(1630, time)
                     assertEquals(1230001, fromId)
                     assertEquals(1230003, targetId)
-                    assertEquals(event.message.filterNot { it is MessageSource }, originalMessage)
+                    assertEquals(event.message.filterNot { it is MessageSource }.toMessageChain(), originalMessage)
                 }
                 assertIs<PlainText>(get(1))
                 assertEquals("hello", get(1).content)

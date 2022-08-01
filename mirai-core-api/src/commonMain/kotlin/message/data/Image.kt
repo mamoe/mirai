@@ -23,7 +23,12 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.decodeStructure
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
@@ -41,6 +46,11 @@ import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmSynthetic
+import kotlin.native.CName
 
 /**
  * 自定义表情 (收藏的表情) 和普通图片.
@@ -106,6 +116,7 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
+@Suppress("DEPRECATION", "DEPRECATION_ERROR")
 @Serializable(Image.Serializer::class)
 @NotStableForInheritance
 public interface Image : Message, MessageContent, CodableMessage {
@@ -178,18 +189,86 @@ public interface Image : Message, MessageContent, CodableMessage {
         deserialize = { Image(it) },
     )
 
-    public object Serializer : KSerializer<Image> by FallbackSerializer("Image")
+    @Deprecated(
+        message = "For internal use only. Deprecated for removal. Please retrieve serializer from MessageSerializers.serializersModule.",
+        level = DeprecationLevel.WARNING
+    )
+    @DeprecatedSinceMirai(warningSince = "2.13") // error since 2.15, hidden since 2.16
+    public object Serializer : KSerializer<Image> by FallbackSerializer(SERIAL_NAME)
 
+    // move to mirai-core in 2.16. Delegate Serializer to the implementation from MessageSerializers.
     @MiraiInternalApi
-    public open class FallbackSerializer(serialName: String) : KSerializer<Image> by Delegate.serializer().map(
-        buildClassSerialDescriptor(serialName) { element("imageId", String.serializer().descriptor) },
-        serialize = { Delegate(imageId) },
-        deserialize = { Image(imageId) },
-    ) {
+    public open class FallbackSerializer(serialName: String) : KSerializer<Image> {
+        override val descriptor: SerialDescriptor = buildClassSerialDescriptor(serialName) {
+            element("imageId", String.serializer().descriptor)
+            element("size", Long.serializer().descriptor)
+            element("imageType", ImageType.serializer().descriptor)
+            element("width", Int.serializer().descriptor)
+            element("height", Int.serializer().descriptor)
+            element("isEmoji", Boolean.serializer().descriptor)
+        }
+
+        // Note: Manually written to overcome discriminator issues.
+        // Without this implementation you will need `ignoreUnknownKeys` on deserialization.
+        override fun deserialize(decoder: Decoder): Image {
+            decoder.decodeStructure(descriptor) {
+                if (this.decodeSequentially()) {
+                    val imageId = this.decodeStringElement(descriptor, 0)
+                    val size = this.decodeLongElement(descriptor, 1)
+                    val type = this.decodeSerializableElement(descriptor, 2, ImageType.serializer())
+                    val width = this.decodeIntElement(descriptor, 3)
+                    val height = this.decodeIntElement(descriptor, 4)
+                    val isEmoji = this.decodeBooleanElement(descriptor, 5)
+                    return Image(imageId) {
+                        this.size = size
+                        this.type = type
+                        this.width = width
+                        this.height = height
+                        this.isEmoji = isEmoji
+                    }
+                } else {
+                    return Image("") {
+                        while (true) {
+                            when (val index = this@decodeStructure.decodeElementIndex(descriptor)) {
+                                0 -> imageId = this@decodeStructure.decodeStringElement(descriptor, index)
+                                1 -> size = this@decodeStructure.decodeLongElement(descriptor, index)
+                                2 -> type = this@decodeStructure.decodeSerializableElement(
+                                    descriptor,
+                                    index,
+                                    ImageType.serializer()
+                                )
+                                3 -> width = this@decodeStructure.decodeIntElement(descriptor, index)
+                                4 -> height = this@decodeStructure.decodeIntElement(descriptor, index)
+                                5 -> isEmoji = this@decodeStructure.decodeBooleanElement(descriptor, index)
+                                CompositeDecoder.DECODE_DONE -> break
+                            }
+                        }
+                        check(imageId.isNotEmpty()) { "imageId must not empty" }
+                    }
+                }
+            }
+        }
+
+        override fun serialize(encoder: Encoder, value: Image) {
+            Delegate.serializer().serialize(encoder, Delegate(
+                value.imageId,
+                value.size,
+                value.imageType,
+                value.width,
+                value.height,
+                value.isEmoji
+            ))
+        }
+
         @SerialName(SERIAL_NAME)
         @Serializable
-        internal data class Delegate(
-            val imageId: String
+        private data class Delegate(
+            val imageId: String,
+            val size: Long,
+            val imageType: ImageType,
+            val width: Int,
+            val height: Int,
+            val isEmoji: Boolean
         )
     }
 
@@ -396,7 +475,8 @@ public interface Image : Message, MessageContent, CodableMessage {
  * @see IMirai.createImage
  */
 @JvmSynthetic
-public inline fun Image(imageId: String): Image = Image.Builder.newBuilder(imageId).build()
+@CName("", "Image_new")
+public inline fun Image(imageId: String): Image = Builder.newBuilder(imageId).build()
 
 /**
  * 使用 [Image.Builder] 构建一个 [Image].
@@ -405,9 +485,11 @@ public inline fun Image(imageId: String): Image = Image.Builder.newBuilder(image
  * @since 2.9.0
  */
 @JvmSynthetic
-public inline fun Image(imageId: String, builderAction: Image.Builder.() -> Unit = {}): Image =
-    Image.Builder.newBuilder(imageId).apply(builderAction).build()
+@CName("", "Image_new2")
+public inline fun Image(imageId: String, builderAction: Builder.() -> Unit = {}): Image =
+    Builder.newBuilder(imageId).apply(builderAction).build()
 
+@Serializable
 public enum class ImageType(
     /**
      * @since 2.9.0

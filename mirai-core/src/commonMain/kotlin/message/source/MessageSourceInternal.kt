@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.message.source
 
+import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.message.LightMessageRefiner.dropMiraiInternalFlags
@@ -19,7 +20,6 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.cast
-import java.util.concurrent.atomic.AtomicBoolean
 
 
 /**

@@ -18,6 +18,7 @@
   * [新建事件](#新建事件)
   * [广播自定义事件](#广播自定义事件)
   * [监听自定义事件](#监听自定义事件)
+  * [在 Console 中自定义事件](../mirai-console/docs/plugin/JVMPlugin-DataExchange.md)
 - [工具函数（Kotlin）](#工具函数kotlin)
   - [线性同步（`syncFromEvent`）](#线性同步syncfromevent)
   - [线性同步（`nextEvent`）](#线性同步nextevent)
@@ -497,6 +498,10 @@ GlobalEventChannel.INSTANCE.subscribeAlways(ExampleEvent.class, event -> {
     }
 });
 ```
+
+### 在 Console 中自定义事件
+
+请参考 [Console - JVMPlugin - Data Exchange](../mirai-console/docs/plugin/JVMPlugin-DataExchange.md)
 
 > 回到 [目录](#目录)
 

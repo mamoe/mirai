@@ -6,7 +6,6 @@
  *
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
-@file:Suppress("EXPERIMENTAL_API_USAGE", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package net.mamoe.mirai.internal
 
@@ -25,15 +24,18 @@ import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport.BaseStateImpl
 import net.mamoe.mirai.internal.network.handler.selector.KeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
-import net.mamoe.mirai.internal.network.handler.state.*
 import net.mamoe.mirai.internal.network.handler.state.CombinedStateObserver.Companion.plus
-import net.mamoe.mirai.internal.network.impl.netty.ForceOfflineException
-import net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandlerFactory
+import net.mamoe.mirai.internal.network.handler.state.LoggingStateObserver
+import net.mamoe.mirai.internal.network.handler.state.StateChangedObserver
+import net.mamoe.mirai.internal.network.handler.state.StateObserver
+import net.mamoe.mirai.internal.network.handler.state.safe
+import net.mamoe.mirai.internal.network.impl.ForceOfflineException
 import net.mamoe.mirai.internal.network.notice.TraceLoggingNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.UnconsumedNoticesAlerter
 import net.mamoe.mirai.internal.network.notice.decoders.GroupNotificationDecoder
@@ -73,14 +75,18 @@ internal open class QQAndroidBot constructor(
 
     override fun close(cause: Throwable?) {
         if (!this.isActive) return
-        runBlocking {
-            try { // this may not be very good but
-                withTimeoutOrNull(5.seconds) {
-                    components[SsoProcessor].logout(network)
+
+        if (networkInitialized) {
+            runBlocking {
+                try { // this may not be very good but
+                    withTimeoutOrNull(5.seconds) {
+                        components[SsoProcessor].logout(network)
+                    }
+                } catch (ignored: Exception) {
                 }
-            } catch (ignored: Exception) {
             }
         }
+
         super.close(cause)
     }
 
@@ -136,20 +142,6 @@ internal open class QQAndroidBot constructor(
                     }
                     cause is BotClosedByEvent -> {
                     }
-                    else -> {
-                        // handled by BotOfflineEventBroadcasterBefore
-                    }
-                }
-            },
-            BeforeStateChangedObserver("BotOfflineEventBroadcasterBefore", State.OK, State.CLOSED) { new ->
-                // logging performed by BotOfflineEventMonitor
-                val cause = new.getCause()
-                when {
-                    // handled by BotOfflineEventBroadcasterAfter
-                    cause is ForceOfflineException -> {}
-                    cause is StatSvc.ReqMSFOffline.MsfOfflineToken -> {}
-                    cause is NetworkException && cause.recoverable -> {}
-                    cause is BotClosedByEvent -> {}
                     else -> {
                         // any other unexpected exceptions considered as an error
 
@@ -211,6 +203,7 @@ internal open class QQAndroidBot constructor(
         set(SsoProcessor, SsoProcessorImpl(get(SsoProcessorContext)))
         set(HeartbeatProcessor, HeartbeatProcessorImpl())
         set(HeartbeatScheduler, TimeBasedHeartbeatSchedulerImpl(networkLogger.subLogger("HeartbeatScheduler")))
+        set(HttpClientProvider, HttpClientProviderImpl())
         set(KeyRefreshProcessor, KeyRefreshProcessorImpl(networkLogger.subLogger("KeyRefreshProcessor")))
         set(ConfigPushProcessor, ConfigPushProcessorImpl(networkLogger.subLogger("ConfigPushProcessor")))
         set(BotOfflineEventMonitor, BotOfflineEventMonitorImpl())
@@ -275,7 +268,7 @@ internal open class QQAndroidBot constructor(
                     networkLogger,
                     createNetworkLevelComponents(),
                 )
-                NettyNetworkHandlerFactory.create(
+                NetworkHandlerFactory.getPlatformDefault().create(
                     context,
                     context[ServerList].pollAny().toSocketAddress(),
                 )

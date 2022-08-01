@@ -104,12 +104,10 @@ public class ResolvedCommandCallImpl(
 ) : ResolvedCommandCall {
     override val resolvedValueArguments: List<ResolvedCommandValueArgument<*>> by lazy {
         calleeSignature.valueParameters.zip(rawValueArguments).map { (parameter, argument) ->
-            val value = argument.mapToTypeOrNull(parameter.type) ?: context[parameter.type.classifierAsKClass()]?.parse(
-                argument.value,
-                caller
-            )
-            ?: throw  NoValueArgumentMappingException(argument, parameter.type)
-            // TODO: 2020/10/17 consider vararg and optional
+            val value = argument.mapToTypeOrNull(parameter.type) { type, message ->
+                context[type.classifierAsKClass()]?.parse(message, caller)
+            } ?: throw NoValueArgumentMappingException(argument, parameter.type)
+
             ResolvedCommandValueArgument(parameter.cast(), value)
         }
     }

@@ -9,11 +9,10 @@
 
 package net.mamoe.mirai.internal.message.image
 
-import kotlinx.io.core.*
-import kotlinx.io.streams.asInput
+import io.ktor.utils.io.core.*
+import io.ktor.utils.io.errors.*
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.*
-import java.io.IOException
 
 //SOF0-SOF3 SOF5-SOF7 SOF9-SOF11 SOF13-SOF15 Segment
 // (0xC4, 0xC8 and 0xCC not included due to is not an SOF)
@@ -150,7 +149,7 @@ private fun Input.getGIFImageInfo(): ImageInfo {
 internal fun ExternalResource.calculateImageInfo(): ImageInfo {
     //Preload
     val imageType = ImageType.match(formatName)
-    return inputStream().asInput().withUse {
+    return input().withUse {
         when (imageType) {
             ImageType.JPG -> getJPGImageInfo()
             ImageType.BMP -> getBMPImageInfo()

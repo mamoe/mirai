@@ -18,10 +18,16 @@ import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.message.data.visitor.RecursiveMessageVisitor
+import net.mamoe.mirai.message.data.visitor.acceptChildren
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.asImmutable
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.replaceAllKotlin
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 // region image
 
@@ -56,20 +62,59 @@ internal fun Message.contentEqualsStrictImpl(another: Message, ignoreCase: Boole
 }
 
 
-internal sealed interface MessageChainImpl : MessageChain {
+internal sealed class AbstractMessageChain : MessageChain {
     /**
      * 去重算法 v1 - 2.12:
      * 在连接时若只有 0-1 方包含 [ConstrainSingle], 则使用 [CombinedMessage] 优化性能. 否则使用旧版复杂去重算法构造 [LinearMessageChainImpl].
      */
     @MiraiInternalApi
-    val hasConstrainSingle: Boolean
+    abstract val hasConstrainSingle: Boolean
+
+    override fun hashCode(): Int {
+        var result = 1
+        acceptChildren(object : RecursiveMessageVisitor<Unit>() {
+//            override fun visitMessageChain(messageChain: MessageChain, data: Unit) {
+//                result = 31 * result + messageChain.hashCode()
+//                // do not call children
+//            }
+
+            // ensure `messageChainOf(messageChainOf(AtAll))` and `messageChainOf(AtAll)` get same hash code.
+            override fun visitSingleMessage(message: SingleMessage, data: Unit) {
+                result = 31 * result + message.hashCode()
+                super.visitSingleMessage(message, data)
+            }
+        })
+
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other === null) return false
+        if (other !is MessageChain) return false
+        return chainEquals(this, other)
+    }
+
+    private companion object {
+        private fun chainEquals(a: MessageChain, b: MessageChain): Boolean {
+            if (a.size != b.size) return false // Averagely faster even if we may end up counting size.
+
+            val itr1 = a.iterator()
+            val itr2 = b.iterator()
+            for (singleMessage in itr1) {
+                if (!itr2.hasNext()) return false
+                val n = itr2.next()
+                if (singleMessage != n) return false
+            }
+            return true
+        }
+    }
 }
 
 internal val Message.hasConstrainSingle: Boolean
     get() {
         if (this is SingleMessage) return this is ConstrainSingle
         // now `this` is MessageChain
-        return this.castOrNull<MessageChainImpl>()?.hasConstrainSingle ?: true // for external type, assume they do
+        return this.castOrNull<AbstractMessageChain>()?.hasConstrainSingle ?: true // for external type, assume they do
     }
 
 /**
@@ -112,7 +157,7 @@ internal object ConstrainSingleHelper {
             }
         }
 
-        return ConstrainSingleData(list.filterNotNull().asImmutable(), hasConstrainSingle)
+        return ConstrainSingleData(list.filterNotNull(), hasConstrainSingle)
     }
 
 }
@@ -127,10 +172,13 @@ internal annotation class MessageChainConstructor
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(MessageChain.Serializer::class)
 internal class LinearMessageChainImpl @MessageChainConstructor private constructor(
+    /**
+     * Must be guaranteed to be immutable
+     */
     @JvmField
     internal val delegate: List<SingleMessage>,
     override val hasConstrainSingle: Boolean
-) : Message, MessageChain, List<SingleMessage> by delegate, MessageChainImpl,
+) : Message, MessageChain, List<SingleMessage> by delegate, AbstractMessageChain(),
     DirectSizeAccess, DirectToStringAccess {
     override val size: Int get() = delegate.size
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
@@ -140,9 +188,6 @@ internal class LinearMessageChainImpl @MessageChainConstructor private construct
 
     private val contentToStringTemp: String by lazy { this.delegate.joinToString("") { it.contentToString() } }
     override fun contentToString(): String = contentToStringTemp
-
-    override fun hashCode(): Int = delegate.hashCode()
-    override fun equals(other: Any?): Boolean = other is LinearMessageChainImpl && other.delegate == this.delegate
 
     override fun <D> acceptChildren(visitor: MessageVisitor<D, *>, data: D) {
         for (singleMessage in delegate) {
@@ -208,7 +253,7 @@ internal class LinearMessageChainImpl @MessageChainConstructor private construct
             return if (delegate.isEmpty()) {
                 emptyMessageChain()
             } else {
-                LinearMessageChainImpl(delegate, hasConstrainSingle)
+                LinearMessageChainImpl(delegate.asImmutable(), hasConstrainSingle)
             }
         }
 

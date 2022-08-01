@@ -22,12 +22,10 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelin
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.ORIGINAL_MESSAGE_AS_CHAIN
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.components
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicSharePacket
-import net.mamoe.mirai.message.data.MessageSourceKind
-import net.mamoe.mirai.message.data.MusicShare
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.message.data.*
 
 internal class MusicShareProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
@@ -36,6 +34,10 @@ internal class MusicShareProtocol : MessageProtocol() {
 //        add(Decoder())
 
         add(Sender())
+
+        MessageSerializer.superclassesScope(MessageContent::class, SingleMessage::class) {
+            add(MessageSerializer(MusicShare::class, MusicShare.serializer(), registerAlsoContextual = true))
+        }
     }
 
     private class Encoder : MessageEncoder<MusicShare> {

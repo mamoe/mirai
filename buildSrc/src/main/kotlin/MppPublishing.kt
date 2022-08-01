@@ -11,6 +11,7 @@ import org.gradle.api.Project
 import org.gradle.api.XmlProvider
 import org.gradle.api.publish.maven.MavenArtifact
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
@@ -24,11 +25,11 @@ fun Project.configureMppPublishing() {
 
     // mirai does some magic on MPP targets
     afterEvaluate {
-        tasks.findByName("compileKotlinCommon")?.enabled = false
-        tasks.findByName("compileTestKotlinCommon")?.enabled = false
+//        tasks.findByName("compileKotlinCommon")?.enabled = false
+//        tasks.findByName("compileTestKotlinCommon")?.enabled = false
 
-        tasks.findByName("compileCommonMainKotlinMetadata")?.enabled = false
-        tasks.findByName("compileKotlinMetadata")?.enabled = false
+//        tasks.findByName("compileCommonMainKotlinMetadata")?.enabled = false
+//        tasks.findByName("compileKotlinMetadata")?.enabled = false
 
         // TODO: 2021/1/30 如果添加 JVM 到 root module, 这个 task 会失败因 root module artifacts 有变化
         //  tasks.findByName("generateMetadataFileForKotlinMultiplatformPublication")?.enabled = false // FIXME: 2021/1/21
@@ -43,34 +44,72 @@ fun Project.configureMppPublishing() {
         publishing {
             logPublishing("Publications: ${publications.joinToString { it.name }}")
 
-            publications.filterIsInstance<MavenPublication>().forEach { publication ->
-                // Maven Central always require javadoc.jar
-                publication.artifact(stubJavadoc)
+            val (nonJvmPublications, jvmPublications) = publications.filterIsInstance<MavenPublication>()
+                .partition { publication -> tasks.findByName("relocate${publication.name.titlecase()}Dependencies") == null }
 
-                publication.setupPom(project)
-
-                logPublishing(publication.name)
-                when (val type = publication.name) {
-                    "kotlinMultiplatform" -> {
-                        publication.artifactId = project.name
-
-                        // publishPlatformArtifactsInRootModule(publications.getByName("jvm") as MavenPublication)
-
-                        // TODO: 2021/1/30 现在添加 JVM 到 root module 会导致 Gradle 依赖无法解决
-                        // https://github.com/mamoe/mirai/issues/932
-                    }
-                    "metadata" -> { // TODO: 2021/1/21 seems no use. none `type` is "metadata"
-                        publication.artifactId = "${project.name}-metadata"
-                    }
-                    "common" -> {
-                    }
-                    else -> {
-                        // "jvm", "native", "js"
-                        publication.artifactId = "${project.name}-$type"
+            for (publication in nonJvmPublications) {
+                configureMultiplatformPublication(publication, stubJavadoc, publication.name)
+            }
+            for (publication in jvmPublications) {
+//                publications.remove(publication)
+//                val newPublication =
+//                    publications.register(publication.name + "Shadowed", MavenPublication::class.java) {
+//                        val target = kotlinTargets.orEmpty().single { it.targetName == publication.name }
+//                        from(target.components.single())
+//                        this.groupId = publication.groupId
+//                        this.artifactId = publication.artifactId
+//                        this.version = publication.version
+//                        artifacts {
+//                            publication.artifacts
+//                                .filter { !(it.classifier.isNullOrEmpty() && it.extension == "jar") } // not .jar
+//                                .forEach { artifact(it) } // copy Kotlin metadata artifacts
+//                        }
+//                        artifacts.removeAll { it.classifier.isNullOrEmpty() && it.extension == "jar" }
+//                        // add relocated jar
+//                        tasks.findByName("relocate${publication.name.titlecase()}Dependencies")?.let { relocation ->
+//                            artifact(relocation) {
+//                                classifier = ""
+//                                extension = "jar"
+//                            }
+//                        }
+//                    }
+                configureMultiplatformPublication(publication, stubJavadoc, publication.name)
+                publication.apply {
+                    artifacts.filter { it.classifier.isNullOrEmpty() && it.extension == "jar" }.forEach {
+                        it.builtBy(tasks.findByName("relocate${publication.name.titlecase()}Dependencies"))
                     }
                 }
             }
             configGpgSign(this@configureMppPublishing)
+        }
+    }
+}
+
+private fun Project.configureMultiplatformPublication(
+    publication: MavenPublication,
+    stubJavadoc: TaskProvider<Jar>,
+    moduleName: String,
+) {
+    // Maven Central always require javadoc.jar
+    publication.artifact(stubJavadoc)
+    publication.setupPom(project)
+
+    logPublishing(publication.name + ": moduleName = $moduleName")
+    when (moduleName) {
+        "kotlinMultiplatform" -> {
+            publication.artifactId = project.name
+
+            // publishPlatformArtifactsInRootModule(publications.getByName("jvm") as MavenPublication)
+
+            // TODO: 2021/1/30 现在添加 JVM 到 root module 会导致 Gradle 依赖无法解决
+            // https://github.com/mamoe/mirai/issues/932
+        }
+        "metadata" -> { // TODO: 2021/1/21 seems no use. none `type` is "metadata"
+            publication.artifactId = "${project.name}-metadata"
+        }
+        else -> {
+            // "jvm", "native", "js", "common"
+            publication.artifactId = "${project.name}-$moduleName"
         }
     }
 }

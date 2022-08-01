@@ -94,6 +94,10 @@ internal class DynLibClassLoader : URLClassLoader {
                 } catch (ignored: ClassNotFoundException) {
                 }
             }
+            try {
+                return Class.forName(name, false, JavaSystemPlatformClassLoader)
+            } catch (ignored: ClassNotFoundException) {
+            }
             return null
         }
     }
@@ -203,7 +207,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         this.sharedLibrariesLogger = ctx.sharedLibrariesLoader
         this.file = file
         this.ctx = ctx
-        init0()
+        init1()
     }
 
     @Suppress("Since15")
@@ -214,7 +218,16 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         this.sharedLibrariesLogger = ctx.sharedLibrariesLoader
         this.file = file
         this.ctx = ctx
-        init0()
+        init1()
+    }
+
+    private fun init1() {
+        try {
+            init0()
+        } catch (e: Throwable) {
+            e.addSuppressed(RuntimeException("Failed to initialize new JvmPluginClassLoader, file=$file"))
+            throw e
+        }
     }
 
     private fun init0() {

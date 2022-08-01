@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network.components
 
-import kotlinx.io.core.toByteArray
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.BotAccount
@@ -26,8 +26,8 @@ import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.*
-import java.io.File
-import java.util.concurrent.CopyOnWriteArraySet
+import kotlin.jvm.Synchronized
+import kotlin.jvm.Volatile
 
 /**
  * For a [Bot].
@@ -91,9 +91,7 @@ internal data class AccountSecretsImpl(
 ) : AccountSecrets, ProtoBuf {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as AccountSecretsImpl
+        if (!isSameType(this, other)) return false
 
         if (loginExtraData != other.loginExtraData) return false
         if (wLoginSigInfoField != other.wLoginSigInfoField) return false
@@ -135,7 +133,7 @@ internal fun AccountSecretsImpl(
     device: DeviceInfo, account: BotAccount,
 ): AccountSecretsImpl {
     return AccountSecretsImpl(
-        loginExtraData = CopyOnWriteArraySet(),
+        loginExtraData = ConcurrentSet(),
         wLoginSigInfoField = null,
         G = device.guid,
         dpwd = get_mpasswd().toByteArray(),
@@ -177,7 +175,7 @@ internal class MemoryAccountSecretsManager : AccountSecretsManager {
 
 
 internal class FileCacheAccountSecretsManager(
-    val file: File,
+    val file: MiraiFile,
     val logger: MiraiLogger,
 ) : AccountSecretsManager {
     @Synchronized
@@ -216,7 +214,7 @@ internal class FileCacheAccountSecretsManager(
     }
 
     companion object {
-        fun saveSecretsToFile(file: File, account: BotAccount, secrets: AccountSecrets) {
+        fun saveSecretsToFile(file: MiraiFile, account: BotAccount, secrets: AccountSecrets) {
             file.writeBytes(
                 TEA.encrypt(
                     AccountSecretsImpl(secrets).toByteArray(AccountSecretsImpl.serializer()),

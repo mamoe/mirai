@@ -13,6 +13,7 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
@@ -20,6 +21,9 @@ import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 
 /**
@@ -44,7 +48,7 @@ public data class QuoteReply(
     /**
      * 指代被引用的消息. 其中 [MessageSource.originalMessage] 可以控制客户端显示的消息内容.
      */
-    public val source: MessageSource
+    public val source: @Polymorphic MessageSource
 ) : Message, MessageMetadata, ConstrainSingle {
     /**
      * 从消息链中获取 [MessageSource] 并构造.

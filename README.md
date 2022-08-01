@@ -121,6 +121,7 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 - **用户手册**: [UserManual](docs/UserManual.md)
 - 开发文档: [在 GitHub 阅读](docs/README.md)
   或 [在 docs.mirai.mamoe.net 阅读](https://docs.mirai.mamoe.net/)
+- 帮助 mirai: [CONTRIBUTING](docs/contributing/README.md)
 - 论坛: [Mirai Forum](https://mirai.mamoe.net/)
   > *Mirai 只有唯一一个官方论坛 Mirai Forum*
 
@@ -129,9 +130,9 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 - 在线讨论: [Gitter](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 - mirai 开发组和官方系列项目: [project-mirai](https://github.com/project-mirai)
-- mirai 社区相关项目 (旧): [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md)
+- mirai 社区相关项目 (
+  旧): [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md)
 
-- 帮助 mirai: [CONTRIBUTING](CONTRIBUTING.md)
 
 ## 赞助
 - 本着与更多 mirai 开发者、用户、支持者共建更好的学习环境为目的，mirai 自 2021 年 3 月 1 日发起官方社区的建设。社区建设可能涉及：[学习论坛](https://mirai.mamoe.net)、[插件中心（在建）](https://github.com/project-mirai/mirai-plugin-center)等。由于社区的运维需要经费，mirai 项目开启 sponsor 功能。

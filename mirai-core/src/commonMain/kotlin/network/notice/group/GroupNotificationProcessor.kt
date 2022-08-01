@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,8 +9,7 @@
 
 package net.mamoe.mirai.internal.network.notice.group
 
-import kotlinx.io.core.readUInt
-import kotlinx.io.core.readUShort
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.data.GroupHonorType
@@ -32,6 +31,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.parseToMessageDataList
 import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.utils.*
+import kotlin.jvm.JvmName
 
 internal class GroupNotificationProcessor(
     private val logger: MiraiLogger,

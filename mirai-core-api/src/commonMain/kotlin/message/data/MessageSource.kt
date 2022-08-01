@@ -16,7 +16,9 @@ package net.mamoe.mirai.message.data
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonConfiguration
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
@@ -25,13 +27,19 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.action.AsyncRecallResult
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 消息源. 消息源存在于 [MessageChain] 中, 用于表示这个消息的来源, 也可以用来分辨 [MessageChain].
@@ -107,6 +115,7 @@ import net.mamoe.mirai.utils.safeCast
  *
  * @see buildMessageSource 构建一个 [OfflineMessageSource]
  */
+@Suppress("DEPRECATION")
 @Serializable(MessageSource.Serializer::class)
 public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     public final override val key: MessageKey<MessageSource>
@@ -194,9 +203,16 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
         return visitor.visitMessageSource(this, data)
     }
 
-    public object Serializer : MessageSourceSerializerImpl("MessageSource")
+    @Deprecated("Do not use this serializer. Retrieve from `MessageSerializers.serializersModule`.")
+    @DeprecatedSinceMirai(warningSince = "2.13")
+    public object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("MessageSource")
 
     public companion object Key : AbstractMessageKey<MessageSource>({ it.safeCast() }) {
+        /**
+         * 从 [MessageSerializers] 获取到的对应[序列化器][KSerializer]在参与多态序列化时的[类型标识符][JsonConfiguration.classDiscriminator]的值.
+         *
+         * [OnlineMessageSource] 的部分属性无法通过序列化保存. 所有 [MessageSource] 子类型在序列化时都会序列化为 [OfflineMessageSource]. 反序列化时会得到 [OfflineMessageSource] 而不是原类型.
+         */
         public const val SERIAL_NAME: String = "MessageSource"
 
         /**

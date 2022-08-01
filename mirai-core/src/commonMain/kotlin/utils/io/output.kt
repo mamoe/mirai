@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,13 +13,13 @@
 
 package net.mamoe.mirai.internal.utils.io
 
-import io.ktor.utils.io.streams.*
-import kotlinx.io.core.*
-import kotlinx.io.streams.outputStream
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.utils.coerceAtMostOrFail
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.withUse
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 internal fun BytePacketBuilder.writeShortLVByteArrayLimitedLength(array: ByteArray, maxLength: Int) {
     if (array.size <= maxLength) {
@@ -36,13 +36,9 @@ internal fun BytePacketBuilder.writeShortLVByteArrayLimitedLength(array: ByteArr
 internal fun BytePacketBuilder.writeResource(
     resource: ExternalResource,
     close: Boolean = false,
-): Long = resource.inputStream().withUse { copyTo(outputStream()) }.also {
+): Long = resource.input().withUse { copyTo(this@writeResource) }.also {
     if (close) resource.close()
 }
-
-internal fun io.ktor.utils.io.core.BytePacketBuilder.writeResource(
-    resource: ExternalResource,
-): Long = resource.inputStream().withUse { copyTo(outputStream()) }
 
 internal inline fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray): Int {
     this.writeShort(byteArray.size.toShort())

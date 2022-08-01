@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.network.components
 
-import kotlinx.io.core.*
+import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.component.ComponentKey
@@ -20,7 +20,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
 import net.mamoe.mirai.utils.*
-import kotlin.io.use
 
 
 /**
@@ -89,9 +88,10 @@ internal class PacketCodecException(
         OTHER,
     }
 
-    override fun getStackTrace(): Array<StackTraceElement> {
-        return targetException.stackTrace
-    }
+//     not available in native
+//    override fun getStackTrace(): Array<StackTraceElement> {
+//        return targetException.stackTrace
+//    }
 }
 
 internal class PacketCodecImpl : PacketCodec {
@@ -222,14 +222,12 @@ internal class PacketCodecImpl : PacketCodec {
                 }
                 1 -> {
                     input.discardExact(4)
-                    input.useBytes { data, length ->
-                        data.unzip(0, length).let {
-                            val size = it.toInt()
-                            if (size == it.size || size == it.size + 4) {
-                                it.toReadPacket(offset = 4)
-                            } else {
-                                it.toReadPacket()
-                            }
+                    input.inflateAllAvailable().let { bytes ->
+                        val size = bytes.toInt()
+                        if (size == bytes.size || size == bytes.size + 4) {
+                            bytes.toReadPacket(offset = 4)
+                        } else {
+                            bytes.toReadPacket()
                         }
                     }
                 }

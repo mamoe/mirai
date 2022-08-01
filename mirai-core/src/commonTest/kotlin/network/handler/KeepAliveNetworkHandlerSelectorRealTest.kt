@@ -11,33 +11,30 @@
 
 package net.mamoe.mirai.internal.network.handler
 
-import io.netty.channel.Channel
 import net.mamoe.mirai.internal.network.components.FirstLoginResult
 import net.mamoe.mirai.internal.network.components.SsoProcessor
-import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
-import net.mamoe.mirai.internal.network.framework.TestNettyNH
+import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTest
+import net.mamoe.mirai.internal.network.framework.PlatformConn
+import net.mamoe.mirai.internal.network.framework.TestCommonNetworkHandler
 import net.mamoe.mirai.internal.network.handler.selector.MaxAttemptsReachedException
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.utils.TestOnly
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.assertThrows
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
+import kotlin.test.*
 
-internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractNettyNHTest() {
+internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractCommonNHTest() {
 
-    internal class FakeFailOnCreatingConnection : AbstractNettyNHTest() {
+    internal class FakeFailOnCreatingConnection : AbstractCommonNHTest() {
         private class MyException : Exception()
 
         private lateinit var throwException: () -> Nothing
 
-        override val factory: NetworkHandlerFactory<TestNettyNH> =
-            NetworkHandlerFactory<TestNettyNH> { context, address ->
-                object : TestNettyNH(bot, context, address) {
-                    override suspend fun createConnection(decodePipeline: PacketDecodePipeline): Channel =
+        override val factory: NetworkHandlerFactory<TestCommonNetworkHandler> =
+            NetworkHandlerFactory<TestCommonNetworkHandler> { context, address ->
+                object : TestCommonNetworkHandler(bot, context, address) {
+                    override suspend fun createConnection(): PlatformConn {
                         throwException()
+                    }
                 }
             }
 
@@ -48,12 +45,12 @@ internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractNettyNHTest() {
                 throw MyException()
             }
 
-            val selector = TestSelector(3) { createHandler() }
-            assertThrows<Throwable> { selector.awaitResumeInstance() }
+            val selector = TestSelector(3) { factory.create(createContext(), createAddress()) }
+            assertFailsWith<Throwable> { selector.awaitResumeInstance() }
         }
 
         // Since #1963, any error during first login will close the bot. So we assume first login succeed to do our test.
-        @BeforeEach
+        @BeforeTest
         private fun setFirstLoginPassed() {
             assertEquals(null, bot.components[SsoProcessor].firstLoginResult.value)
             bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
@@ -66,8 +63,8 @@ internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractNettyNHTest() {
                 throw object : NetworkException(true) {}
             }
 
-            val selector = TestSelector(3) { createHandler() }
-            assertThrows<MaxAttemptsReachedException> { selector.awaitResumeInstance() }.let {
+            val selector = TestSelector(3) { factory.create(createContext(), createAddress()) }
+            assertFailsWith<MaxAttemptsReachedException> { selector.awaitResumeInstance() }.let {
                 assertIs<NetworkException>(it.cause)
             }
         }
@@ -77,8 +74,8 @@ internal class KeepAliveNetworkHandlerSelectorRealTest : AbstractNettyNHTest() {
             throwException = {
                 throw MyException()
             }
-            val selector = TestSelector(3) { createHandler() }
-            assertThrows<MaxAttemptsReachedException> { selector.awaitResumeInstance() }.let {
+            val selector = TestSelector(3) { factory.create(createContext(), createAddress()) }
+            assertFailsWith<MaxAttemptsReachedException> { selector.awaitResumeInstance() }.let {
                 assertIs<MyException>(it.cause)
             }
         }

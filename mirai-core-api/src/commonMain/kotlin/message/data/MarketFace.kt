@@ -46,6 +46,8 @@ public interface MarketFace : HummerMessage {
 
     public companion object Key :
         AbstractPolymorphicMessageKey<HummerMessage, MarketFace>(HummerMessage, { it.safeCast() }) {
+        // Notice that for MarketFaceImpl, its serial name is 'MarketFace';
+        // while for Dice, that is 'Dice' instead of 'MarketFace' again. (Dice extends MarketFace)
         public const val SERIAL_NAME: String = "MarketFace"
     }
 }

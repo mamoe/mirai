@@ -9,17 +9,22 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.source.OfflineMessageSourceImplData
 import net.mamoe.mirai.internal.message.toMessageChainOnline
+import net.mamoe.mirai.internal.testFramework.DynamicTestsResult
+import net.mamoe.mirai.internal.testFramework.TestFactory
+import net.mamoe.mirai.internal.testFramework.dynamicTest
+import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.internal.utils.runCoroutineInPlace
-import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.MessageSerializers
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.QuoteReply
-import net.mamoe.mirai.message.data.messageChainOf
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.hexToBytes
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> = arrayOf(QuoteReplyProtocol(), TextProtocol())
@@ -86,6 +91,7 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
                                 ),
                             ),
                         ),
+                        srcMsg = EMPTY_BYTE_ARRAY
                         // mirai's OfflineMessageSource has no enough information to create 'srcMsg'
                     ),
                 ),
@@ -319,6 +325,7 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
                                 ),
                             ),
                         ),
+                        srcMsg = EMPTY_BYTE_ARRAY
                         // mirai's OfflineMessageSource has no enough information to create 'srcMsg'
                     ),
                 ),
@@ -444,4 +451,97 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
     }
 
 
+    ///////////////////////////////////////////////////////////////////////////
+    // serialization
+    ///////////////////////////////////////////////////////////////////////////
+
+    @TestFactory
+    fun `test serialization for QuoteReply`(): DynamicTestsResult {
+        val source = MessageSourceBuilder()
+            .sender(123)
+            .target(123)
+            .messages {
+                append("test")
+            }
+            .build(123, MessageSourceKind.FRIEND)
+
+        val data = QuoteReply(source)
+
+        val serialName = QuoteReply.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMessageMetadata(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // MessageSource serialization
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    // TODO: 2022/7/20 MessageSource 在 MessageMetadata 的 scope 多态序列化后会输出 'type' = 'MessageSource', 这是期望的行为.
+    //  但是在反序列化时会错误 unknown field 'type'
+    override val format: Json
+        get() = Json {
+            prettyPrint = true
+            serializersModule = MessageSerializers.serializersModule
+            ignoreUnknownKeys = true
+        }
+
+
+    @Serializable
+    data class PolymorphicWrapperMessageSource(
+        override val message: MessageSource
+    ) : PolymorphicWrapper
+
+    private fun <M : MessageSource> testPolymorphicInMessageSource(
+        data: M,
+        expectedInstance: M = data,
+    ) = listOf(dynamicTest("testPolymorphicInMessageSource") {
+        testPolymorphicIn(
+            polySerializer = PolymorphicWrapperMessageSource.serializer(),
+            polyConstructor = ::PolymorphicWrapperMessageSource,
+            data = data,
+            expectedInstance = expectedInstance,
+            expectedSerialName = null,
+        )
+    })
+
+    @TestFactory
+    fun `test serialization for OfflineMessageSource`(): DynamicTestsResult {
+        val data = MessageSourceBuilder()
+            .sender(123)
+            .target(123)
+            .messages {
+                append("test")
+            }
+            .build(123, MessageSourceKind.FRIEND)
+
+        val serialName = MessageSource.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMessageSource(data),
+            testPolymorphicInMessageMetadata(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+        )
+    }
+
+    @TestFactory
+    fun `test serialization for OnlineMessageSource`(): DynamicTestsResult {
+        val data = onlineIncomingGroupMessage[MessageSource]!!
+        val expected = (data as OnlineMessageSource).toOffline()
+
+        val serialName = MessageSource.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMessageSource(data, expectedInstance = expected),
+            testPolymorphicInMessageMetadata(data, serialName, expectedInstance = expected),
+            testPolymorphicInSingleMessage(data, serialName, expectedInstance = expected),
+            testInsideMessageChain(data, serialName, expectedInstance = expected),
+            testContextual(data, serialName, expectedInstance = expected),
+        )
+    }
 }

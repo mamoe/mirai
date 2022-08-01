@@ -1,27 +1,27 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 package net.mamoe.mirai.internal.network.framework
 
-import io.netty.channel.Channel
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.utils.ConcurrentLinkedQueue
 import net.mamoe.mirai.utils.TestOnly
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * States are manually set.
@@ -29,13 +29,15 @@ import java.util.concurrent.atomic.AtomicInteger
 internal open class TestNetworkHandler(
     override val bot: QQAndroidBot,
     context: NetworkHandlerContext,
-) : NetworkHandlerSupport(context), ITestNetworkHandler {
+) : NetworkHandlerSupport(context), ITestNetworkHandler<TestNetworkHandler.Connection> {
+    class Connection
+
     @Suppress("EXPOSED_SUPER_CLASS")
-    internal open inner class TestState(
+    internal abstract inner class TestState(
         correspondingState: NetworkHandler.State
     ) : BaseStateImpl(correspondingState) {
         val resumeDeferred = CompletableDeferred<Unit>()
-        val resumeCount = AtomicInteger(0)
+        val resumeCount = atomic(0)
         val onResume get() = resumeDeferred.onJoin
         private val mutex = Mutex()
 
@@ -43,8 +45,8 @@ internal open class TestNetworkHandler(
             resumeCount.incrementAndGet()
             resumeDeferred.complete(Unit)
             when (this.correspondingState) {
-                NetworkHandler.State.INITIALIZED -> {
-                    setState(NetworkHandler.State.CONNECTING)
+                INITIALIZED -> {
+                    setState(CONNECTING)
                 }
                 else -> {
                 }
@@ -56,13 +58,26 @@ internal open class TestNetworkHandler(
         }
     }
 
+    internal inner class TestStateInitial : TestState(INITIALIZED)
+    internal inner class TestStateConnecting : TestState(CONNECTING)
+    internal inner class TestStateLoading : TestState(LOADING)
+    internal inner class TestStateOK : TestState(OK)
+    internal inner class TestStateClosed : TestState(CLOSED)
+
     @OptIn(TestOnly::class)
     fun setState(correspondingState: NetworkHandler.State): TestState? {
         // `null` means ignore checks. All test states have same type TestState.
-        return setStateImpl(null) { TestState(correspondingState) }
+        val state: TestState = when (correspondingState) {
+            INITIALIZED -> TestStateInitial()
+            CONNECTING -> TestStateConnecting()
+            LOADING -> TestStateLoading()
+            OK -> TestStateOK()
+            CLOSED -> TestStateClosed()
+        }
+        return setStateImpl(TestState::class) { state }
     }
 
-    private val initialState = TestState(NetworkHandler.State.INITIALIZED)
+    private val initialState = TestStateInitial()
     override fun initialState(): BaseStateImpl = initialState
 
     val sendPacket get() = ConcurrentLinkedQueue<OutgoingPacket>()
@@ -74,19 +89,19 @@ internal open class TestNetworkHandler(
 
 
     override fun setStateClosed(exception: Throwable?): TestState? {
-        return setState(NetworkHandler.State.CLOSED)
+        return setState(CLOSED)
     }
 
     override fun setStateConnecting(exception: Throwable?): TestState? {
-        return setState(NetworkHandler.State.CONNECTING)
+        return setState(CONNECTING)
     }
 
-    override fun setStateOK(channel: Channel, exception: Throwable?): TestState? {
+    override fun setStateOK(conn: Connection, exception: Throwable?): TestState? {
         exception?.printStackTrace()
-        return setState(NetworkHandler.State.OK)
+        return setState(OK)
     }
 
-    override fun setStateLoading(channel: Channel): TestState? {
-        return setState(NetworkHandler.State.LOADING)
+    override fun setStateLoading(conn: Connection): TestState? {
+        return setState(LOADING)
     }
 }

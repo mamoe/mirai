@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package net.mamoe.mirai.internal.notice.processors
 
 import kotlinx.serialization.SerializationStrategy
@@ -27,7 +29,7 @@ import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.noticeProcessorPipeline
-import net.mamoe.mirai.internal.network.framework.AbstractNettyNHTest
+import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTest
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
@@ -38,9 +40,9 @@ import net.mamoe.mirai.utils.*
 /**
  * To add breakpoint, see [NoticeProcessorPipelineImpl.process]
  */
-internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), GroupExtensions {
+internal abstract class AbstractNoticeProcessorTest : AbstractCommonNHTest(), GroupExtensions {
     init {
-        System.setProperty("mirai.network.notice.pipeline.log.full", "true")
+        setSystemProp("mirai.network.notice.pipeline.log.full", "true")
     }
 
     protected class UseTestContext(
@@ -56,7 +58,7 @@ internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), Gro
     }
 
     protected suspend inline fun use(
-        attributes: TypeSafeMap = TypeSafeMap(),
+        attributes: TypeSafeMap = createTypeSafeMap(),
         pipeline: NoticeProcessorPipeline = bot.components.noticeProcessorPipeline,
         block: UseTestContext.() -> ProtocolStruct
     ): Collection<Packet> {
@@ -71,7 +73,7 @@ internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), Gro
     }
 
     protected suspend inline fun use(
-        attributes: TypeSafeMap = TypeSafeMap(),
+        attributes: TypeSafeMap = createTypeSafeMap(),
         crossinline createContext: NoticeProcessorPipelineImpl.(attributes: TypeSafeMap) -> NoticeProcessorPipelineImpl.ContextImpl,
         block: UseTestContext.() -> ProtocolStruct
     ): Collection<Packet> =
@@ -84,7 +86,7 @@ internal abstract class AbstractNoticeProcessorTest : AbstractNettyNHTest(), Gro
                 createContext(this, attributes)
         }, block)
 
-    fun setBot(id: Long): QQAndroidBot {
+    open fun setBot(id: Long): QQAndroidBot {
         bot = createBot(BotAccount(id, "a"))
         return bot
     }
