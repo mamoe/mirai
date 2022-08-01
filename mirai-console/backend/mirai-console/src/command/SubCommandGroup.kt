@@ -9,8 +9,7 @@ public interface SubCommandGroup {
     /**
      * 被聚合时提供的子指令
      */
-    @ConsoleExperimentalApi("Property name is experimental")
     @ExperimentalCommandDescriptors
-    public val provideOverloads: List<@JvmWildcard CommandSignatureFromKFunction>
+    public val overloads: List<@JvmWildcard CommandSignatureFromKFunction>
 
 }
