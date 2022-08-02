@@ -98,7 +98,6 @@ internal class FriendGroupImpl constructor(
         }
         friends.forEach {
             it.impl().info.friendGroupId = 0
-            bot.friendGroups[0]!!.impl().friends
         }
         bot.friendGroups.friendGroups.remove(this)
         return true
