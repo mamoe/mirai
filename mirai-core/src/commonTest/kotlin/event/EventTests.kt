@@ -13,8 +13,6 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import net.mamoe.mirai.event.*
-import net.mamoe.mirai.event.GlobalEventChannel.subscribeAlways
-import net.mamoe.mirai.event.GlobalEventChannel.subscribeOnce
 import net.mamoe.mirai.utils.childScope
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.AfterTest
@@ -307,15 +305,15 @@ internal class EventTests : AbstractEventTest() {
     }
 
     // 先不加 @test 免得占用 CI 时间
-//    @Test
+    @Test
     fun `test next event and intercept`() {
         resetEventListeners()
-        subscribeOnce<TestEvent> {
+        GlobalEventChannel.subscribeOnce<TestEvent> {
             println("d1")
             GlobalEventChannel.nextEvent<TestEvent>()
             println("d2")
         }
-        subscribeAlways<TestEvent>(priority = EventPriority.LOW) {
+        GlobalEventChannel.subscribeAlways<TestEvent>(priority = EventPriority.LOW) {
             println("e")
             this.triggered = true
         }
