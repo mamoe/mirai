@@ -107,20 +107,19 @@ public suspend inline fun <reified E : Event> EventChannel<*>.nextEvent(
  */
 public suspend inline fun <reified E : Event> EventChannel<*>.nextEvent(
     priority: EventPriority = EventPriority.NORMAL,
-    noinline filter: suspend (E) -> Boolean = { true },
-    intercept: Boolean = false
+    intercept: Boolean = false,
+    noinline filter: suspend (E) -> Boolean = { true }
 ): E = coroutineScope {
     suspendCancellableCoroutine { cont ->
         var listener: Listener<E>? = null
         listener = this@nextEvent.parentScope(this@coroutineScope).subscribe(E::class, priority = priority) { event ->
             val result = kotlin.runCatching {
                 if (!filter(event)) return@subscribe ListeningStatus.LISTENING
-                if (intercept) event.intercept()
                 event
             }
 
             try {
-                cont.resumeWith(result)
+                cont.resumeWith(result.apply { onSuccess { if (intercept) intercept() } })
             } finally {
                 listener?.complete() // ensure completed on exceptions
             }

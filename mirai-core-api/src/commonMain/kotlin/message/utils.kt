@@ -79,8 +79,8 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessage(
 public suspend inline fun <reified P : MessageEvent> P.nextMessage(
     timeoutMillis: Long = -1,
     priority: EventPriority = EventPriority.HIGH,
-    noinline filter: suspend P.(P) -> Boolean = { true },
-    intercept: Boolean = false
+    intercept: Boolean = false,
+    noinline filter: suspend P.(P) -> Boolean = { true }
 ): MessageChain {
     val mapper: suspend (P) -> P? = createMapper(filter)
 
