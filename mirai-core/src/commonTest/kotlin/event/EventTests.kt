@@ -309,12 +309,9 @@ internal class EventTests : AbstractEventTest() {
     fun `test next event and intercept`() {
         resetEventListeners()
         GlobalEventChannel.subscribeOnce<TestEvent> {
-            println("d1")
-            GlobalEventChannel.nextEvent<TestEvent>()
-            println("d2")
+            GlobalEventChannel.nextEvent<TestEvent>(priority = EventPriority.HIGH, intercept = true)
         }
         GlobalEventChannel.subscribeAlways<TestEvent>(priority = EventPriority.LOW) {
-            println("e")
             this.triggered = true
         }
         val tmp = TestEvent()
@@ -324,7 +321,6 @@ internal class EventTests : AbstractEventTest() {
                 tmp.broadcast()
             }
             launch {
-//                delay(1000)
                 tmp2.broadcast()
             }
         }
