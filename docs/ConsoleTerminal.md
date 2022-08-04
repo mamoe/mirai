@@ -231,11 +231,11 @@ Mirai Console 会记录运行时的日志并保存到 `logs` 目录中，其中 
 
 ### 配置权限
 
-`grantedPermissionMap.yml` 包含权限授予信息。通常建议使用指令 `/perm` 来修改权限，而不建议直接修改配置。
+`PermissionService.yml` 包含权限授予信息。通常建议使用指令 `/perm` 来修改权限，而不建议直接修改配置。
 
 ### 远程仓库
 
-`repoLoc.yml` 包含对远程仓库的配置，通常不需要修改，除非某个插件要求。
+`PluginDependencies.yml` 包含对远程仓库的配置，通常不需要修改，除非某个插件要求。
 
 
 
