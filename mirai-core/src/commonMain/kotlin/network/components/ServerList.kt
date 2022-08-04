@@ -16,7 +16,7 @@ import net.mamoe.mirai.internal.network.handler.SocketAddress
 import net.mamoe.mirai.internal.network.handler.createSocketAddress
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.TestOnly
-import net.mamoe.mirai.utils.info
+import net.mamoe.mirai.utils.verbose
 import kotlin.jvm.Synchronized
 import kotlin.jvm.Volatile
 
@@ -120,7 +120,7 @@ internal class ServerListImpl(
 
     @Synchronized
     override fun setPreferred(list: Collection<ServerAddress>) {
-        logger.info { "Server list: ${list.joinToString()}." }
+        logger.verbose { "Server list: ${list.joinToString()}." }
         require(list.isNotEmpty()) { "list cannot be empty." }
         preferred = list.toSet()
     }
