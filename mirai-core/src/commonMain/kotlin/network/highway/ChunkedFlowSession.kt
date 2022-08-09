@@ -36,7 +36,7 @@ internal class ChunkedFlowSession<T>(
         withUse {
             while (true) {
                 val size = runBIO { input.readAvailable(buffer) }
-                if (size == -1) return
+                if (size <= 0) return
                 block(mapper(buffer, size, offset.getAndAdd(size.toLongUnsigned())))
                 callback?.onProgression(offset.value)
             }
