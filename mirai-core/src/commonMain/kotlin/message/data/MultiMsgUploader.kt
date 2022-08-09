@@ -129,7 +129,18 @@ internal open class MultiMsgUploader(
         }
 
         val existsIds = mutableSetOf<Long>()
+        val existsSeqs = mutableSetOf<Int>()
 
+        class PendingMessage(
+            var seq: Int, var uid: Int,
+            var convertedMessageChain: MessageChain,
+            val msg: ForwardMessage.INode,
+        )
+
+        val pendingMessages = mutableListOf<PendingMessage>()
+        var hasMsgSource = false
+
+        // Step1: Convert message & Get message ids
         msgs.forEach { msg ->
             var msgChain = msg.messageChain
             msgChain[ForwardMessage]?.let { nestedForward ->
@@ -142,27 +153,112 @@ internal open class MultiMsgUploader(
             var uid: Int = -1
             msg.messageChain.sourceOrNull?.let { source ->
                 source as MessageSourceInternal
+                hasMsgSource = true
 
                 seq = source.sequenceIds.first()
                 uid = source.internalIds.first()
             }
-            while (true) {
-                if (seq != -1 && uid != -1) {
-                    if (existsIds.add(seq.concatAsLong(uid))) break
-                }
-                seq = random.nextInt().absoluteValue
-                uid = random.nextInt().absoluteValue
-            }
 
+            pendingMessages.add(
+                PendingMessage(
+                    seq = seq, uid = uid, convertedMessageChain = msgChain,
+                    msg = msg
+                )
+            )
+        }
+        // Step2: Fix duplicated messages
+        if (hasMsgSource) {
+            pendingMessages.forEach { pm ->
+                if (pm.seq == -1 && pm.uid == -1) return@forEach
+
+                while (true) {
+                    if (existsSeqs.add(pm.seq)) return@forEach
+
+                    pm.seq++
+                    pm.uid = random.nextInt().absoluteValue
+                }
+            }
+        }
+
+        // Step3: Fill custom messages.....
+        val randSeqStart = random.nextInt().absoluteValue.coerceAtMost(
+            Int.MAX_VALUE - pendingMessages.size - 15405
+        ).coerceAtLeast(141225)
+
+        var seqStart = if (hasMsgSource) {
+            val idx = pendingMessages.indexOfFirst { it.seq != -1 }
+            // Assertion: idx != -1
+            pendingMessages[idx].seq - idx
+        } else randSeqStart
+
+        pendingMessages.forEach { pm ->
+            if (pm.seq != -1 && pm.uid != -1) {
+                seqStart = pm.seq + 1
+            } else {
+                pm.seq = seqStart
+                seqStart++
+
+                do { // For patch: no duplicated id
+                    pm.uid = random.nextInt().absoluteValue
+                } while (!existsIds.add(pm.seq.concatAsLong(pm.uid)))
+            }
+        }
+
+        // Step4: Verify sequence
+        existsSeqs.clear()
+        var lastSeq = 0
+        var needPatch = false
+        for (pm in pendingMessages) {
+            if (pm.seq <= lastSeq) {
+                needPatch = true
+                break
+            }
+            lastSeq = pm.seq
+            if (!existsSeqs.add(lastSeq)) {
+                needPatch = true
+                break
+            }
+        }
+        // Step 5: Patch
+        if (needPatch) {
+            existsIds.clear()
+            existsSeqs.clear()
+
+            var ranSeqStart = randSeqStart
+            for (pm in pendingMessages) {
+                val oldSeq = pm.seq
+                val oldUid = pm.uid
+                pm.seq = ranSeqStart
+                ranSeqStart++
+                pm.uid = random.nextInt().absoluteValue
+
+                for (otherpms in pendingMessages) {
+                    val quoteReply = otherpms.convertedMessageChain[QuoteReply] ?: continue
+                    val srco = quoteReply.source
+                    val src = srco as? MessageSourceInternal ?: continue
+                    if (src.sequenceIds.first() == oldSeq && src.internalIds.first() == oldUid) {
+                        val newSrc = MessageSourceBuilder()
+                            .allFrom(srco)
+                            .id(pm.seq)
+                            .internalId(pm.uid)
+                            .time(srco.time)
+                            .build(botId = client.uin, kind = srco.kind)
+                        otherpms.convertedMessageChain = otherpms.convertedMessageChain + newSrc
+                    }
+                }
+            }
+        }
+        // Step6: Convert
+        pendingMessages.forEach { pm ->
             val msg0 = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
-                    fromUin = msg.senderId,
+                    fromUin = pm.msg.senderId,
                     toUin = if (isLong) {
                         contact.userIdOrNull ?: 0
                     } else 0,
-                    msgSeq = seq,
-                    msgTime = msg.time,
-                    msgUid = 0x01000000000000000L or uid.toLongUnsigned(),
+                    msgSeq = pm.seq,
+                    msgTime = pm.msg.time,
+                    msgUid = 0x01000000000000000L or pm.uid.toLongUnsigned(),
                     mutiltransHead = MsgComm.MutilTransHead(
                         status = 0,
                         msgId = 1,
@@ -170,13 +266,14 @@ internal open class MultiMsgUploader(
                     msgType = 82, // troop,
                     groupInfo = MsgComm.GroupInfo(
                         groupCode = if (contact is Group) contact.groupCode else 0L,
-                        groupCard = msg.senderName, // Cinnamon
+                        groupCard = pm.msg.senderName, // Cinnamon
                     ),
                     isSrcMsg = false,
                 ), msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
                         elems = MessageProtocolFacade.encode(
-                            msgChain, messageTarget = contact, withGeneralFlags = false, isForward = true
+                            pm.convertedMessageChain,
+                            messageTarget = contact, withGeneralFlags = false, isForward = true
                         )
                     )
                 )
