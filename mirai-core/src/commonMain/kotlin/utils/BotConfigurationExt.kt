@@ -20,6 +20,11 @@ import kotlin.jvm.JvmName
 
 internal expect val BotConfiguration.workingDirPath: String
 
+/*
+Note: Required the written path,
+      NOT the resolved (absolute) path.
+      See: #2160
+*/
 internal expect val BotConfiguration.cacheDirPath: String
 
 internal fun BotConfiguration.actualCacheDir(): MiraiFile = MiraiFile.create(workingDirPath).resolveMkdir(cacheDirPath)

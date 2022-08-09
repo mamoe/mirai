@@ -15,4 +15,4 @@ internal actual val BotConfiguration.workingDirPath: String
     get() = workingDir.absolutePath
 
 internal actual val BotConfiguration.cacheDirPath: String
-    get() = cacheDir.absolutePath
+    get() = cacheDir.path
