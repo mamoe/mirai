@@ -63,7 +63,7 @@ import kotlin.time.Duration.Companion.seconds
  *
  * @since 2.7
  */
-public sealed interface Audio : MessageContent {
+public sealed interface Audio : MessageContent, ConstrainSingle {
     public companion object Key :
         AbstractPolymorphicMessageKey<MessageContent, Audio>(MessageContent, { it.safeCast() })
 
@@ -112,6 +112,8 @@ public sealed interface Audio : MessageContent {
     override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
         return visitor.visitAudio(this, data)
     }
+
+    override val key: MessageKey<*> get() = Key
 }
 
 

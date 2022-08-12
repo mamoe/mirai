@@ -3489,7 +3489,7 @@ public final class net/mamoe/mirai/message/data/AtAll : net/mamoe/mirai/message/
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class net/mamoe/mirai/message/data/Audio : net/mamoe/mirai/message/data/MessageContent {
+public abstract interface class net/mamoe/mirai/message/data/Audio : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
 	public static final field Key Lnet/mamoe/mirai/message/data/Audio$Key;
 	public fun contentToString ()Ljava/lang/String;
 	public abstract fun getCodec ()Lnet/mamoe/mirai/message/data/AudioCodec;
@@ -3497,6 +3497,7 @@ public abstract interface class net/mamoe/mirai/message/data/Audio : net/mamoe/m
 	public abstract fun getFileMd5 ()[B
 	public abstract fun getFileSize ()J
 	public abstract fun getFilename ()Ljava/lang/String;
+	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
 	public abstract fun toString ()Ljava/lang/String;
 }
 
