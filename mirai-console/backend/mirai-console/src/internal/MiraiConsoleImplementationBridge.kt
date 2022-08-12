@@ -59,9 +59,9 @@ import net.mamoe.mirai.utils.*
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
 
@@ -100,22 +100,49 @@ internal class MiraiConsoleImplementationBridge(
         externalImplementation.loggerController
     }
 
-    override val mainLogger: MiraiLogger by lazy { createLogger("main") }
+    override val mainLogger: MiraiLogger by lazy { MiraiLogger.Factory.create(MiraiConsole::class, "main") }
 
-    init {
-        // TODO: Replace to standard api
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        DefaultFactoryOverrides.override { requester, identity ->
-            return@override createLogger(
-                identity ?: requester.kotlin.simpleName ?: requester.simpleName
-            )
+    /**
+     * Delegates the [platformImplementation] with [loggerController].
+     */
+    private inner class ControlledLoggerFactory(
+        private val platformImplementation: MiraiLogger.Factory,
+    ) : MiraiLogger.Factory {
+        override fun create(requester: KClass<*>, identity: String?): MiraiLogger {
+            return MiraiConsoleLogger(loggerController, platformImplementation.create(requester, identity))
+        }
+
+        override fun create(requester: Class<*>, identity: String?): MiraiLogger {
+            return MiraiConsoleLogger(loggerController, platformImplementation.create(requester, identity))
         }
     }
 
+    init {
+        // When writing a log:
+        // 1. ControlledLoggerFactory checks if that log level is enabled
+        // 2. ... if enabled, goto 3
+        //    ... if not, return
+        // 3. [externalImplementation] decides how to log the message
+        // 4. [externalImplementation] outputs by using [platform]
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        MiraiLoggerFactoryImplementationBridge.wrapCurrent { platform ->
+            ControlledLoggerFactory(externalImplementation.createLoggerFactory(platform))
+        }
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        MiraiLoggerFactoryImplementationBridge.freeze() // forbid any further overrides
+    }
 
+
+    @Deprecated(
+        "Please use the standard way in mirai-core to create loggers, i.e. MiraiLogger.Factory.INSTANCE.create()",
+        replaceWith = ReplaceWith(
+            "MiraiLogger.Factory.create(yourClass::class, identity)",
+            "net.mamoe.mirai.utils.MiraiLogger"
+        ),
+        level = DeprecationLevel.WARNING
+    )
     override fun createLogger(identity: String?): MiraiLogger {
-        val controller = loggerController
-        return MiraiConsoleLogger(controller, externalImplementation.createLogger(identity))
+        return MiraiLogger.Factory.create(MiraiConsole::class, identity)
     }
 
     @Suppress("RemoveRedundantBackticks")
@@ -286,6 +313,7 @@ internal class MiraiConsoleImplementationBridge(
                         PLAIN -> {
                             MiraiConsole.addBot(id, account.password.value, BotConfiguration::configBot)
                         }
+
                         MD5 -> {
                             val md5 = kotlin.runCatching {
                                 account.password.value.hexToBytes()
@@ -340,3 +368,4 @@ internal class MiraiConsoleImplementationBridge(
         externalImplementation.postPhase(phase)
     }
 }
+

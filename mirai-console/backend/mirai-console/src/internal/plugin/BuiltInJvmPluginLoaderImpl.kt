@@ -41,7 +41,8 @@ internal class BuiltInJvmPluginLoaderImpl(
     JvmPluginLoader {
 
     companion object {
-        internal val logger: MiraiLogger = MiraiConsole.createLogger(JvmPluginLoader::class.simpleName!!)
+        internal val logger: MiraiLogger =
+            MiraiLogger.Factory.create(JvmPluginLoader::class)
     }
 
     fun pluginsFilesSequence(

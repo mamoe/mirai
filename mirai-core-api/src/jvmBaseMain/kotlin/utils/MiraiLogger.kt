@@ -12,8 +12,13 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.atomicfu.atomic
+import kotlinx.atomicfu.loop
+import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import net.mamoe.mirai.utils.*
 import java.util.*
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
 /**
@@ -27,7 +32,7 @@ import kotlin.reflect.KClass
  *
  * ## 使用第三方日志库接管 Mirai 日志系统
  *
- * 使用 [LoggerAdapters], 将第三方日志 `Logger` 转为 [MiraiLogger]. 然后通过 [MiraiLogger.setDefaultLoggerCreator] 全局覆盖日志.
+ * 使用 [LoggerAdapters], 将第三方日志 `Logger` 转为 [MiraiLogger]. 然后通过 [MiraiLogger.Factory] 提供实现.
  *
  * ## 实现或使用 [MiraiLogger]
  *
@@ -79,7 +84,8 @@ public actual interface MiraiLogger {
          */
         public fun create(requester: Class<*>): MiraiLogger = create(requester, null)
 
-        public actual companion object INSTANCE : Factory by loadService(Factory::class, { DefaultFactory() })
+        public actual companion object INSTANCE :
+            Factory by dynamicDelegation({ MiraiLoggerFactoryImplementationBridge })
     }
 
     public actual companion object {
@@ -95,21 +101,21 @@ public actual interface MiraiLogger {
         /**
          * 已弃用, 请实现 service [net.mamoe.mirai.utils.MiraiLogger.Factory] 并以 [ServiceLoader] 支持的方式提供.
          */
-        @Suppress("DeprecatedCallableAddReplaceWith")
         @Deprecated(
             "Please set factory by providing an service of type net.mamoe.mirai.utils.MiraiLogger.Factory",
-            level = DeprecationLevel.ERROR
+            level = DeprecationLevel.HIDDEN
         ) // deprecated since 2.7
         @JvmStatic
-        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally, for internal uses.
-        public fun setDefaultLoggerCreator(creator: (identity: String?) -> MiraiLogger) {
-            DefaultFactoryOverrides.override { _, identity -> creator(identity) }
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.13")
+        public fun setDefaultLoggerCreator(@Suppress("UNUSED_PARAMETER") creator: (identity: String?) -> MiraiLogger) {
+            // nop
+
+
+//            DefaultFactoryOverrides.override { _, identity -> creator(identity) }
         }
 
         /**
          * 旧版本用于创建 [MiraiLogger]. 已弃用. 请使用 [MiraiLogger.Factory.INSTANCE.create].
-         *
-         * @see setDefaultLoggerCreator
          */
         @Deprecated(
             "Please use MiraiLogger.Factory.create", ReplaceWith(
@@ -249,33 +255,75 @@ public actual interface MiraiLogger {
     public actual fun call(priority: SimpleLogger.LogPriority, message: String?, e: Throwable?): Unit =
         priority.correspondingFunction(this, message, e)
 
-    @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.HIDDEN) // deprecated since 2.7
     @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
     public operator fun <T : MiraiLogger> plus(follower: T): T = follower
 }
 
+// used by Mirai Console
+/**
+ * @since 2.13
+ */
+internal object MiraiLoggerFactoryImplementationBridge : MiraiLogger.Factory {
+    @Volatile
+    var instance: MiraiLogger.Factory = createPlatformInstance()
+        private set
 
-internal object DefaultFactoryOverrides {
-    var override: ((requester: Class<*>, identity: String?) -> MiraiLogger)? =
-        null // 支持 LoggerAdapters 以及兼容旧版本
+    fun createPlatformInstance() = loadService(MiraiLogger.Factory::class) { DefaultFactory() }
 
-    @JvmStatic
-    fun override(lambda: (requester: Class<*>, identity: String?) -> MiraiLogger) {
-        override = lambda
+    private val frozen = atomic(false)
+
+    fun freeze(): Boolean {
+        return frozen.compareAndSet(expect = false, update = true)
     }
 
-    @JvmStatic
-    fun clearOverride() {
-        override = null
+    @TestOnly
+    fun reinit() {
+        frozen.loop { value ->
+            instance = createPlatformInstance()
+            if (frozen.compareAndSet(value, false)) return
+        }
+    }
+
+    fun setInstance(instance: MiraiLogger.Factory) {
+        if (frozen.value) {
+            error(
+                "LoggerFactory instance had been frozen, so it's impossible to override it." +
+                        "If you are using Mirai Console and you want to override platform logging implementation, " +
+                        "please do so before initialization of MiraiConsole, that is, before `MiraiConsoleImplementation.start()`. " +
+                        "Plugins are not allowed to override logging implementation, and this is done in the very fundamental implementation of Mirai Console so there is no way to escape that." +
+                        "Normally it is only sensible for Mirai Console frontend implementor to do that." +
+                        "If you are just using mirai-core, this error should not happen. There should be no limitation in overriding logging implementation with mirai-core. " +
+                        "Check if you actually did use mirai-console somewhere, or please file an issue on https://github.com/mamoe/mirai/issues/new/choose"
+            )
+        }
+        this.instance = instance
+    }
+
+    inline fun wrapCurrent(mapper: (current: MiraiLogger.Factory) -> MiraiLogger.Factory) {
+        contract { callsInPlace(mapper, InvocationKind.EXACTLY_ONCE) }
+        setInstance(this.instance.let(mapper))
+    }
+
+    override fun create(requester: KClass<*>, identity: String?): MiraiLogger {
+        return instance.create(requester, identity)
+    }
+
+    override fun create(requester: Class<*>, identity: String?): MiraiLogger {
+        return instance.create(requester, identity)
+    }
+
+    override fun create(requester: KClass<*>): MiraiLogger {
+        return instance.create(requester)
+    }
+
+    override fun create(requester: Class<*>): MiraiLogger {
+        return instance.create(requester)
     }
 }
 
-internal class DefaultFactory : MiraiLogger.Factory {
+private class DefaultFactory : MiraiLogger.Factory {
     override fun create(requester: Class<*>, identity: String?): MiraiLogger {
-        val override = DefaultFactoryOverrides.override
-        return if (override != null) override(requester, identity) else PlatformLogger(
-            identity ?: requester.kotlin.simpleName ?: requester.simpleName
-        )
+        return PlatformLogger(identity ?: requester.kotlin.simpleName ?: requester.simpleName)
     }
 }

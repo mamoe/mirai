@@ -6164,7 +6164,7 @@ public abstract interface class net/mamoe/mirai/utils/MiraiLogger {
 	public fun isVerboseEnabled ()Z
 	public fun isWarningEnabled ()Z
 	public synthetic fun plus (Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/MiraiLogger;
-	public static fun setDefaultLoggerCreator (Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun setDefaultLoggerCreator (Lkotlin/jvm/functions/Function1;)V
 	public synthetic fun setFollower (Lnet/mamoe/mirai/utils/MiraiLogger;)V
 	public abstract fun verbose (Ljava/lang/String;)V
 	public abstract fun verbose (Ljava/lang/String;Ljava/lang/Throwable;)V
@@ -6177,7 +6177,7 @@ public abstract interface class net/mamoe/mirai/utils/MiraiLogger {
 public final class net/mamoe/mirai/utils/MiraiLogger$Companion {
 	public final synthetic fun create (Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
 	public final synthetic fun getTopLevel ()Lnet/mamoe/mirai/utils/MiraiLogger;
-	public final fun setDefaultLoggerCreator (Lkotlin/jvm/functions/Function1;)V
+	public final synthetic fun setDefaultLoggerCreator (Lkotlin/jvm/functions/Function1;)V
 }
 
 public abstract interface class net/mamoe/mirai/utils/MiraiLogger$Factory {

@@ -13,7 +13,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Security
 import kotlin.test.Test
-import kotlin.test.assertTrue
+import kotlin.test.assertIs
 
 internal actual fun initPlatform() {
     init
@@ -32,9 +32,7 @@ internal actual class PlatformInitializationTest : AbstractTest() {
 
     @Test
     actual fun test() {
-        assertTrue {
-            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-            MiraiLogger.Factory.create(this::class, "1") is net.mamoe.mirai.internal.utils.StdoutLogger
-        }
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        assertIs<net.mamoe.mirai.internal.utils.StdoutLogger>(MiraiLogger.Factory.create(this::class, "1"))
     }
 }
