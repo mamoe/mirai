@@ -14,12 +14,16 @@
 
 package net.mamoe.mirai.internal.contact
 
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.roaming.RoamingMessages
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
+import net.mamoe.mirai.event.events.FriendRemarkChangeEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplFriend
@@ -33,6 +37,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.audioCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.internal.network.protocol.packet.summarycard.ChangeFriendRemark
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
@@ -66,7 +71,17 @@ internal class FriendImpl(
     override val info: FriendInfoImpl,
 ) : Friend, AbstractUser(bot, parentCoroutineContext, info) {
     override var nick: String by info::nick
-    override var remark: String by info::remark
+
+    override var remark: String
+        get() = info.remark
+        set(value) {
+            val old = info.remark
+            info.remark = value
+            launch {
+                bot.network.sendWithoutExpect(ChangeFriendRemark(bot.client, this@FriendImpl.id, value))
+                FriendRemarkChangeEvent(this@FriendImpl, old, value).broadcast()
+            }
+        }
 
     private val messageProtocolStrategy: MessageProtocolStrategy<FriendImpl> = FriendMessageProtocolStrategy(this)
 

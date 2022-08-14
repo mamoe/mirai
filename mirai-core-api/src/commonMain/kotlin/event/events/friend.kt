@@ -22,6 +22,7 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.AbstractEvent
+import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.internal.event.VerboseEvent
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.utils.MiraiInternalApi
@@ -36,7 +37,10 @@ public data class FriendRemarkChangeEvent @MiraiInternalApi public constructor(
     public override val friend: Friend,
     public val oldRemark: String,
     public val newRemark: String,
-) : FriendEvent, Packet, AbstractEvent(), FriendInfoChangeEvent
+) : FriendEvent, Packet, AbstractEvent(), FriendInfoChangeEvent, BroadcastControllable {
+    override val shouldBroadcast: Boolean
+        get() = oldRemark != newRemark
+}
 
 /**
  * 成功添加了一个新好友的事件
