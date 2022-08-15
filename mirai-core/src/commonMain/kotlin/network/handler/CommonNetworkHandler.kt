@@ -121,7 +121,7 @@ internal abstract class CommonNetworkHandler<Conn>(
                     result.getOrNull()?.let { packet ->
                         try {
                             val decoded = decodePacket(packet)
-                            processBody(decoded)
+                            launch(start = CoroutineStart.UNDISPATCHED) { processBody(decoded) }
                         } catch (e: Throwable) {
                             if (e is CancellationException) return@launch
                             handleExceptionInDecoding(e)
