@@ -774,7 +774,8 @@ ij_html_text_wrap = normal
 ij_html_uniform_ident = false
 
 [{*.markdown, *.md, *.mkd}]
-max_line_length = 72
+ij_markdown_wrap_text_if_long = false
+ij_markdown_wrap_text_inside_blockquotes = false
 ij_markdown_abbreviations_placement = 0
 ij_markdown_abbreviations_sort = 0
 ij_markdown_attribute_class = 0
