@@ -400,7 +400,8 @@ public actual open class BotConfiguration { // open for Java
     //////////////////////////////////////////////////////////////////////////
 
     /**
-     * 缓存数据目录, 相对于 [workingDir].
+     * 缓存数据目录路径. 若 [cacheDir] 为绝对路径, 将解析该绝对路径, 否则作为相对于 [workingDir] 的路径解析.
+     * 例如, `cache` 将会解析为 `$workingDir/cache`, 而 `/Users/Chisato/Desktop/bot/cache` 指代绝对路径, 将解析为绝对路径.
      *
      * 缓存目录保存的内容均属于不稳定的 Mirai 内部数据, 请不要手动修改它们. 清空缓存不会影响功能. 只会导致一些操作如读取全部群列表要重新进行.
      * 默认启用的缓存可以加快登录过程.
@@ -414,7 +415,7 @@ public actual open class BotConfiguration { // open for Java
      *
      * @since 2.4
      */
-    public var cacheDir: String = "$workingDir/cache"
+    public var cacheDir: String = "cache"
 
     /**
      * 联系人信息缓存配置. 将会保存在 [cacheDir] 中 `contacts` 目录
