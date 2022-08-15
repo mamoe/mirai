@@ -211,7 +211,7 @@ public interface Image : Message, MessageContent, CodableMessage {
         // Note: Manually written to overcome discriminator issues.
         // Without this implementation you will need `ignoreUnknownKeys` on deserialization.
         override fun deserialize(decoder: Decoder): Image {
-            decoder.decodeStructure(descriptor) {
+            return decoder.decodeStructure(descriptor) {
                 if (this.decodeSequentially()) {
                     val imageId = this.decodeStringElement(descriptor, 0)
                     val size = this.decodeLongElement(descriptor, 1)
@@ -219,7 +219,7 @@ public interface Image : Message, MessageContent, CodableMessage {
                     val width = this.decodeIntElement(descriptor, 3)
                     val height = this.decodeIntElement(descriptor, 4)
                     val isEmoji = this.decodeBooleanElement(descriptor, 5)
-                    return Image(imageId) {
+                    return@decodeStructure Image(imageId) {
                         this.size = size
                         this.type = type
                         this.width = width
@@ -227,7 +227,7 @@ public interface Image : Message, MessageContent, CodableMessage {
                         this.isEmoji = isEmoji
                     }
                 } else {
-                    return Image("") {
+                    return@decodeStructure Image("") {
                         while (true) {
                             when (val index = this@decodeStructure.decodeElementIndex(descriptor)) {
                                 0 -> imageId = this@decodeStructure.decodeStringElement(descriptor, index)

@@ -37,7 +37,7 @@ internal abstract class AbstractPolymorphicSerializer<T : Any> internal construc
         var klassName: String? = null
         var value: Any? = null
         if (decodeSequentially()) {
-            return decodeSequentially(this)
+            return@decodeStructure decodeSequentially(this)
         }
 
         mainLoop@ while (true) {

@@ -602,9 +602,9 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
             }
 
             override fun deserialize(decoder: Decoder): SingleMessage {
-                decoder.decodeStructure(descriptor) {
+                return decoder.decodeStructure(descriptor) {
                     if (this.decodeSequentially()) {
-                        return this.decodeSerializableElement(
+                        this.decodeSerializableElement(
                             descriptor.getElementDescriptor(0),
                             0,
                             messageSerializer
@@ -612,7 +612,7 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
                     } else {
                         val index = this.decodeElementIndex(descriptor)
                         check(index == 0)
-                        return this.decodeSerializableElement(descriptor, index, messageSerializer)
+                        this.decodeSerializableElement(descriptor, index, messageSerializer)
                     }
                 }
             }

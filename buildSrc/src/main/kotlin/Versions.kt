@@ -26,21 +26,18 @@ object Versions {
     val consoleIntellij = "221-$project-171-1" // idea-mirai-kotlin-patch
     val consoleTerminal = project
 
-    const val kotlinCompiler = "1.7.0"
+    const val kotlinCompiler = "1.7.10"
     const val kotlinStdlib = kotlinCompiler
-    const val dokka = "1.6.21"
+    const val dokka = "1.7.10"
 
     const val kotlinCompilerForIdeaPlugin = "1.7.10"
 
-    const val coroutines = "1.6.2"
-    const val atomicFU = "0.17.2"
-    const val serialization = "1.3.2"
-    const val ktor = "2.0.2"
+    const val coroutines = "1.6.4"
+    const val atomicFU = "0.17.3"
+    const val serialization = "1.3.3"
+    const val ktor = "2.1.0"
 
     const val binaryValidator = "0.4.0"
-
-    const val io = "0.1.16"
-    const val coroutinesIo = "0.1.16"
 
     const val blockingBridge = "2.1.0-170.1"
     const val dynamicDelegation = "0.3.0-170.1"
@@ -86,9 +83,6 @@ val `kotlinx-serialization-core` = kotlinx("serialization-core", Versions.serial
 val `kotlinx-serialization-json` = kotlinx("serialization-json", Versions.serialization)
 val `kotlinx-serialization-protobuf` = kotlinx("serialization-protobuf", Versions.serialization)
 const val `kotlinx-atomicfu` = "org.jetbrains.kotlinx:atomicfu:${Versions.atomicFU}"
-val `kotlinx-io-common` = kotlinx("io", Versions.io)
-val `kotlinx-io-jvm` = kotlinx("io-jvm", Versions.io)
-val `kotlinx-io-native` = kotlinx("io-macosx64", Versions.io)
 
 val `ktor-io` = ktor("io", Versions.ktor)
 
@@ -107,8 +101,6 @@ fun KotlinDependencyHandler.implementationKotlinxIo(module: String) {
         exclude("org.jetbrains.kotlinx", "atomicfu-common")
     }
 }
-
-val `kotlinx-coroutines-io` = kotlinx("coroutines-io", Versions.coroutinesIo)
 
 val `ktor-serialization` = ktor("serialization", Versions.ktor)
 
