@@ -24,10 +24,10 @@ import net.mamoe.mirai.message.data.toMessageChain
  */
 internal suspend fun <C : Contact> C.broadcastMessagePreSendEvent(
     message: Message,
-    isMiraiInternal: Boolean,
+    skipEvent: Boolean,
     eventConstructor: (C, Message) -> MessagePreSendEvent,
 ): MessageChain {
-    if (isMiraiInternal) return message.toMessageChain()
+    if (skipEvent) return message.toMessageChain()
     var eventName: String? = null
     return kotlin.runCatching {
         eventConstructor(this, message).also {

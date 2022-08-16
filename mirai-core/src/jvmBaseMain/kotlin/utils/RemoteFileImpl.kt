@@ -21,7 +21,6 @@ import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.groupCode
 import net.mamoe.mirai.internal.message.data.FileMessageImpl
 import net.mamoe.mirai.internal.message.flags.AllowSendFileMessage
-import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
 import net.mamoe.mirai.internal.network.protocol

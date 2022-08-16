@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.internal.message.flags
 
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.message.visitor.ex
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
@@ -79,30 +80,37 @@ internal object IgnoreLengthCheck : MessageMetadata, ConstrainSingle, InternalFl
 }
 
 /**
- * 代表来自 mirai 内部
+ * Skip broadcasting events. Used for [Contact.sendMessage]
  */
-internal object MiraiInternalMessageFlag : MessageMetadata, ConstrainSingle, InternalFlagOnlyMessage,
-    AbstractMessageKey<MiraiInternalMessageFlag>({ it.safeCast() }) {
-    override val key: MessageKey<MiraiInternalMessageFlag> get() = this
-    override fun toString(): String = ""
+internal sealed interface SkipEventBroadcast : MessageMetadata, ConstrainSingle, InternalFlagOnlyMessage {
+    override val key: MessageKey<SkipEventBroadcast> get() = Companion
 
     override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
-        return visitor.ex()?.visitMiraiInternalMessageFlag(this, data) ?: super<InternalFlagOnlyMessage>.accept(
+        return visitor.ex()?.visitSkipEventBroadcast(this, data) ?: super<InternalFlagOnlyMessage>.accept(
             visitor,
             data
         )
     }
+
+    companion object : AbstractMessageKey<SkipEventBroadcast>({ it.safeCast() }), SkipEventBroadcast {
+        // instance
+
+        override fun toString(): String = ""
+    }
 }
 
-internal object AllowSendFileMessage : MessageMetadata, ConstrainSingle, InternalFlagOnlyMessage,
-    AbstractMessageKey<AllowSendFileMessage>({ it.safeCast() }) {
-    override val key: MessageKey<AllowSendFileMessage> get() = this
-    override fun toString(): String = ""
+internal sealed interface AllowSendFileMessage : MessageMetadata, ConstrainSingle, InternalFlagOnlyMessage,
+    SkipEventBroadcast {
+    override val key: MessageKey<AllowSendFileMessage> get() = Companion
 
     override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
         return visitor.ex()?.visitAllowSendFileMessage(this, data) ?: super<InternalFlagOnlyMessage>.accept(
             visitor,
             data
         )
+    }
+
+    companion object : AbstractMessageKey<AllowSendFileMessage>({ it.safeCast() }), AllowSendFileMessage {
+        override fun toString(): String = ""
     }
 }
