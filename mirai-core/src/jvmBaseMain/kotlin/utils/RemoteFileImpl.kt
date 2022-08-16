@@ -535,7 +535,7 @@ internal abstract class CommonRemoteFileImpl(
         callback: RemoteFile.ProgressionCallback?,
     ): FileMessage {
         val msg = uploadInternal(resource, callback)
-        contact.sendMessage(msg + MiraiInternalMessageFlag)
+        contact.sendMessage(msg + AllowSendFileMessage)
         return msg
     }
 
