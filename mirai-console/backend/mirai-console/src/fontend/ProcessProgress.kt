@@ -19,7 +19,6 @@ import java.io.Closeable
  * @see MiraiConsole.newProcessProgress
  */
 // @ConsoleFrontEndImplementation
-@ConsoleExperimentalApi
 public interface ProcessProgress : Closeable {
     /**
      * 更新当前下载进度的文本

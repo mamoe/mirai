@@ -1719,6 +1719,17 @@ public final class net/mamoe/mirai/console/extensions/SingletonExtensionSelector
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class net/mamoe/mirai/console/fontend/ProcessProgress : java/io/Closeable {
+	public abstract fun close ()V
+	public abstract fun markFailed ()V
+	public abstract fun rerender ()V
+	public abstract fun setTotalSize (J)V
+	public abstract fun update (J)V
+	public abstract fun update (JJ)V
+	public fun updateText (Ljava/lang/CharSequence;)V
+	public abstract fun updateText (Ljava/lang/String;)V
+}
+
 public final class net/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority$Companion {
 	public final fun by (Lnet/mamoe/mirai/utils/SimpleLogger$LogPriority;)Lnet/mamoe/mirai/console/logging/AbstractLoggerController$LogPriority;
 }
