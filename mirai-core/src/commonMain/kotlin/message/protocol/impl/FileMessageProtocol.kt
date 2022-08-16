@@ -15,6 +15,7 @@ import kotlinx.io.core.readUShort
 import net.mamoe.mirai.internal.contact.SendMessageStep
 import net.mamoe.mirai.internal.message.data.FileMessageImpl
 import net.mamoe.mirai.internal.message.data.checkIsImpl
+import net.mamoe.mirai.internal.message.flags.AllowSendFileMessage
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
@@ -27,6 +28,7 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelin
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageTransformer
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
+import net.mamoe.mirai.internal.message.visitor.MessageVisitorEx
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.ObjMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
@@ -57,19 +59,37 @@ internal class FileMessageProtocol : MessageProtocol() {
         private val ALLOW_SENDING_FILE_MESSAGE = systemProp("mirai.message.allow.sending.file.message", false)
 
         fun verifyFileMessage(message: MessageChain) {
-            message.acceptChildren(object : RecursiveMessageVisitor<Unit>() {
+            var hasFileMessage = false
+            var hasAllowSendFileMessage = false
+            message.acceptChildren(object : RecursiveMessageVisitor<Unit>(), MessageVisitorEx<Unit, Unit> {
+                override fun isFinished(): Boolean {
+                    return hasAllowSendFileMessage // finish early if allow send
+                }
+
+                override fun visitAllowSendFileMessage(message: AllowSendFileMessage, data: Unit) {
+                    hasAllowSendFileMessage = true
+                }
+
                 override fun visitFileMessage(message: FileMessage, data: Unit) {
                     if (ALLOW_SENDING_FILE_MESSAGE) return
                     // #1715
                     if (message !is FileMessageImpl) error("Customized FileMessage cannot be send")
-                    if (!message.allowSend) error(
-                        "Sending FileMessage is not allowed, as it may cause unexpected results. " +
-                                "Add JVM argument `-Dmirai.message.allow.sending.file.message=true` to disable this check. " +
-                                "Do this only for compatibility!"
-                    )
+                    if (!message.allowSend) {
+                        hasFileMessage = true
+                    }
                 }
             })
-
+            if (hasAllowSendFileMessage) {
+                // allowing
+                return
+            }
+            if (hasFileMessage) {
+                throw IllegalStateException(
+                    "Sending FileMessage is not allowed, as it may cause unexpected results. " +
+                            "Add JVM argument `-Dmirai.message.allow.sending.file.message=true` to disable this check. " +
+                            "Do this only for compatibility!"
+                )
+            }
         }
     }
 

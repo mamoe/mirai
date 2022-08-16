@@ -64,4 +64,8 @@ internal interface MessageVisitorEx<in D, out R> : MessageVisitor<D, R> {
     fun visitMiraiInternalMessageFlag(message: MiraiInternalMessageFlag, data: D): R {
         return visitInternalFlagOnlyMessage(message, data)
     }
+
+    fun visitAllowSendFileMessage(message: AllowSendFileMessage, data: D): R {
+        return visitInternalFlagOnlyMessage(message, data)
+    }
 }

@@ -10,11 +10,14 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.internal.message.flags.AllowSendFileMessage
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.message.data.FileMessage
+import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.hexToBytes
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
 
 internal class FileMessageProtocolTest : AbstractMessageProtocolTest() {
     override val protocols: Array<out MessageProtocol> = arrayOf(FileMessageProtocol(), TextProtocol())
@@ -60,5 +63,25 @@ internal class FileMessageProtocolTest : AbstractMessageProtocolTest() {
             message(FileMessage("/843527d8-d915-11ec-b240-5452007bdaa4", 102, "session.lock", 8))
             useOrdinaryEquality()
         }.doDecoderChecks()
+    }
+
+    @Test
+    fun `test manual send forbidden`() {
+        val data = FileMessage("id", 1, "name", 2)
+        assertFailsWith<IllegalStateException> {
+            FileMessageProtocol.verifyFileMessage(data.toMessageChain())
+        }
+    }
+
+    @Test
+    fun `test auto send allowed`() {
+        val data = FileMessage("id", 1, "name", 2)
+        FileMessageProtocol.verifyFileMessage(AllowSendFileMessage + data)
+    }
+
+    @Test
+    fun `test auto send allowed2`() {
+        val data = FileMessage("id", 1, "name", 2)
+        FileMessageProtocol.verifyFileMessage(data + AllowSendFileMessage)
     }
 }
