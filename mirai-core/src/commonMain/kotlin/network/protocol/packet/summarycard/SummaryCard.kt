@@ -120,7 +120,7 @@ internal object SummaryCard {
                     else -> UserProfile.Sex.UNKNOWN
                 },
                 sign = sign,
-                friendGroupId = response.uFriendGroupId?.toInt() ?: -1
+                friendGroupId = response.uFriendGroupId?.toInt()
             )
         }
     }
