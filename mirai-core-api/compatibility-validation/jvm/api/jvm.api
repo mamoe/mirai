@@ -6051,6 +6051,8 @@ public final class net/mamoe/mirai/utils/ExternalResource$Companion {
 }
 
 public final class net/mamoe/mirai/utils/ExternalResourceKt {
+	public static final fun runAutoClose (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static final fun useAutoClose (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/utils/FileCacheStrategy {

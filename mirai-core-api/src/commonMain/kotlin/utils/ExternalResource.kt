@@ -131,7 +131,6 @@ public expect interface ExternalResource : Closeable {
      *
      * @since 2.8
      */
-    @MiraiExperimentalApi
     public open val isAutoClose: Boolean
 
     /**
@@ -298,7 +297,6 @@ public inline fun <T : ExternalResource, R> T.withAutoClose(action: () -> R): R 
  *
  * @since 2.8
  */
-@MiraiExperimentalApi
 public inline fun <T : ExternalResource, R> T.runAutoClose(action: T.() -> R): R {
     contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
     return withAutoClose { action() }
@@ -309,7 +307,6 @@ public inline fun <T : ExternalResource, R> T.runAutoClose(action: T.() -> R): R
  *
  * @since 2.8
  */
-@MiraiExperimentalApi
 public inline fun <T : ExternalResource, R> T.useAutoClose(action: (resource: T) -> R): R {
     contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
     return runAutoClose(action)

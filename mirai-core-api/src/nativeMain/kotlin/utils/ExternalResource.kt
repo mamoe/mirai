@@ -120,7 +120,6 @@ public actual interface ExternalResource : Closeable {
      *
      * @since 2.8
      */
-    @MiraiExperimentalApi
     public actual val isAutoClose: Boolean
         get() = false
 
