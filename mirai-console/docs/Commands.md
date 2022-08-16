@@ -353,7 +353,7 @@ object CustomBooleanParser : CommandValueArgumentParser<Boolean> {
         if (raw is Image && raw.imageId == "{A7CBB529-43A2-127C-E426-59D29BAA8515}.jpg") {
             return true
         }
-        return super.parse(message, sender)
+        return super.parse(raw, sender)
     }
 }
 
