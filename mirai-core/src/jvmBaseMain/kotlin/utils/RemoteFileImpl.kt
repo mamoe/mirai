@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.groupCode
 import net.mamoe.mirai.internal.message.data.FileMessageImpl
+import net.mamoe.mirai.internal.message.flags.AllowSendFileMessage
 import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
@@ -551,7 +552,7 @@ internal abstract class CommonRemoteFileImpl(
 
     override suspend fun uploadAndSend(resource: ExternalResource): MessageReceipt<Contact> {
         @Suppress("DEPRECATION")
-        return contact.sendMessage(uploadInternal(resource, null) + MiraiInternalMessageFlag)
+        return contact.sendMessage(AllowSendFileMessage + uploadInternal(resource, null))
     }
 
     override suspend fun getDownloadInfo(): RemoteFile.DownloadInfo? {

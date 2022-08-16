@@ -93,3 +93,16 @@ internal object MiraiInternalMessageFlag : MessageMetadata, ConstrainSingle, Int
         )
     }
 }
+
+internal object AllowSendFileMessage : MessageMetadata, ConstrainSingle, InternalFlagOnlyMessage,
+    AbstractMessageKey<AllowSendFileMessage>({ it.safeCast() }) {
+    override val key: MessageKey<AllowSendFileMessage> get() = this
+    override fun toString(): String = ""
+
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.ex()?.visitAllowSendFileMessage(this, data) ?: super<InternalFlagOnlyMessage>.accept(
+            visitor,
+            data
+        )
+    }
+}

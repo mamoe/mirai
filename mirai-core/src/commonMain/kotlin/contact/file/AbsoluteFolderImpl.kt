@@ -18,7 +18,7 @@ import net.mamoe.mirai.contact.file.AbsoluteFolder
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl.Companion.findFileByPath
-import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
+import net.mamoe.mirai.internal.message.flags.AllowSendFileMessage
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.highway.Highway
@@ -181,7 +181,7 @@ internal abstract class CommonAbsoluteFolderImpl(
                     //      当为 true 时跳过上传, 但仍然需要完成 `sendMessage(FileMessage)` 才是正常逻辑
                     callback?.onBegin(file, content)
                     val result = kotlin.runCatching {
-                        folder.contact.sendMessage(file.toMessage() + MiraiInternalMessageFlag)
+                        folder.contact.sendMessage(AllowSendFileMessage + file.toMessage())
                     }.map { content.size }
                     callback?.onFinished(file, content, result)
                     return file
@@ -245,7 +245,7 @@ internal abstract class CommonAbsoluteFolderImpl(
                     )
                 }.let { result0 ->
                     val result = result0.onSuccessCatching {
-                        folder.contact.sendMessage(file.toMessage() + MiraiInternalMessageFlag)
+                        folder.contact.sendMessage(AllowSendFileMessage + file.toMessage())
                     }
                     callback?.onFinished(file, content, result.map { content.size })
                 }
