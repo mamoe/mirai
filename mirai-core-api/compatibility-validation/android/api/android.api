@@ -1708,7 +1708,7 @@ public abstract interface class net/mamoe/mirai/data/UserInfo {
 public abstract interface class net/mamoe/mirai/data/UserProfile {
 	public abstract fun getAge ()I
 	public abstract fun getEmail ()Ljava/lang/String;
-	public abstract fun getFriendGroupId ()I
+	public abstract fun getFriendGroupId ()Ljava/lang/Integer;
 	public abstract fun getNickname ()Ljava/lang/String;
 	public abstract fun getQLevel ()I
 	public abstract fun getSex ()Lnet/mamoe/mirai/data/UserProfile$Sex;
