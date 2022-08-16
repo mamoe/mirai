@@ -19,7 +19,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
-import net.mamoe.mirai.internal.message.flags.MiraiInternalMessageFlag
+import net.mamoe.mirai.internal.message.flags.SkipEventBroadcast
 import net.mamoe.mirai.internal.message.image.*
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.protocol.outgoing.HighwayUploader
@@ -252,13 +252,13 @@ internal suspend fun <C : AbstractContact> C.sendMessageImpl(
     preSendEventConstructor: (C, Message) -> MessagePreSendEvent,
     postSendEventConstructor: (C, MessageChain, Throwable?, MessageReceipt<C>?) -> MessagePostSendEvent<C>,
 ): MessageReceipt<C> {
-    val isMiraiInternal = if (message is MessageChain) {
-        message.anyIsInstance<MiraiInternalMessageFlag>()
+    val skipEvent = if (message is MessageChain) {
+        message.anyIsInstance<SkipEventBroadcast>()
     } else false
 
     require(!message.isContentEmpty()) { "message is empty" }
 
-    val chain = broadcastMessagePreSendEvent(message, isMiraiInternal, preSendEventConstructor)
+    val chain = broadcastMessagePreSendEvent(message, skipEvent, preSendEventConstructor)
 
     val result = kotlin.runCatching {
         MessageProtocolFacade.preprocessAndSendOutgoing(this, message, buildComponentStorage {
@@ -273,7 +273,7 @@ internal suspend fun <C : AbstractContact> C.sendMessageImpl(
         bot.logger.verbose("$this <- $chain".replaceMagicCodes())
     }
 
-    if (!isMiraiInternal) {
+    if (!skipEvent) {
         postSendEventConstructor(this, chain, result.exceptionOrNull(), result.getOrNull()).broadcast()
     }
 

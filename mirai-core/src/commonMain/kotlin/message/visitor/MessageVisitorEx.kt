@@ -61,11 +61,11 @@ internal interface MessageVisitorEx<in D, out R> : MessageVisitor<D, R> {
         return visitInternalFlagOnlyMessage(message, data)
     }
 
-    fun visitMiraiInternalMessageFlag(message: MiraiInternalMessageFlag, data: D): R {
+    fun visitSkipEventBroadcast(message: SkipEventBroadcast, data: D): R {
         return visitInternalFlagOnlyMessage(message, data)
     }
 
     fun visitAllowSendFileMessage(message: AllowSendFileMessage, data: D): R {
-        return visitInternalFlagOnlyMessage(message, data)
+        return visitSkipEventBroadcast(message, data)
     }
 }
