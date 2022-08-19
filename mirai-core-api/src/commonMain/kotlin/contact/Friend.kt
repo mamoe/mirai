@@ -42,7 +42,7 @@ public interface Friend : User, CoroutineScope, AudioSupported, RoamingSupported
     /**
      * 该好友所在的好友分组
      */
-    public val friendGroup: FriendGroup
+    public val friendGroup: FriendGroup?
 
 
     /**

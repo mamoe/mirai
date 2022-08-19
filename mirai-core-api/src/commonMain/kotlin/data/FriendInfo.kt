@@ -19,7 +19,7 @@ public interface FriendInfo : UserInfo {
 
     public override var remark: String
 
-    public val friendGroupId: Int
+    public val friendGroupId: Int?
 }
 
 

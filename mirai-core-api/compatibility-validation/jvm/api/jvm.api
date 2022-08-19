@@ -979,7 +979,7 @@ public abstract interface class net/mamoe/mirai/data/FriendGroups : java/lang/It
 }
 
 public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mirai/data/UserInfo {
-	public abstract fun getFriendGroupId ()I
+	public abstract fun getFriendGroupId ()Ljava/lang/Integer;
 	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun getRemark ()Ljava/lang/String;
 	public abstract fun getUin ()J
@@ -988,7 +988,7 @@ public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mira
 
 public class net/mamoe/mirai/data/FriendInfoImpl : net/mamoe/mirai/data/FriendInfo {
 	public fun <init> (JLjava/lang/String;Ljava/lang/String;)V
-	public fun getFriendGroupId ()I
+	public fun getFriendGroupId ()Ljava/lang/Integer;
 	public fun getNick ()Ljava/lang/String;
 	public fun getRemark ()Ljava/lang/String;
 	public fun getUin ()J
