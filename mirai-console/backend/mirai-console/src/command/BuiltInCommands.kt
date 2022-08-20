@@ -47,10 +47,7 @@ import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.plugin.version
-import net.mamoe.mirai.console.util.AnsiMessageBuilder
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import net.mamoe.mirai.console.util.ConsoleInternalApi
-import net.mamoe.mirai.console.util.sendAnsiMessage
+import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.utils.BotConfiguration
 import java.lang.management.ManagementFactory
@@ -58,7 +55,6 @@ import java.lang.management.MemoryMXBean
 import java.lang.management.MemoryUsage
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import kotlin.math.floor
 import kotlin.system.exitProcess
 
 
@@ -687,35 +683,6 @@ public object BuiltInCommands {
             }
         }
 
-        private const val MEM_B = 1024L
-        private const val MEM_KB = 1024L shl 10
-        private const val MEM_MB = 1024L shl 20
-        private const val MEM_GB = 1024L shl 30
-
-        @Suppress("NOTHING_TO_INLINE")
-        private inline fun StringBuilder.appendDouble(number: Double): StringBuilder =
-            append(floor(number * 100) / 100)
-
-        private fun renderMemoryUsageNumber(num: Long) = buildString {
-            when {
-                num == -1L -> {
-                    append(num)
-                }
-                num < MEM_B -> {
-                    append(num).append("B")
-                }
-                num < MEM_KB -> {
-                    appendDouble(num / 1024.0).append("KB")
-                }
-                num < MEM_MB -> {
-                    appendDouble((num ushr 10) / 1024.0).append("MB")
-                }
-                else -> {
-                    appendDouble((num ushr 20) / 1024.0).append("GB")
-                }
-            }
-        }
-
         private fun AnsiMessageBuilder.renderMemoryUsage(usage: MUsage) = arrayOf(
             renderMemoryUsageNumber(usage.committed),
             renderMemoryUsageNumber(usage.init),
@@ -727,23 +694,6 @@ public object BuiltInCommands {
             usage.used,
             usage.max,
         )
-
-        private var emptyLine = "    ".repeat(10)
-        private fun Appendable.emptyLine(size: Int) {
-            if (emptyLine.length <= size) {
-                emptyLine = String(CharArray(size) { ' ' })
-            }
-            append(emptyLine, 0, size)
-        }
-
-        private inline fun AnsiMessageBuilder.renderMUNum(size: Int, contentLength: Int, code: () -> Unit) {
-            val s = size - contentLength
-            val left = s / 2
-            val right = s - left
-            emptyLine(left)
-            code()
-            emptyLine(right)
-        }
 
         private fun calculateMax(
             vararg lines: Array<String>
