@@ -32,7 +32,7 @@ public interface UserProfile {
      *
      * @since 2.13
      */
-    public val friendGroupId: Int?
+    public val friendGroupId: Int
 
     /**
      * 个性签名
