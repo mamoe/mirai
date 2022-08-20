@@ -29,6 +29,8 @@ public interface UserProfile {
 
     /**
      * 好友分组 ID, 在非好友情况下为 `0`
+     *
+     * @since 2.13
      */
     public val friendGroupId: Int?
 

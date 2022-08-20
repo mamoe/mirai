@@ -115,6 +115,8 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
 
     /**
      * 全部的好友分组
+     *
+     * @since 2.13
      */
     public val friendGroups: FriendGroups
 
