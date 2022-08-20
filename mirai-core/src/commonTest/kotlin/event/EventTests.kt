@@ -304,7 +304,6 @@ internal class EventTests : AbstractEventTest() {
         }
     }
 
-    // 先不加 @test 免得占用 CI 时间
     @Test
     fun `test next event and intercept`() {
         resetEventListeners()
