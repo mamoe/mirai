@@ -14,16 +14,17 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 /**
  * 好友分组列表 (管理器).
  * 运行存在重复名称的分组, 因此依赖于 name 判断不可靠, 需要依赖 ID 判断.
- * @see FriendGroup
  *
+ * @see FriendGroup
  * @since 2.13
  */
 @JvmBlockingBridge
 public interface FriendGroups : Iterable<FriendGroup> {
     /**
      * 新建一个好友分组.
-     * 允许名称重复, 当新建一个已存在名称的分组时, 服务器会返回一个拥有重复名字的新分组.
-     * @throws IllegalStateException 当创建不成功时抛出
+     *
+     * 允许名称重复, 当新建一个已存在名称的分组时, 服务器会返回一个拥有重复名字的新分组;
+     * 当因为其他原因创建不成功时抛出 [IllegalStateException].
      */
     public suspend fun create(name: String): FriendGroup
 

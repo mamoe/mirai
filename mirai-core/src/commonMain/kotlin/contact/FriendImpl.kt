@@ -85,8 +85,10 @@ internal class FriendImpl(
         }
 
     override val friendGroup: FriendGroup?
-        get() = if (info.friendGroupId == null) null else bot.friendGroups[info.friendGroupId!!]
-            ?: bot.friendGroups[0]!!
+        get() {
+            return if (info.friendGroupId == null) null
+            else bot.friendGroups[info.friendGroupId!!] ?: bot.friendGroups[0]!!
+        }
 
     private val messageProtocolStrategy: MessageProtocolStrategy<FriendImpl> = FriendMessageProtocolStrategy(this)
 

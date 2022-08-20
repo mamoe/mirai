@@ -28,7 +28,7 @@ public interface UserProfile {
     public val sex: Sex
 
     /**
-     * 好友分组 ID, 在非好友情况下为 `0`
+     * 好友分组 ID, 在非好友情况下或者位于默认分组情况下为 `0`
      *
      * @since 2.13
      */

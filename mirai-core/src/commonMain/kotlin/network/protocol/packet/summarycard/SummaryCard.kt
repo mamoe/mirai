@@ -120,6 +120,7 @@ internal object SummaryCard {
                     else -> UserProfile.Sex.UNKNOWN
                 },
                 sign = sign,
+                // for dev uFriendGroupId 不会返回 null
                 friendGroupId = response.uFriendGroupId?.toInt()
             )
         }
