@@ -83,15 +83,15 @@ PluginManager.INSTANCE.enablePlugin(Plugin.INSTANCE)
 
 # Download mirai-core-all
 
-curl -L https://maven.aliyun.com/repository/public/net/mamoe/mirai-core-all/1.3.3/mirai-core-all-1.3.3-all.jar -o mirai-core-all-1.3.3.jar
+curl -L https://maven.aliyun.com/repository/central/net/mamoe/mirai-core-all/1.3.3/mirai-core-all-1.3.3-all.jar -o mirai-core-all-1.3.3.jar
 
 # Download mirai-console
 
-curl -L https://maven.aliyun.com/repository/public/net/mamoe/mirai-console/1.0.0/mirai-console-1.0.0-all.jar -o mirai-console-1.0.0.jar
+curl -L https://maven.aliyun.com/repository/central/net/mamoe/mirai-console/1.0.0/mirai-console-1.0.0-all.jar -o mirai-console-1.0.0.jar
 
 # Download mirai-console-terminal
 
-curl -L https://maven.aliyun.com/repository/public/net/mamoe/mirai-console-terminal/1.0.0/mirai-console-terminal-1.0.0-all.jar -o mirai-console-terminal-1.0.0.jar
+curl -L https://maven.aliyun.com/repository/central/net/mamoe/mirai-console-terminal/1.0.0/mirai-console-terminal-1.0.0-all.jar -o mirai-console-terminal-1.0.0.jar
 
 ```
 

@@ -137,6 +137,6 @@ dependencies {
 
 非常不推荐这种方法，请尽可能使用构建工具。
 
-在 [Maven Central](https://repo.maven.apache.org/maven2/net/mamoe/mirai-core-all/) 或 [阿里云代理仓库](https://maven.aliyun.com/repository/public/net/mamoe/mirai-core-all/) 下载指定版本的 `-all.jar` 文件，即包含 `mirai-core`，`mirai-core-api`，`mirai-core-utils` 和其他依赖。
+在 [Maven Central](https://repo.maven.apache.org/maven2/net/mamoe/mirai-core-all/) 或 [阿里云代理仓库](https://maven.aliyun.com/repository/central/net/mamoe/mirai-core-all/) 下载指定版本的 `-all.jar` 文件，即包含 `mirai-core`，`mirai-core-api`，`mirai-core-utils` 和其他依赖。
 
 > [回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)

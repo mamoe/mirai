@@ -16,7 +16,7 @@ plugins {
 }
 
 repositories {
-    maven("https://maven.aliyun.com/repository/public")
+    maven("https://maven.aliyun.com/repository/central")
 }
 
 version = Versions.console

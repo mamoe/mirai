@@ -18,7 +18,7 @@ plugins {
 }
 
 repositories {
-    maven("https://maven.aliyun.com/repository/public") // IntelliJ dependencies are very large (>500MB)
+    maven("https://maven.aliyun.com/repository/central") // IntelliJ dependencies are very large (>500MB)
     mavenCentral()
 }
 
