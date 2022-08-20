@@ -32,6 +32,7 @@ import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.getRaw
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.sendGroupAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toGroupAnnouncement
+import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.client
 import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.highway.ChannelKind
@@ -187,7 +188,7 @@ internal object AnnouncementProtocol {
     data class SendGroupAnnouncementResp(
         @SerialName("ec") override val errorCode: Int = 0,
         @SerialName("em") override val errorMessage: String? = null,
-        @SerialName("new_fid") val fid: String,
+        @SerialName("new_fid") val fid: String? = null,
     ) : CheckableResponseA(), JsonStruct
 
     suspend fun QQAndroidBot.sendGroupAnnouncement(
@@ -195,7 +196,7 @@ internal object AnnouncementProtocol {
         announcement: GroupAnnouncement,
         image: AnnouncementImage?,
     ): String {
-        return bot.components[HttpClientProvider].getHttpClient().post {
+        val body = bot.components[HttpClientProvider].getHttpClient().post {
             url(
                 "https://web.qun.qq.com/cgi-bin/announce/add_qun_" + if (announcement.type == 20) {
                     "instruction"
@@ -226,7 +227,14 @@ internal object AnnouncementProtocol {
             cookie("p_uin", "o$id")
             cookie("skey", sKey)
             cookie("p_skey", psKey("qun.qq.com"))
-        }.bodyAsText().loadSafelyAs(SendGroupAnnouncementResp.serializer()).check().fid
+        }.bodyAsText()
+
+        val resp = body.loadSafelyAs(SendGroupAnnouncementResp.serializer()).check() // check: deserialization errors
+        resp.check() // check: server response
+        resp.fid?.let { return it }
+        // '{"ec":1,"em":"no login [errcode:1:0]","ltsm":1653791033,"srv_code":0}'
+
+        throw contextualBugReportException("No fid found, but this should have be handled before.", forDebug = body)
     }
 
     suspend fun QQAndroidBot.getRawGroupAnnouncements(
