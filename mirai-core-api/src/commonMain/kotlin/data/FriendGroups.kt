@@ -13,7 +13,7 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 
 /**
  * 好友分组列表 (管理器).
- * 运行存在重复名称的分组, 因此依赖于 name 判断不可靠, 需要依赖 ID 判断.
+ * 允许存在重复名称的分组, 因此依赖于 name 判断不可靠, 需要依赖 ID 判断.
  *
  * @see FriendGroup
  * @since 2.13
