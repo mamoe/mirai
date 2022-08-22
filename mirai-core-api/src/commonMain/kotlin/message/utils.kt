@@ -60,7 +60,7 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessage(
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
- * @param intercept 是否拦截, 传入 `true` 时表示拦截此事件不让接下来的监听器处理, 返回 `false` 时表示让接下来的监听器处理
+ * @param intercept 是否拦截, 传入 `true` 时表示拦截此事件不让接下来的监听器处理, 传入 `false` 时表示让接下来的监听器处理
  * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  *
  * @see syncFromEvent 实现原理

@@ -80,7 +80,7 @@ public suspend inline fun <reified E : Event> EventChannel<*>.nextEvent(
  *
  * 由于 [Flow] 拥有更多操作 (如 [Flow.firstOrNull]), 在不需要指定[事件优先级][EventPriority]时使用 [Flow] 拥有更高自由度.
  *
- * @param intercept 是否拦截, 传入 `true` 时表示拦截此事件不让接下来的监听器处理, 返回 `false` 时表示让接下来的监听器处理
+ * @param intercept 是否拦截, 传入 `true` 时表示拦截此事件不让接下来的监听器处理, 传入 `false` 时表示让接下来的监听器处理
  * @param filter 过滤器. 返回 `true` 时表示得到了需要的实例. 返回 `false` 时表示继续监听
  *
  * @since 2.13
