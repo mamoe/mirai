@@ -303,4 +303,27 @@ internal class EventTests : AbstractEventTest() {
             PriorityTestEvent().broadcast()
         }
     }
+
+    @Test
+    fun `test next event and intercept`() {
+        resetEventListeners()
+        GlobalEventChannel.subscribeOnce<TestEvent> {
+            GlobalEventChannel.nextEvent<TestEvent>(priority = EventPriority.HIGH, intercept = true)
+        }
+        GlobalEventChannel.subscribeAlways<TestEvent>(priority = EventPriority.LOW) {
+            this.triggered = true
+        }
+        val tmp = TestEvent()
+        val tmp2 = TestEvent()
+        runBlocking {
+            launch {
+                tmp.broadcast()
+            }
+            launch {
+                tmp2.broadcast()
+            }
+        }
+        assertTrue { (tmp.triggered || tmp2.triggered) && (tmp.triggered != tmp2.triggered) }
+        resetEventListeners()
+    }
 }
