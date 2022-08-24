@@ -14,7 +14,7 @@ package net.mamoe.mirai.contact
 
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.active.GroupHonorFlag
+import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.MemberNudge
@@ -87,7 +87,7 @@ public interface Member : User {
     /**
      * 群荣誉标识.
      */
-    public val honor: Set<GroupHonorFlag>
+    public val honor: Set<GroupHonorType>
 
     /**
      * 群荣誉等级. 取值为 0~100
