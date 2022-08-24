@@ -136,7 +136,7 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported 
 
 
     /**
-     * 获取荣耀相关功能接口
+     * 获取群荣誉相关功能接口
      *
      */
     public val active: Active
