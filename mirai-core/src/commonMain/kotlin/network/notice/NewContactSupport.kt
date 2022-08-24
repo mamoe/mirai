@@ -22,6 +22,7 @@ import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
 import net.mamoe.mirai.internal.getGroupByUin
+import net.mamoe.mirai.internal.network.protocol.data.jce.StGroupRankInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
@@ -52,9 +53,9 @@ internal interface NewContactSupport { // can be a marker interface when context
         return addNewGroupByCode(Mirai.calculateGroupCodeByGroupUin(groupUin))
     }
 
-    suspend fun QQAndroidBot.addNewGroup(stTroopNum: StTroopNum): GroupImpl? {
+    suspend fun QQAndroidBot.addNewGroup(stTroopNum: StTroopNum, stGroupRankInfo: StGroupRankInfo?): GroupImpl? {
         if (getGroup(stTroopNum.groupCode) != null) return null
-        return getNewGroup(stTroopNum)?.apply { groups.delegate.add(this) }
+        return getNewGroup(stTroopNum, stGroupRankInfo).apply { groups.delegate.add(this) }
     }
 
     fun QQAndroidBot.removeStranger(id: Long): StrangerImpl? {
@@ -88,20 +89,23 @@ internal interface NewContactSupport { // can be a marker interface when context
     }
 
     private suspend fun QQAndroidBot.getNewGroup(groupCode: Long): GroupImpl? {
-        val troopNum = network.sendAndExpect(
+        val response = network.sendAndExpect(
             FriendList.GetTroopListSimplify(client),
             timeout = 10_000, attempts = 5
-        ).groups.firstOrNull { it.groupCode == groupCode } ?: return null
+        )
 
-        return getNewGroup(troopNum)
+        val troopNum = response.groups.firstOrNull { it.groupCode == groupCode } ?: return null
+        val groupRankInfo = response.ranks.find { it.dwGroupCode == groupCode }
+
+        return getNewGroup(troopNum, groupRankInfo)
     }
 
-    private suspend fun QQAndroidBot.getNewGroup(troopNum: StTroopNum): GroupImpl? {
+    private suspend fun QQAndroidBot.getNewGroup(troopNum: StTroopNum, stGroupRankInfo: StGroupRankInfo?): GroupImpl {
         return GroupImpl(
             bot = this,
             parentCoroutineContext = coroutineContext,
             id = troopNum.groupCode,
-            groupInfo = GroupInfoImpl(troopNum),
+            groupInfo = GroupInfoImpl(troopNum, stGroupRankInfo),
             members = Mirai.getRawGroupMemberList(
                 this,
                 troopNum.groupUin,

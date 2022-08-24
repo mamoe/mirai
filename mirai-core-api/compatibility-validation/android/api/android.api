@@ -634,36 +634,42 @@ public abstract interface class net/mamoe/mirai/contact/active/Active {
 	public abstract fun setRankTitles (Ljava/util/Map;)V
 }
 
-public abstract interface class net/mamoe/mirai/contact/active/ActiveChart {
-	public abstract fun getActives ()Ljava/util/Map;
-	public abstract fun getExit ()Ljava/util/Map;
-	public abstract fun getJoin ()Ljava/util/Map;
-	public abstract fun getMembers ()Ljava/util/Map;
-	public abstract fun getSentences ()Ljava/util/Map;
+public final class net/mamoe/mirai/contact/active/ActiveChart {
+	public fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)V
+	public final fun component1 ()Ljava/util/Map;
+	public final fun component2 ()Ljava/util/Map;
+	public final fun component3 ()Ljava/util/Map;
+	public final fun component4 ()Ljava/util/Map;
+	public final fun component5 ()Ljava/util/Map;
+	public final fun copy (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)Lnet/mamoe/mirai/contact/active/ActiveChart;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/contact/active/ActiveChart;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/active/ActiveChart;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getActives ()Ljava/util/Map;
+	public final fun getExit ()Ljava/util/Map;
+	public final fun getJoin ()Ljava/util/Map;
+	public final fun getMembers ()Ljava/util/Map;
+	public final fun getSentences ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class net/mamoe/mirai/contact/active/ActiveRecord {
-	public abstract fun getContinuation ()I
-	public abstract fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
-	public abstract fun getSenderId ()J
-	public abstract fun getSenderName ()Ljava/lang/String;
-	public abstract fun getSentences ()I
-}
-
-public final class net/mamoe/mirai/contact/active/GroupHonorFlag : java/lang/Enum {
-	public static final field Companion Lnet/mamoe/mirai/contact/active/GroupHonorFlag$Companion;
-	public static final field EMOTION Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
-	public static final field LEGEND Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
-	public static final field PERFORMER Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
-	public static final field STRONG_NEWBIE Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
-	public static final field TALKATIVE Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
-	public static final fun deserializeFromInt (I)Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
-	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
-	public static fun values ()[Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
-}
-
-public final class net/mamoe/mirai/contact/active/GroupHonorFlag$Companion {
-	public final fun deserializeFromInt (I)Lnet/mamoe/mirai/contact/active/GroupHonorFlag;
+public final class net/mamoe/mirai/contact/active/ActiveRecord {
+	public fun <init> (Ljava/lang/String;JLnet/mamoe/mirai/contact/NormalMember;II)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()J
+	public final fun component3 ()Lnet/mamoe/mirai/contact/NormalMember;
+	public final fun component4 ()I
+	public final fun component5 ()I
+	public final fun copy (Ljava/lang/String;JLnet/mamoe/mirai/contact/NormalMember;II)Lnet/mamoe/mirai/contact/active/ActiveRecord;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/contact/active/ActiveRecord;Ljava/lang/String;JLnet/mamoe/mirai/contact/NormalMember;IIILjava/lang/Object;)Lnet/mamoe/mirai/contact/active/ActiveRecord;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContinuation ()I
+	public final fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
+	public final fun getSenderId ()J
+	public final fun getSenderName ()Ljava/lang/String;
+	public final fun getSentences ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class net/mamoe/mirai/contact/announcement/Announcement {

@@ -79,11 +79,12 @@ internal class FriendList {
         OutgoingPacketFactory<GetTroopListSimplify.Response>("friendlist.GetTroopListReqV2") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val res = this.readUniPacket(GetTroopListRespV2.serializer())
-            return Response(res.vecTroopList.orEmpty())
+            return Response(res.vecTroopList.orEmpty(), res.vecTroopRank.orEmpty())
         }
 
         class Response(
-            val groups: List<StTroopNum>
+            val groups: List<StTroopNum>,
+            val ranks: List<StGroupRankInfo>
         ) : Packet {
             override fun toString(): String = "FriendList.GetFriendGroupList.Response"
         }
