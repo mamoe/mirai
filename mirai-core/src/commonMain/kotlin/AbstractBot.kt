@@ -135,13 +135,18 @@ internal abstract class AbstractBot constructor(
         try {
             network.resumeConnection()
         } catch (e: Throwable) { // failed to init
-            val cause = e.unwrap<NetworkException>()
+            // lift cause to the top of the exception chain. e.g. LoginFailedException
+            val cause = if (e is NetworkException) {
+                e.unwrapForPublicApi()
+            } else e
+
+            // close bot if it hadn't been done during `resumeConnection()`
             if (!components[SsoProcessor].firstLoginSucceed) {
-                this.close(cause) // failed to do first login.
+                close(cause) // failed to do first login, close bot
+            } else if (cause is LoginFailedException && cause.killBot) {
+                close(cause) // re-login failed and has caused bot being somehow killed by server
             }
-            if (cause is LoginFailedException && cause.killBot) {
-                close(cause)
-            }
+
             throw cause
         }
         logger.info { "Bot login successful." }

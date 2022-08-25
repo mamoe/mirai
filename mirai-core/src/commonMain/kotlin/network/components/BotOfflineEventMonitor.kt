@@ -23,7 +23,7 @@ import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.utils.*
 
 /**
- * Handles [BotOfflineEvent]
+ * Handles [BotOfflineEvent]. It launches recovery jobs when receiving offline events from server.
  */
 internal interface BotOfflineEventMonitor {
     companion object : ComponentKey<BotOfflineEventMonitor>
@@ -70,10 +70,20 @@ internal class BotOfflineEventMonitorImpl : BotOfflineEventMonitor {
                 closeNetwork()
             }
             is BotOfflineEvent.Force -> {
-                bot.logger.warning { "Connection occupied by another android device: ${event.message}" }
+                bot.logger.warning { "Connection occupied by another android device. Will try to resume connection. (${event.message})" }
                 closeNetwork()
             }
-            is BotOfflineEvent.MsfOffline,
+            is BotOfflineEvent.MsfOffline -> {
+                // This normally means bot is blocked and requires manual action.
+                bot.logger.warning { "Server notifies offline. (${event.cause?.message ?: event.toString()})" }
+                closeNetwork()
+                // `closeNetwork` will close NetworkHandler,
+                // after which NetworkHandlerSelector will create a new instance to try to fix the problem.
+                // A new login attempt will fail because the bot is blocked, with LoginFailedException which then wrapped into NetworkException. (LoginFailedExceptionAsNetworkException)
+                // Selector will handle this exception, and close the block while logging this down.
+
+                // See SelectorNetworkHandler.instance for more information on how the Selector handles the exception.
+            }
             is BotOfflineEvent.Dropped,
             is BotOfflineEvent.RequireReconnect,
             -> {

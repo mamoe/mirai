@@ -70,7 +70,13 @@ internal abstract class NetworkHandlerSupport(
 
     override fun close(cause: Throwable?) {
         if (coroutineContext.job.isActive) {
-            coroutineContext.job.cancel("NetworkHandler closed", cause)
+            coroutineContext.job.cancel(
+                if (cause is CancellationException) {
+                    cause
+                } else {
+                    CancellationException("NetworkHandler closed", cause)
+                }
+            )
         }
     }
 
@@ -228,14 +234,10 @@ internal abstract class NetworkHandlerSupport(
         @Throws(Exception::class)
         suspend fun resumeConnection() {
             val observer = context.getOrNull(StateObserver)
-            if (observer != null) {
-                observer.beforeStateResume(this@NetworkHandlerSupport, _state)
-                val result = kotlin.runCatching { resumeConnection0() }
-                observer.afterStateResume(this@NetworkHandlerSupport, _state, result)
-                result.getOrThrow()
-            } else {
-                resumeConnection0()
-            }
+            observer?.beforeStateResume(this@NetworkHandlerSupport, _state)
+            val result = kotlin.runCatching { resumeConnection0() }
+            observer?.afterStateResume(this@NetworkHandlerSupport, _state, result)
+            result.getOrThrow()
         }
 
         protected abstract suspend fun resumeConnection0()

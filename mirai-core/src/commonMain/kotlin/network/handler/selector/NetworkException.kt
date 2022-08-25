@@ -9,6 +9,16 @@
 
 package net.mamoe.mirai.internal.network.handler.selector
 
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
+import net.mamoe.mirai.utils.unwrap
+
+/**
+ * 已知的网络异常.
+ *
+ * 在 [NetworkHandlerSupport.BaseStateImpl] 中抛出此异常,
+ * 或用此异常 [close NetworkHandler][NetworkHandler.close], 可建议 [Selector][SelectorNetworkHandler] 是否执行重连.
+ */
 internal open class NetworkException : Exception {
     /**
      * If true, the selector may recover the network handler by some means.
@@ -29,5 +39,12 @@ internal open class NetworkException : Exception {
 
     constructor(message: String, cause: Throwable?, recoverable: Boolean) : super(message, cause) {
         this.recoverable = recoverable
+    }
+
+    /**
+     * Returns the exception to be thrown for public API.
+     */
+    open fun unwrapForPublicApi(): Throwable {
+        return this.unwrap<NetworkException>()
     }
 }

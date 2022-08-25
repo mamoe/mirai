@@ -64,9 +64,9 @@ public actual suspend inline fun <T, R> T.runBIO(crossinline block: T.() -> R): 
  * ```
  */
 @Suppress("unused")
-public actual inline fun <reified E> Throwable.unwrap(): Throwable {
+public actual inline fun <reified E> Throwable.unwrap(addSuppressed: Boolean): Throwable {
     if (this !is E) return this
     return this.findCause { it !is E }
-        ?.also { it.addSuppressed(this) }
+        ?.also { if (addSuppressed) it.addSuppressed(this) }
         ?: this
 }

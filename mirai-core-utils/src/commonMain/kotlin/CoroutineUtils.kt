@@ -118,20 +118,8 @@ public fun CoroutineContext.childScopeContext(
         else it
     }
 
-public inline fun <R> runUnwrapCancellationException(block: () -> R): R {
-    try {
-        return block()
-    } catch (e: CancellationException) {
-        // e is like `Exception in thread "main" kotlinx.coroutines.JobCancellationException: Parent job is Cancelling; job=JobImpl{Cancelled}@f252f300`
-        // and this is useless.
-        throw e.unwrapCancellationException()
-
-        // if (e.suppressed.isNotEmpty()) throw e // preserve details.
-        // throw e.findCause { it !is CancellationException } ?: e
-    }
-}
-
-public fun Throwable.unwrapCancellationException(): Throwable = unwrap<CancellationException>()
+public fun Throwable.unwrapCancellationException(addSuppressed: Boolean = true): Throwable =
+    unwrap<CancellationException>(addSuppressed)
 
 /**
  * For code
@@ -178,6 +166,6 @@ public fun Throwable.unwrapCancellationException(): Throwable = unwrap<Cancellat
  * ```
  */
 @Suppress("unused")
-public expect inline fun <reified E> Throwable.unwrap(): Throwable
+public expect inline fun <reified E> Throwable.unwrap(addSuppressed: Boolean = true): Throwable
 
 public val CoroutineContext.coroutineName: String get() = this[CoroutineName]?.name ?: "unnamed"
