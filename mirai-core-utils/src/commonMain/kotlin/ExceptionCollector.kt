@@ -36,6 +36,7 @@ public open class ExceptionCollector {
     @Volatile
     private var last: Throwable? = null
     private val hashCodes = mutableSetOf<Long>()
+    private val suppressedList = mutableListOf<Throwable>()
 
     /**
      * @return `true` if [e] is new.
@@ -52,7 +53,8 @@ public open class ExceptionCollector {
     }
 
     protected open fun addSuppressed(receiver: Throwable, e: Throwable) {
-        receiver.addSuppressed(e)
+        suppressedList.add(e)
+//        receiver.addSuppressed(e)
     }
 
     public fun collectGet(e: Throwable?): Throwable {
@@ -66,7 +68,23 @@ public open class ExceptionCollector {
      */
     public fun collectException(e: Throwable?): Boolean = collect(e)
 
-    public fun getLast(): Throwable? = last
+    /**
+     * Adds [suppressedList] to suppressed exceptions of [last]
+     */
+    @Synchronized
+    private fun bake() {
+        last?.let { last ->
+            for (suppressed in suppressedList.asReversed()) {
+                last.addSuppressed(suppressed)
+            }
+        }
+        suppressedList.clear()
+    }
+
+    public fun getLast(): Throwable? {
+        bake()
+        return last
+    }
 
     @TerminalOperation // to give it a color for a clearer control flow
     public fun collectThrow(exception: Throwable): Nothing {
@@ -97,6 +115,7 @@ public open class ExceptionCollector {
     public fun dispose() { // help gc
         this.last = null
         this.hashCodes.clear()
+        this.suppressedList.clear()
     }
 
     public companion object {
@@ -130,6 +149,8 @@ public inline fun <R> ExceptionCollector.withExceptionCollector(action: Exceptio
             return action()
         } catch (e: Throwable) {
             collectThrow(e)
+        } finally {
+            dispose()
         }
     }
 }

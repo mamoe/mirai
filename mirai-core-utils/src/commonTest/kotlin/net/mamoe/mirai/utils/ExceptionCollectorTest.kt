@@ -32,7 +32,7 @@ internal class ExceptionCollectorTest {
         collector.collect(IllegalStateException())
 
         assertIs<IllegalStateException>(collector.getLast())
-        assertTrue { collector.getLast()!!.suppressedExceptions.single() is IllegalArgumentException }
+        assertTrue { collector.getLast()!!.suppressedExceptions[0] is IllegalArgumentException }
         assertEquals(2, collector.asSequence().count())
     }
 
@@ -45,8 +45,8 @@ internal class ExceptionCollectorTest {
         collector.collect(IllegalStateException())
 
         assertIs<IllegalStateException>(collector.getLast())
-        assertTrue { collector.getLast()!!.suppressedExceptions.single() is IllegalArgumentException }
-        assertTrue { collector.getLast()!!.suppressedExceptions.single().suppressedExceptions.single() is IndexOutOfBoundsException }
+        assertTrue { collector.getLast()!!.suppressedExceptions[0] is IllegalArgumentException }
+        assertTrue { collector.getLast()!!.suppressedExceptions[1] is IndexOutOfBoundsException }
         assertEquals(3, collector.asSequence().count())
     }
 
