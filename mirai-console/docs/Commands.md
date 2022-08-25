@@ -434,9 +434,9 @@ object MySimple : SimpleCommand(MyPluginMain, "main") {
 *Java*
 
 ```java
-// MyComposite.java
-public final class MyComposite extends JCompositeCommand {
-    public MyComposite() {
+// MySimple.java
+public final class MySimple extends JSimpleCommand {
+    public MySimple() {
         super(MyPluginMain.INSTANCE, "main");
         // ...
     }
