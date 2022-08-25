@@ -10,14 +10,14 @@
 package net.mamoe.mirai.contact.active
 
 /**
- * 活跃度数据图表， Key 是  yyyy-MM 格式的日期，Value 是 数量
+ * 活跃度数据图表， 键是 `yyyy-MM` 格式的日期，值是数量
  * @property members 每日总人数
  * @property actives 每日活跃人数
  * @property sentences 每日申请人数
  * @property join 每日入群人数
  * @property exit 每日退群人数
  */
-public data class ActiveChart(
+public class ActiveChart internal constructor(
     public val actives: Map<String, Int>,
     public val sentences: Map<String, Int>,
     public val members: Map<String, Int>,

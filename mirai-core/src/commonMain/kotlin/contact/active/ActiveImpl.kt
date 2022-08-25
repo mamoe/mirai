@@ -126,13 +126,7 @@ internal abstract class CommonActiveImpl(
         }.map { it.toActiveRecord(group) }
     }
 
-    override suspend fun getChart(): ActiveChart {
-        return getGroupActiveData(page = null)?.info?.toActiveChart() ?: ActiveChart(
-            actives = emptyMap(),
-            sentences = emptyMap(),
-            members = emptyMap(),
-            join = emptyMap(),
-            exit = emptyMap()
-        )
+    override suspend fun getChart(): ActiveChart? {
+        return getGroupActiveData(page = null)?.info?.toActiveChart()
     }
 }

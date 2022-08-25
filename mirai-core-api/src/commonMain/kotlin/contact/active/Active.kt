@@ -7,9 +7,12 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:JvmBlockingBridge
+
 package net.mamoe.mirai.contact.active
 
 import kotlinx.coroutines.flow.Flow
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.contact.Member
@@ -53,7 +56,7 @@ public expect interface Active {
      *
      * set 时传入的等级头衔 将会异步发送给api，并刷新等级头衔信息。
      *
-     * @see Member.rank
+     * @see Member.rankTitle
      */
     @MiraiExperimentalApi
     public var rankTitles: Map<Int, String>
@@ -63,7 +66,7 @@ public expect interface Active {
      *
      * set 时传入的等级头衔显示设置 将会异步发送给api，并刷新等级头衔信息。
      *
-     * @see Member.rank
+     * @see Member.rankTitle
      */
     @MiraiExperimentalApi
     public var rankShow: Boolean
@@ -76,7 +79,7 @@ public expect interface Active {
     public fun asFlow(): Flow<ActiveRecord>
 
     /**
-     * 获取活跃度图表数据
+     * 获取活跃度图表数据，查询失败时返回 null
      */
     public suspend fun getChart(): ActiveChart?
 }

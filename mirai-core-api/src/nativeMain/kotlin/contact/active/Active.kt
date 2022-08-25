@@ -53,7 +53,7 @@ public actual interface Active {
      *
      * set 时传入的等级头衔 将会异步发送给api，并刷新等级头衔信息。
      *
-     * @see Member.rank
+     * @see Member.rankTitle
      */
     @MiraiExperimentalApi
     public actual var rankTitles: Map<Int, String>
@@ -63,7 +63,7 @@ public actual interface Active {
      *
      * set 时传入的等级头衔显示设置 将会异步发送给api，并刷新等级头衔信息。
      *
-     * @see Member.rank
+     * @see Member.rankTitle
      */
     @MiraiExperimentalApi
     public actual var rankShow: Boolean
@@ -76,7 +76,7 @@ public actual interface Active {
     public actual fun asFlow(): Flow<ActiveRecord>
 
     /**
-     * 获取活跃度图表数据
+     * 获取活跃度图表数据，查询失败时返回 null
      */
     public actual suspend fun getChart(): ActiveChart?
 }

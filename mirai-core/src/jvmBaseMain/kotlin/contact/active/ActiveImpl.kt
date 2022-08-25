@@ -14,6 +14,7 @@ import net.mamoe.mirai.contact.active.ActiveRecord
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.toActiveRecord
+import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.stream
 import java.util.stream.Stream
@@ -24,6 +25,7 @@ internal actual class ActiveImpl actual constructor(
     groupInfo: GroupInfo,
 ) : CommonActiveImpl(group, logger, groupInfo) {
 
+    @JavaFriendlyAPI
     override fun asStream(): Stream<ActiveRecord> {
         return stream {
             var page = 0

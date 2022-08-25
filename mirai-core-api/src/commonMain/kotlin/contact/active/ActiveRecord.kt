@@ -14,7 +14,7 @@ import net.mamoe.mirai.contact.NormalMember
 /**
  * 活跃数据记录
  */
-public data class ActiveRecord(
+public class ActiveRecord internal constructor(
     /**
      * 发言者名称
      */

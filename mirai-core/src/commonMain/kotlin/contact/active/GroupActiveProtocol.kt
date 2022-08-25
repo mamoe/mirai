@@ -177,6 +177,7 @@ internal object GroupActiveProtocol {
     }
 
     fun GroupActiveData.MostActive.toActiveRecord(group: Group): ActiveRecord {
+        @Suppress("INVISIBLE_MEMBER")
         return ActiveRecord(
             senderId = uin,
             senderName = name,
@@ -187,6 +188,7 @@ internal object GroupActiveProtocol {
     }
 
     fun GroupActiveData.ActiveInfo.toActiveChart(): ActiveChart {
+        @Suppress("INVISIBLE_MEMBER")
         return ActiveChart(
             actives = actNum?.associate { it.date to it.num }.orEmpty(),
             sentences = sentences?.associate { it.date to it.num }.orEmpty(),

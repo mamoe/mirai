@@ -427,14 +427,12 @@ public abstract interface class net/mamoe/mirai/contact/GroupSettings {
 }
 
 public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai/contact/User {
+	public abstract fun getActive ()Lnet/mamoe/mirai/contact/MemberActive;
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
-	public abstract fun getHonor ()Ljava/util/Set;
 	public abstract fun getNameCard ()Ljava/lang/String;
 	public abstract fun getPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
-	public abstract fun getPoint ()I
-	public abstract fun getRank ()I
+	public fun getRankTitle ()Ljava/lang/String;
 	public abstract fun getSpecialTitle ()Ljava/lang/String;
-	public abstract fun getTemperature ()I
 	public fun mute (I)V
 	public abstract fun mute (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
@@ -442,6 +440,13 @@ public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai
 	public abstract fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class net/mamoe/mirai/contact/MemberActive {
+	public abstract fun getHonor ()Ljava/util/Set;
+	public abstract fun getPoint ()I
+	public abstract fun getRank ()I
+	public abstract fun getTemperature ()I
 }
 
 public final class net/mamoe/mirai/contact/MemberKt {
@@ -483,7 +488,6 @@ public abstract interface class net/mamoe/mirai/contact/NormalMember : net/mamoe
 	public abstract fun getLastSpeakTimestamp ()I
 	public abstract fun getMuteTimeRemaining ()I
 	public abstract fun getNameCard ()Ljava/lang/String;
-	public fun getRankTitle ()Ljava/lang/String;
 	public abstract fun getSpecialTitle ()Ljava/lang/String;
 	public fun isMuted ()Z
 	public fun kick (Ljava/lang/String;)V
@@ -627,6 +631,7 @@ public abstract interface class net/mamoe/mirai/contact/UserOrBot : net/mamoe/mi
 public abstract interface class net/mamoe/mirai/contact/active/Active {
 	public abstract fun asFlow ()Lkotlinx/coroutines/flow/Flow;
 	public abstract fun asStream ()Ljava/util/stream/Stream;
+	public fun getChart ()Lnet/mamoe/mirai/contact/active/ActiveChart;
 	public abstract fun getChart (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getRankShow ()Z
 	public abstract fun getRankTitles ()Ljava/util/Map;
@@ -635,41 +640,19 @@ public abstract interface class net/mamoe/mirai/contact/active/Active {
 }
 
 public final class net/mamoe/mirai/contact/active/ActiveChart {
-	public fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)V
-	public final fun component1 ()Ljava/util/Map;
-	public final fun component2 ()Ljava/util/Map;
-	public final fun component3 ()Ljava/util/Map;
-	public final fun component4 ()Ljava/util/Map;
-	public final fun component5 ()Ljava/util/Map;
-	public final fun copy (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)Lnet/mamoe/mirai/contact/active/ActiveChart;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/contact/active/ActiveChart;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/active/ActiveChart;
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getActives ()Ljava/util/Map;
 	public final fun getExit ()Ljava/util/Map;
 	public final fun getJoin ()Ljava/util/Map;
 	public final fun getMembers ()Ljava/util/Map;
 	public final fun getSentences ()Ljava/util/Map;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/contact/active/ActiveRecord {
-	public fun <init> (Ljava/lang/String;JLnet/mamoe/mirai/contact/NormalMember;II)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()J
-	public final fun component3 ()Lnet/mamoe/mirai/contact/NormalMember;
-	public final fun component4 ()I
-	public final fun component5 ()I
-	public final fun copy (Ljava/lang/String;JLnet/mamoe/mirai/contact/NormalMember;II)Lnet/mamoe/mirai/contact/active/ActiveRecord;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/contact/active/ActiveRecord;Ljava/lang/String;JLnet/mamoe/mirai/contact/NormalMember;IIILjava/lang/Object;)Lnet/mamoe/mirai/contact/active/ActiveRecord;
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getContinuation ()I
 	public final fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
 	public final fun getSenderId ()J
 	public final fun getSenderName ()Ljava/lang/String;
 	public final fun getSentences ()I
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class net/mamoe/mirai/contact/announcement/Announcement {
