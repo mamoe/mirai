@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-#          - windows-2022
+          #          - windows-2022
           - macos-12
     env:
       gradleArgs: --scan "-Dmirai.target=jvm;android;!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx6000m" "-Dfile.encoding=UTF-8"
@@ -315,7 +315,12 @@ jobs:
 
       - name: Publish Snapshots
         if: ${{ github.event.pusher && env.isMac == 'true' }}
-        run: ./gradlew publishAllPublicationsToMiraiRepoRepository ${{ env.gradleArgs }}
+        uses: nick-fields/retry@v2
+        continue-on-error: true
+        with:
+          command: ./gradlew publishAllPublicationsToMiraiRepoRepository ${{ env.gradleArgs }}
+          retry_on: error
+          max_attempts: 3
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
@@ -336,16 +341,16 @@ jobs:
           - macos-12
           - macos-11
         include:
-        - os: windows-2022
-          targetName: mingwX64
-        - os: ubuntu-20.04
-          targetName: linuxX64
-        - os: ubuntu-18.04
-          targetName: linuxX64
-        - os: macos-12
-          targetName: macosX64
-        - os: macos-11
-          targetName: macosX64
+          - os: windows-2022
+            targetName: mingwX64
+          - os: ubuntu-20.04
+            targetName: linuxX64
+          - os: ubuntu-18.04
+            targetName: linuxX64
+          - os: macos-12
+            targetName: macosX64
+          - os: macos-11
+            targetName: macosX64
     env:
       # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
       # > Declaration annotated with '@OptionalExpectation' can only be used in common module sources
