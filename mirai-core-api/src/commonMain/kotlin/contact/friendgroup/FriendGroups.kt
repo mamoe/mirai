@@ -21,6 +21,11 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 @JvmBlockingBridge
 public interface FriendGroups : Iterable<FriendGroup> {
     /**
+     * 获取 [ID][FriendGroup.id] 为 `0` 的默认分组 ("我的好友").
+     */
+    public val default: FriendGroup get() = get(0) ?: error("Internal error: failed to get default friend group.")
+
+    /**
      * 新建一个好友分组.
      *
      * 允许名称重复, 当新建一个已存在名称的分组时, 服务器会返回一个拥有重复名字的新分组;
