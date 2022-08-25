@@ -44,7 +44,7 @@ public interface Friend : User, CoroutineScope, AudioSupported, RoamingSupported
      *
      * @since 2.13
      */
-    public val friendGroup: FriendGroup?
+    public val friendGroup: FriendGroup
 
 
     /**
