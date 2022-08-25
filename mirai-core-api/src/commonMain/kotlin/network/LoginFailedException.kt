@@ -27,6 +27,8 @@ public sealed class LoginFailedException(
     message: String? = null,
     cause: Throwable? = null
 ) : RuntimeException(message, cause)
+// 实现提示 (仅供网络层实现者参考): `LoginFailedException` 会被包装为 `NetworkException` (`LoginFailedExceptionAsNetworkException`),
+// 并在 `bot.login` 时 unwrap.
 
 /**
  * 密码输入错误 (有时候也会是其他错误, 如 `"当前上网环境异常，请更换网络环境或在常用设备上登录或稍后再试。"`)

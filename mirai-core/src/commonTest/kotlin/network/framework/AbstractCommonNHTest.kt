@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.network.framework
 
-import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.*
@@ -63,7 +62,7 @@ internal abstract class TestCommonNetworkHandler(
 
     override fun setStateOK(conn: PlatformConn, exception: Throwable?): NetworkHandlerSupport.BaseStateImpl? {
         exception?.printStackTrace()
-        return setState { StateOK(conn, CompletableDeferred(Unit)) }
+        return setState { StateOK(conn) }
     }
 
     override fun setStateLoading(conn: PlatformConn): NetworkHandlerSupport.BaseStateImpl? {

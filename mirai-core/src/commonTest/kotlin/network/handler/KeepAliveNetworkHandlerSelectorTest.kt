@@ -36,10 +36,11 @@ internal class TestSelector<H : NetworkHandler> :
         this.createInstance0 = createInstance0
     }
 
-    val createInstanceCount = atomic(0)
+    private val _createInstanceCount = atomic(0)
+    val createdInstanceCount get() = _createInstanceCount.value
 
     override fun createInstance(): H {
-        createInstanceCount.incrementAndGet()
+        _createInstanceCount.incrementAndGet()
         return this.createInstance0()
     }
 }
@@ -76,7 +77,7 @@ internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerT
         assertSame(handler, selector.getCurrentInstanceOrNull())
         handler.setState(State.CLOSED)
         runBlockingUnit(timeout = 3.seconds) { selector.awaitResumeInstance() }
-        assertEquals(1, selector.createInstanceCount.value)
+        assertEquals(1, selector.createdInstanceCount)
     }
 
     @Test
@@ -87,6 +88,6 @@ internal class KeepAliveNetworkHandlerSelectorTest : AbstractMockNetworkHandlerT
         assertFailsWith<IllegalStateException> {
             selector.awaitResumeInstance()
         }
-        assertEquals(3, selector.createInstanceCount.value)
+        assertEquals(3, selector.createdInstanceCount)
     }
 }

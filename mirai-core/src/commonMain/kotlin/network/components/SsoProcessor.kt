@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse
@@ -55,6 +56,17 @@ internal interface SsoProcessor {
     suspend fun sendRegister(handler: NetworkHandler): StatSvc.Register.Response
 
     companion object : ComponentKey<SsoProcessor>
+}
+
+/**
+ * Wraps [LoginFailedException] into [NetworkException]
+ */
+internal class LoginFailedExceptionAsNetworkException(
+    private val underlying: LoginFailedException
+) : NetworkException(underlying.message ?: "Login failed", underlying, !underlying.killBot) {
+    override fun unwrapForPublicApi(): Throwable {
+        return underlying
+    }
 }
 
 internal enum class FirstLoginResult(
