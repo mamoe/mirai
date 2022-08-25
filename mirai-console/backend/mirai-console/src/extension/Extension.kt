@@ -63,8 +63,12 @@ public interface FunctionExtension : Extension
  *
  * @see PermissionServiceProvider
  */
-@Deprecated("Please use InstanceExtension instead.", replaceWith = ReplaceWith("InstanceExtension"))
-@DeprecatedSinceMirai(warningSince = "2.11")
+@Deprecated(
+    "Please use InstanceExtension instead.",
+    replaceWith = ReplaceWith("InstanceExtension"),
+    level = DeprecationLevel.ERROR
+)
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
 public interface SingletonExtension<T> : Extension {
     public val instance: T
 }

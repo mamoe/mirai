@@ -41,8 +41,8 @@ import net.mamoe.mirai.utils.DeprecatedSinceMirai
 @Deprecated(
     "请使用 JavaAutoSavePluginConfig",
     replaceWith = ReplaceWith("JavaAutoSavePluginConfig", "net.mamoe.mirai.console.data.java.JavaAutoSavePluginConfig"),
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
-@DeprecatedSinceMirai(warningSince = "2.11")
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
 public abstract class JAutoSavePluginConfig public constructor(saveName: String) : AutoSavePluginConfig(saveName),
     PluginConfig

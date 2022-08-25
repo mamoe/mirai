@@ -25,13 +25,19 @@ public interface CommandCallParserProvider : InstanceExtension<CommandCallParser
         AbstractInstanceExtensionPoint<CommandCallParserProvider, CommandCallParser>(CommandCallParserProvider::class)
 }
 
-@Deprecated("Deprecated for removal. Please implement your own CommandCallParserProvider.")
-@DeprecatedSinceMirai(warningSince = "2.11") // for removal.
+@Deprecated(
+    "Deprecated for removal. Please implement your own CommandCallParserProvider.",
+    level = DeprecationLevel.ERROR
+)
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13") // for removal.
 @ExperimentalCommandDescriptors
 public class CommandCallParserProviderImpl(override val instance: CommandCallParser) : CommandCallParserProvider
 
-@Deprecated("Deprecated for removal. Please implement your own CommandCallParserProvider.")
-@DeprecatedSinceMirai(warningSince = "2.11") // for removal.
+@Deprecated(
+    "Deprecated for removal. Please implement your own CommandCallParserProvider.",
+    level = DeprecationLevel.ERROR
+)
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13") // for removal.
 @ExperimentalCommandDescriptors
 public class CommandCallParserProviderImplLazy(initializer: () -> CommandCallParser) : CommandCallParserProvider {
     override val instance: CommandCallParser by lazy(initializer)
