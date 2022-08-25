@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+@file:JvmName("MockConversions")
 
 package net.mamoe.mirai.mock.utils
 
