@@ -22,7 +22,7 @@ import kotlin.contracts.contract
 /**
  * 用户资料服务, 用于 [IMirai.queryProfile] 查询用户资料
  *
- * implementation note: Java 请实现 [UserProfileServiceJ]
+ * implementation note: Java 请实现 [JUserProfileService]
  *
  * @see MockBot.userProfileService
  * @see MockUserProfileBuilder
@@ -56,7 +56,7 @@ public interface UserProfileService {
  * kotlin 请实现 [UserProfileService]
  */
 @Suppress("ILLEGAL_JVM_NAME", "INAPPLICABLE_JVM_NAME")
-public interface UserProfileServiceJ : UserProfileService {
+public interface JUserProfileService : UserProfileService {
     override suspend fun doQueryUserProfile(id: Long): UserProfile {
         return runBIO {
             doQueryUserProfileJ(id) ?: buildUserProfile { }
