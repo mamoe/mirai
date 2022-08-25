@@ -9,7 +9,8 @@
 
 package net.mamoe.mirai.internal.network.notice.priv
 
-import net.mamoe.mirai.internal.contact.FriendGroupImpl
+import net.mamoe.mirai.internal.contact.friendgroup.FriendGroupImpl
+import net.mamoe.mirai.internal.contact.friendgroup.impl
 import net.mamoe.mirai.internal.contact.impl
 import net.mamoe.mirai.internal.contact.info.FriendGroupInfo
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor

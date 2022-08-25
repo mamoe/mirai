@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.contact
+package net.mamoe.mirai.internal.contact.friendgroup
 
 import net.mamoe.mirai.contact.friendgroup.FriendGroup
 import net.mamoe.mirai.contact.friendgroup.FriendGroups
@@ -19,8 +19,9 @@ import net.mamoe.mirai.utils.asImmutable
 
 internal class FriendGroupsImpl(
     val bot: QQAndroidBot
-) : Iterable<FriendGroup>, FriendGroups {
-    val friendGroups = ConcurrentLinkedDeque<FriendGroup>()
+) : FriendGroups {
+    val friendGroups = ConcurrentLinkedDeque<FriendGroupImpl>()
+    private val friendGroupsImmutable by lazy { friendGroups.asImmutable() }
 
     override suspend fun create(name: String): FriendGroup {
         val resp = bot.network.sendAndExpect(FriendList.SetGroupReqPack.New(bot.client, name))
@@ -31,5 +32,6 @@ internal class FriendGroupsImpl(
     }
 
     override fun get(id: Int): FriendGroup? = friendGroups.firstOrNull { it.id == id }
-    override fun iterator(): Iterator<FriendGroup> = friendGroups.asImmutable().iterator()
+
+    override fun asCollection(): Collection<FriendGroup> = friendGroupsImmutable
 }

@@ -19,12 +19,11 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.friendgroup.FriendGroup
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.FriendGroupImpl
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.StrangerImpl
+import net.mamoe.mirai.internal.contact.friendgroup.FriendGroupImpl
 import net.mamoe.mirai.internal.contact.info.*
 import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
 import net.mamoe.mirai.internal.network.component.ComponentKey
@@ -159,9 +158,9 @@ internal class ContactUpdaterImpl(
             return friendInfos
         }
 
-        suspend fun refreshFriendGroupList(): List<FriendGroup> {
+        suspend fun refreshFriendGroupList(): List<FriendGroupImpl> {
             logger.info { "Start loading friendGroup list..." }
-            val friendGroupInfos = mutableListOf<FriendGroup>()
+            val friendGroupInfos = mutableListOf<FriendGroupImpl>()
 
             var count = 0
             var total: Short

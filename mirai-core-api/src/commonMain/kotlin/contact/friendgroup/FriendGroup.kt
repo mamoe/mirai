@@ -11,15 +11,24 @@ package net.mamoe.mirai.contact.friendgroup
 
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 一个好友分组.
  * 可能同时存在多个相同[名称][name]的分组, 但是每个分组的 [id] 都是唯一的.
  *
+ *
+ * 要获取一个分组, 可使用 [get] 根据 [ID][FriendGroup.id] 获取, 或者使用 [asCollection] 获取全部分组列表.
+ * 也可以通过 [Friend.friendGroup] 获取一个好友所在的分组.
+ *
+ * 在每次登录会话中, [FriendGroup] 的实例是依据 [id] 唯一的. 存在于同一个分组中的多个好友的 [Friend.friendGroup] 会返回相同的 [FriendGroup] 实例.
+ * 但当 bot 重新登录后, 实例可能变化.
+ *
  * @see FriendGroups
  * @since 2.13
  */
 @JvmBlockingBridge
+@NotStableForInheritance
 public interface FriendGroup {
     /**
      * 好友分组 ID

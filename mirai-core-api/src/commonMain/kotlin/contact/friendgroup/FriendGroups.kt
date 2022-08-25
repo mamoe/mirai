@@ -10,6 +10,7 @@
 package net.mamoe.mirai.contact.friendgroup
 
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
+import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 好友分组列表 (管理器).
@@ -19,17 +20,20 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
  * @since 2.13
  */
 @JvmBlockingBridge
-public interface FriendGroups : Iterable<FriendGroup> {
+@NotStableForInheritance
+public interface FriendGroups {
     /**
      * 获取 [ID][FriendGroup.id] 为 `0` 的默认分组 ("我的好友").
      */
-    public val default: FriendGroup get() = get(0) ?: error("Internal error: failed to get default friend group.")
+    public val default: FriendGroup get() = get(0) ?: error("Internal error: could not find FriendGroup with id = 0.")
 
     /**
      * 新建一个好友分组.
      *
      * 允许名称重复, 当新建一个已存在名称的分组时, 服务器会返回一个拥有重复名字的新分组;
      * 当因为其他原因创建不成功时抛出 [IllegalStateException].
+     *
+     * 提示: 要删除一个好友分组, 使用 [FriendGroup.delete].
      */
     public suspend fun create(name: String): FriendGroup
 
@@ -37,4 +41,12 @@ public interface FriendGroups : Iterable<FriendGroup> {
      * 获取指定 ID 的好友分组, 不存在时返回 `null`
      */
     public operator fun get(id: Int): FriendGroup?
+
+    /**
+     * 获取包含全部 [FriendGroup] 的 [Collection]. 返回的 [Collection] 只可读取.
+     *
+     * 此方法快速返回, 不会在调用时实例化新的 [Collection] 对象.
+     * 返回的 [Collection] 是对缓存的引用, 会随着服务器通知和机器人操作 (如 [create]) 变化.
+     */
+    public fun asCollection(): Collection<FriendGroup>
 }

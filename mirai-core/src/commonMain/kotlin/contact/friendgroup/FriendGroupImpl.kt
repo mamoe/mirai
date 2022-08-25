@@ -7,11 +7,13 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.contact
+package net.mamoe.mirai.internal.contact.friendgroup
 
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.friendgroup.FriendGroup
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.FriendImpl
+import net.mamoe.mirai.internal.contact.impl
 import net.mamoe.mirai.internal.contact.info.FriendGroupInfo
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import kotlin.contracts.ExperimentalContracts

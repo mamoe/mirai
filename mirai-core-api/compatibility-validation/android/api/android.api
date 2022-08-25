@@ -923,7 +923,8 @@ public abstract interface class net/mamoe/mirai/contact/friendgroup/FriendGroup 
 	public abstract fun renameTo (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public abstract interface class net/mamoe/mirai/contact/friendgroup/FriendGroups : java/lang/Iterable, kotlin/jvm/internal/markers/KMappedMarker {
+public abstract interface class net/mamoe/mirai/contact/friendgroup/FriendGroups {
+	public abstract fun asCollection ()Ljava/util/Collection;
 	public fun create (Ljava/lang/String;)Lnet/mamoe/mirai/contact/friendgroup/FriendGroup;
 	public abstract fun create (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun get (I)Lnet/mamoe/mirai/contact/friendgroup/FriendGroup;
