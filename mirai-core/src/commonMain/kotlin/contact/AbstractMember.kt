@@ -10,8 +10,8 @@
 package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.MemberActive
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.utils.cast
@@ -30,10 +30,7 @@ internal sealed class AbstractMember(
 
     override val nameCard: String get() = info.nameCard
     override val specialTitle: String get() = info.specialTitle
-    override val rank: Int get() = info.rank
-    override val point: Int get() = info.point
-    override val honor: Set<GroupHonorType> get() = info.honor
-    override val temperature: Int get() = info.temperature
+    override val active: MemberActive = MemberActiveImpl(info)
 
     override var permission: MemberPermission by info::permission
 }

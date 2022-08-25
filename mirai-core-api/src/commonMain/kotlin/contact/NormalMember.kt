@@ -62,13 +62,6 @@ public interface NormalMember : Member {
     public override var specialTitle: String
 
     /**
-     * 群等级头衔
-     * @see rank
-     * @see point
-     */
-    public val rankTitle: String get() = group.active.rankTitles[rank].orEmpty()
-
-    /**
      * 被禁言剩余时长. 单位为秒.
      *
      * @see isMuted 判断改成员是否处于禁言状态

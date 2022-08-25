@@ -67,34 +67,16 @@ public interface Member : User {
     public val specialTitle: String
 
     /**
-     * 群活跃等级. 取值为 1~6
-     *
-     * 这个等级是在 PC端 成员管理功能中显示的等级
-     *
-     * @see point
+     * 群等级头衔
+     * @see active
      */
-    public val rank: Int
+    public val rankTitle: String get() = group.active.rankTitles[active.rank].orEmpty()
 
     /**
-     * 群活跃积分.
-     *
-     * 这个积分是在 PC端 成员管理功能中显示的积分，和手机端显示的 群荣誉活跃积分 不同
-     *
-     * @see rank
+     * 群活跃度相关属性.
+     * @see [rankTitle]
      */
-    public val point: Int
-
-    /**
-     * 群荣誉标识.
-     */
-    public val honor: Set<GroupHonorType>
-
-    /**
-     * 群荣誉等级. 取值为 0~100
-     *
-     * 这个等级是在 手机端 群荣誉功能中显示的等级
-     */
-    public val temperature: Int
+    public val active: MemberActive
 
     /**
      * 禁言这个群成员 [durationSeconds] 秒, 在机器人无权限操作时抛出 [PermissionDeniedException].
