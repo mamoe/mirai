@@ -19,7 +19,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.data.FriendGroup
+import net.mamoe.mirai.contact.friendgroup.FriendGroup
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.FriendGroupImpl

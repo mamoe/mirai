@@ -15,8 +15,8 @@ package net.mamoe.mirai.contact
 import kotlinx.coroutines.CoroutineScope
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.friendgroup.FriendGroup
 import net.mamoe.mirai.contact.roaming.RoamingSupported
-import net.mamoe.mirai.data.FriendGroup
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.FriendNudge

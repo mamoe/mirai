@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.internal.contact
 
-import net.mamoe.mirai.data.FriendGroup
-import net.mamoe.mirai.data.FriendGroups
+import net.mamoe.mirai.contact.friendgroup.FriendGroup
+import net.mamoe.mirai.contact.friendgroup.FriendGroups
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.FriendGroupInfo
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList

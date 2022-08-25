@@ -18,8 +18,8 @@ import io.ktor.utils.io.core.*
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.friendgroup.FriendGroup
 import net.mamoe.mirai.contact.roaming.RoamingMessages
-import net.mamoe.mirai.data.FriendGroup
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
