@@ -31,7 +31,7 @@ private lateinit var localProperties: Properties
 private fun Project.loadLocalPropertiesIfAbsent() {
     if (::localProperties.isInitialized) return
     localProperties = Properties().apply {
-        rootProject.projectDir.resolve("local.properties").bufferedReader().use {
+        rootProject.projectDir.resolve("local.properties").takeIf { it.exists() }?.bufferedReader()?.use {
             load(it)
         }
     }
