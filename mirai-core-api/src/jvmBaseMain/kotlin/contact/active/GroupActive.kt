@@ -51,6 +51,7 @@ import java.util.stream.Stream
  * * 每日申请人数 [ActiveChart.sentences]
  * * 每日入群人数 [ActiveChart.join]
  * * 每日退群人数 [ActiveChart.exit]
+ * @since 2.13.0
  */
 @NotStableForInheritance
 public actual interface GroupActive {
