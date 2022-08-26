@@ -12,7 +12,7 @@
 package net.mamoe.mirai.network
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiInternalApi
 
 
@@ -47,8 +47,11 @@ public class NoServerAvailableException @MiraiInternalApi constructor(
 /**
  * 服务器要求稍后重试
  */
-public class RetryLaterException @MiraiInternalApi constructor(override val cause: Throwable? = null) :
-    LoginFailedException(false, "server requests retrial later")
+public class RetryLaterException @MiraiInternalApi constructor(
+    message: String?,
+    cause: Throwable? = null,
+    killBot: Boolean = false
+) : LoginFailedException(killBot, message, cause)
 
 /**
  * 无标准输入或 Kotlin 不支持此输入.
@@ -58,10 +61,10 @@ public class NoStandardInputForCaptchaException @MiraiInternalApi constructor(
 ) : LoginFailedException(true, "no standard input for captcha")
 
 /**
- * 需要短信验证时抛出. mirai 目前还不支持短信验证.
+ * 需要强制短信验证, 且当前 [LoginSolver] 不支持时抛出.
+ * @since 2.13
  */
-@MiraiExperimentalApi("Will be removed when SMS login is supported")
-public class UnsupportedSMSLoginException(message: String?) : LoginFailedException(true, message)
+public class UnsupportedSmsLoginException(message: String?) : LoginFailedException(true, message)
 
 /**
  * 无法完成滑块验证
