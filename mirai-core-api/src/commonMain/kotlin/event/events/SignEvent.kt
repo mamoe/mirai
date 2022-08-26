@@ -25,10 +25,12 @@ import kotlin.jvm.JvmName
  * 打卡事件
  * @property user 打卡发起人
  * @property sign 打卡标记
+ * @property hasRank 有排名的打卡，通常是前三名
  */
 public class SignEvent @MiraiInternalApi constructor(
     public val user: UserOrBot,
     public val sign: String,
+    public val hasRank: Boolean
 ) : AbstractEvent(), BotEvent, Packet {
     override val bot: Bot get() = user.bot
 }

@@ -348,10 +348,12 @@ internal class GroupNotificationProcessor(
             10036L, 10038L -> {
                 val user = grayTip.msgTemplParam["mqq_uin"]?.findMember() ?: group.botAsMember
                 val sign = grayTip.msgTemplParam["user_sign"].orEmpty()
+                val img = grayTip.msgTemplParam["rank_img"]
 
                 collected += SignEvent(
                     user = user,
-                    sign = sign
+                    sign = sign,
+                    hasRank = img != null
                 )
             }
             // 龙王
