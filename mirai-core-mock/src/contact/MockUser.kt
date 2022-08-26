@@ -97,4 +97,8 @@ public interface MockUser : MockContact, MockUserOrBot, User {
     public suspend fun says(message: Supplier<Message>): MessageChain {
         return says(message.get())
     }
+
+    public suspend fun says(message: suspend MessageChainBuilder.() -> Unit): MessageChain {
+        return says(buildMessageChain { message(this) })
+    }
 }

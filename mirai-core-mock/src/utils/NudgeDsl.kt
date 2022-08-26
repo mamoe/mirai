@@ -18,9 +18,7 @@ import net.mamoe.mirai.mock.contact.MockUserOrBot
 /**
  * 构造 Nudge 的 DSL
  *
- * @see [MockUserOrBot.nudgedBy]
- * @see [MockActions.nudged]
- * @see [MockActions.nudgedBy]
+ * @see MockActionsScope.nudgedBy
  */
 public class NudgeDsl {
     @set:JvmSynthetic
