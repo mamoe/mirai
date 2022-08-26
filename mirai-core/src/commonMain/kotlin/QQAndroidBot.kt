@@ -16,6 +16,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
+import net.mamoe.mirai.internal.contact.friendgroup.FriendGroupsImpl
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ComponentStorageDelegate
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
@@ -44,6 +45,7 @@ import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupNotificationProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupOrMemberListNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupRecallProcessor
+import net.mamoe.mirai.internal.network.notice.priv.FriendGroupNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.priv.FriendNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.priv.OtherClientNoticeProcessor
 import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageProcessor
@@ -71,6 +73,8 @@ internal open class QQAndroidBot constructor(
     configuration: BotConfiguration,
 ) : AbstractBot(configuration, account.id) {
     override val bot: QQAndroidBot get() = this
+    override val friendGroups: FriendGroupsImpl by lazy { FriendGroupsImpl(this) }
+
     val client get() = components[SsoProcessor].client
 
     override fun close(cause: Throwable?) {
@@ -191,6 +195,7 @@ internal open class QQAndroidBot constructor(
                 GroupOrMemberListNoticeProcessor(pipelineLogger.subLogger("GroupOrMemberListNoticeProcessor")),
                 GroupMessageProcessor(pipelineLogger.subLogger("GroupMessageProcessor")),
                 GroupNotificationProcessor(pipelineLogger.subLogger("GroupNotificationProcessor")),
+                FriendGroupNoticeProcessor(pipelineLogger.subLogger("FriendGroupNoticeProcessor")),
                 PrivateMessageProcessor(),
                 OtherClientNoticeProcessor(),
                 GroupRecallProcessor(),

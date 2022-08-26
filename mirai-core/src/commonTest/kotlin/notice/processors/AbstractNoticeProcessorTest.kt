@@ -120,8 +120,8 @@ internal interface GroupExtensions {
         friends.delegate.add(friend)
     }
 
-    fun Bot.addFriend(id: Long, nick: String = "friend$id", remark: String = ""): FriendImpl {
-        return FriendImpl(bot.cast(), bot.coroutineContext, FriendInfoImpl(id, nick, remark)).also {
+    fun Bot.addFriend(id: Long, nick: String = "friend$id", remark: String = "", friendGroupId: Int = 0): FriendImpl {
+        return FriendImpl(bot.cast(), bot.coroutineContext, FriendInfoImpl(id, nick, remark, friendGroupId)).also {
             friends.delegate.add(it)
         }
     }

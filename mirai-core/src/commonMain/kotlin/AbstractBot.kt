@@ -100,7 +100,7 @@ internal abstract class AbstractBot constructor(
     final override val strangers: ContactList<StrangerImpl> = ContactList()
 
     final override val asFriend: FriendImpl by lazy {
-        Mirai.newFriend(this, FriendInfoImpl(uin, "", "")).cast()
+        Mirai.newFriend(this, FriendInfoImpl(uin, "", "", 0)).cast()
     } // nick is initialized later on login
     final override val asStranger: StrangerImpl by lazy {
         Mirai.newStranger(this, StrangerInfoImpl(bot.id, bot.nick)).cast()

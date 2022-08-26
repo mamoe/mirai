@@ -18,6 +18,8 @@ public interface FriendInfo : UserInfo {
     public override val nick: String
 
     public override var remark: String
+
+    public val friendGroupId: Int
 }
 
 
@@ -32,4 +34,6 @@ public open class FriendInfoImpl(
     override val uin: Long,
     override var nick: String,
     override var remark: String,
-) : FriendInfo
+) : FriendInfo {
+    override var friendGroupId: Int = 0
+}

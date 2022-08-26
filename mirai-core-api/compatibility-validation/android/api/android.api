@@ -15,6 +15,7 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public abstract fun getConfiguration ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public abstract fun getEventChannel ()Lnet/mamoe/mirai/event/EventChannel;
 	public fun getFriend (J)Lnet/mamoe/mirai/contact/Friend;
+	public abstract fun getFriendGroups ()Lnet/mamoe/mirai/contact/friendgroup/FriendGroups;
 	public fun getFriendOrFail (J)Lnet/mamoe/mirai/contact/Friend;
 	public abstract fun getFriends ()Lnet/mamoe/mirai/contact/ContactList;
 	public fun getGroup (J)Lnet/mamoe/mirai/contact/Group;
@@ -354,6 +355,7 @@ public abstract interface class net/mamoe/mirai/contact/FileSupported : net/mamo
 public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/User, net/mamoe/mirai/contact/roaming/RoamingSupported {
 	public fun delete ()V
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getFriendGroup ()Lnet/mamoe/mirai/contact/friendgroup/FriendGroup;
 	public abstract fun getRemark ()Ljava/lang/String;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/FriendNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
@@ -908,6 +910,27 @@ public abstract interface class net/mamoe/mirai/contact/file/RemoteFiles {
 	public static synthetic fun uploadNewFile$suspendImpl (Lnet/mamoe/mirai/contact/file/RemoteFiles;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public abstract interface class net/mamoe/mirai/contact/friendgroup/FriendGroup {
+	public fun delete ()Z
+	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getCount ()I
+	public abstract fun getFriends ()Ljava/util/Collection;
+	public abstract fun getId ()I
+	public abstract fun getName ()Ljava/lang/String;
+	public fun moveIn (Lnet/mamoe/mirai/contact/Friend;)Z
+	public abstract fun moveIn (Lnet/mamoe/mirai/contact/Friend;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun renameTo (Ljava/lang/String;)Z
+	public abstract fun renameTo (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class net/mamoe/mirai/contact/friendgroup/FriendGroups {
+	public abstract fun asCollection ()Ljava/util/Collection;
+	public fun create (Ljava/lang/String;)Lnet/mamoe/mirai/contact/friendgroup/FriendGroup;
+	public abstract fun create (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun get (I)Lnet/mamoe/mirai/contact/friendgroup/FriendGroup;
+	public fun getDefault ()Lnet/mamoe/mirai/contact/friendgroup/FriendGroup;
+}
+
 public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessage {
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
 	public abstract fun getContact ()Lnet/mamoe/mirai/contact/Contact;
@@ -962,6 +985,7 @@ public abstract interface class net/mamoe/mirai/contact/roaming/RoamingSupported
 }
 
 public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mirai/data/UserInfo {
+	public abstract fun getFriendGroupId ()I
 	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun getRemark ()Ljava/lang/String;
 	public abstract fun getUin ()J
@@ -970,9 +994,11 @@ public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mira
 
 public class net/mamoe/mirai/data/FriendInfoImpl : net/mamoe/mirai/data/FriendInfo {
 	public fun <init> (JLjava/lang/String;Ljava/lang/String;)V
+	public fun getFriendGroupId ()I
 	public fun getNick ()Ljava/lang/String;
 	public fun getRemark ()Ljava/lang/String;
 	public fun getUin ()J
+	public fun setFriendGroupId (I)V
 	public fun setNick (Ljava/lang/String;)V
 	public fun setRemark (Ljava/lang/String;)V
 }
@@ -1688,6 +1714,7 @@ public abstract interface class net/mamoe/mirai/data/UserInfo {
 public abstract interface class net/mamoe/mirai/data/UserProfile {
 	public abstract fun getAge ()I
 	public abstract fun getEmail ()Ljava/lang/String;
+	public abstract fun getFriendGroupId ()I
 	public abstract fun getNickname ()Ljava/lang/String;
 	public abstract fun getQLevel ()I
 	public abstract fun getSex ()Lnet/mamoe/mirai/data/UserProfile$Sex;

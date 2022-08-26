@@ -14,11 +14,11 @@
 
 package net.mamoe.mirai.internal.contact
 
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import io.ktor.utils.io.core.*
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.friendgroup.FriendGroup
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
@@ -53,7 +53,8 @@ internal fun net.mamoe.mirai.internal.network.protocol.data.jce.FriendInfo.toMir
     FriendInfoImpl(
         friendUin,
         nick,
-        remark
+        remark,
+        groupId.toInt(),
     )
 
 @OptIn(ExperimentalContracts::class)
@@ -82,6 +83,9 @@ internal class FriendImpl(
                 FriendRemarkChangeEvent(this@FriendImpl, old, value).broadcast()
             }
         }
+
+    override val friendGroup: FriendGroup
+        get() = bot.friendGroups[info.friendGroupId] ?: bot.friendGroups[0]!!
 
     private val messageProtocolStrategy: MessageProtocolStrategy<FriendImpl> = FriendMessageProtocolStrategy(this)
 
