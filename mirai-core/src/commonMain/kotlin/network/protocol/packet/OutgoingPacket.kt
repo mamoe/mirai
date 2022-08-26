@@ -27,20 +27,20 @@ import kotlin.random.Random
 
 @kotlin.Suppress("unused")
 internal class OutgoingPacketWithRespType<R : Packet?> constructor(
-    name: String?,
+    remark: String?,
     commandName: String,
     sequenceId: Int,
     delegate: ByteReadPacket
-) : OutgoingPacket(name, commandName, sequenceId, delegate)
+) : OutgoingPacket(remark, commandName, sequenceId, delegate)
 
 internal open class OutgoingPacket constructor(
-    name: String?,
+    remark: String?,
     val commandName: String,
     val sequenceId: Int,
     delegate: ByteReadPacket
 ) {
     val delegate = delegate.readBytes()
-    val displayName: String = if (name == null) commandName else "$commandName($name)"
+    val displayName: String = if (remark == null) commandName else "$commandName($remark)"
 }
 
 internal class IncomingPacket private constructor(
@@ -78,7 +78,7 @@ internal class IncomingPacket private constructor(
 internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildOutgoingUniPacket(
     client: QQAndroidClient,
     bodyType: Byte = 1, // 1: PB?
-    name: String? = this.commandName,
+    remark: String? = this.commandName,
     commandName: String = this.commandName,
     key: ByteArray = client.wLoginSigInfo.d2Key,
     extraData: ByteReadPacket = BRP_STUB,
@@ -86,7 +86,7 @@ internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildOutgoingUniPacke
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacketWithRespType<R> {
 
-    return OutgoingPacketWithRespType(name, commandName, sequenceId, buildPacket {
+    return OutgoingPacketWithRespType(remark, commandName, sequenceId, buildPacket {
         writeIntLVPacket(lengthOffset = { it + 4 }) {
             writeInt(0x0B)
             writeByte(bodyType)
@@ -173,14 +173,14 @@ internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPac
     client: QQAndroidClient,
     bodyType: Byte,
     extraData: ByteArray = EMPTY_BYTE_ARRAY,
-    name: String? = null,
+    remark: String? = null,
     commandName: String = this.commandName,
     key: ByteArray = KEY_16_ZEROS,
     body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacketWithRespType<R> {
     val sequenceId: Int = client.nextSsoSequenceId()
 
-    return OutgoingPacketWithRespType(name, commandName, sequenceId, buildPacket {
+    return OutgoingPacketWithRespType(remark, commandName, sequenceId, buildPacket {
         writeIntLVPacket(lengthOffset = { it + 4 }) {
             writeInt(0x00_00_00_0A)
             writeByte(bodyType)

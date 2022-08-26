@@ -5693,11 +5693,14 @@ public final class net/mamoe/mirai/network/NoStandardInputForCaptchaException : 
 }
 
 public final class net/mamoe/mirai/network/RetryLaterException : net/mamoe/mirai/network/LoginFailedException {
-	public synthetic fun <init> (Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun getCause ()Ljava/lang/Throwable;
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public final class net/mamoe/mirai/network/UnsupportedSliderCaptchaException : net/mamoe/mirai/network/LoginFailedException {
+	public fun <init> (Ljava/lang/String;)V
+}
+
+public final class net/mamoe/mirai/network/UnsupportedSmsLoginException : net/mamoe/mirai/network/LoginFailedException {
 	public fun <init> (Ljava/lang/String;)V
 }
 
@@ -5936,6 +5939,27 @@ public final class net/mamoe/mirai/utils/DeviceInfoKt {
 	public static final fun generateDeviceInfoData (Lnet/mamoe/mirai/utils/DeviceInfo;)[B
 }
 
+public abstract interface class net/mamoe/mirai/utils/DeviceVerificationRequests {
+	public abstract fun getFallback ()Lnet/mamoe/mirai/utils/DeviceVerificationRequests$FallbackRequest;
+	public abstract fun getPreferSms ()Z
+	public abstract fun getSms ()Lnet/mamoe/mirai/utils/DeviceVerificationRequests$SmsRequest;
+}
+
+public abstract interface class net/mamoe/mirai/utils/DeviceVerificationRequests$FallbackRequest {
+	public abstract fun getUrl ()Ljava/lang/String;
+	public abstract fun solved ()Lnet/mamoe/mirai/utils/DeviceVerificationResult;
+}
+
+public abstract interface class net/mamoe/mirai/utils/DeviceVerificationRequests$SmsRequest {
+	public abstract fun getCountryCode ()Ljava/lang/String;
+	public abstract fun getPhoneNumber ()Ljava/lang/String;
+	public abstract fun requestSms (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun solved (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceVerificationResult;
+}
+
+public abstract interface class net/mamoe/mirai/utils/DeviceVerificationResult {
+}
+
 public final class net/mamoe/mirai/utils/DirectoryLogger : net/mamoe/mirai/utils/SimpleLogger {
 	public fun <init> (Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;Ljava/io/File;)V
@@ -6124,6 +6148,7 @@ public abstract class net/mamoe/mirai/utils/LoginSolver {
 	public static final field Default Lnet/mamoe/mirai/utils/LoginSolver;
 	public fun <init> ()V
 	public fun isSliderCaptchaSupported ()Z
+	public fun onSolveDeviceVerification (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/utils/DeviceVerificationRequests;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun onSolvePicCaptcha (Lnet/mamoe/mirai/Bot;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun onSolveSliderCaptcha (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun onSolveUnsafeDeviceLoginVerify (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -6488,6 +6513,7 @@ public final class net/mamoe/mirai/utils/StandardCharImageLoginSolver : net/mamo
 	public static final fun createBlocking (Lkotlin/jvm/functions/Function0;)Lnet/mamoe/mirai/utils/StandardCharImageLoginSolver;
 	public static final fun createBlocking (Lkotlin/jvm/functions/Function0;Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/StandardCharImageLoginSolver;
 	public fun isSliderCaptchaSupported ()Z
+	public fun onSolveDeviceVerification (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/utils/DeviceVerificationRequests;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun onSolvePicCaptcha (Lnet/mamoe/mirai/Bot;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun onSolveSliderCaptcha (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun onSolveUnsafeDeviceLoginVerify (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

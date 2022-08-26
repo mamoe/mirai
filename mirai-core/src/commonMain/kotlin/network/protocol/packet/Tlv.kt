@@ -285,13 +285,14 @@ internal fun BytePacketBuilder.t17a(
     }
 }
 
-internal fun BytePacketBuilder.t197(
-    value: ByteArray
-) {
+internal fun BytePacketBuilder.t197() {
     writeShort(0x197)
-    writeShortLVPacket {
-        writeFully(value)
-    }
+    writeFully(byteArrayOf(0, 1, 0))
+}
+
+internal fun BytePacketBuilder.t198() {
+    writeShort(0x198)
+    writeFully(byteArrayOf(0, 1, 0))
 }
 
 internal fun BytePacketBuilder.t19e(

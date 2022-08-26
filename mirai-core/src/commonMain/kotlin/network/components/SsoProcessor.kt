@@ -19,14 +19,17 @@ import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
+import net.mamoe.mirai.internal.network.protocol.packet.login.DeviceVerificationResultImpl
+import net.mamoe.mirai.internal.network.protocol.packet.login.SmsDeviceVerificationResult
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
+import net.mamoe.mirai.internal.network.protocol.packet.login.UrlDeviceVerificationResult
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse.Captcha
-import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin10
-import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin2
-import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin20
-import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin9
-import net.mamoe.mirai.network.*
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.*
+import net.mamoe.mirai.network.LoginFailedException
+import net.mamoe.mirai.network.RetryLaterException
+import net.mamoe.mirai.network.UnsupportedSliderCaptchaException
+import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.info
@@ -245,9 +248,19 @@ internal class SsoProcessorImpl(
                         response = WtLogin20(client).sendAndExpect()
                     }
 
-                    is LoginPacketResponse.UnsafeLogin -> {
-                        loginSolverNotNull().onSolveUnsafeDeviceLoginVerify(bot, response.url)
-                        response = WtLogin9(client, allowSlider).sendAndExpect()
+                    is LoginPacketResponse.VerificationNeeded -> {
+                        val result = loginSolverNotNull().onSolveDeviceVerification(
+                            bot, response.requests
+                        )
+                        check(result is DeviceVerificationResultImpl)
+                        response = when (result) {
+                            is UrlDeviceVerificationResult -> {
+                                WtLogin9(client, allowSlider).sendAndExpect()
+                            }
+                            is SmsDeviceVerificationResult -> {
+                                WtLogin7(client, result.token, result.code).sendAndExpect()
+                            }
+                        }
                     }
 
                     is Captcha.Picture -> {
@@ -290,21 +303,22 @@ internal class SsoProcessorImpl(
 
                     is LoginPacketResponse.Error -> {
                         if (response.message.contains("0x9a")) { //Error(title=登录失败, message=请你稍后重试。(0x9a), errorInfo=)
-                            collectThrow(RetryLaterException(IllegalStateException("Login failed: $response")))
+                            collectThrow(RetryLaterException("Login failed: $response"))
                         }
                         val msg = response.toString()
                         collectThrow(WrongPasswordException(buildString(capacity = msg.length) {
                             append(msg)
                             if (msg.contains("当前上网环境异常")) { // Error(title=禁止登录, message=当前上网环境异常，请更换网络环境或在常用设备上登录或稍后再试。, errorInfo=)
-                                append(", tips=若频繁出现, 请尝试开启设备锁")
+                                append(", mirai 提示: 若频繁出现, 请尝试开启设备锁")
+                            }
+                            if (msg.contains("当前登录存在安全风险")) { // Error(title=禁止登录, message=当前上网环境异常，请更换网络环境或在常用设备上登录或稍后再试。, errorInfo=)
+                                append(", mirai 提示: 这可能是尝试登录次数过多导致的, 请等待一段时间后再试")
                             }
                         }))
                     }
 
-                    is LoginPacketResponse.SMSVerifyCodeNeeded -> {
-                        val message = "SMS required: $response, which isn't yet supported"
-                        logger.error(message)
-                        collectThrow(UnsupportedSMSLoginException(message))
+                    is LoginPacketResponse.SmsRequestSuccess -> {
+                        error("Unexpected response: $response")
                     }
                 }
             }
