@@ -13,8 +13,8 @@ import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.utils.MiraiLogger
 
-internal actual class ActiveImpl actual constructor(
+internal actual class GroupActiveImpl actual constructor(
     group: GroupImpl,
     logger: MiraiLogger,
     groupInfo: GroupInfo,
-) : CommonActiveImpl(group, logger, groupInfo)
+) : CommonGroupActiveImpl(group, logger, groupInfo)

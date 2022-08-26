@@ -10,10 +10,12 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.data.GroupHonorType
+import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 群活跃度相关属性
  */
+@NotStableForInheritance
 public interface MemberActive {
 
     /**
@@ -37,7 +39,7 @@ public interface MemberActive {
     /**
      * 群荣誉标识.
      */
-    public val honor: Set<GroupHonorType>
+    public val honors: Set<GroupHonorType>
 
     /**
      * 群荣誉等级. 取值为 0~100

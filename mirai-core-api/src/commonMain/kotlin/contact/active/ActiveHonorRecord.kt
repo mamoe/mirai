@@ -12,17 +12,17 @@ package net.mamoe.mirai.contact.active
 import net.mamoe.mirai.contact.NormalMember
 
 /**
- * 活跃数据记录
- * @property memberName 发言者名称
- * @property memberId 发言者 ID
- * @property member 发言者的群员实例
- * @property periodDays 活跃连续天数
- * @property messagesCount 发言条数
+ * 群荣耀记录
+ * @property memberName 群员昵称
+ * @property memberId 群员 ID
+ * @property avatar 群员头像
+ * @property member 群员实例
+ * @property description 描述
  */
-public class ActiveRecord internal constructor(
+public class ActiveHonorRecord internal constructor(
     public val memberName: String,
     public val memberId: Long,
+    public val avatar: String,
     public val member: NormalMember?,
-    public val periodDays: Int,
-    public val messagesCount: Int
+    public val description: String,
 )

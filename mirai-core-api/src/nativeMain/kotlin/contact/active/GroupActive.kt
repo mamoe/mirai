@@ -7,23 +7,21 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:JvmBlockingBridge
-
 package net.mamoe.mirai.contact.active
 
 import kotlinx.coroutines.flow.Flow
-import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 表示一个群活跃度管理.
  *
- * ## 获取 [Active] 实例
+ * ## 获取 [GroupActive] 实例
  *
- * 只可以通过 [Group.active] 获取一个群的活跃度管理, 即 [Active] 实例.
+ * 只可以通过 [Group.active] 获取一个群的活跃度管理, 即 [GroupActive] 实例.
  *
  * ### 等级头衔列表
  *
@@ -49,7 +47,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  * * 每日退群人数 [ActiveChart.exit]
  */
 @NotStableForInheritance
-public expect interface Active {
+public actual interface GroupActive {
 
     /**
      * 等级头衔列表，key 是 等级，value 是 头衔
@@ -59,7 +57,7 @@ public expect interface Active {
      * @see Member.rankTitle
      */
     @MiraiExperimentalApi
-    public var rankTitles: Map<Int, String>
+    public actual var rankTitles: Map<Int, String>
 
     /**
      * 是否在群聊中显示等级头衔
@@ -69,17 +67,22 @@ public expect interface Active {
      * @see Member.rankTitle
      */
     @MiraiExperimentalApi
-    public var rankShow: Boolean
+    public actual var rankShow: Boolean
 
     /**
      * 创建一个能获取该群内所有群活跃度记录的 [Flow]. 在 [Flow] 被使用时才会分页下载 [ActiveRecord].
      *
      * 异常不会抛出, 只会记录到网络日志. 当获取发生异常时将会终止获取, 不影响已经成功获取的 [ActiveRecord] 和 [Flow] 的[收集][Flow.collect].
      */
-    public fun asFlow(): Flow<ActiveRecord>
+    public actual fun asFlow(): Flow<ActiveRecord>
 
     /**
      * 获取活跃度图表数据，查询失败时返回 null
      */
-    public suspend fun getChart(): ActiveChart?
+    public actual suspend fun getChart(): ActiveChart?
+
+    /**
+     * 群荣耀历史数据，查询失败时返回 null
+     */
+    public actual suspend fun getHonorList(type: GroupHonorType): ActiveHonorList?
 }

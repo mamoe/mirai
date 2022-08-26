@@ -19,11 +19,11 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.stream
 import java.util.stream.Stream
 
-internal actual class ActiveImpl actual constructor(
+internal actual class GroupActiveImpl actual constructor(
     group: GroupImpl,
     logger: MiraiLogger,
     groupInfo: GroupInfo,
-) : CommonActiveImpl(group, logger, groupInfo) {
+) : CommonGroupActiveImpl(group, logger, groupInfo) {
 
     @JavaFriendlyAPI
     override fun asStream(): Stream<ActiveRecord> {

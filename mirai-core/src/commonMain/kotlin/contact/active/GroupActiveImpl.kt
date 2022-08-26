@@ -15,15 +15,19 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.checkBotPermission
-import net.mamoe.mirai.contact.active.Active
+import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.active.ActiveChart
+import net.mamoe.mirai.contact.active.ActiveHonorList
 import net.mamoe.mirai.contact.active.ActiveRecord
+import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.getRawGroupActiveData
+import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.getRawGroupHonorListData
 import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.getRawGroupLevelInfo
 import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.setGroupLevelInfo
 import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.toActiveChart
+import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.toActiveHonorList
 import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.toActiveRecord
 import net.mamoe.mirai.internal.contact.groupCode
 import net.mamoe.mirai.utils.Either.Companion.onLeft
@@ -32,17 +36,17 @@ import net.mamoe.mirai.utils.Either.Companion.rightOrNull
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.warning
 
-internal expect class ActiveImpl(
+internal expect class GroupActiveImpl(
     group: GroupImpl,
     logger: MiraiLogger,
     groupInfo: GroupInfo,
-) : CommonActiveImpl
+) : CommonGroupActiveImpl
 
-internal abstract class CommonActiveImpl(
+internal abstract class CommonGroupActiveImpl(
     protected val group: GroupImpl,
     protected val logger: MiraiLogger,
     groupInfo: GroupInfo,
-) : Active {
+) : GroupActive {
 
     private var _rankTitles: Map<Int, String> = groupInfo.rankTitles
 
@@ -128,5 +132,20 @@ internal abstract class CommonActiveImpl(
 
     override suspend fun getChart(): ActiveChart? {
         return getGroupActiveData(page = null)?.info?.toActiveChart()
+    }
+
+    private suspend fun getGroupHonorData(type: GroupHonorType): GroupHonorListData? {
+        return group.bot.getRawGroupHonorListData(group.id, type).onLeft {
+            if (logger.isEnabled) { // createException
+                logger.warning(
+                    { "Failed to load active data for group ${group.id}" },
+                    it.createException()
+                )
+            }
+        }.rightOrNull
+    }
+
+    override suspend fun getHonorList(type: GroupHonorType): ActiveHonorList? {
+        return getGroupHonorData(type)?.toActiveHonorList(type, group)
     }
 }
