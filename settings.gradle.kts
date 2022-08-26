@@ -7,6 +7,17 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+import java.util.*
+
+/*
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
+ */
+
 pluginManagement {
     repositories {
         if (System.getProperty("use.maven.local") == "true") { // you can enable by adding `systemProp.use.maven.local=true` in 'gradle.properties'.
@@ -20,12 +31,21 @@ pluginManagement {
 
 rootProject.name = "mirai"
 
+
+val localProperties = Properties().apply {
+    rootProject.projectDir.resolve("local.properties").bufferedReader().use {
+        load(it)
+    }
+}
+
+
 /**
  * Projects included so far
  */
 val allProjects = mutableListOf<ProjectDescriptor>()
 
 fun includeProject(projectPath: String, dir: String? = null) {
+    if (!getLocalProperty("projects." + projectPath.removePrefix(":") + ".enabled", true)) return
     include(projectPath)
     if (dir != null) project(projectPath).projectDir = file(dir)
     allProjects.add(project(projectPath))
@@ -44,22 +64,29 @@ includeProject(":mirai-bom")
 includeProject(":mirai-dokka")
 includeProject(":mirai-deps-test")
 
-includeProject(":mirai-logging-log4j2", "logging/mirai-logging-log4j2")
-includeProject(":mirai-logging-slf4j", "logging/mirai-logging-slf4j")
-includeProject(":mirai-logging-slf4j-simple", "logging/mirai-logging-slf4j-simple")
-includeProject(":mirai-logging-slf4j-logback", "logging/mirai-logging-slf4j-logback")
+if (getLocalProperty("projects.mirai-logging.enabled", true)) {
+    includeProject(":mirai-logging-log4j2", "logging/mirai-logging-log4j2")
+    includeProject(":mirai-logging-slf4j", "logging/mirai-logging-slf4j")
+    includeProject(":mirai-logging-slf4j-simple", "logging/mirai-logging-slf4j-simple")
+    includeProject(":mirai-logging-slf4j-logback", "logging/mirai-logging-slf4j-logback")
+}
 
-
+// mirai-core-api depends on this
 includeConsoleProject(":mirai-console-compiler-annotations", "tools/compiler-annotations")
-includeConsoleProject(":mirai-console", "backend/mirai-console")
-includeConsoleProject(":mirai-console.codegen", "backend/codegen")
-includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
 
-includeConsoleIntegrationTestProjects()
+if (getLocalProperty("projects.mirai-console.enabled", true)) {
+    includeConsoleProject(":mirai-console", "backend/mirai-console")
+    includeConsoleProject(":mirai-console.codegen", "backend/codegen")
+    includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
+    includeConsoleIntegrationTestProjects()
 
-includeConsoleProject(":mirai-console-compiler-common", "tools/compiler-common")
-includeConsoleProject(":mirai-console-intellij", "tools/intellij-plugin")
-includeConsoleProject(":mirai-console-gradle", "tools/gradle-plugin")
+    includeConsoleProject(":mirai-console-compiler-common", "tools/compiler-common")
+    includeConsoleProject(":mirai-console-intellij", "tools/intellij-plugin")
+    includeConsoleProject(":mirai-console-gradle", "tools/gradle-plugin")
+} else {
+    // if mirai-console is disabled, disable all relevant projects
+}
+
 
 //includeConsoleFrontendGraphical()
 
@@ -133,4 +160,23 @@ fun includeConsoleIntegrationTestProjects() {
         .listFiles()?.asSequence().orEmpty()
         .filter { it.isDirectory }
         .forEach { includeConsoleITPlugin(":mirai-console.integration-test:", it) }
+}
+
+
+
+
+fun getLocalProperty(name: String): String? {
+    return localProperties.getProperty(name)
+}
+
+fun getLocalProperty(name: String, default: String): String {
+    return localProperties.getProperty(name) ?: default
+}
+
+fun getLocalProperty(name: String, default: Int): Int {
+    return localProperties.getProperty(name)?.toInt() ?: default
+}
+
+fun getLocalProperty(name: String, default: Boolean): Boolean {
+    return localProperties.getProperty(name)?.toBoolean() ?: default
 }
