@@ -17,7 +17,6 @@ import net.mamoe.mirai.internal.pipeline.*
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.debug.structureToStringAndDesensitizeIfAvailable
 import kotlin.coroutines.RestrictsSuspension
 
 internal interface MessageDecoderPipeline :

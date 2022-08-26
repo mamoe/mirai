@@ -36,8 +36,8 @@ import net.mamoe.mirai.internal.utils.parseToMessageDataList
 import net.mamoe.mirai.internal.utils.toMemberInfo
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.context
-import net.mamoe.mirai.utils.debug.structureToString
 import net.mamoe.mirai.utils.read
+import net.mamoe.mirai.utils.structureToString
 
 
 /**

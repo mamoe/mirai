@@ -16,7 +16,7 @@ import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.message.SimpleRefineContext
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.debug.structureToString
+import net.mamoe.mirai.utils.structureToString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

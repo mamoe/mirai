@@ -9,9 +9,8 @@
 
 @file:JvmName("StructureToStringTransformerKt_common")
 
-package net.mamoe.mirai.utils.debug
+package net.mamoe.mirai.utils
 
-import net.mamoe.mirai.utils.loadService
 import kotlin.jvm.JvmName
 
 public interface StructureToStringTransformer {

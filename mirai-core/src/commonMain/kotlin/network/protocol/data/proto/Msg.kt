@@ -19,9 +19,9 @@ import net.mamoe.mirai.internal.utils.io.NestedStructureDesensitizer
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.utils.debug.structureToStringIfAvailable
 import net.mamoe.mirai.utils.inflate
 import net.mamoe.mirai.utils.isSameType
+import net.mamoe.mirai.utils.structureToStringIfAvailable
 import kotlin.jvm.JvmField
 
 @Serializable

@@ -43,7 +43,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.debug.structureToString
 
 @Suppress("EnumEntryName", "unused")
 internal enum class RegPushReason {

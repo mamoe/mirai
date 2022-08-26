@@ -36,7 +36,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList.GetFrien
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.debug.structureToString
 
 /**
  * All [FriendEvent] except [FriendMessageEvent]
