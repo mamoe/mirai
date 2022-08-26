@@ -344,6 +344,16 @@ internal class GroupNotificationProcessor(
                     subject = group,
                 )
             }
+            // 群签到/打卡
+            10036L, 10038L -> {
+                val user = grayTip.msgTemplParam["mqq_uin"]?.findMember() ?: group.botAsMember
+                val sign = grayTip.msgTemplParam["user_sign"].orEmpty()
+
+                collected += SignEvent(
+                    user = user,
+                    sign = sign
+                )
+            }
             // 龙王
             10093L, 10094L, 1053L, 1054L, 1103L -> {
                 val now = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
