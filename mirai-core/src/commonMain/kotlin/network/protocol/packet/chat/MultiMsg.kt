@@ -22,7 +22,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
-import net.mamoe.mirai.internal.utils.structureToString
+import net.mamoe.mirai.utils.debug.structureToString
 import net.mamoe.mirai.utils.md5
 
 internal class MessageValidationData(

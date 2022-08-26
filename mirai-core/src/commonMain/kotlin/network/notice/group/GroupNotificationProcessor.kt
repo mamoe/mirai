@@ -29,8 +29,8 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x27
 import net.mamoe.mirai.internal.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.parseToMessageDataList
-import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.debug.structureToString
 import kotlin.jvm.JvmName
 
 internal class GroupNotificationProcessor(

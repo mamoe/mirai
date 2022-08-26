@@ -24,8 +24,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.analysisTl
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.orEmpty
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.printStructure
-import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.debug.structureToString
 
 internal class WtLogin {
     /**

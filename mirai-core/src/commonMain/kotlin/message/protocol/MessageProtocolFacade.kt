@@ -39,13 +39,13 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.pipeline.ProcessResult
 import net.mamoe.mirai.internal.utils.runCoroutineInPlace
-import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.visitor.RecursiveMessageVisitor
 import net.mamoe.mirai.message.data.visitor.accept
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.debug.structureToString
 import kotlin.reflect.KClass
 
 internal interface MessageProtocolFacade {

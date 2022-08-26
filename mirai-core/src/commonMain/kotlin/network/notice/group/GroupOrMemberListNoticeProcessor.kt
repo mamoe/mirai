@@ -33,10 +33,10 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x44
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.parseToMessageDataList
-import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.internal.utils.toMemberInfo
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.context
+import net.mamoe.mirai.utils.debug.structureToString
 import net.mamoe.mirai.utils.read
 
 

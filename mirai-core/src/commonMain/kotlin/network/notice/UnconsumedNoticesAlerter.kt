@@ -20,8 +20,8 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
-import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.debug.structureToString
 
 internal class UnconsumedNoticesAlerter(
     logger: MiraiLogger,

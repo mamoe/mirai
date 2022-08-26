@@ -12,11 +12,11 @@ package net.mamoe.mirai.internal.message.protocol.impl
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.utils.structureToStringIfAvailable
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.messageChainOf
+import net.mamoe.mirai.utils.debug.structureToStringIfAvailable
 import kotlin.test.assertNotNull
 import kotlin.test.asserter
 

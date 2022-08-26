@@ -32,10 +32,10 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushStatus
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x7
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.context
+import net.mamoe.mirai.utils.debug.structureToString
 
 /**
  * @see OtherClientOnlineEvent

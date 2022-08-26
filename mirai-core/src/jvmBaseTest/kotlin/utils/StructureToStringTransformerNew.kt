@@ -17,6 +17,8 @@ import net.mamoe.mirai.internal.testFramework.codegen.visitors.OptimizeByteArray
 import net.mamoe.mirai.internal.testFramework.codegen.visitors.renderToString
 import net.mamoe.mirai.internal.testFramework.desensitizer.DesensitizationVisitor
 import net.mamoe.mirai.internal.testFramework.desensitizer.Desensitizer
+import net.mamoe.mirai.utils.debug.StructureToStringTransformer
+import net.mamoe.mirai.utils.debug.StructureToStringTransformerLegacy
 
 internal class StructureToStringTransformerNew : StructureToStringTransformer {
     private val legacy = StructureToStringTransformerLegacy()
