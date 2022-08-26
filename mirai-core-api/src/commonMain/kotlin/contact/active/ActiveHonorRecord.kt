@@ -18,6 +18,7 @@ import net.mamoe.mirai.contact.NormalMember
  * @property avatar 群员头像
  * @property member 群员实例
  * @property description 描述
+ * @since 2.13.0
  */
 public class ActiveHonorRecord internal constructor(
     public val memberName: String,

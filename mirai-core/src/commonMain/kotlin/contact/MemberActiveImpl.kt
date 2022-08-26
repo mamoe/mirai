@@ -16,6 +16,6 @@ import net.mamoe.mirai.data.MemberInfo
 internal class MemberActiveImpl(private val memberInfo: MemberInfo) : MemberActive {
     override val rank: Int get() = memberInfo.rank
     override val point: Int get() = memberInfo.point
-    override val honors: Set<GroupHonorType> get() = memberInfo.honor
+    override val honors: Set<GroupHonorType> get() = memberInfo.honors
     override val temperature: Int get() = memberInfo.temperature
 }

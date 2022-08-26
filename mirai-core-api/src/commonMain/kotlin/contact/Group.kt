@@ -137,7 +137,7 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported 
 
     /**
      * 获取群荣誉相关功能接口
-     *
+     * @since 2.13.0
      */
     public val active: GroupActive
 

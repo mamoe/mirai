@@ -69,12 +69,14 @@ public interface Member : User {
     /**
      * 群等级头衔
      * @see active
+     * @since 2.13.0
      */
     public val rankTitle: String get() = group.active.rankTitles[active.rank].orEmpty()
 
     /**
      * 群活跃度相关属性.
      * @see [rankTitle]
+     * @since 2.13.0
      */
     public val active: MemberActive
 

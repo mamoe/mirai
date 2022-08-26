@@ -42,22 +42,26 @@ public interface MemberInfo : UserInfo {
     /**
      * 活跃等级
      * @see point
+     * @since 2.13.0
      */
     public val rank: Int
 
     /**
      * 活跃积分
      * @see rank
+     * @since 2.13.0
      */
     public val point: Int
 
     /**
      * 群荣誉标志
+     * @since 2.13.0
      */
-    public val honor: Set<GroupHonorType>
+    public val honors: Set<GroupHonorType>
 
     /**
      * 活跃度
+     * @since 2.13.0
      */
     public val temperature: Int
 }

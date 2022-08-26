@@ -33,7 +33,7 @@ internal data class MemberInfoImpl(
     override val isOfficialBot: Boolean = false,
     override val rank: Int = 1,
     override val point: Int = 0,
-    override val honor: Set<GroupHonorType> = emptySet(),
+    override val honors: Set<GroupHonorType> = emptySet(),
     override val temperature: Int = 0
 ) : MemberInfo {
     constructor(
@@ -58,7 +58,7 @@ internal data class MemberInfoImpl(
         isOfficialBot = client.groupConfig.isOfficialRobot(jceInfo.memberUin),
         rank = jceInfo.dwMemberLevel?.toInt() ?: 1,
         point = jceInfo.dwPoint?.toInt() ?: 0,
-        honor = buildSet {
+        honors = buildSet {
             /**
              * vecGroupHonor 的 结构是
              * [

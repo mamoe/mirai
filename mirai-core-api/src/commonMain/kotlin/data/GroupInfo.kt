@@ -73,11 +73,13 @@ public interface GroupInfo {
 
     /**
      * 等级头衔
+     * @since 2.13.0
      */
     public val rankTitles: Map<Int, String>
 
     /**
      * 等级头衔是否显示
+     * @since 2.13.0
      */
     public val rankShow: Boolean
 }

@@ -18,6 +18,7 @@ import net.mamoe.mirai.contact.NormalMember
  * @property avatar 群员头像
  * @property member 群员实例
  * @property count 蝉联天数
+ * @since 2.13.0
  */
 public class ActiveHonorCurrent internal constructor(
     public val memberName: String,
