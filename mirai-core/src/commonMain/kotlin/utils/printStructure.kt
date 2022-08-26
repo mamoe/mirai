@@ -13,8 +13,8 @@ package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.debug.StructureToStringTransformer
-import net.mamoe.mirai.utils.debug.structureToString
+import net.mamoe.mirai.utils.StructureToStringTransformer
+import net.mamoe.mirai.utils.structureToString
 
 
 private val SoutvLogger: MiraiLogger by lazy {

@@ -40,7 +40,6 @@ import net.mamoe.mirai.internal.utils.C2CPkgMsgParsingCache
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.debug.structureToString
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 

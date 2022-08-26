@@ -35,7 +35,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.context
-import net.mamoe.mirai.utils.debug.structureToString
+import net.mamoe.mirai.utils.structureToString
 
 /**
  * @see OtherClientOnlineEvent

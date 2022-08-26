@@ -7,10 +7,9 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.utils.debug
+package net.mamoe.mirai.utils
 
 import kotlinx.serialization.Transient
-import net.mamoe.mirai.utils.toUHexString
 import java.lang.reflect.Modifier
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty

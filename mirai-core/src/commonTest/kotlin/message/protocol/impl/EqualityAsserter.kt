@@ -16,7 +16,7 @@ import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.messageChainOf
-import net.mamoe.mirai.utils.debug.structureToStringIfAvailable
+import net.mamoe.mirai.utils.structureToStringIfAvailable
 import kotlin.test.assertNotNull
 import kotlin.test.asserter
 

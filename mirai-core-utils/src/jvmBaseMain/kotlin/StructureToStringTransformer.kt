@@ -7,8 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.utils.debug
+package net.mamoe.mirai.utils
 
 internal actual fun getPlatformDefaultStructureToStringTransformer(): StructureToStringTransformer? {
-    return null
+    return StructureToStringTransformerLegacy()
 }

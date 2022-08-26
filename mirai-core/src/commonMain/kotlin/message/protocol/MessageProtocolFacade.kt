@@ -45,7 +45,6 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.visitor.RecursiveMessageVisitor
 import net.mamoe.mirai.message.data.visitor.accept
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.debug.structureToString
 import kotlin.reflect.KClass
 
 internal interface MessageProtocolFacade {
