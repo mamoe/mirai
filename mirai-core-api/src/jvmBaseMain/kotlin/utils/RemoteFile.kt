@@ -636,9 +636,9 @@ public interface RemoteFile {
         @Deprecated(
             "Deprecated. Please use AbsoluteFolder.uploadNewFile or RemoteFiles.uploadNewFile",
             ReplaceWith("this.files.uploadNewFile(path, resource, callback)"),
-            level = DeprecationLevel.ERROR
+            level = DeprecationLevel.HIDDEN
         ) // deprecated since 2.8.0-RC
-        @DeprecatedSinceMirai(warningSince = "2.8", errorSince = "2.12")
+        @DeprecatedSinceMirai(warningSince = "2.8", errorSince = "2.12", hiddenSince = "2.13")
         @Suppress("_FUNCTION_WITH_DEFAULT_ARGUMENTS")
         public suspend fun <C : FileSupported> C.sendFile(
             path: String,
@@ -657,9 +657,9 @@ public interface RemoteFile {
         @Deprecated(
             "Deprecated. Please use AbsoluteFolder.uploadNewFile or RemoteFiles.uploadNewFile",
             ReplaceWith("file.toExternalResource().use { this.files.uploadNewFile(path, it, callback) }"),
-            level = DeprecationLevel.ERROR
+            level = DeprecationLevel.HIDDEN
         ) // deprecated since 2.8.0-RC
-        @DeprecatedSinceMirai(warningSince = "2.8", errorSince = "2.12")
+        @DeprecatedSinceMirai(warningSince = "2.8", errorSince = "2.12", hiddenSince = "2.13")
         public suspend fun <C : FileSupported> C.sendFile(
             path: String,
             file: File,

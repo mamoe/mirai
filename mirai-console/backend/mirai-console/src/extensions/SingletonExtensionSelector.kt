@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 
 package net.mamoe.mirai.console.extensions
 
@@ -28,18 +28,19 @@ import kotlin.reflect.KClass
  */
 @Deprecated(
     "Order of extensions is now determined by its priority property since 2.11. SingletonExtensionSelector is not needed anymore. ",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
-@DeprecatedSinceMirai(warningSince = "2.11")
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
+@Suppress("DEPRECATION_ERROR")
 public interface SingletonExtensionSelector : FunctionExtension {
     /**
      * 表示一个插件注册的 [Extension]
      */
     @Deprecated(
         "Order of extensions is now determined by its priority property since 2.11. SingletonExtensionSelector is not needed anymore. ",
-        level = DeprecationLevel.WARNING
+        level = DeprecationLevel.ERROR
     )
-    @DeprecatedSinceMirai(warningSince = "2.11")
+    @DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
     public data class Registry<T : Extension>(
         val plugin: Plugin?,
         val extension: T,
@@ -55,9 +56,9 @@ public interface SingletonExtensionSelector : FunctionExtension {
 
     @Deprecated(
         "Order of extensions is now determined by its priority property since 2.11. SingletonExtensionSelector is not needed anymore. ",
-        level = DeprecationLevel.WARNING
+        level = DeprecationLevel.ERROR
     )
-    @DeprecatedSinceMirai(warningSince = "2.11")
+    @DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
     public companion object ExtensionPoint :
         AbstractExtensionPoint<SingletonExtensionSelector>(SingletonExtensionSelector::class) {
 

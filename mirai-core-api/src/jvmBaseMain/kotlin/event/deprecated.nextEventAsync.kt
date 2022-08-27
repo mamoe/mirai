@@ -52,9 +52,9 @@ import kotlin.coroutines.EmptyCoroutineContext
         "net.mamoe.mirai.event.GlobalEventChannel",
         "net.mamoe.mirai.event.nextEvent"
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
-@DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12")
+@DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12", hiddenSince = "2.13")
 @MiraiExperimentalApi
 public inline fun <reified E : Event> CoroutineScope.nextEventAsync(
     timeoutMillis: Long = -1,
@@ -106,9 +106,9 @@ public inline fun <reified E : Event> CoroutineScope.nextEventAsync(
         "net.mamoe.mirai.event.GlobalEventChannel",
         "net.mamoe.mirai.event.nextEvent"
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
-@DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12")
+@DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12", hiddenSince = "2.13")
 @JvmSynthetic
 public inline fun <reified E : Event> CoroutineScope.nextEventOrNullAsync(
     timeoutMillis: Long,
