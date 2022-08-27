@@ -54,7 +54,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
 public expect interface GroupActive {
 
     /**
-     * 等级头衔列表，key 是 等级，value 是 头衔
+     * 等级头衔列表，键是等级，值是头衔
      *
      * set 时传入的等级头衔 将会异步发送给api，并刷新等级头衔信息。
      *
