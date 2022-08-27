@@ -32,9 +32,16 @@ public object LoggerAdapters {
      */
     @JvmStatic
     public fun useLog4j2() {
-        DefaultFactoryOverrides.override { requester, identity ->
-            val logger = LogManager.getLogger(requester)
-            Log4jLoggerAdapter(logger, MarkerManager.getMarker(identity ?: logger.name).addParents(MARKER_MIRAI))
+        MiraiLoggerFactoryImplementationBridge.wrapCurrent {
+            object : MiraiLogger.Factory {
+                override fun create(requester: Class<*>, identity: String?): MiraiLogger {
+                    val logger = LogManager.getLogger(requester)
+                    return Log4jLoggerAdapter(
+                        logger,
+                        MarkerManager.getMarker(identity ?: logger.name).addParents(MARKER_MIRAI)
+                    )
+                }
+            }
         }
     }
 

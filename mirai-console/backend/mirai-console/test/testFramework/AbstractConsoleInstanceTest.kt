@@ -22,6 +22,11 @@ import org.junit.jupiter.api.AfterEach
 import kotlin.test.BeforeTest
 
 abstract class AbstractConsoleInstanceTest {
+    init {
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        net.mamoe.mirai.utils.MiraiLoggerFactoryImplementationBridge.reinit()
+    }
+
     val mockPlugin by lazy { mockKotlinPlugin() }
     private lateinit var implementation: MiraiConsoleImplementation
     val consoleImplementation: MiraiConsoleImplementation by ::implementation

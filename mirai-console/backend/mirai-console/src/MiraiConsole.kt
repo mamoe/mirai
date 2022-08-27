@@ -128,8 +128,17 @@ public interface MiraiConsole : CoroutineScope {
         get() = throw UnsupportedOperationException("PluginCenter is not supported yet")
 
     /**
-     * 创建一个 logger
+     * 创建一个 logger. 已弃用. 请使用 [MiraiLogger.Factory.create].
      */
+    @Deprecated(
+        "Please use the standard way in mirai-core to create loggers, i.e. MiraiLogger.Factory.INSTANCE.create()",
+        level = DeprecationLevel.WARNING,
+        replaceWith = ReplaceWith(
+            "MiraiLogger.Factory.create(yourClass::class, identity)",
+            "net.mamoe.mirai.utils.MiraiLogger"
+        ),
+    )
+    @DeprecatedSinceMirai(warningSince = "2.13")
     @ConsoleExperimentalApi
     public fun createLogger(identity: String?): MiraiLogger
 
@@ -204,6 +213,7 @@ public interface MiraiConsole : CoroutineScope {
                             mainLogger.verbose { "Renaming $deviceInfoInWorkingDir to $deviceInWorkingDir" }
                             deviceInfoInWorkingDir.renameTo(deviceInWorkingDir)
                         }
+
                         deviceInRoot.exists() -> {
                             // copy root/device.json to bots/id/device.json
                             mainLogger.verbose { "Coping $deviceInRoot to $deviceInWorkingDir" }

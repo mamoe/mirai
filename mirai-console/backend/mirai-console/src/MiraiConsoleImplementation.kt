@@ -37,10 +37,7 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.LoginSolver
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.NotStableForInheritance
+import net.mamoe.mirai.utils.*
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
@@ -216,15 +213,30 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     /**
      * 创建一个 [MiraiLogger].
      *
-     * **注意**: [MiraiConsole] 会将 [net.mamoe.mirai.utils.MiraiLogger.setDefaultLoggerCreator] 设置为 `MiraiConsole::createLogger`.
+     * **注意**: [MiraiConsole] 会将 [net.mamoe.mirai.utils.MiraiLogger.Factory] 设置为 `MiraiConsole::createLogger`.
      * 因此不要在 [createLogger] 中调用 [net.mamoe.mirai.utils.MiraiLogger.create]
      */
+    @Deprecated(
+        "Deprecated for removal. Implement the other overload, or use MiraiConsole.createLogger instead.",
+        level = DeprecationLevel.ERROR
+    )
+    @DeprecatedSinceMirai(errorSince = "2.13")
     public fun createLogger(identity: String?): MiraiLogger
 
     /** @see [MiraiConsole.newProcessProgress] */
     public fun createNewProcessProgress(): ProcessProgress {
         return DefaultLoggingProcessProgress()
     }
+
+    /**
+     * 创建一个 [MiraiLogger.Factory]. 在返回的实例中必须调用 [platformImplementation] 来适配平台日志实现.
+     *
+     * @param platformImplementation 平台的日志实现, 这可能是使用 SLF4J 等日志框架转接的实例.
+     *
+     * @since 2.13
+     */
+    public fun createLoggerFactory(platformImplementation: MiraiLogger.Factory): MiraiLogger.Factory
+
 
     /**
      * 该前端是否支持使用 Ansi 输出彩色信息

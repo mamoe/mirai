@@ -11,7 +11,6 @@ package net.mamoe.mirai.console.internal.command
 
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation.ConsoleDataScope.Companion.get
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.allNames
@@ -37,7 +36,7 @@ internal class CommandManagerImpl(
     parentCoroutineContext: CoroutineContext
 ) : CommandManager, CoroutineScope by parentCoroutineContext.childScope("CommandManagerImpl") {
     private val logger: MiraiLogger by lazy {
-        MiraiConsole.createLogger("command")
+        MiraiLogger.Factory.create(CommandManager::class, "command")
     }
 
     @Suppress("ObjectPropertyName")

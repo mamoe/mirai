@@ -11,24 +11,23 @@ package net.mamoe.mirai.logging
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.utils.*
-import net.mamoe.mirai.utils.DefaultFactoryOverrides
 import net.mamoe.mirai.utils.LoggerAdapters.asMiraiLogger
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.MiraiLoggerFactoryImplementationBridge
 import org.apache.logging.log4j.LogManager
-import org.junit.jupiter.api.AfterEach
 import kotlin.test.*
 
-internal class Log4j2LoggingTest {
+internal class Log4j2LoggingTest : AbstractLoggingTest() {
     @BeforeTest
     fun init() {
-        DefaultFactoryOverrides.override { requester, identity ->
-            LogManager.getLogger(requester).asMiraiLogger(Marker(identity ?: requester.simpleName, MARKER_MIRAI))
+        MiraiLoggerFactoryImplementationBridge.wrapCurrent {
+            object : MiraiLogger.Factory {
+                override fun create(requester: Class<*>, identity: String?): MiraiLogger {
+                    return LogManager.getLogger(requester)
+                        .asMiraiLogger(Marker(identity ?: requester.simpleName, MARKER_MIRAI))
+                }
+            }
         }
-    }
-
-    @AfterEach
-    fun cleanup() {
-        DefaultFactoryOverrides.clearOverride()
     }
 
     private fun MiraiLogger.cast(): Log4jLoggerAdapter = this as Log4jLoggerAdapter

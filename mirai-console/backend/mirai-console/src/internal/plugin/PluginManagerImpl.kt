@@ -26,10 +26,7 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.SemVersion
-import net.mamoe.mirai.utils.TestOnly
-import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.childScope
-import net.mamoe.mirai.utils.info
+import net.mamoe.mirai.utils.*
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.CopyOnWriteArrayList
@@ -60,7 +57,7 @@ internal class PluginManagerImpl(
         builtInLoaders.toMutableList()
     }
 
-    private val logger = MiraiConsole.createLogger("plugin")
+    private val logger = MiraiLogger.Factory.create(PluginManager::class, "plugin")
 
     @JvmField
     internal val resolvedPlugins: MutableList<Plugin> =
