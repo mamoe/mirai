@@ -85,7 +85,7 @@ open class MockConsoleImplementation : MiraiConsoleImplementation {
         return PlatformLogger(identity)
     }
 
-    override fun createLoggerFactory(platformImplementation: MiraiLogger.Factory): MiraiLogger.Factory {
+    override fun createLoggerFactory(context: MiraiConsoleImplementation.FrontendLoggingInitContext): MiraiLogger.Factory {
         return object : MiraiLogger.Factory {
             override fun create(requester: Class<*>, identity: String?): MiraiLogger {
                 return PlatformLogger(identity)

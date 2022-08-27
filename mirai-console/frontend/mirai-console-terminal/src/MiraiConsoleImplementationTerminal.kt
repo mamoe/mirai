@@ -117,7 +117,7 @@ open class MiraiConsoleImplementationTerminal
 //        })
     }
 
-    override fun createLoggerFactory(platformImplementation: MiraiLogger.Factory): MiraiLogger.Factory {
+    override fun createLoggerFactory(context: MiraiConsoleImplementation.FrontendLoggingInitContext): MiraiLogger.Factory {
         // platformImplementation is not used by Terminal
 
         return object : MiraiLogger.Factory {

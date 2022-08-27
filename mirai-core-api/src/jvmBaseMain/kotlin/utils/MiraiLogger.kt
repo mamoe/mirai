@@ -265,9 +265,10 @@ public actual interface MiraiLogger {
  * @since 2.13
  */
 internal object MiraiLoggerFactoryImplementationBridge : MiraiLogger.Factory {
-    @Volatile
-    var instance: MiraiLogger.Factory = createPlatformInstance()
-        private set
+    @Suppress("ObjectPropertyName")
+    private var _instance by lateinitMutableProperty { createPlatformInstance() }
+
+    internal val instance get() = _instance
 
     fun createPlatformInstance() = loadService(MiraiLogger.Factory::class) { DefaultFactory() }
 
@@ -280,7 +281,7 @@ internal object MiraiLoggerFactoryImplementationBridge : MiraiLogger.Factory {
     @TestOnly
     fun reinit() {
         frozen.loop { value ->
-            instance = createPlatformInstance()
+            _instance = createPlatformInstance()
             if (frozen.compareAndSet(value, false)) return
         }
     }
@@ -297,7 +298,7 @@ internal object MiraiLoggerFactoryImplementationBridge : MiraiLogger.Factory {
                         "Check if you actually did use mirai-console somewhere, or please file an issue on https://github.com/mamoe/mirai/issues/new/choose"
             )
         }
-        this.instance = instance
+        this._instance = instance
     }
 
     inline fun wrapCurrent(mapper: (current: MiraiLogger.Factory) -> MiraiLogger.Factory) {

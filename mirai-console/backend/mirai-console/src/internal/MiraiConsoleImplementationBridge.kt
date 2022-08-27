@@ -117,6 +117,10 @@ internal class MiraiConsoleImplementationBridge(
         }
     }
 
+    override fun createLoggerFactory(context: MiraiConsoleImplementation.FrontendLoggingInitContext): MiraiLogger.Factory {
+        error("Duplicated logger factory initalization is not allowed. Use MiraiLogger.Factory instead.")
+    }
+
     init {
         // When writing a log:
         // 1. ControlledLoggerFactory checks if that log level is enabled
@@ -124,12 +128,20 @@ internal class MiraiConsoleImplementationBridge(
         //    ... if not, return
         // 3. [externalImplementation] decides how to log the message
         // 4. [externalImplementation] outputs by using [platform]
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        MiraiLoggerFactoryImplementationBridge.wrapCurrent { platform ->
-            ControlledLoggerFactory(externalImplementation.createLoggerFactory(platform))
+        val context = object : MiraiConsoleImplementation.FrontendLoggingInitContext {
+            override fun acquirePlatformImplementation(): MiraiLogger.Factory {
+                @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+                return MiraiLoggerFactoryImplementationBridge.instance
+            }
         }
+
+        val response = externalImplementation.createLoggerFactory(context)
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        MiraiLoggerFactoryImplementationBridge.setInstance(ControlledLoggerFactory(response))
+
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         MiraiLoggerFactoryImplementationBridge.freeze() // forbid any further overrides
+
     }
 
 

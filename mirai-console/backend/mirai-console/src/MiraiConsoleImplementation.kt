@@ -23,10 +23,10 @@ import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.extension.ComponentStorage
 import net.mamoe.mirai.console.fontend.DefaultLoggingProcessProgress
+import net.mamoe.mirai.console.fontend.ProcessProgress
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScopeImpl
-import net.mamoe.mirai.console.fontend.ProcessProgress
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
 import net.mamoe.mirai.console.internal.pluginManagerImpl
@@ -228,15 +228,6 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         return DefaultLoggingProcessProgress()
     }
 
-    /**
-     * 创建一个 [MiraiLogger.Factory]. 在返回的实例中必须调用 [platformImplementation] 来适配平台日志实现.
-     *
-     * @param platformImplementation 平台的日志实现, 这可能是使用 SLF4J 等日志框架转接的实例.
-     *
-     * @since 2.13
-     */
-    public fun createLoggerFactory(platformImplementation: MiraiLogger.Factory): MiraiLogger.Factory
-
 
     /**
      * 该前端是否支持使用 Ansi 输出彩色信息
@@ -389,6 +380,36 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public val backendAccess: BackendAccess
         get() = backendAccessInstance
 
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Logging
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * 创建一个 [MiraiLogger.Factory].
+     *
+     * @since 2.13
+     */
+    public fun createLoggerFactory(context: FrontendLoggingInitContext): MiraiLogger.Factory
+
+    /**
+     * 前端 [MiraiLogger.Factory] 加载的上下文
+     *
+     * 全局的日志工厂的初始化可以分为如下几步
+     *
+     * 1. 接管 stdout (见 [System.setOut]), 将 stdout 重定向至屏幕.
+     *    之后平台日志实现会将日志通过被接管的 stdout 输出至屏幕
+     * 2. 前端返回 [platformImplementation][acquirePlatformImplementation] 或者返回适配的 [MiraiLogger.Factory]
+     */
+    @ConsoleFrontEndImplementation
+    public interface FrontendLoggingInitContext {
+        /**
+         * 平台的日志实现, 这可能是使用 SLF4J 等日志框架转接的实例.
+         *
+         * 调用此函数会立即初始化平台日志实现. 在未完成准备工作前切勿使用此方法
+         */
+        public fun acquirePlatformImplementation(): MiraiLogger.Factory
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // ConsoleLaunchOptions
