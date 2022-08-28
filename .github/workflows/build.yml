@@ -20,9 +20,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - windows-2022
-          # - macos-12
+        os: # You must use macos-12
+          #          - windows-2022
+          - macos-12
     env:
       gradleArgs: --scan "-Dmirai.target=jvm;android;!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx6000m" "-Dfile.encoding=UTF-8"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
@@ -56,40 +56,27 @@ jobs:
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
-      # Build modules separately to save memory
+      - run: >
+          ./gradlew updateSnapshotVersion ${{ env.gradleArgs }}
+        if: github.event.pusher
+        env:
+          MIRAI_IS_SNAPSHOTS_PUBLISHING: true
+          SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
+          SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
+          SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          CURRENT_BRANCH_NAME: dev # always use -dev for now
 
-      - name: "Compile mirai-core-utils"
-        run: ./gradlew :mirai-core-utils:compileKotlinJvm :mirai-core-utils:compileKotlinAndroid ${{ env.gradleArgs }}
+      - name: "Assemble"
+        run: ./gradlew assemble ${{ env.gradleArgs }}
 
-      - name: "Test mirai-core-utils"
-        run: ./gradlew :mirai-core-utils:jvmTest :mirai-core-utils:androidTest ${{ env.gradleArgs }}
+      - name: Publish Local Artifacts
+        if: ${{ env.enableLocalPublishingTest == 'true' }}
+        run: ./gradlew :mirai-deps-test:publishMiraiArtifactsToMavenLocal ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test"
 
-      - name: "Check mirai-core-utils Android API Level"
-        run: ./gradlew :mirai-core-utils:checkAndroidApiLevel ${{ env.gradleArgs }}
+      - name: "Check"
+        run: ./gradlew check ${{ env.gradleArgs }}
 
-
-      - name: "Compile mirai-core-api"
-        run: ./gradlew :mirai-core-api:compileKotlinJvm :mirai-core-api:compileKotlinAndroid ${{ env.gradleArgs }}
-
-      - name: "Test mirai-core-api"
-        run: ./gradlew :mirai-core-api:jvmTest :mirai-core-api:androidTest ${{ env.gradleArgs }}
-
-      - name: "Check mirai-core-api JVM ABI"
-        run: ./gradlew :mirai-core-api:apiCheckAll ${{ env.gradleArgs }}
-
-      - name: "Check mirai-core-api Android API Level"
-        run: ./gradlew :mirai-core-api:checkAndroidApiLevel ${{ env.gradleArgs }}
-
-
-      - name: "Compile mirai-core"
-        run: ./gradlew :mirai-core:compileKotlinJvm :mirai-core:compileKotlinAndroid ${{ env.gradleArgs }}
-
-      - name: "Test mirai-core"
-        run: ./gradlew :mirai-core:jvmTest :mirai-core:androidTest ${{ env.gradleArgs }}
-
-      - name: "Check mirai-core Android API Level"
-        run: ./gradlew :mirai-core:checkAndroidApiLevel ${{ env.gradleArgs }}
-
+      # Upload
 
       - name: Upload mirai-core-utils
         uses: actions/upload-artifact@v3
@@ -109,77 +96,11 @@ jobs:
           name: mirai-core
           path: mirai-core/build/libs
 
-      - name: "Build mirai-core-all"
-        run: ./gradlew :mirai-core-all:shadowJar ${{ env.gradleArgs }}
-
       - name: Upload mirai-core-all
         uses: actions/upload-artifact@v3
         with:
           name: mirai-core-all
           path: mirai-core-all/build/libs
-
-
-      # Console and tools
-
-
-      - name: "Compile mirai-console"
-        run: ./gradlew :mirai-console:assemble ${{ env.gradleArgs }}
-
-      - name: "Test mirai-console"
-        run: ./gradlew :mirai-console:check ${{ env.gradleArgs }}
-
-      - name: "Check JVM ABI"
-        run: ./gradlew :mirai-console:apiCheckAll ${{ env.gradleArgs }}
-
-
-      - name: "Compile mirai-console integration-test"
-        run: ./gradlew :mirai-console:check ${{ env.gradleArgs }}
-
-      - name: "Test mirai-console integration-test"
-        run: ./gradlew :mirai-console.integration-test:check ${{ env.gradleArgs }}
-
-
-      - name: "Compile mirai-console-terminal"
-        run: ./gradlew :mirai-console-terminal:assemble ${{ env.gradleArgs }}
-
-      - name: "Test mirai-console-terminal"
-        run: ./gradlew :mirai-console-terminal:check ${{ env.gradleArgs }}
-
-
-      - name: "Compile mirai-console-gradle"
-        run: ./gradlew :mirai-console-gradle:assemble ${{ env.gradleArgs }}
-
-      - name: "Test mirai-console-gradle"
-        run: ./gradlew :mirai-console-gradle:check ${{ env.gradleArgs }}
-
-
-      - name: "Compile mirai-console-intellij"
-        run: ./gradlew :mirai-console-intellij:assemble ${{ env.gradleArgs }}
-
-      - name: "Build mirai-console-intellij plugin"
-        run: ./gradlew :mirai-console-intellij:buildPlugin ${{ env.gradleArgs }}
-
-      - name: "Test mirai-console-intellij"
-        run: ./gradlew :mirai-console-intellij:check ${{ env.gradleArgs }}
-
-
-      - name: "Compile mirai-logging"
-        run:
-          ./gradlew
-          :mirai-logging-log4j2:assemble
-          :mirai-logging-slf4j:assemble
-          :mirai-logging-slf4j-logback:assemble
-          :mirai-logging-slf4j-simple:assemble
-          ${{ env.gradleArgs }}
-
-      - name: "Test mirai-logging"
-        run:
-          ./gradlew
-          :mirai-logging-log4j2:check
-          :mirai-logging-slf4j:check
-          :mirai-logging-slf4j-logback:check
-          :mirai-logging-slf4j-simple:check
-          ${{ env.gradleArgs }}
 
       - name: Upload mirai-console
         uses: actions/upload-artifact@v3
@@ -336,16 +257,16 @@ jobs:
           # - macos-12
           - macos-11
         include:
-        - os: windows-2022
-          targetName: mingwX64
-        - os: ubuntu-20.04
-          targetName: linuxX64
-        - os: ubuntu-18.04
-          targetName: linuxX64
-        # - os: macos-12
-        #   targetName: macosX64
-        - os: macos-11
-          targetName: macosX64
+          - os: windows-2022
+            targetName: mingwX64
+          - os: ubuntu-20.04
+            targetName: linuxX64
+          - os: ubuntu-18.04
+            targetName: linuxX64
+          # - os: macos-12
+          #   targetName: macosX64
+          - os: macos-11
+            targetName: macosX64
     env:
       # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
       # > Declaration annotated with '@OptionalExpectation' can only be used in common module sources
