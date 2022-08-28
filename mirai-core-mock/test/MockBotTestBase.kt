@@ -13,6 +13,8 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.mock.MockBotFactory
 import net.mamoe.mirai.mock.internal.MockBotImpl
+import net.mamoe.mirai.mock.utils.MockActionsScope
+import net.mamoe.mirai.mock.utils.broadcastMockEvents
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.TestInstance
 import kotlin.contracts.InvocationKind
@@ -31,7 +33,7 @@ internal open class MockBotTestBase : TestBase() {
     }
 
     internal suspend fun runAndReceiveEventBroadcast(
-        action: suspend () -> Unit
+        action: suspend MockActionsScope.() -> Unit
     ): List<Event> {
 
         contract {
@@ -43,7 +45,9 @@ internal open class MockBotTestBase : TestBase() {
             result.add(this)
         }
 
-        action()
+        broadcastMockEvents {
+            action()
+        }
 
         (bot as MockBotImpl).joinEventBroadcast()
 

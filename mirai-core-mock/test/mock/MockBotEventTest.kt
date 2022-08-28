@@ -10,7 +10,6 @@
 package net.mamoe.mirai.mock.test.mock
 
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.mock.MockActions.nickChangesTo
 import net.mamoe.mirai.mock.test.MockBotTestBase
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -65,7 +64,7 @@ internal class MockBotEventTest : MockBotTestBase() {
         runAndReceiveEventBroadcast {
             bot.nickNoEvent = "HiHi"
             bot.nick = "AAAA"
-            nickChangesTo(bot, "BBBB")
+            bot nickChangesTo "BBBB"
         }.let { events ->
             assertEquals(2, events.size)
             assertIsInstance<BotNickChangedEvent>(events[0]) {

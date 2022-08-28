@@ -17,9 +17,6 @@ import net.mamoe.mirai.contact.isBotMuted
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.FileMessage
-import net.mamoe.mirai.mock.MockActions.nameCardChangesTo
-import net.mamoe.mirai.mock.MockActions.permissionChangesTo
-import net.mamoe.mirai.mock.MockActions.specialTitleChangesTo
 import net.mamoe.mirai.mock.contact.announcement.MockOnlineAnnouncement
 import net.mamoe.mirai.mock.test.MockBotTestBase
 import net.mamoe.mirai.mock.userprofile.MockMemberInfoBuilder
@@ -233,14 +230,13 @@ internal class MockGroupTest : MockBotTestBase() {
     @Test
     fun testBotGroupPermissionChangeEvent() = runTest {
         runAndReceiveEventBroadcast {
-            permissionChangesTo(
-                bot.addGroup(1, "")
-                    .appendMember(MockMemberInfoBuilder.create {
-                        uin(1).nick("o")
-                        permission(MemberPermission.OWNER)
-                    })
-                    .botAsMember, MemberPermission.ADMINISTRATOR
-            )
+            bot.addGroup(1, "")
+                .appendMember(MockMemberInfoBuilder.create {
+                    uin(1).nick("o")
+                    permission(MemberPermission.OWNER)
+                })
+                .botAsMember permissionChangesTo MemberPermission.ADMINISTRATOR
+
             bot.addGroup(2, "")
                 .appendMember(MockMemberInfoBuilder.create {
                     uin(1).nick("o")

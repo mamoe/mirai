@@ -18,7 +18,6 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.messageChainOf
 import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.mock.MockActions.mockFireRecalled
-import net.mamoe.mirai.mock.MockActions.nudged
 import net.mamoe.mirai.mock.test.MockBotTestBase
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import org.junit.jupiter.api.Test
@@ -94,8 +93,8 @@ internal class MessagingTest: MockBotTestBase() {
         runAndReceiveEventBroadcast {
             nudged.nudgedBy(nudgeSender)
             nudged.nudge().sendTo(group)
-            myFriend.nudged(bot)
-            myStranger.nudged(bot)
+            myFriend.nudges(bot)
+            myStranger.nudges(bot)
             myFriend.nudgedBy(bot)
             myStranger.nudgedBy(bot)
         }.let { events ->

@@ -45,7 +45,7 @@ internal suspend fun dslTest() {
 
     broadcastMockEvents {
         // 50 拍了拍 bot 的 sys32
-        bot.getGroupOrFail(5).getOrFail(50).nudgedBy(bot) {
+        bot.getGroupOrFail(5).getOrFail(50).nudges(bot) {
             action("拍了拍")
             suffix("sys32")
         }
