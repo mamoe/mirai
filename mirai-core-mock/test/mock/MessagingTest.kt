@@ -19,6 +19,7 @@ import net.mamoe.mirai.message.data.messageChainOf
 import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.mock.MockActions.mockFireRecalled
 import net.mamoe.mirai.mock.test.MockBotTestBase
+import net.mamoe.mirai.mock.utils.broadcastMockEvents
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -135,8 +136,10 @@ internal class MessagingTest: MockBotTestBase() {
     @Test
     internal fun testRoamingMessages() = runTest {
         val mockFriend = bot.addFriend(1, "1")
-        mockFriend says { append("Testing!") }
-        mockFriend says { append("Test2!") }
+        broadcastMockEvents {
+            mockFriend says { append("Testing!") }
+            mockFriend says { append("Test2!") }
+        }
         mockFriend.sendMessage("Pong!")
 
         mockFriend.roamingMessages.getAllMessages().toList().let { messages ->
@@ -154,8 +157,8 @@ internal class MessagingTest: MockBotTestBase() {
         val sender = group.addMember(simpleMemberInfo(178711, "usr", permission = MemberPermission.MEMBER))
 
         runAndReceiveEventBroadcast {
-            sender.says("Test").mockFireRecalled()
-            sender.says("Admin recall").mockFireRecalled(admin)
+            sender.says("Test").recalledBySender()
+            sender.says("Admin recall").recalledBy(admin)
             mockFireRecalled(group.sendMessage("Hello world"), admin)
             sender.says("Hi").recall()
             admin.says("I'm admin").let { resp ->

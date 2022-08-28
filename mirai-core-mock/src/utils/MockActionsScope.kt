@@ -16,7 +16,6 @@ import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.mock.MockActions
-import net.mamoe.mirai.mock.MockBotDSL
 import net.mamoe.mirai.mock.contact.MockNormalMember
 import net.mamoe.mirai.mock.contact.MockUser
 import net.mamoe.mirai.mock.contact.MockUserOrBot
@@ -106,7 +105,7 @@ public interface MockActionsScope { // use context receivers in the future
     /**
      * 令消息原作者撤回一条消息
      */
-    @MockBotDSL
+    @MockActionsDsl
     public suspend fun MessageChain.recalledBySender() {
         return MockActions.fireMessageRecalled(this, null)
     }
@@ -114,7 +113,7 @@ public interface MockActionsScope { // use context receivers in the future
     /**
      * 令消息原作者撤回一条消息
      */
-    @MockBotDSL
+    @MockActionsDsl
     public suspend fun MessageSource.recalledBySender() {
         return MockActions.fireMessageRecalled(this, null)
     }
@@ -122,7 +121,7 @@ public interface MockActionsScope { // use context receivers in the future
     /**
      * 令消息原作者撤回一条消息
      */
-    @MockBotDSL
+    @MockActionsDsl
     public suspend fun MessageReceipt<*>.recalledBySender() {
         this.source.recalledBy(null)
     }
@@ -132,7 +131,7 @@ public interface MockActionsScope { // use context receivers in the future
      *
      * @param operator 当 [operator] 为 null 时代表是发送者自己撤回
      */
-    @MockBotDSL
+    @MockActionsDsl
     public suspend infix fun MessageChain.recalledBy(operator: User?) {
         return MockActions.fireMessageRecalled(this, operator)
     }
@@ -142,7 +141,7 @@ public interface MockActionsScope { // use context receivers in the future
      *
      * @param operator 当 [operator] 为 null 时代表是发送者自己撤回
      */
-    @MockBotDSL
+    @MockActionsDsl
     public suspend infix fun MessageSource.recalledBy(operator: User?) {
         return MockActions.fireMessageRecalled(this, operator)
     }
@@ -152,7 +151,7 @@ public interface MockActionsScope { // use context receivers in the future
      *
      * @param operator 当 [operator] 为 null 时代表是发送者自己撤回
      */
-    @MockBotDSL
+    @MockActionsDsl
     public suspend infix fun MessageReceipt<*>.recalledBy(operator: User?) {
         this.source.recalledBy(operator)
     }

@@ -446,10 +446,7 @@ internal class MockGroupTest : MockBotTestBase() {
     @Test
     fun testMemberSpecialTitleChangeEvent() = runTest {
         runAndReceiveEventBroadcast {
-            specialTitleChangesTo(
-                bot.addGroup(1, "")
-                    .addMember(2, ""), "Hello"
-            )
+            bot.addGroup(1, "").addMember(2, "") specialTitleChangesTo "Hello"
         }.let { events ->
             assertEquals(1, events.size)
             assertIsInstance<MemberSpecialTitleChangeEvent>(events[0]) {
