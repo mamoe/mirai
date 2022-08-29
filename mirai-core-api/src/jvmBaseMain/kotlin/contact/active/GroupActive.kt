@@ -30,9 +30,9 @@ import java.util.stream.Stream
  *
  * ### 头衔设置
  *
- * * 通过 [honorShow] 可以获取和设置一个群的荣誉是否显示,
- * * 通过 [titleShow] 可以获取和设置一个群的头衔是否显示,
- * * 通过 [temperatureShow] 可以获取和设置一个群的活跃度是否显示,
+ * * 通过 [isHonorVisible] 可以获取和设置一个群的荣誉是否显示,
+ * * 通过 [isTitleVisible] 可以获取和设置一个群的头衔是否显示,
+ * * 通过 [isTemperatureVisible] 可以获取和设置一个群的活跃度是否显示,
  * * 通过 [rankTitles] 可以获取和设置一个群的等级头衔列表 (PC 端显示),
  * * 通过 [temperatureTitles] 可以获取和设置一个群的活跃度头衔列表 (手机端显示)
  *
@@ -51,13 +51,19 @@ import java.util.stream.Stream
  *
  * ### 活跃度图表
  *
- * 通过 [getChart] 可以获取活跃度图表，
+ * 通过 [queryChart] 可以获取活跃度图表，
  * 包括
  * * 每日总人数 [ActiveChart.members]
  * * 每日活跃人数 [ActiveChart.actives]
  * * 每日申请人数 [ActiveChart.sentences]
  * * 每日入群人数 [ActiveChart.join]
  * * 每日退群人数 [ActiveChart.exit]
+ *
+ * 通过 [queryHonorHistory] 可以获取群荣耀历史数据，
+ * 包括
+ * * 当前荣耀持有者 (龙王，壕礼皇冠, 善财福禄寿) [ActiveHonorList.current]
+ * * 群荣耀历史记录 [ActiveHonorList.records]
+ *
  * @since 2.13.0
  */
 @NotStableForInheritance
@@ -71,7 +77,7 @@ public actual interface GroupActive {
      * @see Member.rankTitle
      */
     @MiraiExperimentalApi
-    public actual var honorShow: Boolean
+    public actual var isHonorVisible: Boolean
 
     /**
      * 是否在群聊中显示头衔
@@ -81,7 +87,7 @@ public actual interface GroupActive {
      * @see Member.rankTitle
      */
     @MiraiExperimentalApi
-    public actual var titleShow: Boolean
+    public actual var isTitleVisible: Boolean
 
     /**
      * 是否在群聊中显示活跃度
@@ -91,7 +97,7 @@ public actual interface GroupActive {
      * @see Member.active
      */
     @MiraiExperimentalApi
-    public actual var temperatureShow: Boolean
+    public actual var isTemperatureVisible: Boolean
 
     /**
      * 等级头衔列表，键是等级，值是头衔
@@ -137,12 +143,14 @@ public actual interface GroupActive {
     public fun asStream(): Stream<ActiveRecord>
 
     /**
-     * 获取活跃度图表数据，查询失败时返回 null
+     * 获取活跃度图表数据
+     * @return 查询失败时返回 null
      */
-    public actual suspend fun getChart(): ActiveChart?
+    public actual suspend fun queryChart(): ActiveChart?
 
     /**
-     * 群荣耀历史数据，查询失败时返回 null
+     * 获取群荣耀历史数据
+     * @return 查询失败时返回 null
      */
-    public actual suspend fun getHonorList(type: GroupHonorType): ActiveHonorList?
+    public actual suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList?
 }

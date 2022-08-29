@@ -70,7 +70,7 @@ internal abstract class CommonGroupActiveImpl(
         _temperatureTitles = info.levelNewName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
     }
 
-    override var honorShow: Boolean
+    override var isHonorVisible: Boolean
         get() = _honorShow
         set(newValue) {
             group.checkBotPermission(MemberPermission.ADMINISTRATOR)
@@ -106,7 +106,7 @@ internal abstract class CommonGroupActiveImpl(
             }
         }
 
-    override var titleShow: Boolean
+    override var isTitleVisible: Boolean
         get() = _titleShow
         set(newValue) {
             group.checkBotPermission(MemberPermission.ADMINISTRATOR)
@@ -114,7 +114,7 @@ internal abstract class CommonGroupActiveImpl(
                 group.bot.setGroupSetting(groupCode = group.groupCode, new = false, show = newValue).onLeft {
                     if (logger.isEnabled) { // createException
                         logger.warning(
-                            { "Failed to set rank show for group ${group.id}" },
+                            { "Failed to set title show for group ${group.id}" },
                             it.createException()
                         )
                     }
@@ -132,7 +132,7 @@ internal abstract class CommonGroupActiveImpl(
                 group.bot.setGroupLevelInfo(groupCode = group.groupCode, new = true, titles = newValue).onLeft {
                     if (logger.isEnabled) { // createException
                         logger.warning(
-                            { "Failed to set active titles for group ${group.id}" },
+                            { "Failed to set temperature titles for group ${group.id}" },
                             it.createException()
                         )
                     }
@@ -142,7 +142,7 @@ internal abstract class CommonGroupActiveImpl(
             }
         }
 
-    override var temperatureShow: Boolean
+    override var isTemperatureVisible: Boolean
         get() = _temperatureShow
         set(newValue) {
             group.checkBotPermission(MemberPermission.ADMINISTRATOR)
@@ -150,7 +150,7 @@ internal abstract class CommonGroupActiveImpl(
                 group.bot.setGroupSetting(groupCode = group.groupCode, new = true, show = newValue).onLeft {
                     if (logger.isEnabled) { // createException
                         logger.warning(
-                            { "Failed to set active show for group ${group.id}" },
+                            { "Failed to set temperature show for group ${group.id}" },
                             it.createException()
                         )
                     }
@@ -208,7 +208,7 @@ internal abstract class CommonGroupActiveImpl(
         }
     }
 
-    override suspend fun getChart(): ActiveChart? {
+    override suspend fun queryChart(): ActiveChart? {
         return getGroupActiveData(page = null)?.info?.toActiveChart()
     }
 
@@ -223,7 +223,7 @@ internal abstract class CommonGroupActiveImpl(
         }.rightOrNull
     }
 
-    override suspend fun getHonorList(type: GroupHonorType): ActiveHonorList? {
+    override suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList? {
         return getGroupHonorData(type)?.toActiveHonorList(type, group)
     }
 }

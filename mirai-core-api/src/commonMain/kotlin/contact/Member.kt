@@ -94,7 +94,7 @@ public interface Member : User {
     /**
      * 群活跃度相关属性.
      * @see [rankTitle]
-     * @see [activeTitle]
+     * @see [temperatureTitle]
      * @since 2.13.0
      */
     public val active: MemberActive

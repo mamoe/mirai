@@ -78,8 +78,7 @@ internal data class MemberInfoImpl(
                     try {
                         @Suppress("INVISIBLE_MEMBER")
                         add(GroupHonorType.deserializeFromInt(value.toInt()))
-                    } catch (_: Throwable) {
-                        //
+                    } catch (_: Exception) {
                     }
                 }
             }

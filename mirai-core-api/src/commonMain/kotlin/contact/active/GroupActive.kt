@@ -16,6 +16,7 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.MemberActive
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.utils.NotStableForInheritance
 
@@ -28,9 +29,9 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  *
  * ### 头衔设置
  *
- * * 通过 [honorShow] 可以获取和设置一个群的荣誉是否显示,
- * * 通过 [titleShow] 可以获取和设置一个群的头衔是否显示,
- * * 通过 [temperatureShow] 可以获取和设置一个群的活跃度是否显示,
+ * * 通过 [isHonorVisible] 可以获取和设置一个群的荣誉是否显示,
+ * * 通过 [isTitleVisible] 可以获取和设置一个群的头衔是否显示,
+ * * 通过 [isTemperatureVisible] 可以获取和设置一个群的活跃度是否显示,
  * * 通过 [rankTitles] 可以获取和设置一个群的等级头衔列表 (PC 端显示),
  * * 通过 [temperatureTitles] 可以获取和设置一个群的活跃度头衔列表 (手机端显示)
  *
@@ -48,13 +49,19 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  *
  * ### 活跃度图表
  *
- * 通过 [getChart] 可以获取活跃度图表，
+ * 通过 [queryChart] 可以获取活跃度图表，
  * 包括
  * * 每日总人数 [ActiveChart.members]
  * * 每日活跃人数 [ActiveChart.actives]
  * * 每日申请人数 [ActiveChart.sentences]
  * * 每日入群人数 [ActiveChart.join]
  * * 每日退群人数 [ActiveChart.exit]
+ *
+ * 通过 [queryHonorHistory] 可以获取群荣耀历史数据，
+ * 包括
+ * * 当前荣耀持有者 (龙王，壕礼皇冠, 善财福禄寿) [ActiveHonorList.current]
+ * * 群荣耀历史记录 [ActiveHonorList.records]
+ *
  * @since 2.13.0
  */
 @NotStableForInheritance
@@ -65,10 +72,10 @@ public expect interface GroupActive {
      *
      * set 时传入的荣誉头衔显示设置 将会异步发送给api。
      *
-     * @see Member.rankTitle
+     * @see MemberActive.honors
      */
     @MiraiExperimentalApi
-    public var honorShow: Boolean
+    public var isHonorVisible: Boolean
 
     /**
      * 是否在群聊中显示头衔
@@ -76,19 +83,20 @@ public expect interface GroupActive {
      * set 时传入的等级头衔显示设置 将会异步发送给api，并刷新等级头衔信息。
      *
      * @see Member.rankTitle
+     * @see Member.temperatureTitle
      */
     @MiraiExperimentalApi
-    public var titleShow: Boolean
+    public var isTitleVisible: Boolean
 
     /**
      * 是否在群聊中显示活跃度
      *
      * set 时传入的等级头衔显示设置 将会异步发送给api，并刷新等级头衔信息。
      *
-     * @see Member.active
+     * @see MemberActive.temperature
      */
     @MiraiExperimentalApi
-    public var temperatureShow: Boolean
+    public var isTemperatureVisible: Boolean
 
     /**
      * 等级头衔列表，键是等级，值是头衔
@@ -105,7 +113,7 @@ public expect interface GroupActive {
      *
      * set 时传入的活跃度头衔 将会异步发送给api，并刷新活跃度头衔信息。
      *
-     * @see Member.rankTitle
+     * @see Member.temperatureTitle
      */
     @MiraiExperimentalApi
     public var temperatureTitles: Map<Int, String>
@@ -124,12 +132,14 @@ public expect interface GroupActive {
     public fun asFlow(): Flow<ActiveRecord>
 
     /**
-     * 获取活跃度图表数据，查询失败时返回 null
+     * 获取活跃度图表数据
+     * @return 查询失败时返回 null
      */
-    public suspend fun getChart(): ActiveChart?
+    public suspend fun queryChart(): ActiveChart?
 
     /**
-     * 群荣耀历史数据，查询失败时返回 null
+     * 获取群荣耀历史数据
+     * @return 查询失败时返回 null
      */
-    public suspend fun getHonorList(type: GroupHonorType): ActiveHonorList?
+    public suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList?
 }

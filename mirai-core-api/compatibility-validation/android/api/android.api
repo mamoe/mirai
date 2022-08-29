@@ -670,20 +670,20 @@ public abstract interface class net/mamoe/mirai/contact/active/GroupActive {
 	public abstract fun asStream ()Ljava/util/stream/Stream;
 	public fun flush ()V
 	public abstract fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun getChart ()Lnet/mamoe/mirai/contact/active/ActiveChart;
-	public abstract fun getChart (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun getHonorList (Lnet/mamoe/mirai/data/GroupHonorType;)Lnet/mamoe/mirai/contact/active/ActiveHonorList;
-	public abstract fun getHonorList (Lnet/mamoe/mirai/data/GroupHonorType;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getHonorShow ()Z
 	public abstract fun getRankTitles ()Ljava/util/Map;
-	public abstract fun getTemperatureShow ()Z
 	public abstract fun getTemperatureTitles ()Ljava/util/Map;
-	public abstract fun getTitleShow ()Z
-	public abstract fun setHonorShow (Z)V
+	public abstract fun isHonorVisible ()Z
+	public abstract fun isTemperatureVisible ()Z
+	public abstract fun isTitleVisible ()Z
+	public fun queryChart ()Lnet/mamoe/mirai/contact/active/ActiveChart;
+	public abstract fun queryChart (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun queryHonorHistory (Lnet/mamoe/mirai/data/GroupHonorType;)Lnet/mamoe/mirai/contact/active/ActiveHonorList;
+	public abstract fun queryHonorHistory (Lnet/mamoe/mirai/data/GroupHonorType;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun setHonorVisible (Z)V
 	public abstract fun setRankTitles (Ljava/util/Map;)V
-	public abstract fun setTemperatureShow (Z)V
 	public abstract fun setTemperatureTitles (Ljava/util/Map;)V
-	public abstract fun setTitleShow (Z)V
+	public abstract fun setTemperatureVisible (Z)V
+	public abstract fun setTitleVisible (Z)V
 }
 
 public abstract interface class net/mamoe/mirai/contact/announcement/Announcement {
