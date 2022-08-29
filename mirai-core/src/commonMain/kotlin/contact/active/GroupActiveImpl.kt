@@ -43,13 +43,13 @@ internal abstract class CommonGroupActiveImpl(
 
     private var _honorShow: Boolean = groupInfo.honorShow
 
+    private var _titleShow: Boolean = groupInfo.titleShow
+
+    private var _temperatureShow: Boolean = groupInfo.temperatureShow
+
     private var _rankTitles: Map<Int, String> = groupInfo.rankTitles
 
-    private var _rankShow: Boolean = groupInfo.rankShow
-
-    private var _activeTitles: Map<Int, String> = groupInfo.activeTitles
-
-    private var _activeShow: Boolean = groupInfo.activeShow
+    private var _temperatureTitles: Map<Int, String> = groupInfo.temperatureTitles
 
     private suspend fun getGroupLevelInfo(): GroupLevelInfo? {
         return group.bot.getRawGroupLevelInfo(groupCode = group.groupCode).onLeft {
@@ -64,10 +64,10 @@ internal abstract class CommonGroupActiveImpl(
 
     private suspend fun rankFlush() {
         val info = getGroupLevelInfo() ?: return
+        _titleShow = info.levelFlag == 1
+        _temperatureShow = info.levelNewFlag == 1
         _rankTitles = info.levelName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
-        _rankShow = info.levelFlag == 1
-        _activeTitles = info.levelNewName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
-        _activeShow = info.levelNewFlag == 1
+        _temperatureTitles = info.levelNewName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
     }
 
     override var honorShow: Boolean
@@ -106,8 +106,8 @@ internal abstract class CommonGroupActiveImpl(
             }
         }
 
-    override var rankShow: Boolean
-        get() = _rankShow
+    override var titleShow: Boolean
+        get() = _titleShow
         set(newValue) {
             group.checkBotPermission(MemberPermission.ADMINISTRATOR)
             group.launch {
@@ -124,8 +124,8 @@ internal abstract class CommonGroupActiveImpl(
             }
         }
 
-    override var activeTitles: Map<Int, String>
-        get() = _activeTitles
+    override var temperatureTitles: Map<Int, String>
+        get() = _temperatureTitles
         set(newValue) {
             group.checkBotPermission(MemberPermission.ADMINISTRATOR)
             group.launch {
@@ -142,8 +142,8 @@ internal abstract class CommonGroupActiveImpl(
             }
         }
 
-    override var activeShow: Boolean
-        get() = _activeShow
+    override var temperatureShow: Boolean
+        get() = _temperatureShow
         set(newValue) {
             group.checkBotPermission(MemberPermission.ADMINISTRATOR)
             group.launch {
@@ -170,8 +170,8 @@ internal abstract class CommonGroupActiveImpl(
             }
         }.onRight { info ->
             _honorShow = info.honourFlag == 1
+            _titleShow = info.levelFlag == 1
             _rankTitles = info.levelName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
-            _rankShow = info.levelFlag == 1
 
             for (member in group.members) {
                 val (_, _, point, rank) = info.lv[member.id] ?: continue

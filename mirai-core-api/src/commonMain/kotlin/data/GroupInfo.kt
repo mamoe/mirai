@@ -78,26 +78,26 @@ public interface GroupInfo {
     public val honorShow: Boolean
 
     /**
+     * 头衔是否显示
+     * @since 2.13.0
+     */
+    public val titleShow: Boolean
+
+    /**
+     * 活跃度是否显示
+     * @since 2.13.0
+     */
+    public val temperatureShow: Boolean
+
+    /**
      * 等级头衔
      * @since 2.13.0
      */
     public val rankTitles: Map<Int, String>
 
     /**
-     * 等级头衔是否显示
-     * @since 2.13.0
-     */
-    public val rankShow: Boolean
-
-    /**
      * 活跃度头衔
      * @since 2.13.0
      */
-    public val activeTitles: Map<Int, String>
-
-    /**
-     * 活跃度是否显示
-     * @since 2.13.0
-     */
-    public val activeShow: Boolean
+    public val temperatureTitles: Map<Int, String>
 }

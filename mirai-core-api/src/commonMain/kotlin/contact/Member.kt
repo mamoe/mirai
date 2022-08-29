@@ -14,7 +14,6 @@ package net.mamoe.mirai.contact
 
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.MemberNudge
@@ -78,7 +77,7 @@ public interface Member : User {
      * @see active
      * @since 2.13.0
      */
-    public val activeTitle: String
+    public val temperatureTitle: String
         get() {
             val level = when (active.temperature) {
                 in 1..10 -> 1
@@ -89,7 +88,7 @@ public interface Member : User {
                 in 81..100 -> 6
                 else -> 0
             }
-            return group.active.activeTitles[level].orEmpty()
+            return group.active.temperatureTitles[level].orEmpty()
         }
 
     /**
