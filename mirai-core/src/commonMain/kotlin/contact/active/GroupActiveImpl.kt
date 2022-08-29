@@ -22,13 +22,6 @@ import net.mamoe.mirai.contact.active.ActiveRecord
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.getRawGroupActiveData
-import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.getRawGroupHonorListData
-import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.getRawGroupLevelInfo
-import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.setGroupLevelInfo
-import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.toActiveChart
-import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.toActiveHonorList
-import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.toActiveRecord
 import net.mamoe.mirai.internal.contact.groupCode
 import net.mamoe.mirai.utils.Either.Companion.onLeft
 import net.mamoe.mirai.utils.Either.Companion.onRight
@@ -48,9 +41,15 @@ internal abstract class CommonGroupActiveImpl(
     groupInfo: GroupInfo,
 ) : GroupActive {
 
+    private var _honorShow: Boolean = groupInfo.honorShow
+
     private var _rankTitles: Map<Int, String> = groupInfo.rankTitles
 
     private var _rankShow: Boolean = groupInfo.rankShow
+
+    private var _activeTitles: Map<Int, String> = groupInfo.activeTitles
+
+    private var _activeShow: Boolean = groupInfo.activeShow
 
     private suspend fun getGroupLevelInfo(): GroupLevelInfo? {
         return group.bot.getRawGroupLevelInfo(groupCode = group.groupCode).onLeft {
@@ -67,15 +66,34 @@ internal abstract class CommonGroupActiveImpl(
         val info = getGroupLevelInfo() ?: return
         _rankTitles = info.levelName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
         _rankShow = info.levelFlag == 1
-
+        _activeTitles = info.levelNewName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
+        _activeShow = info.levelNewFlag == 1
     }
+
+    override var honorShow: Boolean
+        get() = _honorShow
+        set(newValue) {
+            group.checkBotPermission(MemberPermission.ADMINISTRATOR)
+            group.launch {
+                group.bot.setGroupHonourFlag(groupCode = group.groupCode, flag = newValue).onLeft {
+                    if (logger.isEnabled) { // createException
+                        logger.warning(
+                            { "Failed to set honor show for group ${group.id}" },
+                            it.createException()
+                        )
+                    }
+                }.onRight {
+                    _honorShow = newValue
+                }
+            }
+        }
 
     override var rankTitles: Map<Int, String>
         get() = _rankTitles
         set(newValue) {
             group.checkBotPermission(MemberPermission.ADMINISTRATOR)
             group.launch {
-                group.bot.setGroupLevelInfo(groupCode = group.groupCode, titles = newValue).onLeft {
+                group.bot.setGroupLevelInfo(groupCode = group.groupCode, new = false, titles = newValue).onLeft {
                     if (logger.isEnabled) { // createException
                         logger.warning(
                             { "Failed to set rank titles for group ${group.id}" },
@@ -88,11 +106,12 @@ internal abstract class CommonGroupActiveImpl(
             }
         }
 
-    override var rankShow: Boolean = groupInfo.rankShow
+    override var rankShow: Boolean
+        get() = _rankShow
         set(newValue) {
             group.checkBotPermission(MemberPermission.ADMINISTRATOR)
             group.launch {
-                group.bot.setGroupLevelInfo(groupCode = group.groupCode, show = newValue).onLeft {
+                group.bot.setGroupSetting(groupCode = group.groupCode, new = false, show = newValue).onLeft {
                     if (logger.isEnabled) { // createException
                         logger.warning(
                             { "Failed to set rank show for group ${group.id}" },
@@ -104,6 +123,64 @@ internal abstract class CommonGroupActiveImpl(
                 }
             }
         }
+
+    override var activeTitles: Map<Int, String>
+        get() = _activeTitles
+        set(newValue) {
+            group.checkBotPermission(MemberPermission.ADMINISTRATOR)
+            group.launch {
+                group.bot.setGroupLevelInfo(groupCode = group.groupCode, new = true, titles = newValue).onLeft {
+                    if (logger.isEnabled) { // createException
+                        logger.warning(
+                            { "Failed to set active titles for group ${group.id}" },
+                            it.createException()
+                        )
+                    }
+                }.onRight {
+                    rankFlush()
+                }
+            }
+        }
+
+    override var activeShow: Boolean
+        get() = _activeShow
+        set(newValue) {
+            group.checkBotPermission(MemberPermission.ADMINISTRATOR)
+            group.launch {
+                group.bot.setGroupSetting(groupCode = group.groupCode, new = true, show = newValue).onLeft {
+                    if (logger.isEnabled) { // createException
+                        logger.warning(
+                            { "Failed to set active show for group ${group.id}" },
+                            it.createException()
+                        )
+                    }
+                }.onRight {
+                    rankFlush()
+                }
+            }
+        }
+
+    override suspend fun flush() {
+        group.bot.getRawMemberLevelInfo(groupCode = group.groupCode).onLeft {
+            if (logger.isEnabled) { // createException
+                logger.warning(
+                    { "Failed to flush member active for group ${group.id}" },
+                    it.createException()
+                )
+            }
+        }.onRight { info ->
+            _honorShow = info.honourFlag == 1
+            _rankTitles = info.levelName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
+            _rankShow = info.levelFlag == 1
+
+            for (member in group.members) {
+                val (_, _, point, rank) = info.lv[member.id] ?: continue
+
+                member.info.point = point
+                member.info.rank = rank
+            }
+        }
+    }
 
     protected suspend fun getGroupActiveData(page: Int?): GroupActiveData? {
         return group.bot.getRawGroupActiveData(group.id, page).onLeft {
@@ -121,13 +198,14 @@ internal abstract class CommonGroupActiveImpl(
             var page = 0
             while (currentCoroutineContext().isActive) {
                 val result = getGroupActiveData(page = page) ?: break
+                val most = result.info.mostAct ?: break
 
-                result.info.mostAct?.let { emitAll(it.asFlow()) } ?: break
+                for (active in most) emit(active.toActiveRecord(group))
 
                 if (result.info.isEnd == 1) break
                 page++
             }
-        }.map { it.toActiveRecord(group) }
+        }
     }
 
     override suspend fun getChart(): ActiveChart? {

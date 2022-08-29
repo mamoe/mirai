@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.active.*
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
@@ -40,14 +41,44 @@ internal data class GroupLevelInfo(
     @SerialName("ec") override val errorCode: Int = 0,
     @SerialName("em") override val errorMessage: String? = null,
     @SerialName("errcode") val errCode: Int?,
-    @SerialName("levelflag") val levelFlag: Int,
-    @SerialName("levelname") val levelName: Map<String, String>
+    @SerialName("levelflag") val levelFlag: Int = 0,
+    @SerialName("levelname") val levelName: Map<String, String> = emptyMap(),
+    @SerialName("levelnewflag") val levelNewFlag: Int = 0,
+    @SerialName("levelnewname") val levelNewName: Map<String, String> = emptyMap()
 ) : CheckableResponseA(), JsonStruct
+
+@Serializable
+internal data class MemberLevelInfo(
+    @SerialName("ec") override val errorCode: Int = 0,
+    @SerialName("em") override val errorMessage: String? = null,
+    @SerialName("errcode") val errCode: Int?,
+    @SerialName("role") val role: Int = 0,
+    @SerialName("mems") val mems: Map<Long, MemberInfo> = emptyMap(),
+    @SerialName("lv") val lv: Map<Long, LevelInfo> = emptyMap(),
+    @SerialName("levelflag") val levelFlag: Int = 0,
+    @SerialName("levelname") val levelName: Map<String, String> = emptyMap(),
+    @SerialName("honourflag") val honourFlag: Int = 0
+) : CheckableResponseA(), JsonStruct {
+
+    @Serializable
+    data class MemberInfo(
+        @SerialName("u") val u: Long = 0,
+        @SerialName("g") val g: Int = 0,
+        @SerialName("n") val n: String = ""
+    )
+
+    @Serializable
+    data class LevelInfo(
+        @SerialName("u") val u: Long = 0,
+        @SerialName("d") val d: Int = 0,
+        @SerialName("p") val p: Int = 0,
+        @SerialName("l") val l: Int = 1
+    )
+}
 
 /**
  * 群统计信息
  */
-@MiraiExperimentalApi
 @Serializable
 internal data class GroupActiveData(
     @SerialName("ec") override val errorCode: Int = 0,
@@ -87,7 +118,6 @@ internal data class GroupActiveData(
         @SerialName("isEnd") val isEnd: Int
     )
 }
-
 
 @Serializable
 internal data class GroupHonorListData(
@@ -129,19 +159,19 @@ internal data class GroupHonorListData(
     val currentRicher: Current? = null,
 
     @SerialName("redpacketHonnorList")
-    val redpacketHonnorList: List<Actor>? = null,
+    val redPacketHonorList: List<Actor>? = null,
 
     @SerialName("currentRedpacketHonnor")
-    val currentRedpacketHonnor: Current? = null,
+    val currentRedPacketHonor: Current? = null,
 
     @SerialName("levelname")
-    val levelName: LevelName? = null,
+    val levelName: Map<String, String>? = null,
 
     @SerialName("manageList")
-    val manageList: List<Tag>? = null,
+    val manageList: List<Tag>? = null, // 管理员
 
     @SerialName("exclusiveList")
-    val exclusiveList: List<Tag>? = null,
+    val exclusiveList: List<Tag>? = null, // 特殊头衔
 
     @SerialName("activeObj")
     val activeObj: Map<String, List<Tag>>? = null, // Key为活跃等级名, 如`冒泡`
@@ -168,22 +198,22 @@ internal data class GroupHonorListData(
     @Serializable
     data class Actor(
         @SerialName("uin")
-        val uin: Long,
+        val uin: Long = 0,
 
         @SerialName("avatar")
-        val avatar: String,
+        val avatar: String = "",
 
         @SerialName("name")
-        val name: String,
+        val name: String = "",
 
         @SerialName("desc")
-        val desc: String,
+        val desc: String = "",
 
         @SerialName("btnText")
-        val btnText: String,
+        val btnText: String = "",
 
         @SerialName("text")
-        val text: String,
+        val text: String = "",
 
         @SerialName("icon")
         val icon: Int? = null
@@ -192,340 +222,361 @@ internal data class GroupHonorListData(
     @Serializable
     data class Current(
         @SerialName("uin")
-        val uin: Long,
+        val uin: Long = 0,
 
         @SerialName("day_count")
-        val dayCount: Int,
+        val dayCount: Int = 0,
 
         @SerialName("avatar")
-        val avatar: String,
+        val avatar: String = "",
 
         @SerialName("avatar_size")
-        val avatarSize: Int,
+        val avatarSize: Int = 0,
 
         @SerialName("nick")
-        val nick: String
-    )
-
-    @Serializable
-    data class LevelName(
-        @SerialName("lvln1")
-        val lv1: String? = null,
-
-        @SerialName("lvln2")
-        val lv2: String? = null,
-
-        @SerialName("lvln3")
-        val lv3: String? = null,
-
-        @SerialName("lvln4")
-        val lv4: String? = null,
-
-        @SerialName("lvln5")
-        val lv5: String? = null,
-
-        @SerialName("lvln6")
-        val lv6: String? = null
+        val nick: String = ""
     )
 
     @Serializable
     data class Tag(
         @SerialName("uin")
-        val uin: Long,
+        val uin: Long = 0,
 
         @SerialName("avatar")
-        val avatar: String,
+        val avatar: String = "",
 
         @SerialName("name")
-        val name: String,
+        val name: String = "",
 
         @SerialName("btnText")
-        val btnText: String,
+        val btnText: String = "",
 
         @SerialName("text")
-        val text: String,
+        val text: String = "",
 
         @SerialName("tag")
-        val tag: String,  // 头衔
+        val tag: String = "",  // 头衔
 
         @SerialName("tagColor")
-        val tagColor: String
+        val tagColor: String = ""
     )
 }
 
-@Suppress("DEPRECATION_ERROR")
-internal object GroupActiveProtocol {
 
-    suspend fun QQAndroidBot.getRawGroupLevelInfo(
-        groupCode: Long
-    ): Either<DeserializationFailure, GroupLevelInfo> {
-        return components[HttpClientProvider].getHttpClient().get {
-            url("https://qinfo.clt.qq.com/cgi-bin/qun_info/get_group_level_info")
-            parameter("gc", groupCode)
-            parameter("bkn", client.wLoginSigInfo.bkn)
-            parameter("src", "qinfo_v3")
+internal suspend fun QQAndroidBot.getRawGroupLevelInfo(
+    groupCode: Long
+): Either<DeserializationFailure, GroupLevelInfo> {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qinfo.clt.qq.com/cgi-bin/qun_info/get_group_level_new_info")
+        parameter("gc", groupCode)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+        parameter("src", "qinfo_v3")
 
-            headers {
-                // ktor bug
-                append(
-                    "cookie",
-                    "uin=o${id}; skey=${sKey}"
-                )
-            }
-        }.bodyAsText().loadSafelyAs(GroupLevelInfo.serializer())
-    }
-
-    suspend fun QQAndroidBot.setGroupLevelInfo(
-        groupCode: Long,
-        titles: Map<Int, String>
-    ): Either<DeserializationFailure, SetResult> {
-        return components[HttpClientProvider].getHttpClient().post {
-            url("https://qinfo.clt.qq.com/cgi-bin/qun_info/set_group_level_info")
-            setBody(FormDataContent(Parameters.build {
-                titles.forEach { (index, name) ->
-                    append("lvln$index", name)
-                }
-                append("gc", groupCode.toString())
-                append("src", "qinfo_v3")
-                append("bkn", client.wLoginSigInfo.bkn.toString())
-            }))
-
-            headers {
-                // ktor bug
-                append(
-                    "cookie",
-                    "uin=o${id}; skey=${sKey}"
-                )
-            }
-        }.bodyAsText().loadSafelyAs(SetResult.serializer())
-    }
-
-    suspend fun QQAndroidBot.setGroupLevelInfo(
-        groupCode: Long,
-        show: Boolean
-    ): Either<DeserializationFailure, SetResult> {
-        return components[HttpClientProvider].getHttpClient().post {
-            url("https://qinfo.clt.qq.com/cgi-bin/qun_info/set_group_setting")
-            setBody(FormDataContent(Parameters.build {
-                append("levelflag", if (show) "1" else "0")
-                append("gc", groupCode.toString())
-                append("src", "qinfo_v3")
-                append("bkn", client.wLoginSigInfo.bkn.toString())
-            }))
-
-            headers {
-                // ktor bug
-                append(
-                    "cookie",
-                    "uin=o${id}; skey=${sKey}"
-                )
-            }
-        }.bodyAsText().loadSafelyAs(SetResult.serializer())
-    }
-
-    suspend fun QQAndroidBot.getRawGroupActiveData(
-        groupCode: Long,
-        page: Int? = null
-    ): Either<DeserializationFailure, GroupActiveData> {
-        return components[HttpClientProvider].getHttpClient().get {
-            url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
-            parameter("bkn", client.wLoginSigInfo.bkn)
-            parameter("gc", groupCode)
-            parameter("page", page)
-            headers {
-                // ktor bug
-                append(
-                    "cookie",
-                    "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
-                )
-            }
-        }.bodyAsText().loadSafelyAs(GroupActiveData.serializer())
-    }
-
-    suspend fun QQAndroidBot.getRawGroupHonorListData(
-        groupId: Long,
-        type: GroupHonorType
-    ): Either<DeserializationFailure, GroupHonorListData> {
-        val html = components[HttpClientProvider].getHttpClient().get {
-            url("https://qun.qq.com/interactive/honorlist")
-            parameter("gc", groupId)
-            parameter(
-                "type", when (type) {
-                    GroupHonorType.BRONZE -> "bronze"
-                    GroupHonorType.SILVER -> "silver"
-                    GroupHonorType.GOLDEN -> "golden"
-                    GroupHonorType.WHIRLWIND -> "whirlwind"
-                    else -> type.value
-                }
-            )
-            headers {
-                // ktor bug
-                append(
-                    "cookie",
-                    "uin=o${id};" +
-                        " skey=${sKey};" +
-                        " p_uin=o${id};" +
-                        " p_skey=${psKey(host)}; "
-                )
-            }
-        }.bodyAsText()
-        val jsonText = html.substringAfter("window.__INITIAL_STATE__=").substringBefore("</script>")
-        return jsonText.loadSafelyAs(GroupHonorListData.serializer())
-    }
-
-    @Suppress("INVISIBLE_MEMBER")
-    fun GroupActiveData.MostActive.toActiveRecord(group: Group): ActiveRecord {
-        return ActiveRecord(
-            memberId = uin,
-            memberName = name,
-            periodDays = sentencesNum,
-            messagesCount = sta,
-            member = group.get(id = uin)
-        )
-    }
-
-    @Suppress("INVISIBLE_MEMBER")
-    fun GroupActiveData.ActiveInfo.toActiveChart(): ActiveChart {
-        return ActiveChart(
-            actives = actNum?.associate { it.date to it.num }.orEmpty(),
-            sentences = sentences?.associate { it.date to it.num }.orEmpty(),
-            members = memNum?.associate { it.date to it.num }.orEmpty(),
-            join = joinNum?.associate { it.date to it.num }.orEmpty(),
-            exit = exitNum?.associate { it.date to it.num }.orEmpty()
-        )
-    }
-
-    @Suppress("INVISIBLE_MEMBER")
-    fun GroupHonorListData.toActiveHonorList(type: GroupHonorType, group: Group): ActiveHonorList {
-        return when (type) {
-            GroupHonorType.TALKATIVE -> ActiveHonorList(
-                type = type,
-                current = currentTalkative?.let {
-                    ActiveHonorCurrent(
-                        memberName = it.nick,
-                        memberId = it.uin,
-                        avatar = it.avatar + it.avatarSize,
-                        member = group.get(id = it.uin),
-                        count = it.dayCount
-                    )
-                },
-                records = talkativeList?.map {
-                    ActiveHonorRecord(
-                        memberName = it.name,
-                        memberId = it.uin,
-                        avatar = it.avatar,
-                        member = group.get(id = it.uin),
-                        description = it.desc
-                    )
-                }.orEmpty()
-            )
-            GroupHonorType.PERFORMER -> ActiveHonorList(
-                type = type,
-                current = null,
-                records = actorList?.map {
-                    ActiveHonorRecord(
-                        memberName = it.name,
-                        memberId = it.uin,
-                        avatar = it.avatar,
-                        member = group.get(id = it.uin),
-                        description = it.desc
-                    )
-                }.orEmpty()
-            )
-            GroupHonorType.LEGEND -> ActiveHonorList(
-                type = type,
-                current = null,
-                records = legendList?.map {
-                    ActiveHonorRecord(
-                        memberName = it.name,
-                        memberId = it.uin,
-                        avatar = it.avatar,
-                        member = group.get(id = it.uin),
-                        description = it.desc
-                    )
-                }.orEmpty()
-            )
-            GroupHonorType.STRONG_NEWBIE -> ActiveHonorList(
-                type = type,
-                current = null,
-                records = strongNewbieList?.map {
-                    ActiveHonorRecord(
-                        memberName = it.name,
-                        memberId = it.uin,
-                        avatar = it.avatar,
-                        member = group.get(id = it.uin),
-                        description = it.desc
-                    )
-                }.orEmpty()
-            )
-            GroupHonorType.EMOTION -> ActiveHonorList(
-                type = type,
-                current = null,
-                records = emotionList?.map {
-                    ActiveHonorRecord(
-                        memberName = it.name,
-                        memberId = it.uin,
-                        avatar = it.avatar,
-                        member = group.get(id = it.uin),
-                        description = it.desc
-                    )
-                }.orEmpty()
-            )
-            GroupHonorType.BRONZE, GroupHonorType.SILVER, GroupHonorType.GOLDEN, GroupHonorType.WHIRLWIND -> ActiveHonorList(
-                type = type,
-                current = null,
-                records = actorList?.map {
-                    ActiveHonorRecord(
-                        memberName = it.name,
-                        memberId = it.uin,
-                        avatar = it.avatar,
-                        member = group.get(id = it.uin),
-                        description = it.desc
-                    )
-                }.orEmpty()
-            )
-            GroupHonorType.RICHER -> ActiveHonorList(
-                type = type,
-                current = currentRicher?.let {
-                    ActiveHonorCurrent(
-                        memberName = it.nick,
-                        memberId = it.uin,
-                        avatar = it.avatar + it.avatarSize,
-                        member = group.get(id = it.uin),
-                        count = it.dayCount
-                    )
-                },
-                records = richerList?.map {
-                    ActiveHonorRecord(
-                        memberName = it.name,
-                        memberId = it.uin,
-                        avatar = it.avatar,
-                        member = group.get(id = it.uin),
-                        description = it.desc
-                    )
-                }.orEmpty()
-            )
-            GroupHonorType.RED_PACKET -> ActiveHonorList(
-                type = type,
-                current = currentRedpacketHonnor?.let {
-                    ActiveHonorCurrent(
-                        memberName = it.nick,
-                        memberId = it.uin,
-                        avatar = it.avatar + it.avatarSize,
-                        member = group.get(id = it.uin),
-                        count = it.dayCount
-                    )
-                },
-                records = redpacketHonnorList?.map {
-                    ActiveHonorRecord(
-                        memberName = it.name,
-                        memberId = it.uin,
-                        avatar = it.avatar,
-                        member = group.get(id = it.uin),
-                        description = it.desc
-                    )
-                }.orEmpty()
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}"
             )
         }
+    }.bodyAsText().loadSafelyAs(GroupLevelInfo.serializer())
+}
+
+internal suspend fun QQAndroidBot.getRawMemberLevelInfo(
+    groupCode: Long
+): Either<DeserializationFailure, MemberLevelInfo> {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qinfo.clt.qq.com/cgi-bin/qun_info/get_group_members_lite")
+        parameter("gc", groupCode)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+        parameter("src", "qinfo_v3")
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(MemberLevelInfo.serializer())
+}
+
+internal suspend fun QQAndroidBot.setGroupLevelInfo(
+    groupCode: Long,
+    new: Boolean,
+    titles: Map<Int, String>
+): Either<DeserializationFailure, SetResult> {
+    return components[HttpClientProvider].getHttpClient().post {
+        url("https://qinfo.clt.qq.com/cgi-bin/qun_info/set_group_level_info")
+        setBody(FormDataContent(Parameters.build {
+            titles.forEach { (index, name) ->
+                append("lvln$index", name)
+            }
+            append("new", if (new) "1" else "0")
+            append("gc", groupCode.toString())
+            append("src", "qinfo_v3")
+            append("bkn", client.wLoginSigInfo.bkn.toString())
+        }))
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(SetResult.serializer())
+}
+
+internal suspend fun QQAndroidBot.setGroupSetting(
+    groupCode: Long,
+    new: Boolean,
+    show: Boolean
+): Either<DeserializationFailure, SetResult> {
+    return components[HttpClientProvider].getHttpClient().post {
+        url("https://qinfo.clt.qq.com/cgi-bin/qun_info/set_group_setting")
+        setBody(FormDataContent(Parameters.build {
+            append(if (new) "levelnewflag" else "levelflag", if (show) "1" else "0")
+            append("gc", groupCode.toString())
+            append("src", "qinfo_v3")
+            append("bkn", client.wLoginSigInfo.bkn.toString())
+        }))
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(SetResult.serializer())
+}
+
+internal suspend fun QQAndroidBot.setGroupHonourFlag(
+    groupCode: Long,
+    flag: Boolean
+): Either<DeserializationFailure, SetResult> {
+    return components[HttpClientProvider].getHttpClient().post {
+        url("https://qinfo.clt.qq.com/cgi-bin/qun_info/set_honour_flag")
+        setBody(FormDataContent(Parameters.build {
+            append("gc", groupCode.toString())
+            append("bkn", client.wLoginSigInfo.bkn.toString())
+            append("src", "qinfo_v3")
+            append("flag", if (flag) "0" else "1")
+        }))
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(SetResult.serializer())
+}
+
+internal suspend fun QQAndroidBot.getRawGroupActiveData(
+    groupCode: Long,
+    page: Int? = null
+): Either<DeserializationFailure, GroupActiveData> {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
+        parameter("bkn", client.wLoginSigInfo.bkn)
+        parameter("gc", groupCode)
+        parameter("page", page)
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(GroupActiveData.serializer())
+}
+
+internal suspend fun QQAndroidBot.getRawGroupHonorListData(
+    groupId: Long,
+    type: GroupHonorType
+): Either<DeserializationFailure, GroupHonorListData> {
+    val html = components[HttpClientProvider].getHttpClient().get {
+        url("https://qun.qq.com/interactive/honorlist")
+        parameter("gc", groupId)
+        parameter(
+            "type", when (type) {
+                GroupHonorType.BRONZE -> "bronze"
+                GroupHonorType.SILVER -> "silver"
+                GroupHonorType.GOLDEN -> "golden"
+                GroupHonorType.WHIRLWIND -> "whirlwind"
+                else -> type.value
+            }
+        )
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id};" +
+                    " skey=${sKey};" +
+                    " p_uin=o${id};" +
+                    " p_skey=${psKey(host)}; "
+            )
+        }
+    }.bodyAsText()
+    val jsonText = html.substringAfter("window.__INITIAL_STATE__=").substringBefore("</script>")
+    return jsonText.loadSafelyAs(GroupHonorListData.serializer())
+}
+
+@Suppress("INVISIBLE_MEMBER")
+internal fun GroupActiveData.MostActive.toActiveRecord(group: Group): ActiveRecord {
+    return ActiveRecord(
+        memberId = uin,
+        memberName = name,
+        periodDays = sentencesNum,
+        messagesCount = sta,
+        member = group.get(id = uin)
+    )
+}
+
+@Suppress("INVISIBLE_MEMBER")
+internal fun GroupActiveData.ActiveInfo.toActiveChart(): ActiveChart {
+    return ActiveChart(
+        actives = actNum?.associate { it.date to it.num }.orEmpty(),
+        sentences = sentences?.associate { it.date to it.num }.orEmpty(),
+        members = memNum?.associate { it.date to it.num }.orEmpty(),
+        join = joinNum?.associate { it.date to it.num }.orEmpty(),
+        exit = exitNum?.associate { it.date to it.num }.orEmpty()
+    )
+}
+
+@Suppress("INVISIBLE_MEMBER")
+internal fun GroupHonorListData.toActiveHonorList(type: GroupHonorType, group: GroupImpl): ActiveHonorList {
+    return when (type) {
+        GroupHonorType.TALKATIVE -> ActiveHonorList(
+            type = type,
+            current = currentTalkative?.let {
+                ActiveHonorCurrent(
+                    memberName = it.nick,
+                    memberId = it.uin,
+                    avatar = it.avatar + it.avatarSize,
+                    member = group.get(id = it.uin),
+                    termDays = it.dayCount
+                )
+            },
+            records = talkativeList?.map {
+                ActiveHonorRecord(
+                    memberName = it.name,
+                    memberId = it.uin,
+                    avatar = it.avatar,
+                    member = group.get(id = it.uin),
+                    description = it.desc
+                )
+            }.orEmpty()
+        )
+        GroupHonorType.PERFORMER -> ActiveHonorList(
+            type = type,
+            current = null,
+            records = actorList?.map {
+                ActiveHonorRecord(
+                    memberName = it.name,
+                    memberId = it.uin,
+                    avatar = it.avatar,
+                    member = group.get(id = it.uin),
+                    description = it.desc
+                )
+            }.orEmpty()
+        )
+        GroupHonorType.LEGEND -> ActiveHonorList(
+            type = type,
+            current = null,
+            records = legendList?.map {
+                ActiveHonorRecord(
+                    memberName = it.name,
+                    memberId = it.uin,
+                    avatar = it.avatar,
+                    member = group.get(id = it.uin),
+                    description = it.desc
+                )
+            }.orEmpty()
+        )
+        GroupHonorType.STRONG_NEWBIE -> ActiveHonorList(
+            type = type,
+            current = null,
+            records = strongNewbieList?.map {
+                ActiveHonorRecord(
+                    memberName = it.name,
+                    memberId = it.uin,
+                    avatar = it.avatar,
+                    member = group.get(id = it.uin),
+                    description = it.desc
+                )
+            }.orEmpty()
+        )
+        GroupHonorType.EMOTION -> ActiveHonorList(
+            type = type,
+            current = null,
+            records = emotionList?.map {
+                ActiveHonorRecord(
+                    memberName = it.name,
+                    memberId = it.uin,
+                    avatar = it.avatar,
+                    member = group.get(id = it.uin),
+                    description = it.desc
+                )
+            }.orEmpty()
+        )
+        GroupHonorType.BRONZE, GroupHonorType.SILVER, GroupHonorType.GOLDEN, GroupHonorType.WHIRLWIND -> ActiveHonorList(
+            type = type,
+            current = null,
+            records = actorList?.map {
+                ActiveHonorRecord(
+                    memberName = it.name,
+                    memberId = it.uin,
+                    avatar = it.avatar,
+                    member = group.get(id = it.uin),
+                    description = it.desc
+                )
+            }.orEmpty()
+        )
+        GroupHonorType.RICHER -> ActiveHonorList(
+            type = type,
+            current = currentRicher?.let {
+                ActiveHonorCurrent(
+                    memberName = it.nick,
+                    memberId = it.uin,
+                    avatar = it.avatar + it.avatarSize,
+                    member = group.get(id = it.uin),
+                    termDays = it.dayCount
+                )
+            },
+            records = richerList?.map {
+                ActiveHonorRecord(
+                    memberName = it.name,
+                    memberId = it.uin,
+                    avatar = it.avatar,
+                    member = group.get(id = it.uin),
+                    description = it.desc
+                )
+            }.orEmpty()
+        )
+        GroupHonorType.RED_PACKET -> ActiveHonorList(
+            type = type,
+            current = currentRedPacketHonor?.let {
+                ActiveHonorCurrent(
+                    memberName = it.nick,
+                    memberId = it.uin,
+                    avatar = it.avatar + it.avatarSize,
+                    member = group.get(id = it.uin),
+                    termDays = it.dayCount
+                )
+            },
+            records = redPacketHonorList?.map {
+                ActiveHonorRecord(
+                    memberName = it.name,
+                    memberId = it.uin,
+                    avatar = it.avatar,
+                    member = group.get(id = it.uin),
+                    description = it.desc
+                )
+            }.orEmpty()
+        )
     }
 }

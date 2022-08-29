@@ -43,7 +43,7 @@ public interface MemberActive {
     public val honors: Set<GroupHonorType>
 
     /**
-     * 群荣誉等级. 取值为 0~100
+     * 群荣誉等级. 取值为 1~100
      *
      * 这个等级是在 手机端 群荣誉功能中显示的等级
      */

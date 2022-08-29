@@ -72,6 +72,12 @@ public interface GroupInfo {
     public val botMuteTimestamp: Int
 
     /**
+     * 荣誉是否显示
+     * @since 2.13.0
+     */
+    public val honorShow: Boolean
+
+    /**
      * 等级头衔
      * @since 2.13.0
      */
@@ -82,4 +88,16 @@ public interface GroupInfo {
      * @since 2.13.0
      */
     public val rankShow: Boolean
+
+    /**
+     * 活跃度头衔
+     * @since 2.13.0
+     */
+    public val activeTitles: Map<Int, String>
+
+    /**
+     * 活跃度是否显示
+     * @since 2.13.0
+     */
+    public val activeShow: Boolean
 }

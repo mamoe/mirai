@@ -67,15 +67,35 @@ public interface Member : User {
     public val specialTitle: String
 
     /**
-     * 群等级头衔
+     * 群等级头衔 (PC 端显示)
      * @see active
      * @since 2.13.0
      */
     public val rankTitle: String get() = group.active.rankTitles[active.rank].orEmpty()
 
     /**
+     * 群活跃头衔 (手机端显示)
+     * @see active
+     * @since 2.13.0
+     */
+    public val activeTitle: String
+        get() {
+            val level = when (active.temperature) {
+                in 1..10 -> 1
+                in 11..20 -> 2
+                in 21..40 -> 3
+                in 41..60 -> 4
+                in 61..80 -> 5
+                in 81..100 -> 6
+                else -> 0
+            }
+            return group.active.activeTitles[level].orEmpty()
+        }
+
+    /**
      * 群活跃度相关属性.
      * @see [rankTitle]
+     * @see [activeTitle]
      * @since 2.13.0
      */
     public val active: MemberActive

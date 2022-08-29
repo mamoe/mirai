@@ -50,6 +50,7 @@ public enum class GroupHonorType(public val value: Int) {
     RED_PACKET(14);
 
     internal companion object {
+        @JvmStatic
         private val values = values()
 
         @JvmStatic

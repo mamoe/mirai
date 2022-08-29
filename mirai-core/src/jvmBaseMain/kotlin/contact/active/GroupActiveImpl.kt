@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.active.ActiveRecord
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.active.GroupActiveProtocol.toActiveRecord
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.stream
@@ -31,12 +30,13 @@ internal actual class GroupActiveImpl actual constructor(
             var page = 0
             while (true) {
                 val result = runBlocking { getGroupActiveData(page = page) } ?: break
+                val most = result.info.mostAct ?: break
 
-                result.info.mostAct?.let { yieldAll(it) } ?: break
+                for (active in most) yield(active.toActiveRecord(group))
 
                 if (result.info.isEnd == 1) break
                 page++
             }
-        }.map { it.toActiveRecord(group) }
+        }
     }
 }

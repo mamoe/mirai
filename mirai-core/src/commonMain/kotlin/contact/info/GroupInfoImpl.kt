@@ -28,8 +28,11 @@ internal data class GroupInfoImpl(
     override val confessTalk: Boolean,
     override val muteAll: Boolean,
     override val botMuteTimestamp: Int,
+    override val honorShow: Boolean,
     override val rankTitles: Map<Int, String>,
-    override val rankShow: Boolean
+    override val rankShow: Boolean,
+    override val activeTitles: Map<Int, String>,
+    override val activeShow: Boolean
 ) : GroupInfo, Packet, Packet.NoLog {
     constructor(stTroopNum: StTroopNum, stGroupRankInfo: StGroupRankInfo?) : this(
         uin = stTroopNum.groupUin,
@@ -43,6 +46,7 @@ internal data class GroupInfoImpl(
         confessTalk = stTroopNum.dwGroupFlagExt3?.and(0x00002000) == 0L,
         muteAll = stTroopNum.dwShutUpTimestamp != 0L,
         botMuteTimestamp = stTroopNum.dwMyShutUpTimestamp?.toInt() ?: 0,
+        honorShow = stGroupRankInfo?.groupRankSysFlag?.toInt() == 1,
         rankTitles = buildMap {
             for (pair in stGroupRankInfo?.vecRankMap.orEmpty()) {
                 val level = pair.dwLevel?.toInt() ?: continue
@@ -51,6 +55,15 @@ internal data class GroupInfoImpl(
                 put(level, title)
             }
         },
-        rankShow = stGroupRankInfo?.groupRankUserFlag?.toInt() == 1
+        rankShow = stGroupRankInfo?.groupRankUserFlag?.toInt() == 1,
+        activeTitles = buildMap {
+            for (pair in stGroupRankInfo?.vecRankMapNew.orEmpty()) {
+                val level = pair.dwLevel?.toInt() ?: continue
+                val title = pair.rank.orEmpty()
+
+                put(level, title)
+            }
+        },
+        activeShow = stGroupRankInfo?.groupRankUserFlagNew?.toInt() == 1
     )
 }

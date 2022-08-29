@@ -54,6 +54,16 @@ import net.mamoe.mirai.utils.NotStableForInheritance
 public expect interface GroupActive {
 
     /**
+     * 是否在群聊中显示荣誉
+     *
+     * set 时传入的荣誉头衔显示设置 将会异步发送给api。
+     *
+     * @see Member.rankTitle
+     */
+    @MiraiExperimentalApi
+    public var honorShow: Boolean
+
+    /**
      * 等级头衔列表，键是等级，值是头衔
      *
      * set 时传入的等级头衔 将会异步发送给api，并刷新等级头衔信息。
@@ -72,6 +82,32 @@ public expect interface GroupActive {
      */
     @MiraiExperimentalApi
     public var rankShow: Boolean
+
+    /**
+     * 活跃度头衔列表，键是等级，值是头衔
+     *
+     * set 时传入的活跃度头衔 将会异步发送给api，并刷新活跃度头衔信息。
+     *
+     * @see Member.rankTitle
+     */
+    @MiraiExperimentalApi
+    public var activeTitles: Map<Int, String>
+
+    /**
+     * 是否在群聊中显示活跃度
+     *
+     * set 时传入的等级头衔显示设置 将会异步发送给api，并刷新等级头衔信息。
+     *
+     * @see Member.active
+     */
+    @MiraiExperimentalApi
+    public var activeShow: Boolean
+
+    /**
+     * 刷新 [Member.active] 中的属性
+     * @see Member.active
+     */
+    public suspend fun flush()
 
     /**
      * 创建一个能获取该群内所有群活跃度记录的 [Flow]. 在 [Flow] 被使用时才会分页下载 [ActiveRecord].

@@ -31,10 +31,10 @@ internal data class MemberInfoImpl(
     override val joinTimestamp: Int = currentTimeSeconds().toInt(),
     override var lastSpeakTimestamp: Int = 0,
     override val isOfficialBot: Boolean = false,
-    override val rank: Int = 1,
-    override val point: Int = 0,
-    override val honors: Set<GroupHonorType> = emptySet(),
-    override val temperature: Int = 0
+    override var rank: Int = 1,
+    override var point: Int = 0,
+    override var honors: Set<GroupHonorType> = emptySet(),
+    override var temperature: Int = 1
 ) : MemberInfo {
     constructor(
         client: QQAndroidClient,

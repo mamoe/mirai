@@ -426,6 +426,7 @@ public abstract interface class net/mamoe/mirai/contact/GroupSettings {
 
 public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai/contact/User {
 	public abstract fun getActive ()Lnet/mamoe/mirai/contact/MemberActive;
+	public fun getActiveTitle ()Ljava/lang/String;
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 	public abstract fun getNameCard ()Ljava/lang/String;
 	public abstract fun getPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
@@ -636,10 +637,10 @@ public final class net/mamoe/mirai/contact/active/ActiveChart {
 
 public final class net/mamoe/mirai/contact/active/ActiveHonorCurrent {
 	public final fun getAvatar ()Ljava/lang/String;
-	public final fun getCount ()I
 	public final fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public final fun getMemberId ()J
 	public final fun getMemberName ()Ljava/lang/String;
+	public final fun getTermDays ()I
 }
 
 public final class net/mamoe/mirai/contact/active/ActiveHonorList {
@@ -667,12 +668,20 @@ public final class net/mamoe/mirai/contact/active/ActiveRecord {
 public abstract interface class net/mamoe/mirai/contact/active/GroupActive {
 	public abstract fun asFlow ()Lkotlinx/coroutines/flow/Flow;
 	public abstract fun asStream ()Ljava/util/stream/Stream;
+	public fun flush ()V
+	public abstract fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getActiveShow ()Z
+	public abstract fun getActiveTitles ()Ljava/util/Map;
 	public fun getChart ()Lnet/mamoe/mirai/contact/active/ActiveChart;
 	public abstract fun getChart (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getHonorList (Lnet/mamoe/mirai/data/GroupHonorType;)Lnet/mamoe/mirai/contact/active/ActiveHonorList;
 	public abstract fun getHonorList (Lnet/mamoe/mirai/data/GroupHonorType;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getHonorShow ()Z
 	public abstract fun getRankShow ()Z
 	public abstract fun getRankTitles ()Ljava/util/Map;
+	public abstract fun setActiveShow (Z)V
+	public abstract fun setActiveTitles (Ljava/util/Map;)V
+	public abstract fun setHonorShow (Z)V
 	public abstract fun setRankShow (Z)V
 	public abstract fun setRankTitles (Ljava/util/Map;)V
 }
@@ -1063,12 +1072,15 @@ public class net/mamoe/mirai/data/FriendInfoImpl : net/mamoe/mirai/data/FriendIn
 }
 
 public abstract interface class net/mamoe/mirai/data/GroupInfo {
+	public abstract fun getActiveShow ()Z
+	public abstract fun getActiveTitles ()Ljava/util/Map;
 	public abstract fun getAllowAnonymousChat ()Z
 	public abstract fun getAllowMemberInvite ()Z
 	public abstract fun getAutoApprove ()Z
 	public abstract fun getBotMuteTimestamp ()I
 	public abstract fun getConfessTalk ()Z
 	public abstract fun getGroupCode ()J
+	public abstract fun getHonorShow ()Z
 	public abstract fun getMemo ()Ljava/lang/String;
 	public abstract fun getMuteAll ()Z
 	public abstract fun getName ()Ljava/lang/String;
