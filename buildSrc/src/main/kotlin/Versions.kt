@@ -33,7 +33,7 @@ object Versions {
     const val kotlinCompilerForIdeaPlugin = "1.7.10"
 
     const val coroutines = "1.6.4"
-    const val atomicFU = "0.17.3"
+    const val atomicFU = "0.18.3"
     const val serialization = "1.3.3"
     const val ktor = "2.1.0"
 
