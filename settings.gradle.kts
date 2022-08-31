@@ -77,6 +77,7 @@ includeConsoleProject(":mirai-console-compiler-annotations", "tools/compiler-ann
 if (getLocalProperty("projects.mirai-console.enabled", true)) {
     includeConsoleProject(":mirai-console", "backend/mirai-console")
     includeConsoleProject(":mirai-console.codegen", "backend/codegen")
+    includeConsoleProject(":mirai-console-frontend-base", "frontend/mirai-console-frontend-base")
     includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
     includeConsoleIntegrationTestProjects()
 

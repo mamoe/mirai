@@ -266,11 +266,18 @@ public actual interface MiraiLogger {
  */
 internal object MiraiLoggerFactoryImplementationBridge : MiraiLogger.Factory {
     @Suppress("ObjectPropertyName")
-    private var _instance by lateinitMutableProperty { createPlatformInstance() }
+    private var _instance by lateinitMutableProperty {
+        createPlatformInstance()
+    }
 
     internal val instance get() = _instance
 
-    fun createPlatformInstance() = loadService(MiraiLogger.Factory::class) { DefaultFactory() }
+    // It is required for MiraiConsole because default implementation
+    // queries stdout on every message printing
+    // It creates an infinite loop (StackOverflowError)
+    internal var defaultLoggerFactory: (() -> MiraiLogger.Factory) = ::DefaultFactory
+
+    fun createPlatformInstance() = loadService(MiraiLogger.Factory::class, defaultLoggerFactory)
 
     private val frozen = atomic(false)
 
@@ -280,6 +287,7 @@ internal object MiraiLoggerFactoryImplementationBridge : MiraiLogger.Factory {
 
     @TestOnly
     fun reinit() {
+        defaultLoggerFactory = ::DefaultFactory
         frozen.loop { value ->
             _instance = createPlatformInstance()
             if (frozen.compareAndSet(value, false)) return

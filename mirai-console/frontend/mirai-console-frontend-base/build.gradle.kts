@@ -7,6 +7,8 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+import BinaryCompatibilityConfigurator.configureBinaryValidator
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -14,25 +16,23 @@ plugins {
     `maven-publish`
 }
 
+kotlin {
+    explicitApiWarning()
+}
+
 dependencies {
-    implementation("org.jline:jline:3.15.0")
-    implementation("org.fusesource.jansi:jansi:1.18")
     compileAndTestRuntime(project(":mirai-core-utils"))
 
     compileAndTestRuntime(project(":mirai-console"))
     compileAndTestRuntime(project(":mirai-core-api"))
     compileAndTestRuntime(project(":mirai-core-utils"))
-    compileAndTestRuntime(project(":mirai-console-frontend-base"))
-    compileAndTestRuntime(kotlin("stdlib-jdk8", Versions.kotlinStdlib)) // must specify `compileOnly` explicitly
-
-    testApi(project(":mirai-core"))
-    testApi(project(":mirai-console"))
+    compileAndTestRuntime(`kotlin-stdlib-jdk8`)
 }
 
 version = Versions.consoleTerminal
 
-description = "Console Terminal CLI frontend for mirai"
+description = "Console frontend abstract"
 
-configurePublishing("mirai-console-terminal")
+configurePublishing("mirai-console-frontend-base")
+configureBinaryValidator(null)
 
-// endregion
