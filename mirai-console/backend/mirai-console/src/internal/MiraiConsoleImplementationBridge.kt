@@ -129,9 +129,14 @@ internal class MiraiConsoleImplementationBridge(
         // 3. [externalImplementation] decides how to log the message
         // 4. [externalImplementation] outputs by using [platform]
         val context = object : MiraiConsoleImplementation.FrontendLoggingInitContext {
+            val pendingActions = mutableListOf<() -> Unit>()
             override fun acquirePlatformImplementation(): MiraiLogger.Factory {
                 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
                 return MiraiLoggerFactoryImplementationBridge.instance
+            }
+
+            override fun invokeAfterInitialization(action: () -> Unit) {
+                pendingActions.add(action)
             }
         }
 
@@ -142,6 +147,7 @@ internal class MiraiConsoleImplementationBridge(
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         MiraiLoggerFactoryImplementationBridge.freeze() // forbid any further overrides
 
+        context.pendingActions.forEach { it.invoke() }
     }
 
 

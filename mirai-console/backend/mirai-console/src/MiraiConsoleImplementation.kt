@@ -409,6 +409,11 @@ public interface MiraiConsoleImplementation : CoroutineScope {
          * 调用此函数会立即初始化平台日志实现. 在未完成准备工作前切勿使用此方法
          */
         public fun acquirePlatformImplementation(): MiraiLogger.Factory
+
+        /**
+         * 在完成 [MiraiLogger.Factory] 接管后马上执行 [action]
+         */
+        public fun invokeAfterInitialization(action: () -> Unit)
     }
 
     ///////////////////////////////////////////////////////////////////////////
