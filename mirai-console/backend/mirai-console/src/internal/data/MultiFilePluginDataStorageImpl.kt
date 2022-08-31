@@ -15,6 +15,7 @@ import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataHolder
 import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.console.internal.logging.lazyInitMiraiLogger
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.utils.MiraiLogger
@@ -26,7 +27,7 @@ import java.nio.file.Path
 @Suppress("RedundantVisibilityModifier") // might be public in the future
 internal open class MultiFilePluginDataStorageImpl(
     public final override val directoryPath: Path,
-    private val logger: MiraiLogger = MiraiLogger.Factory.create(MultiFilePluginDataStorageImpl::class),
+    private val logger: MiraiLogger = lazyInitMiraiLogger { MiraiLogger.Factory.create(MultiFilePluginDataStorageImpl::class) },
 ) : PluginDataStorage, MultiFilePluginDataStorage {
     init {
         directoryPath.mkdir()
