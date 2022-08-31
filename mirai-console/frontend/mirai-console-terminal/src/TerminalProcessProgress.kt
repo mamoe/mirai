@@ -9,10 +9,22 @@
 
 package net.mamoe.mirai.console.terminal
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.suspendCancellableCoroutine
 import net.mamoe.mirai.console.fontend.ProcessProgress
+import net.mamoe.mirai.console.terminal.noconsole.NoConsole
+import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.currentTimeMillis
+import org.jline.reader.MaskingCallback
+import org.jline.reader.impl.LineReaderImpl
 import org.jline.utils.AttributedString
 import org.jline.utils.AttributedStringBuilder
 import org.jline.utils.AttributedStyle
+import org.jline.utils.Display
+import java.lang.reflect.Field
+import kotlin.concurrent.withLock
+import kotlin.coroutines.Continuation
+import kotlin.reflect.KProperty
 
 internal class TerminalProcessProgress(
     private val reader: org.jline.reader.LineReader,
@@ -145,10 +157,8 @@ internal class TerminalProcessProgress(
         updateTxt(reader.terminal.width)
         if (failed) {
             terminalDownloadingProgresses.remove(this)
-            prePrintNewLog()
-            reader.printAbove(ansiMsg)
+            printToScreen(ansiMsg)
             ansiMsg = AttributedString.EMPTY
-            postPrintNewLog()
             return
         }
         // terminalDownloadingProgresses.remove(this)
@@ -162,3 +172,191 @@ internal class TerminalProcessProgress(
         // ansiMsg = AttributedString.EMPTY
     }
 }
+
+
+internal val terminalDisplay: Display by object : kotlin.properties.ReadOnlyProperty<Any?, Display> {
+    val delegate: () -> Display by lazy {
+        val terminal = terminal
+        if (terminal is NoConsole) {
+            val display = Display(terminal, false)
+            return@lazy { display }
+        }
+
+        val lr = lineReader
+        val field = LineReaderImpl::class.java.declaredFields.first { it.type == Display::class.java }
+        field.isAccessible = true
+        return@lazy { field[lr] as Display }
+    }
+
+    override fun getValue(thisRef: Any?, property: KProperty<*>): Display {
+        return delegate()
+    }
+}
+internal val lineReaderMaskingCallback: Field by lazy {
+    val field = LineReaderImpl::class.java.declaredFields.first {
+        MaskingCallback::class.java.isAssignableFrom(it.type)
+    }
+    field.isAccessible = true
+    field
+}
+
+internal val lineReaderReadingField: Field by lazy {
+    val field = LineReaderImpl::class.java.getDeclaredField("reading")
+    field.isAccessible = true
+    field
+}
+
+internal val terminalExecuteLock: java.util.concurrent.locks.Lock by lazy {
+    val terminal = terminal
+    if (terminal is NoConsole) return@lazy java.util.concurrent.locks.ReentrantLock()
+    val lr = lineReader
+    val field = LineReaderImpl::class.java.declaredFields.first {
+        java.util.concurrent.locks.Lock::class.java.isAssignableFrom(it.type)
+    }
+    field.isAccessible = true
+    field[lr].cast()
+}
+
+private val terminalDownloadingProgressesNoticer = Object()
+internal var containDownloadingProgress: Boolean = false
+    get() = field || terminalDownloadingProgresses.isNotEmpty()
+
+internal val terminalDownloadingProgresses = mutableListOf<TerminalProcessProgress>()
+
+
+internal var downloadingProgressCoroutine: Continuation<Unit>? = null
+internal suspend fun downloadingProgressDaemonStub() {
+    delay(500L)
+    if (containDownloadingProgress) {
+        updateTerminalDownloadingProgresses()
+    } else {
+        suspendCancellableCoroutine<Unit> { cp ->
+            downloadingProgressCoroutine = cp
+        }
+        downloadingProgressCoroutine = null
+    }
+}
+
+internal fun updateTerminalDownloadingProgresses() {
+    if (!containDownloadingProgress) return
+
+    runCatching { downloadingProgressCoroutine?.resumeWith(Result.success(Unit)) }
+
+    JLineInputDaemon.suspendReader(false)
+
+    terminalExecuteLock.withLock {
+        if (terminalDownloadingProgresses.isNotEmpty()) {
+            val wid = terminal.width
+            if (wid == 0) { // Run in idea
+                if (terminalDownloadingProgresses.removeIf { it.pendingErase }) {
+                    updateTerminalDownloadingProgresses()
+                    return
+                }
+                terminalDisplay.update(listOf(AttributedString.EMPTY), 0, false)
+                // Error in idea when more than one bar displaying
+                terminalDisplay.update(listOf(terminalDownloadingProgresses[0].let {
+                    it.updateTxt(0); it.ansiMsg
+                }), 0)
+            } else {
+                if (terminalDownloadingProgresses.size > 4) {
+                    // to mush. delete some completed status
+                    var allowToDelete = terminalDownloadingProgresses.size - 4
+                    terminalDownloadingProgresses.removeIf { pg ->
+                        if (allowToDelete == 0) {
+                            return@removeIf false
+                        }
+                        if (pg.pendingErase) {
+                            allowToDelete--
+                            return@removeIf true
+                        }
+                        return@removeIf false
+                    }
+                }
+                terminalDisplay.update(terminalDownloadingProgresses.map {
+                    it.updateTxt(wid); it.ansiMsg
+                }, 0)
+                cleanupErase()
+            }
+        } else {
+            terminalDisplay.update(emptyList(), 0)
+            (lineReader as LineReaderImpl).let { lr ->
+                if (lr.isReading) {
+                    lr.redisplay()
+                }
+            }
+            noticeDownloadingProgressEmpty()
+            terminal.writer().print("\u001B[?25h") // show cursor
+        }
+    }
+}
+
+internal fun printToScreen(msg: String) {
+    if (!containDownloadingProgress) {
+        if (msg.endsWith(ANSI_RESET)) {
+            lineReader.printAbove(msg)
+        } else {
+            lineReader.printAbove(msg + ANSI_RESET)
+        }
+        return
+    }
+    terminalExecuteLock.withLock {
+        terminalDisplay.update(emptyList(), 0)
+
+        if (msg.endsWith(ANSI_RESET)) {
+            lineReader.printAbove(msg)
+        } else {
+            lineReader.printAbove(msg + ANSI_RESET)
+        }
+
+        updateTerminalDownloadingProgresses()
+        cleanupErase()
+    }
+}
+
+internal fun printToScreen(msg: AttributedString) {
+    if (!containDownloadingProgress) {
+        return lineReader.printAbove(msg)
+    }
+    terminalExecuteLock.withLock {
+        terminalDisplay.update(emptyList(), 0)
+
+        lineReader.printAbove(msg)
+
+        updateTerminalDownloadingProgresses()
+        cleanupErase()
+    }
+}
+
+
+internal fun cleanupErase() {
+    val now = currentTimeMillis()
+    terminalDownloadingProgresses.removeIf { pg ->
+        if (!pg.pendingErase) return@removeIf false
+        if (now > pg.eraseTimestamp) {
+            pg.ansiMsg = AttributedString.EMPTY
+            return@removeIf true
+        }
+        return@removeIf false
+    }
+}
+
+
+private fun noticeDownloadingProgressEmpty() {
+    synchronized(terminalDownloadingProgressesNoticer) {
+        containDownloadingProgress = false
+        if (terminalDownloadingProgresses.isEmpty()) {
+            terminalDownloadingProgressesNoticer.notifyAll()
+        }
+
+        JLineInputDaemon.tryResumeReader(false)
+    }
+}
+
+internal fun waitDownloadingProgressEmpty() {
+    synchronized(terminalDownloadingProgressesNoticer) {
+        if (containDownloadingProgress) {
+            terminalDownloadingProgressesNoticer.wait()
+        }
+    }
+}
+

@@ -286,38 +286,11 @@ internal fun exitProcessAndForceHalt(code: Int): Nothing {
     }
 }
 
-internal fun overrideSTD(terminal: MiraiConsoleImplementation) {
-    if (ConsoleTerminalSettings.noConsole) {
-        SystemOutputPrintStream // Avoid StackOverflowError when launch with no console mode
-    }
-    lineReader // Initialize real frontend first. #1936
-    System.setOut(
-        PrintStream(
-            BufferedOutputStream(
-                logger = MiraiLogger.Factory.create(terminal::class, "stdout")::info
-            ),
-            false,
-            "UTF-8"
-        )
-    )
-    System.setErr(
-        PrintStream(
-            BufferedOutputStream(
-                logger = MiraiLogger.Factory.create(terminal::class, "stderr")::warning
-            ),
-            false,
-            "UTF-8"
-        )
-    )
-}
-
 
 internal object ConsoleCommandSenderImplTerminal : MiraiConsoleImplementation.ConsoleCommandSenderImpl {
     override suspend fun sendMessage(message: String) {
         kotlin.runCatching {
-            prePrintNewLog()
-            lineReader.printAbove(message + ANSI_RESET)
-            postPrintNewLog()
+            printToScreen(message + ANSI_RESET)
         }.onFailure { exception ->
             // If failed. It means JLine Terminal not working...
             PrintStream(FileOutputStream(FileDescriptor.err)).use {

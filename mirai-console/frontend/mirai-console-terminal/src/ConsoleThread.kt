@@ -24,7 +24,6 @@ import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.terminal.noconsole.NoConsole
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.cast
-import net.mamoe.mirai.console.util.requestInput
 import net.mamoe.mirai.console.util.safeCast
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.warning
@@ -47,16 +46,12 @@ internal fun startupConsoleThread() {
         runCatching<Unit> {
             // 应该仅关闭用户输入
             terminal.reader().shutdown()
-            ConsoleInputImpl.thread.shutdownNow()
-            runCatching {
-                ConsoleInputImpl.executingCoroutine?.cancel(EndOfFileException())
-            }
         }.exceptionOrNull()?.printStackTrace()
     }
     MiraiConsole.launch(CoroutineName("Console Command")) {
         while (true) {
             val next = try {
-                MiraiConsole.requestInput("").let {
+                JLineInputDaemon.nextCmd().let {
                     when {
                         it.isBlank() -> it
                         it.startsWith(CommandManager.commandPrefix) -> it
