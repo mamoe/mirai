@@ -209,7 +209,7 @@ fun Project.configureFlattenSourceSets() {
             java.setSrcDirs(listOf(projectDir.resolve("src")))
         }
         findByName("test")?.apply {
-            resources.setSrcDirs(listOf(projectDir.resolve("resources")))
+            resources.setSrcDirs(listOf(projectDir.resolve("testResources")))
             java.setSrcDirs(listOf(projectDir.resolve("test")))
         }
     }
