@@ -15,8 +15,8 @@ plugins {
 }
 
 dependencies {
-    implementation("org.jline:jline:3.15.0")
-    implementation("org.fusesource.jansi:jansi:1.18")
+    implementation("org.jline:jline:3.21.0")
+    implementation("org.fusesource.jansi:jansi:2.4.0")
     compileAndTestRuntime(project(":mirai-core-utils"))
 
     compileAndTestRuntime(project(":mirai-console"))
