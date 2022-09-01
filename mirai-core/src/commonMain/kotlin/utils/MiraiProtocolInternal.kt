@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import net.mamoe.mirai.utils.EnumMap
+import net.mamoe.mirai.utils.toUHexString
 import kotlin.jvm.JvmField
 
 internal class MiraiProtocolInternal(
@@ -46,7 +47,8 @@ internal class MiraiProtocolInternal(
             )
             protocols[MiraiProtocol.ANDROID_PAD] = MiraiProtocolInternal(
                 "com.tencent.mobileqq",
-                537062409, "8.4.18",
+                537062409,
+                "8.4.18",
                 "6.0.0.2454",
                 184024956,
                 0x10400,
@@ -56,16 +58,16 @@ internal class MiraiProtocolInternal(
                 15,
             )
             protocols[MiraiProtocol.ANDROID_WATCH] = MiraiProtocolInternal(
-                "com.tencent.mobileqq",
-                537061176,
-                "8.2.7",
-                "6.0.0.2413",
+                "com.tencent.qqlite",
+                537064446,
+                "2.0.5",
+                "6.0.0.236",
                 184024956,
                 0x10400,
                 34869472,
                 "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
-                1571193922L,
-                15,
+                1559564731L,
+                5,
             )
             protocols[MiraiProtocol.IPAD] = MiraiProtocolInternal(
                 "com.tencent.minihd.qq",
@@ -80,16 +82,16 @@ internal class MiraiProtocolInternal(
                 12,
             )
             protocols[MiraiProtocol.MACOS] = MiraiProtocolInternal(
-                "com.tencent.minihd.qq",
-                537064315,
-                "5.8.9",
-                "6.0.0.2433",
-                150470524,
+                "com.tencent.qq",
+                0x2003ca32,
+                "6.7.9",
+                "6.2.0.1023",
+                0x7ffc,
                 66560,
                 1970400,
-                "AA 39 78 F4 1F D9 6F F9 91 4A 66 9E 18 64 74 C7",
-                1595836208L,
-                12,
+                "com.tencent.qq".encodeToByteArray().toUHexString(" "),
+                0L,
+                7,
             )
         }
     }

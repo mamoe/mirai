@@ -756,7 +756,7 @@ internal fun BytePacketBuilder.t177(
         writeByte(1)
         writeInt(buildTime.toInt())
         writeShortLVString(buildVersion)
-    } shouldEqualsTo 0x11
+    } // shouldEqualsTo 0x11
 }
 
 internal fun BytePacketBuilder.t516( // 1302
