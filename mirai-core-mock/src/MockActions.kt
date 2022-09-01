@@ -27,7 +27,9 @@ import net.mamoe.mirai.mock.contact.MockNormalMember
 import net.mamoe.mirai.mock.contact.MockStranger
 import net.mamoe.mirai.mock.contact.MockUserOrBot
 import net.mamoe.mirai.mock.database.removeMessageInfo
+import net.mamoe.mirai.mock.utils.NudgeDsl
 import net.mamoe.mirai.mock.utils.mock
+import net.mamoe.mirai.mock.utils.nudged0
 import net.mamoe.mirai.utils.cast
 
 @JvmBlockingBridge
@@ -169,6 +171,17 @@ public object MockActions {
     @JvmStatic
     public suspend fun mockFireRecalled(receipt: MessageReceipt<*>, operator: User? = null) {
         return fireMessageRecalled(receipt.source, operator)
+    }
+
+    /**
+     * 令 [actor] 戳一下 [actee]
+     *
+     * @param actor 发起戳一戳的人
+     * @param actee 被戳的人
+     */
+    @JvmStatic
+    public suspend fun fireNudge(actor: MockUserOrBot, actee: MockUserOrBot, dsl: NudgeDsl) {
+        actor.nudged0(actee, dsl)
     }
 
 }
