@@ -24,6 +24,7 @@ public interface MockFriend : Friend, MockContact, MockUser, MockMsgSyncSupport 
         public val contact: MockFriend
         public var nick: String
         public var remark: String
+        public var friendGroupId: Int
         public override var avatarUrl: String
     }
 

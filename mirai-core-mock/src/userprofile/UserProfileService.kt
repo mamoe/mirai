@@ -92,6 +92,7 @@ public interface MockUserProfileBuilder {
     public fun qLevel(value: Int): MockUserProfileBuilder
     public fun sex(value: UserProfile.Sex): MockUserProfileBuilder
     public fun sign(value: String): MockUserProfileBuilder
+    public fun friendGroupId(value: Int): MockUserProfileBuilder
 
     public companion object {
         @JvmStatic
@@ -117,6 +118,7 @@ internal class MockUPBuilderImpl : MockUserProfileBuilder, UserProfile {
     override var qLevel: Int = -1
     override var sex: UserProfile.Sex = UserProfile.Sex.UNKNOWN
     override var sign: String = ""
+    override var friendGroupId: Int = 0
 
     // unmodifiable
     override fun build(): UserProfile {
@@ -145,6 +147,10 @@ internal class MockUPBuilderImpl : MockUserProfileBuilder, UserProfile {
 
     override fun sign(value: String): MockUserProfileBuilder = apply {
         sign = value
+    }
+
+    override fun friendGroupId(value: Int): MockUserProfileBuilder = apply {
+        friendGroupId = value
     }
 
 }

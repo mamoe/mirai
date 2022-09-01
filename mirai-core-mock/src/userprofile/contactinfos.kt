@@ -44,6 +44,8 @@ public interface MockFriendInfoBuilder : MockUserInfoBuilder {
 
     override fun remark(value: String): MockFriendInfoBuilder
 
+    public fun friendGroupId(value: Int): MockFriendInfoBuilder
+
     public companion object {
         @JvmStatic
         @JvmName("builder")
@@ -105,7 +107,8 @@ public interface MockStrangerInfoBuilder : MockUserInfoBuilder {
 
 
         @JvmSynthetic
-        public inline fun create(action: MockStrangerInfoBuilder.() -> Unit): StrangerInfo = invoke().apply(action).build()
+        public inline fun create(action: MockStrangerInfoBuilder.() -> Unit): StrangerInfo =
+            invoke().apply(action).build()
     }
 }
 
@@ -132,6 +135,7 @@ private class ThreeInOneInfoBuilder :
     override var uin: Long = 0
     override var nick: String = ""
     override var anonymousId: String? = null
+    override var friendGroupId: Int = 0
 
     override fun build(): ThreeInOneInfoBuilder = this
 
@@ -146,4 +150,5 @@ private class ThreeInOneInfoBuilder :
     override fun nick(value: String): ThreeInOneInfoBuilder = apply { this.nick = value }
     override fun remark(value: String): ThreeInOneInfoBuilder = apply { this.remark = value }
     override fun permission(value: MemberPermission): ThreeInOneInfoBuilder = apply { this.permission = value }
+    override fun friendGroupId(value: Int): ThreeInOneInfoBuilder = apply { this.friendGroupId = value }
 }

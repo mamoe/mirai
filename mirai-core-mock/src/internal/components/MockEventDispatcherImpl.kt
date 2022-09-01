@@ -17,7 +17,6 @@ import kotlinx.coroutines.launch
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.internal.network.components.EventDispatcherImpl
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.runUnwrapCancellationException
 import kotlin.coroutines.CoroutineContext
 
 /*
@@ -32,20 +31,18 @@ internal open class MockEventDispatcherImpl(
     logger: MiraiLogger,
 ) : EventDispatcherImpl(lifecycleContext, logger) {
     override suspend fun broadcast(event: Event) {
-        runUnwrapCancellationException {
-            if (isActive) {
-                // This requires the scope to be active, while the original one doesn't.
+        if (isActive) {
+            // This requires the scope to be active, while the original one doesn't.
 
-                // so that [joinBroadcast] works.
-                launch(
-                    start = CoroutineStart.UNDISPATCHED
-                ) {
-                    super.broadcast(event)
-                }.join()
-            } else {
-                // Scope closed, typically when broadcasting `BotOfflineEvent` by StateObserver from `bot.close`
+            // so that [joinBroadcast] works.
+            launch(
+                start = CoroutineStart.UNDISPATCHED
+            ) {
                 super.broadcast(event)
-            }
+            }.join()
+        } else {
+            // Scope closed, typically when broadcasting `BotOfflineEvent` by StateObserver from `bot.close`
+            super.broadcast(event)
         }
     }
 

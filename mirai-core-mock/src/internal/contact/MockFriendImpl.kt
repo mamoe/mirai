@@ -15,6 +15,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.AvatarSpec
 import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.friendgroup.FriendGroup
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
@@ -25,6 +26,7 @@ import net.mamoe.mirai.message.data.OfflineAudio
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.contact.MockFriend
+import net.mamoe.mirai.mock.internal.contact.friendfroup.MockFriendGroups
 import net.mamoe.mirai.mock.internal.contact.roaming.MockRoamingMessages
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcFromFriend
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToFriend
@@ -73,7 +75,12 @@ internal class MockFriendImpl(
                     }
                 }.forEach { it.cast<MockStrangerImpl>().avatarUrl = value }
             }
+
+        override var friendGroupId: Int = 0
     }
+
+    override val friendGroup: FriendGroup
+        get() = bot.friendGroups.cast<MockFriendGroups>().findOrDefault(mockApi.friendGroupId)
 
     private var _avatarUrl: String by lateinitMutableProperty { runBlocking { MockImage.random(bot).getUrl(bot) } }
     override val avatarUrl: String get() = _avatarUrl

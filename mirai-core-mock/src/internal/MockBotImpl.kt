@@ -19,6 +19,7 @@ import net.mamoe.mirai.contact.AvatarSpec
 import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.friendgroup.FriendGroups
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.broadcast
@@ -35,6 +36,7 @@ import net.mamoe.mirai.mock.contact.MockStranger
 import net.mamoe.mirai.mock.database.MessageDatabase
 import net.mamoe.mirai.mock.internal.components.MockEventDispatcherImpl
 import net.mamoe.mirai.mock.internal.contact.*
+import net.mamoe.mirai.mock.internal.contact.friendfroup.MockFriendGroups
 import net.mamoe.mirai.mock.internal.serverfs.TmpResourceServerImpl
 import net.mamoe.mirai.mock.resserver.TmpResourceServer
 import net.mamoe.mirai.mock.userprofile.UserProfileService
@@ -127,6 +129,7 @@ internal class MockBotImpl(
     override val friends: ContactList<MockFriend> = ContactList()
     override val strangers: ContactList<MockStranger> = ContactList()
     override val otherClients: ContactList<MockOtherClient> = ContactList()
+    override val friendGroups: FriendGroups = MockFriendGroups(this)
 
     @Suppress("DEPRECATION")
     override fun addGroup(id: Long, name: String): MockGroup =
