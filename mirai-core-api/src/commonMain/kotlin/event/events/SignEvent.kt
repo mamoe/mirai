@@ -33,4 +33,13 @@ public class SignEvent @MiraiInternalApi constructor(
     public val hasRank: Boolean
 ) : AbstractEvent(), BotEvent, Packet {
     override val bot: Bot get() = user.bot
+
+    override fun toString(): String {
+        return when (user) {
+            is Bot -> "SignEvent(bot=${user.id}, sign=${sign}, hasRank=${hasRank})"
+            is Member -> "SignEvent(bot=${user.bot.id}, group=${user.group.id}, member=${user.id}, sign=${sign}, hasRank=${hasRank})"
+            is Friend -> "SignEvent(bot=${user.bot.id}, friend=${user.id} sign=${sign}, hasRank=${hasRank})"
+            else -> "SignEvent(user=${user}, sign=${sign}, hasRank=${hasRank})"
+        }
+    }
 }
