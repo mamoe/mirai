@@ -2820,6 +2820,7 @@ public final class net/mamoe/mirai/event/events/SignEvent : net/mamoe/mirai/even
 	public final fun getHasRank ()Z
 	public final fun getSign ()Ljava/lang/String;
 	public final fun getUser ()Lnet/mamoe/mirai/contact/UserOrBot;
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/event/events/StrangerAddEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/StrangerEvent, net/mamoe/mirai/internal/network/Packet {
