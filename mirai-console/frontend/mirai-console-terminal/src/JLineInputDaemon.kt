@@ -124,6 +124,9 @@ internal object JLineInputDaemon : Runnable {
 
                 processing = nnextTask
                 updateFlags(nnextTask)
+                if (lineReader.isReading) {
+                    readerImpl.redisplay()
+                }
             }
         }
 

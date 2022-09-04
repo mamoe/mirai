@@ -17,12 +17,12 @@ plugins {
 dependencies {
     implementation("org.jline:jline:3.21.0")
     implementation("org.fusesource.jansi:jansi:2.4.0")
+    implementation(project(":mirai-console-frontend-base"))
     compileAndTestRuntime(project(":mirai-core-utils"))
 
     compileAndTestRuntime(project(":mirai-console"))
     compileAndTestRuntime(project(":mirai-core-api"))
     compileAndTestRuntime(project(":mirai-core-utils"))
-    compileAndTestRuntime(project(":mirai-console-frontend-base"))
     compileAndTestRuntime(kotlin("stdlib-jdk8", Versions.kotlinStdlib)) // must specify `compileOnly` explicitly
 
     testApi(project(":mirai-core"))
