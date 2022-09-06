@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.contact.active.MemberMedalDetail
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.utils.NotStableForInheritance
 
@@ -48,4 +49,9 @@ public interface MemberActive {
      * 这个等级是在 手机端 群荣誉功能中显示的等级
      */
     public val temperature: Int
+
+    /**
+     * 查询头衔佩戴情况
+     */
+    public suspend fun queryMedal(): MemberMedalDetail?
 }

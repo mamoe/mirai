@@ -14,11 +14,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.active.*
 import net.mamoe.mirai.contact.checkBotPermission
-import net.mamoe.mirai.contact.active.GroupActive
-import net.mamoe.mirai.contact.active.ActiveChart
-import net.mamoe.mirai.contact.active.ActiveHonorList
-import net.mamoe.mirai.contact.active.ActiveRecord
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.internal.contact.GroupImpl
@@ -212,11 +209,25 @@ internal abstract class CommonGroupActiveImpl(
         return getGroupActiveData(page = null)?.info?.toActiveChart()
     }
 
-    private suspend fun getGroupHonorData(type: GroupHonorType): GroupHonorListData? {
-        return group.bot.getRawGroupHonorListData(group.id, type).onLeft {
+    private suspend fun getHonorInfo(type: GroupHonorType): MemberHonorList? {
+        val either = when (type) {
+            GroupHonorType.TALKATIVE -> group.bot.getRawTalkativeInfo(group.id)
+            GroupHonorType.PERFORMER -> group.bot.getRawContinuousInfo(group.id, type.value)
+            GroupHonorType.LEGEND -> group.bot.getRawContinuousInfo(group.id, type.value)
+            GroupHonorType.STRONG_NEWBIE -> group.bot.getRawContinuousInfo(group.id, type.value)
+            GroupHonorType.EMOTION -> group.bot.getRawEmotionInfo(group.id)
+            GroupHonorType.BRONZE -> group.bot.getRawHomeworkExcellentInfo(group.id, 1)
+            GroupHonorType.SILVER -> group.bot.getRawHomeworkExcellentInfo(group.id, 2)
+            GroupHonorType.GOLDEN -> group.bot.getRawHomeworkExcellentInfo(group.id, 3)
+            GroupHonorType.WHIRLWIND -> group.bot.getRawHomeworkActiveInfo(group.id)
+            GroupHonorType.RICHER -> group.bot.getRawRicherHonorInfo(group.id)
+            GroupHonorType.RED_PACKET -> group.bot.getRawRedPacketInfo(group.id)
+        }
+
+        return either.onLeft {
             if (logger.isEnabled) { // createException
                 logger.warning(
-                    { "Failed to load active data for group ${group.id}" },
+                    { "Failed to load ${type.name} honor data for group ${group.id}" },
                     it.createException()
                 )
             }
@@ -224,6 +235,79 @@ internal abstract class CommonGroupActiveImpl(
     }
 
     override suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList? {
-        return getGroupHonorData(type)?.toActiveHonorList(type, group)
+        val data = getHonorInfo(type) ?: return null
+
+        // TODO 更新 member 里的 信息
+
+        @Suppress("INVISIBLE_MEMBER")
+        return ActiveHonorList(
+            type = type,
+            current = data.current?.toActiveHonorInfo(group),
+            records = data.list.map { it.toActiveHonorInfo(group) },
+        )
+    }
+
+    protected suspend fun getMemberScoreData(): MemberScoreData? {
+        return group.bot.getRawMemberTitleList(group.id).onLeft {
+            if (logger.isEnabled) { // createException
+                logger.warning(
+                    { "Failed to load member score data for group ${group.id}" },
+                    it.createException()
+                )
+            }
+        }.rightOrNull
+    }
+
+    override suspend fun queryActiveRank(): List<ActiveRankRecord>? {
+        val data = getMemberScoreData() ?: return null
+
+        @Suppress("INVISIBLE_MEMBER")
+        return data.members.map {
+            ActiveRankRecord(
+                memberId = it.uin,
+                memberName = it.nickName,
+                member = group.get(id = it.uin),
+                temperature = it.levelId,
+                score = it.score
+            )
+        }
+    }
+
+    internal suspend fun getMemberMedalInfo(uid: Long): MemberMedalInfo? {
+        return group.bot.getRawMemberMedalInfo(group.id, uid).onLeft {
+            if (logger.isEnabled) { // createException
+                logger.warning(
+                    { "Failed to load member $uid medal info for group ${group.id}" },
+                    it.createException()
+                )
+            }
+        }.rightOrNull
+    }
+
+    suspend fun queryMemberMedal(uid: Long): MemberMedalDetail? {
+        val info = getMemberMedalInfo(uid = uid) ?: return null
+        val medals: MutableSet<MemberMedalType> = HashSet()
+        var worn: MemberMedalType = MemberMedalType.ACTIVE
+
+        for (item in info.list) {
+            if (item.achieveTs == 0) continue
+            val type = when (item.mask) {
+                MemberMedalType.OWNER.mask -> MemberMedalType.OWNER
+                MemberMedalType.ADMIN.mask -> MemberMedalType.ADMIN
+                MemberMedalType.SPECIAL.mask -> MemberMedalType.SPECIAL
+                MemberMedalType.ACTIVE.mask -> MemberMedalType.ACTIVE
+                else -> continue
+            }
+            medals.add(type)
+            if (item.wearTs != 0) worn = type
+        }
+
+        @Suppress("INVISIBLE_MEMBER")
+        return MemberMedalDetail(
+            title = info.weared,
+            color = info.wearedColor,
+            worn = worn,
+            medals = medals
+        )
     }
 }

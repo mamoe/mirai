@@ -446,6 +446,7 @@ public abstract interface class net/mamoe/mirai/contact/MemberActive {
 	public abstract fun getPoint ()I
 	public abstract fun getRank ()I
 	public abstract fun getTemperature ()I
+	public abstract fun queryMedal (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/MemberKt {
@@ -635,8 +636,10 @@ public final class net/mamoe/mirai/contact/active/ActiveChart {
 	public final fun getSentences ()Ljava/util/Map;
 }
 
-public final class net/mamoe/mirai/contact/active/ActiveHonorCurrent {
+public final class net/mamoe/mirai/contact/active/ActiveHonorInfo {
 	public final fun getAvatar ()Ljava/lang/String;
+	public final fun getHistoryDays ()I
+	public final fun getMaxTermDays ()I
 	public final fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public final fun getMemberId ()J
 	public final fun getMemberName ()Ljava/lang/String;
@@ -644,17 +647,17 @@ public final class net/mamoe/mirai/contact/active/ActiveHonorCurrent {
 }
 
 public final class net/mamoe/mirai/contact/active/ActiveHonorList {
-	public final fun getCurrent ()Lnet/mamoe/mirai/contact/active/ActiveHonorCurrent;
+	public final fun getCurrent ()Lnet/mamoe/mirai/contact/active/ActiveHonorInfo;
 	public final fun getRecords ()Ljava/util/List;
 	public final fun getType ()Lnet/mamoe/mirai/data/GroupHonorType;
 }
 
-public final class net/mamoe/mirai/contact/active/ActiveHonorRecord {
-	public final fun getAvatar ()Ljava/lang/String;
-	public final fun getDescription ()Ljava/lang/String;
+public final class net/mamoe/mirai/contact/active/ActiveRankRecord {
 	public final fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public final fun getMemberId ()J
 	public final fun getMemberName ()Ljava/lang/String;
+	public final fun getScore ()I
+	public final fun getTemperature ()I
 }
 
 public final class net/mamoe/mirai/contact/active/ActiveRecord {
@@ -675,6 +678,8 @@ public abstract interface class net/mamoe/mirai/contact/active/GroupActive {
 	public abstract fun isHonorVisible ()Z
 	public abstract fun isTemperatureVisible ()Z
 	public abstract fun isTitleVisible ()Z
+	public fun queryActiveRank ()Ljava/util/List;
+	public abstract fun queryActiveRank (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun queryChart ()Lnet/mamoe/mirai/contact/active/ActiveChart;
 	public abstract fun queryChart (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun queryHonorHistory (Lnet/mamoe/mirai/data/GroupHonorType;)Lnet/mamoe/mirai/contact/active/ActiveHonorList;
@@ -684,6 +689,23 @@ public abstract interface class net/mamoe/mirai/contact/active/GroupActive {
 	public abstract fun setTemperatureTitles (Ljava/util/Map;)V
 	public abstract fun setTemperatureVisible (Z)V
 	public abstract fun setTitleVisible (Z)V
+}
+
+public final class net/mamoe/mirai/contact/active/MemberMedalDetail {
+	public final fun getColor ()Ljava/lang/String;
+	public final fun getMedals ()Ljava/util/Set;
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getWorn ()Lnet/mamoe/mirai/contact/active/MemberMedalType;
+}
+
+public final class net/mamoe/mirai/contact/active/MemberMedalType : java/lang/Enum {
+	public static final field ACTIVE Lnet/mamoe/mirai/contact/active/MemberMedalType;
+	public static final field ADMIN Lnet/mamoe/mirai/contact/active/MemberMedalType;
+	public static final field OWNER Lnet/mamoe/mirai/contact/active/MemberMedalType;
+	public static final field SPECIAL Lnet/mamoe/mirai/contact/active/MemberMedalType;
+	public final fun getMask ()I
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/contact/active/MemberMedalType;
+	public static fun values ()[Lnet/mamoe/mirai/contact/active/MemberMedalType;
 }
 
 public abstract interface class net/mamoe/mirai/contact/announcement/Announcement {

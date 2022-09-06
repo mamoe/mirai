@@ -142,4 +142,10 @@ public expect interface GroupActive {
      * @return 查询失败时返回 null
      */
     public suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList?
+
+    /**
+     * 获取活跃度排行榜，通常是前五十名
+     * @return 查询失败时返回 null
+     */
+    public suspend fun queryActiveRank(): List<ActiveRankRecord>?
 }

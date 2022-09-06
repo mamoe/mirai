@@ -10,12 +10,17 @@
 package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.contact.MemberActive
+import net.mamoe.mirai.contact.active.MemberMedalDetail
 import net.mamoe.mirai.data.GroupHonorType
-import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.internal.contact.active.GroupActiveImpl
+import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 
-internal class MemberActiveImpl(private val memberInfo: MemberInfo) : MemberActive {
-    override val rank: Int get() = memberInfo.rank
-    override val point: Int get() = memberInfo.point
-    override val honors: Set<GroupHonorType> get() = memberInfo.honors
-    override val temperature: Int get() = memberInfo.temperature
+internal class MemberActiveImpl(private val info: MemberInfoImpl, private val group: GroupImpl) : MemberActive {
+    override val rank: Int get() = info.rank
+    override val point: Int get() = info.point
+    override val honors: Set<GroupHonorType> get() = info.honors
+    override val temperature: Int get() = info.temperature
+    override suspend fun queryMedal(): MemberMedalDetail? {
+        return (group.active as GroupActiveImpl).queryMemberMedal(uid = info.uin)
+    }
 }

@@ -12,18 +12,18 @@ package net.mamoe.mirai.contact.active
 import net.mamoe.mirai.contact.NormalMember
 
 /**
- * 群荣耀当前持有者
- * @property memberName 群员昵称
- * @property memberId 群员 ID
- * @property avatar 群员头像
- * @property member 群员实例
- * @property termDays 蝉联天数
+ * 活跃排行榜记录
+ * @property memberName 发言者名称
+ * @property memberId 发言者 ID
+ * @property member 发言者的群员实例
+ * @property temperature 活跃度
+ * @property score 活跃积分
  * @since 2.13.0
  */
-public class ActiveHonorCurrent internal constructor(
+public class ActiveRankRecord internal constructor(
     public val memberName: String,
     public val memberId: Long,
-    public val avatar: String,
     public val member: NormalMember?,
-    public val termDays: Int,
+    public val temperature: Int,
+    public val score: Int
 )

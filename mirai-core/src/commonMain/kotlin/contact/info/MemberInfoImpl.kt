@@ -16,6 +16,7 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.orEmpty
+import net.mamoe.mirai.utils.ConcurrentSet
 import net.mamoe.mirai.utils.currentTimeSeconds
 
 @Serializable
@@ -33,7 +34,7 @@ internal data class MemberInfoImpl(
     override val isOfficialBot: Boolean = false,
     override var rank: Int = 1,
     override var point: Int = 0,
-    override var honors: Set<GroupHonorType> = emptySet(),
+    override val honors: MutableSet<GroupHonorType> = ConcurrentSet(),
     override var temperature: Int = 1
 ) : MemberInfo {
     constructor(
@@ -58,7 +59,7 @@ internal data class MemberInfoImpl(
         isOfficialBot = client.groupConfig.isOfficialRobot(jceInfo.memberUin),
         rank = jceInfo.dwMemberLevel?.toInt() ?: 1,
         point = jceInfo.dwPoint?.toInt() ?: 0,
-        honors = buildSet {
+        honors = ConcurrentSet<GroupHonorType>().apply {
             /**
              * vecGroupHonor 的 结构是
              * [

@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.Either.Companion.mapRight
 
 @Serializable
 internal data class SetResult(
@@ -121,144 +122,217 @@ internal data class GroupActiveData(
 
 @Serializable
 internal data class GroupHonorListData(
-
-    @SerialName("gc")
-    val gc: String?,
-
-    @SerialName("type")
-    val type: JsonElement,
-
-    @SerialName("uin")
-    val uin: String?,
-
-    @SerialName("talkativeList")
-    val talkativeList: List<Actor>? = null,
-
-    @SerialName("currentTalkative")
-    val currentTalkative: Current? = null,
-
-    @SerialName("actorList")
-    val actorList: List<Actor>? = null,
-
-    @SerialName("legendList")
-    val legendList: List<Actor>? = null,
-
-    @SerialName("newbieList")
-    val newbieList: List<Actor>? = null,
-
-    @SerialName("strongnewbieList")
-    val strongNewbieList: List<Actor>? = null,
-
-    @SerialName("emotionList")
-    val emotionList: List<Actor>? = null,
-
-    @SerialName("richerList")
-    val richerList: List<Actor>? = null,
-
-    @SerialName("currentRicher")
-    val currentRicher: Current? = null,
-
-    @SerialName("redpacketHonnorList")
-    val redPacketHonorList: List<Actor>? = null,
-
-    @SerialName("currentRedpacketHonnor")
-    val currentRedPacketHonor: Current? = null,
-
-    @SerialName("levelname")
-    val levelName: Map<String, String>? = null,
-
-    @SerialName("manageList")
-    val manageList: List<Tag>? = null, // 管理员
-
-    @SerialName("exclusiveList")
-    val exclusiveList: List<Tag>? = null, // 特殊头衔
-
-    @SerialName("activeObj")
-    val activeObj: Map<String, List<Tag>>? = null, // Key为活跃等级名, 如`冒泡`
-
-    @SerialName("showActiveObj")
-    val showActiveObj: Map<String, Boolean>? = null,
-
-    @SerialName("myTitle")
-    val myTitle: String?,
-
-    @SerialName("myIndex")
-    val myIndex: Int? = 0,
-
-    @SerialName("myAvatar")
-    val myAvatar: String?,
-
-    @SerialName("hasServerError")
-    val hasServerError: Boolean?,
-
-    @SerialName("hwExcellentList")
-    val hwExcellentList: List<Actor>? = null
+    @SerialName("gc") val gc: String?,
+    @SerialName("type") val type: JsonElement,
+    @SerialName("uin") val uin: String?,
+    @SerialName("talkativeList") val talkativeList: List<Actor>? = null,
+    @SerialName("currentTalkative") val currentTalkative: Current? = null,
+    @SerialName("actorList") val actorList: List<Actor>? = null,
+    @SerialName("legendList") val legendList: List<Actor>? = null,
+    @SerialName("newbieList") val newbieList: List<Actor>? = null,
+    @SerialName("strongnewbieList") val strongNewbieList: List<Actor>? = null,
+    @SerialName("emotionList") val emotionList: List<Actor>? = null,
+    @SerialName("richerList") val richerList: List<Actor>? = null,
+    @SerialName("currentRicher") val currentRicher: Current? = null,
+    @SerialName("redpacketHonnorList") val redPacketHonorList: List<Actor>? = null,
+    @SerialName("currentRedpacketHonnor") val currentRedPacketHonor: Current? = null,
+    @SerialName("levelname") val levelName: Map<String, String>? = null,
+    @SerialName("manageList") val manageList: List<Tag>? = null, // 管理员
+    @SerialName("exclusiveList") val exclusiveList: List<Tag>? = null, // 特殊头衔
+    @SerialName("activeObj") val activeObj: Map<String, List<Tag>>? = null, // Key为活跃等级名, 如`冒泡`
+    @SerialName("showActiveObj") val showActiveObj: Map<String, Boolean>? = null,
+    @SerialName("myTitle") val myTitle: String?,
+    @SerialName("myIndex") val myIndex: Int? = 0,
+    @SerialName("myAvatar") val myAvatar: String?,
+    @SerialName("hasServerError") val hasServerError: Boolean?,
+    @SerialName("hwExcellentList") val hwExcellentList: List<Actor>? = null
 ) : JsonStruct {
 
     @Serializable
     data class Actor(
-        @SerialName("uin")
-        val uin: Long = 0,
-
-        @SerialName("avatar")
-        val avatar: String = "",
-
-        @SerialName("name")
-        val name: String = "",
-
-        @SerialName("desc")
-        val desc: String = "",
-
-        @SerialName("btnText")
-        val btnText: String = "",
-
-        @SerialName("text")
-        val text: String = "",
-
-        @SerialName("icon")
-        val icon: Int? = null
+        @SerialName("uin") val uin: Long = 0,
+        @SerialName("avatar") val avatar: String = "",
+        @SerialName("name") val name: String = "",
+        @SerialName("desc") val desc: String = "",
+        @SerialName("btnText") val btnText: String = "",
+        @SerialName("text") val text: String = "",
+        @SerialName("icon") val icon: Int? = null
     )
 
     @Serializable
     data class Current(
-        @SerialName("uin")
-        val uin: Long = 0,
-
-        @SerialName("day_count")
-        val dayCount: Int = 0,
-
-        @SerialName("avatar")
-        val avatar: String = "",
-
-        @SerialName("avatar_size")
-        val avatarSize: Int = 0,
-
-        @SerialName("nick")
-        val nick: String = ""
+        @SerialName("uin") val uin: Long = 0,
+        @SerialName("day_count") val dayCount: Int = 0,
+        @SerialName("avatar") val avatar: String = "",
+        @SerialName("avatar_size") val avatarSize: Int = 0,
+        @SerialName("nick") val nick: String = ""
     )
 
     @Serializable
     data class Tag(
-        @SerialName("uin")
-        val uin: Long = 0,
+        @SerialName("uin") val uin: Long = 0,
+        @SerialName("avatar") val avatar: String = "",
+        @SerialName("name") val name: String = "",
+        @SerialName("btnText") val btnText: String = "",
+        @SerialName("text") val text: String = "",
+        @SerialName("tag") val tag: String = "",  // 头衔
+        @SerialName("tagColor") val tagColor: String = ""
+    )
+}
 
-        @SerialName("avatar")
-        val avatar: String = "",
+@Serializable
+internal data class CgiData(
+    @SerialName("cgicode") val cgicode: Int,
+    @SerialName("data") val `data`: JsonElement,
+    @SerialName("msg") override val errorMessage: String,
+    @SerialName("retcode") override val errorCode: Int
+) : CheckableResponseA(), JsonStruct
 
-        @SerialName("name")
-        val name: String = "",
+@Serializable
+internal data class MemberMedalInfo(
+    @SerialName("avatar") val avatar: String,
+    @SerialName("face_flag") val faceFlag: Int,
+    @SerialName("last_view_ts") val lastViewTs: Int,
+    @SerialName("list") val list: List<Item>, // 头衔详情
+    @SerialName("nick") val nick: String,
+    @SerialName("role") val role: Int, // 身份/权限
+    @SerialName("weared") val weared: String, // 目前显示头衔
+    @SerialName("weared_color") val wearedColor: String // 头衔颜色
+) {
 
-        @SerialName("btnText")
-        val btnText: String = "",
+    @Serializable
+    data class Item(
+        @SerialName("achieve_ts") val achieveTs: Int, // 是否拥有
+        @SerialName("category_id") val categoryId: Int,
+        @SerialName("color") val color: String,
+        @SerialName("is_mystery") val isMystery: Int,
+        @SerialName("mask") val mask: Int, //  群主 300 管理员 301 特殊 302  活跃 315
+        @SerialName("medal_desc") val medalDesc: String,
+        @SerialName("name") val name: String,
+        @SerialName("order") val order: Int,
+        @SerialName("pic") val pic: String,
+        @SerialName("rule") val rule: Int,
+        @SerialName("rule_desc") val ruleDesc: String, // 来源
+        @SerialName("wear_ts") val wearTs: Int // 是否佩戴
+    )
+}
 
-        @SerialName("text")
-        val text: String = "",
+@Serializable
+internal data class MemberHonorInfo(
+    @SerialName("add_friend") val addFriend: Int = 0,
+    @SerialName("avatar") val avatar: String,
+    @SerialName("avatar_size") val avatarSize: Int,
+    @SerialName("day_count") val dayCount: Int,
+    @SerialName("day_count_history") val dayCountHistory: Int = 1,
+    @SerialName("day_count_max") val dayCountMax: Int = 1,
+    @SerialName("honor_ids") val honorIds: List<Int> = emptyList(),
+    @SerialName("nick") val nick: String,
+    @SerialName("uin") val uin: Long,
+    @SerialName("update_ymd") val updated: Long = 0, // 格式为 yyyyMMdd 的 数字，表示最后更新时间
+)
 
-        @SerialName("tag")
-        val tag: String = "",  // 头衔
+internal interface MemberHonorList : JsonStruct {
+    val current: MemberHonorInfo? get() = null
+    val total: Int
+    val list: List<MemberHonorInfo>
+}
 
-        @SerialName("tagColor")
-        val tagColor: String = ""
+@Serializable
+internal data class MemberTalkativeInfo(
+    @SerialName("current_talkative") val currentTalkative: MemberHonorInfo? = null,
+    @SerialName("talkative_amount") val talkativeAmount: Int,
+    @SerialName("talkative_list") val talkativeList: List<MemberHonorInfo>
+) : MemberHonorList {
+    override val current: MemberHonorInfo? get() = currentTalkative
+    override val total: Int get() = talkativeAmount
+    override val list: List<MemberHonorInfo> get() = talkativeList
+}
+
+@Serializable
+internal data class MemberEmotionInfo(
+    @SerialName("emotion_list") val emotionList: List<MemberHonorInfo>,
+    @SerialName("total") override val total: Int
+) : MemberHonorList {
+    override val list: List<MemberHonorInfo> get() = emotionList
+}
+
+@Serializable
+internal data class MemberHomeworkExcellentInfo(
+    @SerialName("hwexcellent_list") val excellentList: List<MemberHonorInfo>,
+    @SerialName("total") override val total: Int
+) : MemberHonorList {
+    override val list: List<MemberHonorInfo> get() = excellentList
+}
+
+@Serializable
+internal data class MemberHomeworkActiveInfo(
+    @SerialName("hwactive_list") val activeList: List<MemberHonorInfo>,
+    @SerialName("total") override val total: Int
+) : MemberHonorList {
+    override val list: List<MemberHonorInfo> get() = activeList
+}
+
+@Serializable
+internal data class MemberContinuousInfo(
+    @SerialName("continuous_list") val continuousList: List<MemberHonorInfo>,
+    @SerialName("total") override val total: Int
+) : MemberHonorList {
+    override val list: List<MemberHonorInfo> get() = continuousList
+}
+
+@Serializable
+internal data class MemberRicherHonorInfo(
+    @SerialName("current_richer_honor") val currentRicherHonor: MemberHonorInfo? = null,
+    @SerialName("richer_amount") val richerAmount: Int,
+    @SerialName("richer_honor_list") val richerHonorList: List<MemberHonorInfo>
+) : MemberHonorList {
+    override val current: MemberHonorInfo? get() = currentRicherHonor
+    override val total: Int get() = richerAmount
+    override val list: List<MemberHonorInfo> get() = richerHonorList
+}
+
+@Serializable
+internal data class MemberRedPacketInfo(
+    @SerialName("current_redpacket_honor") val currentRedPacketHonor: MemberHonorInfo? = null,
+    @SerialName("redpacket_amount") val redPacketAmount: Int,
+    @SerialName("redpacket_honor_list") val redPacketHonorList: List<MemberHonorInfo>
+) : MemberHonorList {
+    override val current: MemberHonorInfo? get() = currentRedPacketHonor
+    override val total: Int get() = redPacketAmount
+    override val list: List<MemberHonorInfo> get() = redPacketHonorList
+}
+
+@Serializable
+internal data class MemberScoreData(
+    @SerialName("level_list") val levels: List<Level>,
+    @SerialName("member_level_list") val mapping: List<MemberLevel>,
+    @SerialName("member_title_info") val self: MemberScoreInfo,
+    @SerialName("members_list") val members: List<MemberScoreInfo>,
+    @SerialName("msg") override val errorMessage: String,
+    @SerialName("retcode") override val errorCode: Int
+) : CheckableResponseA(), JsonStruct {
+    @Serializable
+    data class Level(
+        @SerialName("level") val level: String,
+        @SerialName("name") val name: String
+    )
+
+    @Serializable
+    data class MemberLevel(
+        @SerialName("level") val level: Int,
+        @SerialName("lower_limit") val lowerLimit: Int,
+        @SerialName("mapping_level") val mappingLevel: Int,
+        @SerialName("name") val name: String
+    )
+
+    @Serializable
+    data class MemberScoreInfo(
+        @SerialName("level_id") val levelId: Int,
+        @SerialName("nf") val nf: Int = 0,
+        @SerialName("nick_name") val nickName: String,
+        @SerialName("role") val role: Int,
+        @SerialName("score") val score: Int,
+        @SerialName("uin") val uin: Long
     )
 }
 
@@ -299,6 +373,218 @@ internal suspend fun QQAndroidBot.getRawMemberLevelInfo(
             )
         }
     }.bodyAsText().loadSafelyAs(MemberLevelInfo.serializer())
+}
+
+internal suspend fun QQAndroidBot.getRawMemberMedalInfo(
+    groupCode: Long,
+    uid: Long
+): Either<DeserializationFailure, MemberMedalInfo> {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qun.qq.com/cgi-bin/qunwelcome/medal2/list")
+        parameter("gc", groupCode)
+        parameter("uin", uid)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
+        @Suppress("INVISIBLE_MEMBER")
+        defaultJson.decodeFromJsonElement(MemberMedalInfo.serializer(), it.data)
+    }
+}
+
+internal suspend fun QQAndroidBot.getRawTalkativeInfo(
+    groupCode: Long
+): Either<DeserializationFailure, MemberTalkativeInfo> {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qun.qq.com/cgi-bin/qunapp/honor_talkative")
+        parameter("gc", groupCode)
+        parameter("num", 3000)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
+        @Suppress("INVISIBLE_MEMBER")
+        defaultJson.decodeFromJsonElement(MemberTalkativeInfo.serializer(), it.data)
+    }
+}
+
+internal suspend fun QQAndroidBot.getRawEmotionInfo(
+    groupCode: Long
+): Either<DeserializationFailure, MemberEmotionInfo> {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qun.qq.com/cgi-bin/qunapp/honor_emotion")
+        parameter("gc", groupCode)
+        parameter("num", 3000)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
+        @Suppress("INVISIBLE_MEMBER")
+        defaultJson.decodeFromJsonElement(MemberEmotionInfo.serializer(), it.data)
+    }
+}
+
+/**
+ * @param type 取值 1 2 3 分别对应 学术新星 顶尖学霸 至尊学神
+ */
+internal suspend fun QQAndroidBot.getRawHomeworkExcellentInfo(
+    groupCode: Long,
+    type: Int
+): Either<DeserializationFailure, MemberHomeworkExcellentInfo> {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qun.qq.com/cgi-bin/qunapp/honor_hwexcellent")
+        parameter("gc", groupCode)
+        parameter("req_type", type)
+        parameter("num", 3000)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
+        @Suppress("INVISIBLE_MEMBER")
+        defaultJson.decodeFromJsonElement(MemberHomeworkExcellentInfo.serializer(), it.data)
+    }
+}
+
+internal suspend fun QQAndroidBot.getRawHomeworkActiveInfo(
+    groupCode: Long
+): Either<DeserializationFailure, MemberHomeworkActiveInfo> {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qun.qq.com/cgi-bin/qunapp/honor_hwactive")
+        parameter("gc", groupCode)
+        parameter("num", 3000)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
+        @Suppress("INVISIBLE_MEMBER")
+        defaultJson.decodeFromJsonElement(MemberHomeworkActiveInfo.serializer(), it.data)
+    }
+}
+
+/**
+ * @param type 取值 2 3 5 分别对应 群聊之火 群聊炽焰 冒尖小春笋
+ */
+internal suspend fun QQAndroidBot.getRawContinuousInfo(
+    groupCode: Long,
+    type: Int
+): Either<DeserializationFailure, MemberContinuousInfo> {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qun.qq.com/cgi-bin/qunapp/honor_continuous")
+        parameter("gc", groupCode)
+        parameter("num", 3000)
+        parameter("continuous_type", type)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
+        @Suppress("INVISIBLE_MEMBER")
+        defaultJson.decodeFromJsonElement(MemberContinuousInfo.serializer(), it.data)
+    }
+}
+
+internal suspend fun QQAndroidBot.getRawRicherHonorInfo(
+    groupCode: Long
+): Either<DeserializationFailure, MemberRicherHonorInfo> {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qun.qq.com/cgi-bin/new_honor/list_honor/list_richer_honor")
+        parameter("gc", groupCode)
+        parameter("num", 3000)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
+        @Suppress("INVISIBLE_MEMBER")
+        defaultJson.decodeFromJsonElement(MemberRicherHonorInfo.serializer(), it.data)
+    }
+}
+
+internal suspend fun QQAndroidBot.getRawRedPacketInfo(
+    groupCode: Long
+): Either<DeserializationFailure, MemberRedPacketInfo> {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qun.qq.com/cgi-bin/new_honor/list_honor/list_redpacket_honor")
+        parameter("gc", groupCode)
+        parameter("num", 3000)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
+        @Suppress("INVISIBLE_MEMBER")
+        defaultJson.decodeFromJsonElement(MemberRedPacketInfo.serializer(), it.data)
+    }
+}
+
+/**
+ * 只有前 50 名的数据
+ */
+internal suspend fun QQAndroidBot.getRawMemberTitleList(
+    groupCode: Long
+): Either<DeserializationFailure, MemberScoreData> {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qun.qq.com/cgi-bin/honorv2/honor_title_list")
+        parameter("group_code", groupCode)
+        parameter("request_type", "2")
+        parameter("bkn", client.wLoginSigInfo.bkn)
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+            )
+        }
+    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
+        @Suppress("INVISIBLE_MEMBER")
+        defaultJson.decodeFromJsonElement(MemberScoreData.serializer(), it.data)
+    }
 }
 
 internal suspend fun QQAndroidBot.setGroupLevelInfo(
@@ -414,10 +700,7 @@ internal suspend fun QQAndroidBot.getRawGroupHonorListData(
             // ktor bug
             append(
                 "cookie",
-                "uin=o${id};" +
-                    " skey=${sKey};" +
-                    " p_uin=o${id};" +
-                    " p_skey=${psKey(host)}; "
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
     }.bodyAsText()
@@ -448,135 +731,14 @@ internal fun GroupActiveData.ActiveInfo.toActiveChart(): ActiveChart {
 }
 
 @Suppress("INVISIBLE_MEMBER")
-internal fun GroupHonorListData.toActiveHonorList(type: GroupHonorType, group: GroupImpl): ActiveHonorList {
-    return when (type) {
-        GroupHonorType.TALKATIVE -> ActiveHonorList(
-            type = type,
-            current = currentTalkative?.let {
-                ActiveHonorCurrent(
-                    memberName = it.nick,
-                    memberId = it.uin,
-                    avatar = it.avatar + it.avatarSize,
-                    member = group.get(id = it.uin),
-                    termDays = it.dayCount
-                )
-            },
-            records = talkativeList?.map {
-                ActiveHonorRecord(
-                    memberName = it.name,
-                    memberId = it.uin,
-                    avatar = it.avatar,
-                    member = group.get(id = it.uin),
-                    description = it.desc
-                )
-            }.orEmpty()
-        )
-        GroupHonorType.PERFORMER -> ActiveHonorList(
-            type = type,
-            current = null,
-            records = actorList?.map {
-                ActiveHonorRecord(
-                    memberName = it.name,
-                    memberId = it.uin,
-                    avatar = it.avatar,
-                    member = group.get(id = it.uin),
-                    description = it.desc
-                )
-            }.orEmpty()
-        )
-        GroupHonorType.LEGEND -> ActiveHonorList(
-            type = type,
-            current = null,
-            records = legendList?.map {
-                ActiveHonorRecord(
-                    memberName = it.name,
-                    memberId = it.uin,
-                    avatar = it.avatar,
-                    member = group.get(id = it.uin),
-                    description = it.desc
-                )
-            }.orEmpty()
-        )
-        GroupHonorType.STRONG_NEWBIE -> ActiveHonorList(
-            type = type,
-            current = null,
-            records = strongNewbieList?.map {
-                ActiveHonorRecord(
-                    memberName = it.name,
-                    memberId = it.uin,
-                    avatar = it.avatar,
-                    member = group.get(id = it.uin),
-                    description = it.desc
-                )
-            }.orEmpty()
-        )
-        GroupHonorType.EMOTION -> ActiveHonorList(
-            type = type,
-            current = null,
-            records = emotionList?.map {
-                ActiveHonorRecord(
-                    memberName = it.name,
-                    memberId = it.uin,
-                    avatar = it.avatar,
-                    member = group.get(id = it.uin),
-                    description = it.desc
-                )
-            }.orEmpty()
-        )
-        GroupHonorType.BRONZE, GroupHonorType.SILVER, GroupHonorType.GOLDEN, GroupHonorType.WHIRLWIND -> ActiveHonorList(
-            type = type,
-            current = null,
-            records = actorList?.map {
-                ActiveHonorRecord(
-                    memberName = it.name,
-                    memberId = it.uin,
-                    avatar = it.avatar,
-                    member = group.get(id = it.uin),
-                    description = it.desc
-                )
-            }.orEmpty()
-        )
-        GroupHonorType.RICHER -> ActiveHonorList(
-            type = type,
-            current = currentRicher?.let {
-                ActiveHonorCurrent(
-                    memberName = it.nick,
-                    memberId = it.uin,
-                    avatar = it.avatar + it.avatarSize,
-                    member = group.get(id = it.uin),
-                    termDays = it.dayCount
-                )
-            },
-            records = richerList?.map {
-                ActiveHonorRecord(
-                    memberName = it.name,
-                    memberId = it.uin,
-                    avatar = it.avatar,
-                    member = group.get(id = it.uin),
-                    description = it.desc
-                )
-            }.orEmpty()
-        )
-        GroupHonorType.RED_PACKET -> ActiveHonorList(
-            type = type,
-            current = currentRedPacketHonor?.let {
-                ActiveHonorCurrent(
-                    memberName = it.nick,
-                    memberId = it.uin,
-                    avatar = it.avatar + it.avatarSize,
-                    member = group.get(id = it.uin),
-                    termDays = it.dayCount
-                )
-            },
-            records = redPacketHonorList?.map {
-                ActiveHonorRecord(
-                    memberName = it.name,
-                    memberId = it.uin,
-                    avatar = it.avatar,
-                    member = group.get(id = it.uin),
-                    description = it.desc
-                )
-            }.orEmpty()
-        )
-    }
+internal fun MemberHonorInfo.toActiveHonorInfo(group: GroupImpl): ActiveHonorInfo {
+    return ActiveHonorInfo(
+        memberName = nick,
+        memberId = uin,
+        avatar = avatar + avatarSize,
+        member = group.get(id = uin),
+        termDays = dayCount,
+        historyDays = dayCountHistory,
+        maxTermDays = dayCountMax
+    )
 }

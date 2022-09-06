@@ -9,17 +9,20 @@
 
 package net.mamoe.mirai.contact.active
 
-import net.mamoe.mirai.data.GroupHonorType
+import net.mamoe.mirai.utils.MiraiInternalApi
+
 
 /**
- * 群荣耀历史数据
- * @property type 群荣誉类型
- * @property current 当前荣耀持有者 (龙王，壕礼皇冠, 善财福禄寿)
- * @property records 群荣耀历史记录
+ * 群成员头衔详情Detail
+ * @property OWNER 群主独有的头衔
+ * @property ADMIN 管理员独有的头衔
+ * @property SPECIAL 群主授予的头衔
+ * @property ACTIVE 群主设定的头衔, 保持活跃即可获得
  * @since 2.13.0
  */
-public class ActiveHonorList internal constructor(
-    public val type: GroupHonorType,
-    public val current: ActiveHonorInfo?,
-    public val records: List<ActiveHonorInfo>
-)
+public enum class MemberMedalType(@MiraiInternalApi public val mask: Int) {
+    OWNER(300),
+    ADMIN(301),
+    SPECIAL(302),
+    ACTIVE(315);
+}
