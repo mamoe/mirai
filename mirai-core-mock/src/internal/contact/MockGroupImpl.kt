@@ -89,7 +89,7 @@ internal class MockGroupImpl(
         if (nMember.id == bot.id) {
             botAsMember = nMember
         } else {
-            members.delegate.removeIf { it.uin == nMember.id }
+            members.delegate.removeAll { it.uin == nMember.id }
             members.delegate.add(nMember)
         }
 

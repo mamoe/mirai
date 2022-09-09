@@ -11,17 +11,21 @@
 
 package net.mamoe.mirai.mock.internal.serverfs
 
+import io.ktor.utils.io.core.*
+import io.ktor.utils.io.streams.*
 import net.mamoe.mirai.mock.resserver.MockServerFileDisk
 import net.mamoe.mirai.mock.resserver.MockServerFileSystem
 import net.mamoe.mirai.mock.resserver.MockServerRemoteFile
 import net.mamoe.mirai.mock.resserver.TxRemoteFileInfo
 import net.mamoe.mirai.utils.*
+import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.FileTime
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedDeque
 import kotlin.io.path.*
+import kotlin.io.use
 import net.mamoe.mirai.internal.utils.FileSystem as MiraiFileSystem
 
 private fun allocateNewPath(base: Path): Path {
@@ -65,6 +69,7 @@ internal class MockServerFileSystemImpl(
                 .resolve("details")
                 .resolve(id.substring(1))
         }
+
         else -> null
     }
 
@@ -77,6 +82,7 @@ internal class MockServerFileSystemImpl(
                 nameMapping.readText()
             } else null
         }
+
         else -> null
     } ?: id.substringAfterLast('/')
 
@@ -285,7 +291,19 @@ internal class MockServerFileImpl(
     override fun asExternalResource(): ExternalResource {
         val pt = toPath
         if (!pt.isFile) error("file not exists: $pt")
-        TODO("https://github.com/mamoe/mirai/pull/1637")
+        return object : AbstractExternalResource() {
+            override fun inputStream0(): InputStream {
+                return toPath.inputStream()
+            }
+
+            override val size: Long
+                get() = toPath.fileSize()
+
+            @MiraiExperimentalApi
+            override fun input(): Input {
+                return inputStream0().asInput()
+            }
+        }
     }
 
     override fun uploadFile(name: String, content: ExternalResource, uploader: Long): MockServerFileImpl {
