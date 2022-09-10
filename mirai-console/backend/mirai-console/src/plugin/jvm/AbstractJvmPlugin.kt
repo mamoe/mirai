@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.internal.plugin.JvmPluginClassLoaderN
 import net.mamoe.mirai.console.internal.plugin.JvmPluginInternal
+import net.mamoe.mirai.console.internal.util.PluginServiceHelper
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -23,6 +24,7 @@ import net.mamoe.mirai.utils.minutesToMillis
 import net.mamoe.mirai.utils.secondsToMillis
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.reflect.KClass
 
 /**
  * [JavaPlugin] 和 [KotlinPlugin] 的父类. 所有 [JvmPlugin] 都应该拥有此类作为直接或间接父类.
@@ -93,6 +95,39 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
         }
         error("jvmPluginClasspath not available for $classLoader")
     }
+
+    /**
+     * 获取 指定类的 SPI Service
+     *
+     * 注: 仅包括当前插件 JAR 的 Service
+     */
+    @JvmSynthetic
+    protected fun <T: Any> services(kClass: KClass<out T>): Lazy<List<T>> = lazy {
+        val classLoader = try {
+            jvmPluginClasspath.pluginClassLoader
+        } catch (_: IllegalStateException) {
+            this::class.java.classLoader
+        }
+        with(PluginServiceHelper) {
+            classLoader
+                .findServices(kClass)
+                .loadAllServices()
+        }
+    }
+
+    /**
+     * 获取 指定类的 SPI Service
+     *
+     * 注: 仅包括当前插件 JAR 的 Service
+     */
+    protected fun <T: Any> services(clazz: Class<out T>): Lazy<List<T>> = services(kClass = clazz.kotlin)
+
+    /**
+     * 获取 指定类的 SPI Service
+     *
+     * 注: 仅包括当前插件 JAR 的 Service
+     */
+    protected inline fun <reified T : Any> services(): Lazy<List<T>> = services(kClass = T::class)
 }
 
 /**
