@@ -2236,6 +2236,8 @@ public abstract class net/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin : net
 	public final fun reloadPluginData (Lnet/mamoe/mirai/console/data/PluginData;)V
 	public final fun savePluginConfig (Lnet/mamoe/mirai/console/data/PluginConfig;)V
 	public final fun savePluginData (Lnet/mamoe/mirai/console/data/PluginData;)V
+	protected final fun services (Ljava/lang/Class;)Lkotlin/Lazy;
+	protected final synthetic fun services (Lkotlin/reflect/KClass;)Lkotlin/Lazy;
 }
 
 public final class net/mamoe/mirai/console/plugin/jvm/AbstractJvmPluginKt {
