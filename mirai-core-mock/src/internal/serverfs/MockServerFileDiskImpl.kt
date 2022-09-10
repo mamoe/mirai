@@ -11,8 +11,6 @@
 
 package net.mamoe.mirai.mock.internal.serverfs
 
-import io.ktor.utils.io.core.*
-import io.ktor.utils.io.streams.*
 import net.mamoe.mirai.mock.resserver.MockServerFileDisk
 import net.mamoe.mirai.mock.resserver.MockServerFileSystem
 import net.mamoe.mirai.mock.resserver.MockServerRemoteFile
@@ -25,7 +23,6 @@ import java.nio.file.attribute.FileTime
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedDeque
 import kotlin.io.path.*
-import kotlin.io.use
 import net.mamoe.mirai.internal.utils.FileSystem as MiraiFileSystem
 
 private fun allocateNewPath(base: Path): Path {
@@ -298,11 +295,6 @@ internal class MockServerFileImpl(
 
             override val size: Long
                 get() = toPath.fileSize()
-
-            @MiraiExperimentalApi
-            override fun input(): Input {
-                return inputStream0().asInput()
-            }
         }
     }
 
