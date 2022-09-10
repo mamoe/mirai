@@ -72,6 +72,8 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 
 [AHpxChina/Mirai.Net]: https://github.com/AHpxChina/Mirai.Net
 
+[Cyl18/Chaldene]: https://github.com/Cyl18/Chaldene
+
 [Miyakowww/CocoaFramework2]: https://github.com/Miyakowww/CocoaFramework2
 
 [Shimogawa/rubirai]: https://github.com/Shimogawa/rubirai
@@ -128,6 +130,7 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 | `C#`                      | [Hyperai][theGravityLab/ProjHyperai] |
 | `C#`                      | [Coloryr/ColorMirai]                 |
 | `C#`                      | [AhpxChina/Mirai.Net]                |
+| `C#`                      | [Cyl18/Chaldene]                     |
 | `C#`                      | [Miyakowww/CocoaFramework2]          |
 | `C++`                     | [cyanray/mirai-cpp]                  |
 | `C++`                     | [Chlorie/miraipp]                    |
