@@ -9,14 +9,13 @@
 
 package net.mamoe.mirai.utils
 
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import kotlinx.coroutines.*
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 
 internal abstract class TxCaptchaHelper {
     private val newClient: Boolean = true
-    val client: HttpClient = HttpClient()
     private lateinit var queue: Job
 
     private var latestDisplay = "Sending request..."
@@ -30,7 +29,7 @@ internal abstract class TxCaptchaHelper {
             updateDisplay(latestDisplay)
             while (isActive) {
                 try {
-                    val response: String = client.get(url0).bodyAsText()
+                    val response: String = runInterruptible(Dispatchers.IO) { httpGet(url0) }
                     if (response.startsWith("请在")) {
                         if (response != latestDisplay) {
                             latestDisplay = response
@@ -47,12 +46,27 @@ internal abstract class TxCaptchaHelper {
             }
         }
         if (newClient) {
-            queue.invokeOnCompletion { client.close() }
+            queue.invokeOnCompletion { }
         }
         this.queue = queue
     }
 
     fun dispose() {
         queue.cancel()
+    }
+
+    @Throws(IOException::class)
+    private fun httpGet(url: String): String {
+        val connection = URL(url).openConnection() as? HttpURLConnection
+            ?: throw UnsupportedOperationException("Could not create HttpURLConnection")
+        connection.requestMethod = "GET"
+        connection.connectTimeout = 5000
+        connection.readTimeout = 5000
+        connection.instanceFollowRedirects = true
+        connection.doInput = true
+
+        val result = connection.inputStream.use { it.readBytes() }.decodeToString()
+        connection.disconnect()
+        return result
     }
 }
