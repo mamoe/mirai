@@ -15,29 +15,31 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
-internal class ECDHTest : AbstractTest() {
+internal class EcdhTest : AbstractTest() {
 
     @Test
     fun `can generate key pair`() {
-        val alice = ECDH.generateKeyPair()
-        val bob = ECDH.generateKeyPair()
+        val alice = Ecdh.Instance.generateKeyPair()
+        val bob = Ecdh.Instance.generateKeyPair()
 
-        val aliceSecret = ECDH.calculateShareKey(alice.privateKey, bob.publicKey)
-        val bobSecret = ECDH.calculateShareKey(bob.privateKey, alice.publicKey)
+        val aliceSecret = Ecdh.Instance.calculateShareKey(bob.public, alice.private)
+        val bobSecret = Ecdh.Instance.calculateShareKey(alice.public, bob.private)
 
         println(aliceSecret.toUHexString())
         assertContentEquals(aliceSecret, bobSecret)
     }
 
     @Test
-    fun `can get masked keys`() {
-        val alice = ECDH.generateKeyPair()
+    fun `can export and import public keys`() {
+        val alice = Ecdh.Instance.generateKeyPair()
 
         println(alice)
-        val maskedPublicKey = alice.maskedPublicKey
-        println(maskedPublicKey.toUHexString())
-        assertEquals(0x04, maskedPublicKey.first())
-        println(alice.maskedShareKey.toUHexString())
+        val publicKey = Ecdh.Instance.exportPublicKey(alice.public)
+        println(publicKey.toUHexString())
+        assertEquals(0x04, publicKey.first())
+
+        val importedAlicePubKey = Ecdh.Instance.importPublicKey(publicKey)
+        assertEquals(alice.public, importedAlicePubKey)
     }
 
     /*

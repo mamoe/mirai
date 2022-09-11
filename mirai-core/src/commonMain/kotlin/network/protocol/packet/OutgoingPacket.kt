@@ -274,7 +274,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
 
 internal fun BytePacketBuilder.writeOicqRequestPacket(
     client: QQAndroidClient,
-    encryptMethod: EncryptMethod = EncryptMethodECDH(client.bot.components[EcdhInitialPublicKeyUpdater].getECDHWithPublicKey()),
+    encryptMethod: EncryptMethod = EncryptMethodEcdh(client.bot.components[EcdhInitialPublicKeyUpdater].getQQEcdh()),
     commandId: Int,
     bodyBlock: BytePacketBuilder.() -> Unit
 ) {
