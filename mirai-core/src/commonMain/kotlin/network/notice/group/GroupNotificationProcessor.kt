@@ -345,7 +345,7 @@ internal class GroupNotificationProcessor(
                 )
             }
             // 龙王
-            10093L, 10094L, 1053L, 1054L -> {
+            10093L, 10094L, 1053L, 1054L, 1103L -> {
                 val now = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
                 val previous = grayTip.msgTemplParam["uin_last"]?.findMember()
 
@@ -362,7 +362,7 @@ internal class GroupNotificationProcessor(
                 }
             }
             // 群聊之火
-            1052L -> {
+            1052L, 1129L -> {
                 val now = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
 
                 now.info.honors += GroupHonorType.PERFORMER
@@ -374,6 +374,7 @@ internal class GroupNotificationProcessor(
 
                 now.info.honors -= GroupHonorType.PERFORMER
                 now.info.honors += GroupHonorType.LEGEND
+                collect(MemberHonorChangeEvent.Lose(now, GroupHonorType.PERFORMER))
                 collect(MemberHonorChangeEvent.Achieve(now, GroupHonorType.LEGEND))
             }
             // 快乐源泉
@@ -392,7 +393,6 @@ internal class GroupNotificationProcessor(
                     collect(MemberHonorChangeEvent.Achieve(now, GroupHonorType.RED_PACKET))
                 } else {
                     // 善财福禄寿 也是唯一的, 也许要加 新事件
-                    // collect(GroupTalkativeChangeEvent(group, now, previous))
                     collect(MemberHonorChangeEvent.Lose(previous, GroupHonorType.RED_PACKET))
                     collect(MemberHonorChangeEvent.Achieve(now, GroupHonorType.RED_PACKET))
                 }

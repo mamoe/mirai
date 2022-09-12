@@ -7,9 +7,8 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.contact
+package net.mamoe.mirai.contact.active
 
-import net.mamoe.mirai.contact.active.MemberMedalDetail
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.utils.NotStableForInheritance
 
@@ -18,7 +17,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  * @since 2.13.0
  */
 @NotStableForInheritance
-public interface MemberActive {
+public expect interface MemberActive {
 
     /**
      * 群活跃等级. 取值为 1~6
@@ -53,5 +52,5 @@ public interface MemberActive {
     /**
      * 查询头衔佩戴情况
      */
-    public suspend fun queryMedal(): MemberMedalDetail?
+    public suspend fun queryMedal(): MemberMedalInfo
 }

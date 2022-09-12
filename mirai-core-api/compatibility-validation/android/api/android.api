@@ -425,7 +425,7 @@ public abstract interface class net/mamoe/mirai/contact/GroupSettings {
 }
 
 public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai/contact/User {
-	public abstract fun getActive ()Lnet/mamoe/mirai/contact/MemberActive;
+	public abstract fun getActive ()Lnet/mamoe/mirai/contact/active/MemberActive;
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 	public abstract fun getNameCard ()Ljava/lang/String;
 	public abstract fun getPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
@@ -439,14 +439,6 @@ public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai
 	public abstract fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public abstract fun sendMessage (Lnet/mamoe/mirai/message/data/Message;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public abstract interface class net/mamoe/mirai/contact/MemberActive {
-	public abstract fun getHonors ()Ljava/util/Set;
-	public abstract fun getPoint ()I
-	public abstract fun getRank ()I
-	public abstract fun getTemperature ()I
-	public abstract fun queryMedal (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/MemberKt {
@@ -649,7 +641,7 @@ public final class net/mamoe/mirai/contact/active/ActiveHonorInfo {
 public final class net/mamoe/mirai/contact/active/ActiveHonorList {
 	public final fun getCurrent ()Lnet/mamoe/mirai/contact/active/ActiveHonorInfo;
 	public final fun getRecords ()Ljava/util/List;
-	public final fun getType ()Lnet/mamoe/mirai/data/GroupHonorType;
+	public final fun getType-AVr_HNQ ()I
 }
 
 public final class net/mamoe/mirai/contact/active/ActiveRankRecord {
@@ -682,20 +674,33 @@ public abstract interface class net/mamoe/mirai/contact/active/GroupActive {
 	public abstract fun queryActiveRank (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun queryChart ()Lnet/mamoe/mirai/contact/active/ActiveChart;
 	public abstract fun queryChart (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun queryHonorHistory (Lnet/mamoe/mirai/data/GroupHonorType;)Lnet/mamoe/mirai/contact/active/ActiveHonorList;
-	public abstract fun queryHonorHistory (Lnet/mamoe/mirai/data/GroupHonorType;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun setHonorVisible (Z)V
-	public abstract fun setRankTitles (Ljava/util/Map;)V
-	public abstract fun setTemperatureTitles (Ljava/util/Map;)V
-	public abstract fun setTemperatureVisible (Z)V
-	public abstract fun setTitleVisible (Z)V
+	public abstract fun queryHonorHistory-UbtaSxo (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setHonorVisible (Z)V
+	public abstract fun setHonorVisible (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setRankTitles (Ljava/util/Map;)V
+	public abstract fun setRankTitles (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setTemperatureTitles (Ljava/util/Map;)V
+	public abstract fun setTemperatureTitles (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setTemperatureVisible (Z)V
+	public abstract fun setTemperatureVisible (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setTitleVisible (Z)V
+	public abstract fun setTitleVisible (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class net/mamoe/mirai/contact/active/MemberMedalDetail {
+public abstract interface class net/mamoe/mirai/contact/active/MemberActive {
+	public abstract fun getHonors ()Ljava/util/Set;
+	public abstract fun getPoint ()I
+	public abstract fun getRank ()I
+	public abstract fun getTemperature ()I
+	public fun queryMedal ()Lnet/mamoe/mirai/contact/active/MemberMedalInfo;
+	public abstract fun queryMedal (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/contact/active/MemberMedalInfo {
 	public final fun getColor ()Ljava/lang/String;
 	public final fun getMedals ()Ljava/util/Set;
 	public final fun getTitle ()Ljava/lang/String;
-	public final fun getWorn ()Lnet/mamoe/mirai/contact/active/MemberMedalType;
+	public final fun getWearing ()Lnet/mamoe/mirai/contact/active/MemberMedalType;
 }
 
 public final class net/mamoe/mirai/contact/active/MemberMedalType : java/lang/Enum {
@@ -1091,6 +1096,58 @@ public class net/mamoe/mirai/data/FriendInfoImpl : net/mamoe/mirai/data/FriendIn
 	public fun setFriendGroupId (I)V
 	public fun setNick (Ljava/lang/String;)V
 	public fun setRemark (Ljava/lang/String;)V
+}
+
+public final class net/mamoe/mirai/data/GroupHonorType {
+	public static final field Companion Lnet/mamoe/mirai/data/GroupHonorType$Companion;
+	public static final synthetic fun box-impl (I)Lnet/mamoe/mirai/data/GroupHonorType;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (ILjava/lang/Object;)Z
+	public static final fun equals-impl0 (II)Z
+	public static final fun getBRONZE-AVr_HNQ ()I
+	public static final fun getEMOTION-AVr_HNQ ()I
+	public static final fun getGOLDEN-AVr_HNQ ()I
+	public static final fun getLEGEND-AVr_HNQ ()I
+	public static final fun getPERFORMER-AVr_HNQ ()I
+	public static final fun getRED_PACKET-AVr_HNQ ()I
+	public static final fun getRICHER-AVr_HNQ ()I
+	public static final fun getSILVER-AVr_HNQ ()I
+	public static final fun getSTRONG_NEWBIE-AVr_HNQ ()I
+	public static final fun getTALKATIVE-AVr_HNQ ()I
+	public final fun getValue ()I
+	public static final fun getWHIRLWIND-AVr_HNQ ()I
+	public fun hashCode ()I
+	public static fun hashCode-impl (I)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (I)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()I
+}
+
+public final class net/mamoe/mirai/data/GroupHonorType$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupHonorType$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize-NYH6FXw (Lkotlinx/serialization/encoding/Decoder;)I
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize-aLnpm_Q (Lkotlinx/serialization/encoding/Encoder;I)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/data/GroupHonorType$Companion {
+	public final fun getBRONZE-AVr_HNQ ()I
+	public final fun getEMOTION-AVr_HNQ ()I
+	public final fun getGOLDEN-AVr_HNQ ()I
+	public final fun getLEGEND-AVr_HNQ ()I
+	public final fun getPERFORMER-AVr_HNQ ()I
+	public final fun getRED_PACKET-AVr_HNQ ()I
+	public final fun getRICHER-AVr_HNQ ()I
+	public final fun getSILVER-AVr_HNQ ()I
+	public final fun getSTRONG_NEWBIE-AVr_HNQ ()I
+	public final fun getTALKATIVE-AVr_HNQ ()I
+	public final fun getWHIRLWIND-AVr_HNQ ()I
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public abstract interface class net/mamoe/mirai/data/GroupInfo {
@@ -2377,13 +2434,13 @@ public final class net/mamoe/mirai/event/events/MemberCardChangeEvent : net/mamo
 }
 
 public final class net/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve : net/mamoe/mirai/event/events/MemberHonorChangeEvent {
-	public fun <init> (Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/data/GroupHonorType;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/contact/NormalMember;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lnet/mamoe/mirai/contact/NormalMember;
-	public final fun component2 ()Lnet/mamoe/mirai/data/GroupHonorType;
-	public final fun copy (Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/data/GroupHonorType;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/data/GroupHonorType;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;
+	public final fun component2-AVr_HNQ ()I
+	public final fun copy-aLnpm_Q (Lnet/mamoe/mirai/contact/NormalMember;I)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;
+	public static synthetic fun copy-aLnpm_Q$default (Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;Lnet/mamoe/mirai/contact/NormalMember;IILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;
 	public fun equals (Ljava/lang/Object;)Z
-	public fun getHonorType ()Lnet/mamoe/mirai/data/GroupHonorType;
+	public fun getHonorType-AVr_HNQ ()I
 	public synthetic fun getMember ()Lnet/mamoe/mirai/contact/Member;
 	public fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun hashCode ()I
@@ -2391,13 +2448,13 @@ public final class net/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve :
 }
 
 public final class net/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose : net/mamoe/mirai/event/events/MemberHonorChangeEvent {
-	public fun <init> (Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/data/GroupHonorType;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/contact/NormalMember;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lnet/mamoe/mirai/contact/NormalMember;
-	public final fun component2 ()Lnet/mamoe/mirai/data/GroupHonorType;
-	public final fun copy (Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/data/GroupHonorType;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/data/GroupHonorType;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;
+	public final fun component2-AVr_HNQ ()I
+	public final fun copy-aLnpm_Q (Lnet/mamoe/mirai/contact/NormalMember;I)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;
+	public static synthetic fun copy-aLnpm_Q$default (Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;Lnet/mamoe/mirai/contact/NormalMember;IILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;
 	public fun equals (Ljava/lang/Object;)Z
-	public fun getHonorType ()Lnet/mamoe/mirai/data/GroupHonorType;
+	public fun getHonorType-AVr_HNQ ()I
 	public synthetic fun getMember ()Lnet/mamoe/mirai/contact/Member;
 	public fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun hashCode ()I

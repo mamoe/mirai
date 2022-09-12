@@ -78,7 +78,7 @@ internal data class MemberInfoImpl(
                     val value = bytes.getOrNull(index + 1) ?: break
                     try {
                         @Suppress("INVISIBLE_MEMBER")
-                        add(GroupHonorType.deserializeFromInt(value.toInt()))
+                        add(GroupHonorType(value.toInt()))
                     } catch (_: Exception) {
                     }
                 }

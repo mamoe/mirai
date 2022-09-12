@@ -10,10 +10,11 @@
 package net.mamoe.mirai.data
 
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.active.GroupActive
-import net.mamoe.mirai.contact.MemberActive
+import net.mamoe.mirai.contact.active.MemberActive
 import net.mamoe.mirai.event.events.MemberHonorChangeEvent
-import net.mamoe.mirai.utils.MiraiExperimentalApi
+import kotlin.jvm.JvmInline
 import kotlin.jvm.JvmStatic
 
 /**
@@ -33,27 +34,33 @@ import kotlin.jvm.JvmStatic
  * @see MemberActive
  * @see MemberHonorChangeEvent
  */
-@MiraiExperimentalApi
-public enum class GroupHonorType(public val value: Int) {
-    TALKATIVE(1),
-    PERFORMER(2),
-    LEGEND(3),
-    STRONG_NEWBIE(5),
-    EMOTION(6),
-
-    BRONZE(7),
-    SILVER(8),
-    GOLDEN(9),
-    WHIRLWIND(10),
-
-    RICHER(11),
-    RED_PACKET(14);
-
-    internal companion object {
+@JvmInline
+@Serializable
+public value class GroupHonorType internal constructor(public val value: Int) {
+    public companion object {
         @JvmStatic
-        private val values = values()
+        public val TALKATIVE: GroupHonorType = GroupHonorType(1)
+        @JvmStatic
+        public val PERFORMER: GroupHonorType = GroupHonorType(2)
+        @JvmStatic
+        public val LEGEND: GroupHonorType = GroupHonorType(3)
+        @JvmStatic
+        public val STRONG_NEWBIE: GroupHonorType = GroupHonorType(5)
+        @JvmStatic
+        public val EMOTION: GroupHonorType = GroupHonorType(6)
 
         @JvmStatic
-        internal fun deserializeFromInt(value: Int): GroupHonorType = values.first { it.value == value }
+        public val BRONZE: GroupHonorType = GroupHonorType(7)
+        @JvmStatic
+        public val SILVER: GroupHonorType = GroupHonorType(8)
+        @JvmStatic
+        public val GOLDEN: GroupHonorType = GroupHonorType(9)
+        @JvmStatic
+        public val WHIRLWIND: GroupHonorType = GroupHonorType(10)
+
+        @JvmStatic
+        public val RICHER: GroupHonorType = GroupHonorType(11)
+        @JvmStatic
+        public val RED_PACKET: GroupHonorType = GroupHonorType(14)
     }
 }

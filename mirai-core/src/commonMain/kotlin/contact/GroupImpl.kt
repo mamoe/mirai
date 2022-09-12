@@ -19,6 +19,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.file.RemoteFiles
+import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
@@ -134,7 +135,7 @@ internal abstract class CommonGroupImpl constructor(
     parentCoroutineContext: CoroutineContext,
     override val id: Long,
     groupInfo: GroupInfo,
-    override val members: ContactList<NormalMemberImpl>,
+    final override val members: ContactList<NormalMemberImpl>,
 ) : Group, AbstractContact(bot, parentCoroutineContext) {
     companion object
 
@@ -148,7 +149,7 @@ internal abstract class CommonGroupImpl constructor(
 
     final override val files: RemoteFiles by lazy { RemoteFilesImpl(this) }
 
-    val lastTalkative = atomic<NormalMemberImpl?>(null)
+    val lastTalkative = atomic(members.find { GroupHonorType.TALKATIVE in it.active.honors })
 
     final override val announcements: Announcements by lazy {
         AnnouncementsImpl(

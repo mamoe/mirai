@@ -14,7 +14,6 @@ package net.mamoe.mirai.contact.active
 import kotlinx.coroutines.flow.Flow
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.utils.JavaFriendlyAPI
@@ -36,11 +35,9 @@ import java.util.stream.Stream
  * * 通过 [rankTitles] 可以获取和设置一个群的等级头衔列表 (PC 端显示),
  * * 通过 [temperatureTitles] 可以获取和设置一个群的活跃度头衔列表 (手机端显示)
  *
- * 设置时，修改将异步发送到服务器
- *
  * ### 刷新群成员活跃数据
  *
- * 通过 [flush] 可以刷新 [Member.active] 中的属性
+ * 通过 [flush] 可以刷新 [Member.active] 中的属性 (不包括 honors 和 temperature)
  *
  * ### 活跃度记录
  *
@@ -71,56 +68,76 @@ public actual interface GroupActive {
 
     /**
      * 是否在群聊中显示荣誉
-     *
-     * set 时传入的荣誉头衔显示设置 将会异步发送给api。
-     *
-     * @see Member.rankTitle
+     * @see MemberActive.honors
      */
-    @MiraiExperimentalApi
-    public actual var isHonorVisible: Boolean
+    public actual val isHonorVisible: Boolean
+
+    /**
+     * 设置 是否在群聊中显示荣誉
+     * @see MemberActive.honors
+     */
+    public actual suspend fun setHonorVisible(newValue: Boolean)
 
     /**
      * 是否在群聊中显示头衔
-     *
-     * set 时传入的等级头衔显示设置 将会异步发送给api，并刷新等级头衔信息。
-     *
      * @see Member.rankTitle
+     * @see Member.temperatureTitle
      */
-    @MiraiExperimentalApi
-    public actual var isTitleVisible: Boolean
+    public actual val isTitleVisible: Boolean
+
+    /**
+     * 设置 是否在群聊中显示头衔
+     *
+     * ps: 会一并刷新等级头衔信息。
+     * @see Member.rankTitle
+     * @see Member.temperatureTitle
+     */
+    public actual suspend fun setTitleVisible(newValue: Boolean)
 
     /**
      * 是否在群聊中显示活跃度
-     *
-     * set 时传入的等级头衔显示设置 将会异步发送给api，并刷新等级头衔信息。
-     *
-     * @see Member.active
+     * @see MemberActive.temperature
      */
-    @MiraiExperimentalApi
-    public actual var isTemperatureVisible: Boolean
+    public actual val isTemperatureVisible: Boolean
+
+    /**
+     * 设置 是否在群聊中显示活跃度
+     *
+     * ps: 会一并刷新等级头衔信息。
+     * @see MemberActive.temperature
+     */
+    public actual suspend fun setTemperatureVisible(newValue: Boolean)
 
     /**
      * 等级头衔列表，键是等级，值是头衔
-     *
-     * set 时传入的等级头衔 将会异步发送给api，并刷新等级头衔信息。
-     *
      * @see Member.rankTitle
      */
-    @MiraiExperimentalApi
-    public actual var rankTitles: Map<Int, String>
+    public actual val rankTitles: Map<Int, String>
+
+    /**
+     * 设置 等级头衔列表，键是等级，值是头衔
+     *
+     * ps: 会一并刷新等级头衔信息。
+     * @see Member.rankTitle
+     */
+    public actual suspend fun setRankTitles(newValue: Map<Int, String>)
 
     /**
      * 活跃度头衔列表，键是等级，值是头衔
-     *
-     * set 时传入的活跃度头衔 将会异步发送给api，并刷新活跃度头衔信息。
-     *
      * @see Member.rankTitle
      */
-    @MiraiExperimentalApi
-    public actual var temperatureTitles: Map<Int, String>
+    public actual val temperatureTitles: Map<Int, String>
 
     /**
-     * 刷新 [Member.active] 中的属性
+     * 设置 活跃度头衔列表，键是等级，值是头衔
+     *
+     * ps: 会一并 刷新活跃度头衔信息。
+     * @see Member.temperatureTitle
+     */
+    public actual suspend fun setTemperatureTitles(newValue: Map<Int, String>)
+
+    /**
+     * 刷新 [Member.active] 中的属性 (不包括 honors 和 temperature)
      * @see Member.active
      */
     public actual suspend fun flush()
@@ -144,19 +161,16 @@ public actual interface GroupActive {
 
     /**
      * 获取活跃度图表数据
-     * @return 查询失败时返回 null
      */
-    public actual suspend fun queryChart(): ActiveChart?
+    public actual suspend fun queryChart(): ActiveChart
 
     /**
      * 获取群荣耀历史数据
-     * @return 查询失败时返回 null
      */
-    public actual suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList?
+    public actual suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList
 
     /**
      * 获取活跃度排行榜，通常是前五十名
-     * @return 查询失败时返回 null
      */
-    public actual suspend fun queryActiveRank(): List<ActiveRankRecord>?
+    public actual suspend fun queryActiveRank(): List<ActiveRankRecord>
 }

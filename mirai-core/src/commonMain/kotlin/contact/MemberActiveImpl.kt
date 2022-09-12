@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.internal.contact
 
-import net.mamoe.mirai.contact.MemberActive
-import net.mamoe.mirai.contact.active.MemberMedalDetail
+import net.mamoe.mirai.contact.active.MemberActive
+import net.mamoe.mirai.contact.active.MemberMedalInfo
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.internal.contact.active.GroupActiveImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
@@ -20,7 +20,7 @@ internal class MemberActiveImpl(private val info: MemberInfoImpl, private val gr
     override val point: Int get() = info.point
     override val honors: Set<GroupHonorType> get() = info.honors
     override val temperature: Int get() = info.temperature
-    override suspend fun queryMedal(): MemberMedalDetail? {
+    override suspend fun queryMedal(): MemberMedalInfo {
         return (group.active as GroupActiveImpl).queryMemberMedal(uid = info.uin)
     }
 }

@@ -14,6 +14,7 @@ package net.mamoe.mirai.contact
 
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.active.MemberActive
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.MemberNudge

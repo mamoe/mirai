@@ -29,7 +29,7 @@ internal actual class GroupActiveImpl actual constructor(
         return stream {
             var page = 0
             while (true) {
-                val result = runBlocking { getGroupActiveData(page = page) } ?: break
+                val result = runBlocking { getGroupActiveData(page = page) }
                 val most = result.info.mostAct ?: break
 
                 for (active in most) yield(active.toActiveRecord(group))

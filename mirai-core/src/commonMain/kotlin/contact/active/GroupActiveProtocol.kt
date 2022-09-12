@@ -189,7 +189,7 @@ internal data class CgiData(
 ) : CheckableResponseA(), JsonStruct
 
 @Serializable
-internal data class MemberMedalInfo(
+internal data class MemberMedalData(
     @SerialName("avatar") val avatar: String,
     @SerialName("face_flag") val faceFlag: Int,
     @SerialName("last_view_ts") val lastViewTs: Int,
@@ -378,7 +378,7 @@ internal suspend fun QQAndroidBot.getRawMemberLevelInfo(
 internal suspend fun QQAndroidBot.getRawMemberMedalInfo(
     groupCode: Long,
     uid: Long
-): Either<DeserializationFailure, MemberMedalInfo> {
+): Either<DeserializationFailure, MemberMedalData> {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/qunwelcome/medal2/list")
         parameter("gc", groupCode)
@@ -394,7 +394,7 @@ internal suspend fun QQAndroidBot.getRawMemberMedalInfo(
         }
     }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
         @Suppress("INVISIBLE_MEMBER")
-        defaultJson.decodeFromJsonElement(MemberMedalInfo.serializer(), it.data)
+        defaultJson.decodeFromJsonElement(MemberMedalData.serializer(), it.data)
     }
 }
 
