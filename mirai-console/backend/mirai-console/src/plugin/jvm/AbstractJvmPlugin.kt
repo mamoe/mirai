@@ -99,6 +99,9 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
     /**
      * 获取 指定类的 SPI Service
      *
+     * 为了兼容 Kotlin object 单例类，此方法没有直接使用 java 原生的 API,
+     * 而是 手动读取 `META-INF/services/` 的内容, 并尝试构造或获取实例
+     *
      * 注: 仅包括当前插件 JAR 的 Service
      */
     @JvmSynthetic
@@ -118,12 +121,18 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
     /**
      * 获取 指定类的 SPI Service
      *
+     * 为了兼容 Kotlin object 单例类，此方法没有直接使用 java 原生的 API,
+     * 而是 手动读取 `META-INF/services/` 的内容, 并尝试构造或获取实例
+     *
      * 注: 仅包括当前插件 JAR 的 Service
      */
     protected fun <T: Any> services(clazz: Class<out T>): Lazy<List<T>> = services(kClass = clazz.kotlin)
 
     /**
      * 获取 指定类的 SPI Service
+     *
+     * 为了兼容 Kotlin object 单例类，此方法没有直接使用 java 原生的 API,
+     * 而是 手动读取 `META-INF/services/` 的内容, 并尝试构造或获取实例
      *
      * 注: 仅包括当前插件 JAR 的 Service
      */
