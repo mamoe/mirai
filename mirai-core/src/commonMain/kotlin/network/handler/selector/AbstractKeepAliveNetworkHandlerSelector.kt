@@ -96,10 +96,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
          * 只有 [NetworkException] 是期望的异常 (根据 [NetworkException.recoverable] 决定是否可挽救). 任何其他异常都是未期望的, 将会被原封不动地抛出.
          */
         @Throws(
-            NetworkException::class,
-            MaxAttemptsReachedException::class,
-            CancellationException::class,
-            Throwable::class
+            NetworkException::class, MaxAttemptsReachedException::class, CancellationException::class, Throwable::class
         )
         suspend fun run(): H {
             return try {
@@ -127,9 +124,8 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                     // == false 表示第一次登录失败, 且此失败没必要重试
                     logIfEnabled { "[FIRST LOGIN ERROR] current = $current" }
                     logIfEnabled { "[FIRST LOGIN ERROR] current.state = ${current.state}" }
-                    throw current.getLastFailure()
-                        ?: exceptionCollector.getLast()
-                        ?: error("Failed to login with unknown reason.")
+                    throw current.getLastFailure() ?: exceptionCollector.getLast()
+                    ?: error("Failed to login with unknown reason.")
                 }
             }
 
@@ -201,13 +197,18 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                         attempted += 1
                         runImpl() // will create new instance (see the `else` branch).
                     }
-                    NetworkHandler.State.CONNECTING,
-                    NetworkHandler.State.INITIALIZED,
-                    -> {
+                    NetworkHandler.State.INITIALIZED -> {
                         if (!current.resumeInstanceCatchingException()) {
                             attempted += 1
+                            return runImpl()
                         }
-                        return runImpl()
+                        logIfEnabled { "RETURN" }
+                        return current
+                    }
+                    NetworkHandler.State.CONNECTING -> {
+                        logIfEnabled { "RETURN" }
+                        // can send packet
+                        return current
                     }
                     NetworkHandler.State.LOADING -> {
                         logIfEnabled { "RETURN" }
@@ -243,8 +244,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
     companion object {
         var DEFAULT_MAX_ATTEMPTS by atomic(
             systemProp(
-                "mirai.network.handler.selector.max.attempts",
-                Long.MAX_VALUE
+                "mirai.network.handler.selector.max.attempts", Long.MAX_VALUE
             ).coerceIn(1..Int.MAX_VALUE.toLongUnsigned()).toInt()
         )
 

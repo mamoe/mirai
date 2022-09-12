@@ -19,9 +19,8 @@ import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.getRandomByteArray
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.get_mpasswd
 import net.mamoe.mirai.internal.utils.accountSecretsFile
-import net.mamoe.mirai.internal.utils.crypto.ECDHInitialPublicKey
+import net.mamoe.mirai.internal.utils.crypto.QQEcdhInitialPublicKey
 import net.mamoe.mirai.internal.utils.crypto.TEA
-import net.mamoe.mirai.internal.utils.crypto.defaultInitialPublicKey
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -73,7 +72,7 @@ internal interface AccountSecrets {
 
     var tgtgtKey: ByteArray
     val randomKey: ByteArray
-    var ecdhInitialPublicKey: ECDHInitialPublicKey
+    var ecdhInitialPublicKey: QQEcdhInitialPublicKey
 }
 
 
@@ -87,7 +86,7 @@ internal data class AccountSecretsImpl(
     override var ksid: ByteArray,
     override var tgtgtKey: ByteArray,
     override val randomKey: ByteArray,
-    override var ecdhInitialPublicKey: ECDHInitialPublicKey,
+    override var ecdhInitialPublicKey: QQEcdhInitialPublicKey,
 ) : AccountSecrets, ProtoBuf {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -141,7 +140,7 @@ internal fun AccountSecretsImpl(
         ksid = EMPTY_BYTE_ARRAY,
         tgtgtKey = (account.passwordMd5 + ByteArray(4) + account.id.toInt().toByteArray()).md5(),
         randomKey = getRandomByteArray(16),
-        ecdhInitialPublicKey = defaultInitialPublicKey
+        ecdhInitialPublicKey = QQEcdhInitialPublicKey.default
     )
 }
 

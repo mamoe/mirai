@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 @file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
@@ -24,6 +24,8 @@ import java.awt.image.BufferedImage
 import java.net.URI
 import javax.imageio.ImageIO
 import javax.swing.*
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 
 @MiraiExperimentalApi
 public object SwingSolver : LoginSolver() {
@@ -98,8 +100,106 @@ public object SwingSolver : LoginSolver() {
         return@coroutineScope solver.openAndWait().takeIf { it.isNotEmpty() }
     }
 
+    @Suppress("DuplicatedCode")
+    override suspend fun onSolveDeviceVerification(
+        bot: Bot,
+        requests: DeviceVerificationRequests
+    ): DeviceVerificationResult {
+        requests.sms?.let { req ->
+            solveSms(bot, req)?.let { return it }
+        }
+        requests.fallback?.let { fallback ->
+            solveFallback(bot, fallback.url)
+            return fallback.solved()
+        }
+        error("User rejected SMS login while fallback login method not available.")
+    }
+
+    @Deprecated(
+        "Please use onSolveDeviceVerification instead",
+        replaceWith = ReplaceWith("onSolveDeviceVerification(bot, url, null)"),
+        level = DeprecationLevel.WARNING
+    )
     public override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String {
-        val title = "Mirai UnsafeDeviceLoginVerify(${bot.id})"
+        return solveFallback(bot, url)
+    }
+
+    private suspend fun solveSms(bot: Bot, request: DeviceVerificationRequests.SmsRequest): DeviceVerificationResult? =
+        coroutineScope {
+            val smsRequester = object {
+                var lastRequested = 0L
+
+                fun requestSms(parentComponent: Component) = launch {
+                    // oh, so shit code
+
+                    val diff = (System.currentTimeMillis() - lastRequested).milliseconds
+                    if (diff < 1.minutes) {
+                        parentComponent.createTip(
+                            """请求过于频繁, 请在 ${1.minutes - diff} 秒后再试""".trimIndent()
+                    ).openAndWait()
+                    return@launch
+                }
+
+                lastRequested = System.currentTimeMillis()
+                kotlin.runCatching {
+                    request.requestSms()
+                }.fold(
+                    onSuccess = {
+                        parentComponent.createTip(
+                            """发送验证码成功, 请注意查收. 若未收到, 可在一分钟后重试.""".trimIndent()
+                        ).openAndWait()
+                    },
+                    onFailure = {
+                        parentComponent.createTip(
+                            "<html>发送验证码失败.<br/><br/>${
+                                it.stackTraceToString().replace("\n", "<br/>").replace("\r", "")
+                            }"
+                        ).openAndWait()
+                    }
+                )
+            }
+        }
+        val title = "Mirai Device Verification (${bot.id})"
+        val phoneNumber = request.phoneNumber
+        val countryCode = request.countryCode
+        val phoneNumberTip = if (phoneNumber != null && countryCode != null)
+            """(+$countryCode) $phoneNumber"""
+        else "(无法获取到手机号码)"
+
+
+        val code = SwingLoginSolver(
+            title, "",
+            arrayOf(
+                "",
+                JButton("发送验证码").onClick {
+                    smsRequester.requestSms(this)
+                },
+                "",
+                JLabel("验证码 (输入完成后按回车):")
+            ),
+            hiddenInput = false,
+            topComponent = JLabel(
+                """
+                    <html>
+                    需要进行短信验证码验证<br>
+                    一条短信验证码将发送到你的手机 $phoneNumberTip<br>
+                    运营商可能会收取正常短信费用<br>
+                """.trimIndent()
+            )
+        ).openAndWait().trim().ifEmpty { return@coroutineScope null }
+        request.solved(code)
+    }
+
+    private fun Component.createTip(tip: String) = SwingLoginSolver(
+        "提示", "",
+        arrayOf("", JLabel()),
+        hiddenInput = true,
+        topComponent = JLabel(tip),
+        parentComponent = this,
+    )
+
+    private suspend fun solveFallback(bot: Bot, url: String): String {
+        val title = "Mirai Device Verification (${bot.id})"
         return SwingLoginSolver(
             title, "",
             arrayOf(
@@ -109,12 +209,12 @@ public object SwingSolver : LoginSolver() {
             hiddenInput = true,
             topComponent = JLabel(
                 """
-                <html>
-                需要进行账户安全认证<br>
-                该账户有设备锁/不常用登录地点/不常用设备登录的问题<br>
-                请在<b>手机 QQ</b> 打开下面链接
-                成功后请关闭该窗口
-            """.trimIndent()
+                    <html>
+                    需要进行账户安全认证<br>
+                    该账户有设备锁/不常用登录地点/不常用设备登录的问题<br>
+                    请在<b>手机 QQ</b> 打开下面链接
+                    成功后请关闭该窗口
+                """.trimIndent()
             )
         ).openAndWait()
     }
@@ -124,7 +224,6 @@ public object SwingSolver : LoginSolver() {
 // 隔离类代码
 // 在 jvm 中, 使用 WindowHelperJvm 不会加载 SwingSolverKt
 // 不会触发各种 NoDefClassError
-@Suppress("DEPRECATION")
 internal object WindowHelperJvm {
     enum class PlatformKind {
         ANDROID,

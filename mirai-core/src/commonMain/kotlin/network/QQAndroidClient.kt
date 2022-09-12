@@ -155,6 +155,7 @@ internal open class QQAndroidClient(
 
     var t530: ByteArray? = null
     var t528: ByteArray? = null
+    var t174: ByteArray? = null
 
     /**
      * t186

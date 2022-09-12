@@ -35,6 +35,7 @@ module.exports = {
                 {text: "事件列表", link: "/EventList.html"},
                 {text: "Debugging Network", link: "/DebuggingNetwork.html"},
                 {text: "Using Dev Snapshots", link: "/UsingSnapshots.html"},
+                {text: "mirai 模拟测试框架", link: "/mocking/Mocking.md"},
             ]
         },
     ],

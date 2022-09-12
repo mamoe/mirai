@@ -55,7 +55,7 @@ internal class PbMessageSvc {
 
             return buildOutgoingUniPacket(
                 client,
-                name = "PbMsgWithDraw(" +
+                remark = "PbMsgWithDraw(" +
                         "group=$groupCode, " +
                         "seq=${messageSequenceId.joinToString(separator = ",")}, " +
                         "rand=${messageRandom.joinToString(separator = ",")}" +
@@ -98,7 +98,7 @@ internal class PbMessageSvc {
 
             return buildOutgoingUniPacket(
                 client,
-                name = "PbMsgWithDraw(" +
+                remark = "PbMsgWithDraw(" +
                         "groupTemp=$toUin, " +
                         "seq=${messageSequenceId.joinToString(separator = ",")}, " +
                         "rand=${messageRandom.joinToString(separator = ",")}, " +
@@ -147,7 +147,7 @@ internal class PbMessageSvc {
 
             return buildOutgoingUniPacket(
                 client,
-                name = "PbMsgWithDraw(" +
+                remark = "PbMsgWithDraw(" +
                         "friend=$toUin, " +
                         "seq=${messageSequenceId.joinToString(separator = ",")}, " +
                         "rand=${messageRandom.joinToString(separator = ",")}, " +

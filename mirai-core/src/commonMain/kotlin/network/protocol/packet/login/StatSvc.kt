@@ -200,7 +200,7 @@ internal class StatSvc {
             bodyType = 1,
             extraData = client.wLoginSigInfo.d2.data,
             key = client.wLoginSigInfo.d2Key,
-            name = name,
+            remark = name,
         ) { sequenceId ->
             writeSsoPacket(
                 client, subAppId = client.subAppId, commandName = commandName,
