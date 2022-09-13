@@ -34,6 +34,7 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.data.jce.isValid
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
+import net.mamoe.mirai.internal.network.protocol.packet.guild.send.SyncFirstView
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
 import net.mamoe.mirai.utils.MiraiLogger
@@ -85,6 +86,7 @@ internal class ContactUpdaterImpl(
                 launch { reloadFriendList(registerResp) }
                 launch { reloadGroupList() }
                 launch { reloadStrangerList() }
+                launch { reloadGuildList() }
             }
         }
     }
@@ -100,6 +102,9 @@ internal class ContactUpdaterImpl(
         if (!initStrangerOk) {
             bot.strangers.delegate.removeAll { it.cancel(e); true }
         }
+        if(!initGuildOk){
+            //TODO
+        }
     }
 
 
@@ -111,6 +116,9 @@ internal class ContactUpdaterImpl(
 
     @Volatile
     private var initStrangerOk = false
+
+    @Volatile
+    private var initGuildOk = false
 
     /**
      * Don't use concurrently
@@ -309,5 +317,31 @@ internal class ContactUpdaterImpl(
         initGroupOk = true
     }
 
+    private suspend fun reloadGuildList(){
+        if (initGuildOk) {
+            return
+        }
 
+        bot.network.sendAndExpect(SyncFirstView(bot.client))
+
+        logger.info { "Start loading guild list..." }
+
+//        val troopListData = bot.network.sendAndExpect(FriendList.GetTroopListSimplify(bot.client), attempts = 5)
+//
+//        val semaphore = Semaphore(30)
+//
+//        coroutineScope {
+//            troopListData.groups.forEach { group ->
+//                launch {
+//                    semaphore.withPermit {
+//                        retryCatching(5) { addGroupToBot(group) }.getOrThrow()
+//                    }
+//                }
+//            }
+//        }
+
+//        logger.info { "Successfully loaded guild list: ${troopListData.groups.size} in total." }
+//        cacheService.groupMemberListCaches?.saveGroupCaches()
+        initGuildOk = true
+    }
 }

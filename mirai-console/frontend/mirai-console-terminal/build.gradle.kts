@@ -35,4 +35,14 @@ description = "Console Terminal CLI frontend for mirai"
 
 configurePublishing("mirai-console-terminal")
 
+
+val copyResources by tasks.creating(Copy::class){
+    dependsOn(":mirai-core:jvmProcessResources")
+    dependsOn(":mirai-core-api:jvmProcessResources")
+    from(project(":mirai-core").buildDir.resolve("processedResources/jvm"))
+    from(project(":mirai-core-api").buildDir.resolve("processedResources/jvm"))
+    into(buildDir.resolve("resources"))
+}
+
+tasks.getByName("classes").dependsOn(copyResources)
 // endregion

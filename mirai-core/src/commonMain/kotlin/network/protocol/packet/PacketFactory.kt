@@ -19,6 +19,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
+import net.mamoe.mirai.internal.network.protocol.packet.guild.receive.PushFirstView
+import net.mamoe.mirai.internal.network.protocol.packet.guild.send.SyncFirstView
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.internal.network.protocol.packet.list.StrangerList
@@ -140,6 +142,8 @@ internal object KnownPacketFactories {
         MessageSvcPbSendMsg,
         MessageSvcPbDeleteMsg,
         MessageSvcPbGetRoamMsgReq,
+        SyncFirstView,
+
         FriendList.GetFriendGroupList,
         FriendList.DelFriend,
         FriendList.GetTroopListSimplify,
@@ -189,7 +193,8 @@ internal object KnownPacketFactories {
         ConfigPushSvc.PushReq,
         PbC2CMsgSync,
         StatSvc.ReqMSFOffline,
-        StatSvc.SvcReqMSFLoginNotify
+        StatSvc.SvcReqMSFLoginNotify,
+        PushFirstView
     )
     // SvcReqMSFLoginNotify 自己的其他设备上限
     // MessageSvcPushReaded 电脑阅读了别人的消息, 告知手机
