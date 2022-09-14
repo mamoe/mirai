@@ -50,7 +50,7 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
     var miraiVersionKind by miraiVersionKindProperty
     var miraiVersion by miraiVersionProperty
 
-    var kotlinJvmVersion = Versions.KOTLIN.text
+    var kotlinStdlibVersion = Versions.KOTLIN.text
 
     private lateinit var miraiVersionCell: Cell<ComboBox<String>>
 
@@ -121,14 +121,14 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                     .bindItem(miraiVersionProperty)
 
                 miraiVersionProperty.afterChange {
-                    kotlinJvmVersion = "Loading"
+                    kotlinStdlibVersion = "Loading"
                     runAsync {
-                        KotlinJvmVersionFetcher.getKotlinJvmVersion(miraiVersion)
+                        KotlinStdlibVersionFetcher.getKotlinStdlibVersion(miraiVersion)
                     }.onError {
                         log.error(it)
-                        kotlinJvmVersion = Versions.KOTLIN.text
+                        kotlinStdlibVersion = Versions.KOTLIN.text
                     }.onProcessed {
-                        kotlinJvmVersion = it
+                        kotlinStdlibVersion = it
                     }
                 }
 
@@ -171,7 +171,7 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                     dependsOn = pluginDependencies.trim()
                 ),
                 miraiVersion = miraiVersion,
-                kotlinVersion = kotlinJvmVersion,
+                kotlinVersion = kotlinStdlibVersion,
                 buildSystemType = when (val projectType = projectTypeProperty.get()) {
                     MiraiModuleBuilder.GRADLE_KTS_PROJECT -> BuildSystemType.GradleKt
                     MiraiModuleBuilder.GRADLE_GROOVY_PROJECT -> BuildSystemType.GradleGroovy
@@ -187,7 +187,7 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
     }
 
     override fun validate(): Boolean {
-        if (miraiVersion == message("label.mirai.version.loading") || kotlinJvmVersion == "Loading") {
+        if (miraiVersion == message("label.mirai.version.loading") || kotlinStdlibVersion == "Loading") {
             JBPopupFactory.getInstance()
                 .createHtmlTextBalloonBuilder(
                     message("error.please.wait.for.mirai.version"),

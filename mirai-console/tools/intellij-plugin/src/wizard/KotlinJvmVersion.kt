@@ -15,11 +15,11 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.io.IOException
 
-typealias KotlinJvmVersion = String
+typealias KotlinStdlibVersion = String
 
-object KotlinJvmVersionFetcher {
+object KotlinStdlibVersionFetcher {
     @Throws(IOException::class)
-    fun getKotlinJvmVersion(miraiVersion: MiraiVersion): KotlinJvmVersion {
+    fun getKotlinStdlibVersion(miraiVersion: MiraiVersion): KotlinStdlibVersion {
         fun download(url: String): Document {
             return Jsoup.connect(url)
                 .followRedirects(true)
