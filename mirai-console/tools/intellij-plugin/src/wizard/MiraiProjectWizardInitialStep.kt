@@ -26,6 +26,7 @@ import com.intellij.ui.dsl.builder.*
 import net.mamoe.mirai.console.intellij.wizard.MiraiProjectWizardBundle.message
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.runAsync
+import org.jetbrains.kotlin.tools.projectWizard.Versions
 
 private val log = logger<MiraiProjectWizardInitialStep>()
 
@@ -38,8 +39,6 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
     private val pluginInfoProperty = propertyGraph.lazyProperty { "" }
     private val miraiVersionKindProperty = propertyGraph.property(MiraiVersionKind.Stable)
     private val miraiVersionProperty = propertyGraph.property("0.1.0")
-    private val kotlinJvmVersionKindProperty = propertyGraph.property(KotlinJvmVersionKind.Stable)
-    private val kotlinJvmVersionProperty = propertyGraph.property("0.1.0")
 
     var pluginVersion by pluginVersionProperty.trim()
     var pluginName by pluginNameProperty.trim()
@@ -51,35 +50,11 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
     var miraiVersionKind by miraiVersionKindProperty
     var miraiVersion by miraiVersionProperty
 
-    var kotlinJvmVersionKind by kotlinJvmVersionKindProperty
-    var kotlinJvmVersion by kotlinJvmVersionProperty
+    var kotlinJvmVersion = Versions.KOTLIN.text
 
     private lateinit var miraiVersionCell: Cell<ComboBox<String>>
-    private lateinit var kotlinJvmVersionCell: Cell<ComboBox<String>>
 
     override fun addFieldsAfter(layout: Panel) {
-        layout.row(message("label.kotlin.version")) {
-            val kotlinVersionKindCell = segmentedButton(KotlinJvmVersionKind.values().toList()) { kind ->
-                when (kind) {
-                    KotlinJvmVersionKind.Stable -> message("label.version.stable")
-                    KotlinJvmVersionKind.Prerelease -> message("label.version.prerelease")
-                    KotlinJvmVersionKind.Nightly -> message("label.version.nightly")
-                }
-            }.bind(kotlinJvmVersionKindProperty)
-
-            kotlinJvmVersionCell = comboBox(listOf<String>())
-                .enabled(false)
-                .bindItem(kotlinJvmVersionProperty)
-
-            kotlinJvmVersionKindProperty.afterChange {
-                if (!kotlinJvmVersionCell.component.isEnabled) return@afterChange
-
-                updateKotlinJvmVersionItems(kotlinVersionKindCell, kotlinJvmVersionCell)
-            }
-
-            updateKotlinJvmVersionItems(kotlinVersionKindCell, kotlinJvmVersionCell)
-            rowComment(message("comment.kotlin.version"))
-        }
         layout.group(message("title.plugin.description")) {
             row(message("label.plugin.id")) {
                 textField()
@@ -145,13 +120,25 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                     .enabled(false)
                     .bindItem(miraiVersionProperty)
 
+                miraiVersionProperty.afterChange {
+                    kotlinJvmVersion = "Loading"
+                    runAsync {
+                        KotlinJvmVersionFetcher.getKotlinJvmVersion(miraiVersion)
+                    }.onError {
+                        log.error(it)
+                        kotlinJvmVersion = Versions.KOTLIN.text
+                    }.onProcessed {
+                        kotlinJvmVersion = it
+                    }
+                }
+
                 miraiVersionKindProperty.afterChange {
                     if (!miraiVersionCell.component.isEnabled) return@afterChange
 
-                    updateMiraiVersionItems(miraiVersionKindCell, miraiVersionCell)
+                    updateVersionItems(miraiVersionKindCell, miraiVersionCell)
                 }
 
-                updateMiraiVersionItems(miraiVersionKindCell, miraiVersionCell)
+                updateVersionItems(miraiVersionKindCell, miraiVersionCell)
                 rowComment(message("comment.mirai.version"))
             }
         }
@@ -200,7 +187,7 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
     }
 
     override fun validate(): Boolean {
-        if (miraiVersion == message("label.mirai.version.loading")) {
+        if (miraiVersion == message("label.mirai.version.loading") || kotlinJvmVersion == "Loading") {
             JBPopupFactory.getInstance()
                 .createHtmlTextBalloonBuilder(
                     message("error.please.wait.for.mirai.version"),
@@ -215,26 +202,10 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                 )
             return false
         }
-        if (kotlinJvmVersion == message("label.kotlin.version.loading")) {
-            JBPopupFactory.getInstance()
-                .createHtmlTextBalloonBuilder(
-                    message("error.please.wait.for.kotlin.version"),
-                    MessageType.WARNING, null
-                )
-                .setFadeoutTime(3000)
-                .createBalloon()
-                .show(
-                    RelativePoint.getSouthWestOf(
-                        kotlinJvmVersionCell.component
-                    ), Balloon.Position.atLeft
-                )
-            return false
-        }
-
         return super.validate()
     }
 
-    private fun updateMiraiVersionItems(
+    private fun updateVersionItems(
         miraiVersionKindCell: SegmentedButton<MiraiVersionKind>,
         miraiVersionCell: Cell<ComboBox<MiraiVersion>>
     ): Promise<Set<MiraiVersion>?> {
@@ -272,47 +243,6 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                 miraiVersionCell.component.isEditable = versions == null
                 miraiVersionKindCell.enabled(true)
                 miraiVersionCell.enabled(true)
-            }
-    }
-
-    private fun updateKotlinJvmVersionItems(
-        kotlinJvmVersionKindCell: SegmentedButton<KotlinJvmVersionKind>,
-        kotlinJvmVersionCell: Cell<ComboBox<KotlinJvmVersion>>
-    ): Promise<Set<KotlinJvmVersion>?> {
-        kotlinJvmVersionCell.component.isEditable = false
-        kotlinJvmVersionKindCell.enabled(false) // disable the kind selector until the async operation finishes
-        kotlinJvmVersionCell.enabled(false)
-
-        kotlinJvmVersionCell.component.removeAllItems()
-        kotlinJvmVersionCell.component.addItem(message("label.kotlin.version.loading"))
-
-        return runAsync {
-            try {
-                val list = KotlinJvmVersionKind.getKotlinJvmVersionList()
-                kotlinJvmVersionCell.component.removeAllItems()
-                list.filter { kotlinJvmVersionKind.isThatKind(it) }
-                    .forEach { v -> kotlinJvmVersionCell.component.addItem(v) }
-                list
-            } catch (e: Throwable) {
-                JBPopupFactory.getInstance()
-                    .createHtmlTextBalloonBuilder(
-                        message("error.failed.to.download.kotlin.version"),
-                        MessageType.ERROR, null
-                    )
-                    .setFadeoutTime(2000)
-                    .createBalloon()
-                    .show(
-                        RelativePoint.getSouthOf(
-                            kotlinJvmVersionCell.component
-                        ), Balloon.Position.below
-                    )
-                null
-            }
-        }.onError { log.error(it) }
-            .onProcessed { versions ->
-                kotlinJvmVersionCell.component.isEditable = versions == null
-                kotlinJvmVersionKindCell.enabled(true)
-                kotlinJvmVersionCell.enabled(true)
             }
     }
 }
