@@ -10,6 +10,7 @@
 package net.mamoe.mirai.data
 
 import net.mamoe.mirai.LowLevelApi
+
 /**
  * 频道资料.
  */
@@ -19,23 +20,60 @@ public interface GuildInfo {
      * 频道名称.
      */
     public val name: String
+
     /**
-     * id, 用户看不到的频道号码.
+     * 用户看不到的频道号码.
      */
-    public  val id: Long
+    public val id: Long
 
     /**
      * guildCode
      */
-    public  val code: Long
+    public val guildCode: Long
 
     /**
-     * 频道封面图片地址 https://groupprocover-76483.picgzc.qpic.cn/
+     * 频道封面图片地址
+     *
+     * https://groupprocover-76483.picgzc.qpic.cn/${id}
      */
     public val coverUrl : String
+
     /**
-     * 频道头像图片地址 https://groupprohead-76292.picgzc.qpic.cn/
+     * 频道头像图片地址
+     *
+     * https://groupprohead-76292.picgzc.qpic.cn/${id}
      */
     public val avatarUrl : String
 
+    public val guildProfile:String
+
+    /**
+     * 最高成员数量
+     */
+    public val maxMemberCount:Long
+
+    /**
+     * 成员数量
+     */
+    public val memberCount:Long
+
+    /**
+     * 频道创建时间
+     */
+    public val createTime:Long
+
+    /**
+     * 最高机器人数量
+     */
+    public val maxRobotCount:Short
+
+    /**
+     * 最高管理数量
+     */
+    public val maxAdminCount:Short
+
+    /**
+     * 频道所有者
+     */
+    public val ownerId:Long
 }

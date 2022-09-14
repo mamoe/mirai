@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.guild.receive.PushFirstView
+import net.mamoe.mirai.internal.network.protocol.packet.guild.send.OidbSvcTrpcTcp
 import net.mamoe.mirai.internal.network.protocol.packet.guild.send.SyncFirstView
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
@@ -179,6 +180,10 @@ internal object KnownPacketFactories {
         SummaryCard.ReqSummaryCard,
         ChangeFriendRemark,
         MusicSharePacket,
+        OidbSvcTrpcTcp.FetchGuildMemberListWithRole,
+        OidbSvcTrpcTcp.FetchGuestGuild,
+        OidbSvcTrpcTcp.FetchChannelInfo,
+        OidbSvcTrpcTcp.FetchChannelList,
         *FileManagement.factories
     )
 

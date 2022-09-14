@@ -150,6 +150,23 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      */
     public fun getGroupOrFail(id: Long): Group = getGroup(id) ?: throw NoSuchElementException("group $id")
 
+    /**
+     * 加入的频道列表. 与服务器同步更新.
+     */
+    public val guilds: ContactList<Guild>
+
+    /**
+     * 以 [群号码][id] 获取一个群对象, 在获取失败时返回 `null`.
+     */
+    public fun getGuild(id: Long): Guild? =
+        guilds.firstOrNull { it.id == id }
+
+    /**
+     * 以 [群号码][id] 获取一个群对象, 在获取失败时抛出 [NoSuchElementException].
+     */
+    public fun getGuildOrFail(id: Long): Guild = getGuild(id) ?: throw NoSuchElementException("guild $id")
+
+
     // endregion
 
     /**

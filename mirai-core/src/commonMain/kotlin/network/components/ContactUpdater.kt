@@ -103,7 +103,7 @@ internal class ContactUpdaterImpl(
             bot.strangers.delegate.removeAll { it.cancel(e); true }
         }
         if(!initGuildOk){
-            //TODO
+            bot.guilds.delegate.removeAll { it.cancel(e); true }
         }
     }
 
@@ -322,26 +322,12 @@ internal class ContactUpdaterImpl(
             return
         }
 
-        bot.network.sendAndExpect(SyncFirstView(bot.client))
-
+        //SyncFirstView发包后会通过PushFirstView发回初始频道数据
+        val initData = bot.network.sendAndExpect(SyncFirstView(bot.client))
         logger.info { "Start loading guild list..." }
+        bot.account.tinyId = initData.origin.selfTinyId
 
-//        val troopListData = bot.network.sendAndExpect(FriendList.GetTroopListSimplify(bot.client), attempts = 5)
-//
-//        val semaphore = Semaphore(30)
-//
-//        coroutineScope {
-//            troopListData.groups.forEach { group ->
-//                launch {
-//                    semaphore.withPermit {
-//                        retryCatching(5) { addGroupToBot(group) }.getOrThrow()
-//                    }
-//                }
-//            }
-//        }
-
-//        logger.info { "Successfully loaded guild list: ${troopListData.groups.size} in total." }
-//        cacheService.groupMemberListCaches?.saveGroupCaches()
+        logger.info { "Successfully loaded guild list: ${initData.origin.guildCount} in total." }
         initGuildOk = true
     }
 }

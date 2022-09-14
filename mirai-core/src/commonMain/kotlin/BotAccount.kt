@@ -13,6 +13,11 @@ package net.mamoe.mirai.internal
 
 internal expect class BotAccount {
     internal val id: Long
+    /**
+     * 登录之后发送SyncFirstView才能获取 因此考虑一下var
+     */
+    internal var tinyId : Long
+
     val phoneNumber: String
 
     constructor(id: Long, passwordMd5: ByteArray, phoneNumber: String = "")

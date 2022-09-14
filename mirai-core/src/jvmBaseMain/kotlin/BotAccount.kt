@@ -17,7 +17,9 @@ internal actual data class BotAccount(
 
     val passwordMd5Buffer: ByteBuffer, // md5
 
-    actual val phoneNumber: String = ""
+    actual val phoneNumber: String = "",
+
+    internal actual var tinyId: Long
 ) {
     init {
         check(passwordMd5Buffer.remaining == 16) {
@@ -26,7 +28,7 @@ internal actual data class BotAccount(
     }
 
     actual constructor(id: Long, passwordMd5: ByteArray, phoneNumber: String) : this(
-        id, SecretsProtection.escape(passwordMd5), phoneNumber
+        id, SecretsProtection.escape(passwordMd5), phoneNumber, 0
     )
 
     actual constructor(id: Long, passwordPlainText: String, phoneNumber: String) : this(

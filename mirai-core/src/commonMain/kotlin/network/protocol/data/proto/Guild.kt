@@ -208,6 +208,49 @@ internal class Guild : ProtoBuf {
         @ProtoNumber(4) @JvmField val seq: Long = 0L,
         @ProtoNumber(5) @JvmField val cntSeq: Long = 0L,
         @ProtoNumber(6) @JvmField val time: Long = 0L,
-        @ProtoNumber(7) @JvmField val meta: Long = 0L,
+        @ProtoNumber(7) @JvmField val meta: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
+    @Serializable
+    internal class GuildChannelInfo(
+        @ProtoNumber(1) @JvmField val channelId: Long = 0L,
+        @ProtoNumber(2) @JvmField val channelName: String = "",
+        @ProtoNumber(3) @JvmField val creatorUin: Long = 0L,
+        @ProtoNumber(4) @JvmField val createTime: Long = 0L,
+        @ProtoNumber(5) @JvmField val guildId: Long = 0L,
+        @ProtoNumber(6) @JvmField val finalNotifyType: Short = 0,
+        @ProtoNumber(7) @JvmField val channelType: Short = 0,
+        @ProtoNumber(8) @JvmField val talkPermission: Short = 0,
+        //11-14 : MsgInfo
+        @ProtoNumber(15) @JvmField val creatorTinyId: Long = 0L,
+        @ProtoNumber(22) @JvmField val visibleType: Short = 0,
+        @ProtoNumber(28) @JvmField val topMsg: GuildChannelTopMsgInfo = GuildChannelTopMsgInfo(),
+        @ProtoNumber(31) @JvmField val currentSlowModeKey: Short = 0,
+        @ProtoNumber(32) @JvmField val slowModeInfos: List<GuildChannelSlowModeInfo> = mutableListOf(),
+        ) : ProtoBuf{
+        override fun toString(): String {
+            return "GuildChannelInfo(channelId=$channelId, channelName='$channelName', creatorUin=$creatorUin, createTime=$createTime, guildId=$guildId, finalNotifyType=$finalNotifyType, channelType=$channelType, talkPermission=$talkPermission, creatorTinyId=$creatorTinyId, visibleType=$visibleType, topMsg=$topMsg, currentSlowModeKey=$currentSlowModeKey, slowModeInfos=$slowModeInfos)"
+        }
+    }
+
+    @Serializable
+    internal class GuildChannelTopMsgInfo(
+        @ProtoNumber(1) @JvmField val topMsgSeq: Long = 0L,
+        @ProtoNumber(2) @JvmField val topMsgTime: Long = 0L,
+        @ProtoNumber(3) @JvmField val topMsgOperatorTinyId: Long = 0L,
+    ): ProtoBuf{
+        override fun toString(): String {
+            return "GuildChannelTopMsgInfo(topMsgSeq=$topMsgSeq, topMsgTime=$topMsgTime, topMsgOperatorTinyId=$topMsgOperatorTinyId)"
+        }
+    }
+    @Serializable
+    internal class GuildChannelSlowModeInfo(
+        @ProtoNumber(1) @JvmField val slowModeKey: Long = 0L,
+        @ProtoNumber(2) @JvmField val speakFrequency: Long = 0L,
+        @ProtoNumber(3) @JvmField val slowModeCircle: Long = 0L,
+        @ProtoNumber(4) @JvmField val slowModeText: String = "",
+    ): ProtoBuf{
+        override fun toString(): String {
+            return "GuildChannelSlowModeInfo(slowModeKey=$slowModeKey, speakFrequency=$speakFrequency, slowModeCircle=$slowModeCircle, slowModeText='$slowModeText')"
+        }
+    }
 }
