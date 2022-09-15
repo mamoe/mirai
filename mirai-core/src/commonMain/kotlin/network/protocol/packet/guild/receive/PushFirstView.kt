@@ -10,6 +10,10 @@
 package net.mamoe.mirai.internal.network.protocol.packet.guild.receive
 
 import io.ktor.utils.io.core.*
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.ChannelImpl
@@ -25,6 +29,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.guild.send.OidbSvcTrpcTcp
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.utils.retryCatching
 
 internal object PushFirstView : IncomingPacketFactory<Packet?>(
     "trpc.group_pro.synclogic.SyncLogic.PushFirstView", ""
@@ -33,79 +38,91 @@ internal object PushFirstView : IncomingPacketFactory<Packet?>(
         val res = this.readProtoBuf(Guild.FirstViewMsg.serializer())
         val guildNodes = res.guildNodes
         if (guildNodes.isNotEmpty()) {
-            for (guildNode in guildNodes) {
-                //子频道列表
-                val channel = bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchChannelList(bot.client, guildNode.guildId))
-                //频道信息
-                val guildMeta = bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchGuestGuild(bot.client, guildNode.guildId))
-                //储存子频道列表
-                val channelList = mutableListOf<ChannelImpl>()
+            val semaphore = Semaphore(30)
+            coroutineScope {
+                guildNodes.forEach { guildNode ->
+                    launch {
+                        semaphore.withPermit {
+                            retryCatching(5) {
+                                //子频道列表
+                                val channel =
+                                    bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchChannelList(bot.client, guildNode.guildId))
+                                //频道信息
+                                val guildMeta =
+                                    bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchGuestGuild(bot.client, guildNode.guildId))
+                                //储存子频道列表
+                                val channelList = mutableListOf<ChannelImpl>()
 
-                channel.origin.rsp.rsp.channels.forEach {
-                    val slowModeInfosItemImpl = mutableListOf<SlowModeInfosItemImpl>()
-                    it.slowModeInfos.forEach { slow ->
-                        slowModeInfosItemImpl.add(
-                            SlowModeInfosItemImpl(
-                                slowModeCircle = slow.slowModeCircle,
-                                slowModeKey = slow.slowModeKey,
-                                slowModeText = slow.slowModeText,
-                                speakFrequency = slow.speakFrequency
-                            )
-                        )
-                    }
-                    channelList.add(
-                        ChannelImpl(
-                            bot = bot,
-                            channelInfo = ChannelInfoImpl(
-                                id = it.channelId,
-                                name = it.channelName,
-                                createTime = it.createTime,
-                                channelType = it.channelType,
-                                finalNotifyType = it.finalNotifyType,
-                                creatorTinyId = it.creatorTinyId,
-                                topMsg = TopMsgImpl(
-                                    topMsgOperatorTinyId = it.topMsg.topMsgOperatorTinyId,
-                                    topMsgSeq = it.topMsg.topMsgSeq,
-                                    topMsgTime = it.topMsg.topMsgTime
-                                ),
-                                slowModeInfos = slowModeInfosItemImpl,
-                                talkPermission = it.talkPermission,
+                                channel.origin.rsp.rsp.channels.forEach {
+                                    val slowModeInfosItemImpl = mutableListOf<SlowModeInfosItemImpl>()
+                                    it.slowModeInfos.forEach { slow ->
+                                        slowModeInfosItemImpl.add(
+                                            SlowModeInfosItemImpl(
+                                                slowModeCircle = slow.slowModeCircle,
+                                                slowModeKey = slow.slowModeKey,
+                                                slowModeText = slow.slowModeText,
+                                                speakFrequency = slow.speakFrequency
+                                            )
+                                        )
+                                    }
+                                    channelList.add(
+                                        ChannelImpl(
+                                            bot = bot,
+                                            channelInfo = ChannelInfoImpl(
+                                                id = it.channelId,
+                                                name = it.channelName,
+                                                createTime = it.createTime,
+                                                channelType = it.channelType,
+                                                finalNotifyType = it.finalNotifyType,
+                                                creatorTinyId = it.creatorTinyId,
+                                                topMsg = TopMsgImpl(
+                                                    topMsgOperatorTinyId = it.topMsg.topMsgOperatorTinyId,
+                                                    topMsgSeq = it.topMsg.topMsgSeq,
+                                                    topMsgTime = it.topMsg.topMsgTime
+                                                ),
+                                                slowModeInfos = slowModeInfosItemImpl,
+                                                talkPermission = it.talkPermission,
 //                            channelSubType = it.visibleType
-                            ),
-                            id = it.channelId,
-                            parentCoroutineContext = bot.coroutineContext
-                        )
-                    )
+                                            ),
+                                            id = it.channelId,
+                                            parentCoroutineContext = bot.coroutineContext
+                                        )
+                                    )
+                                }
+
+                                //TODO 储存频道成员列表
+                                val memberList = ContactList<GuildMemberImpl>()
+                                //val members = bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchGuildMemberListWithRole(bot.client,guildNode.guildId,))
+
+                                val guildInfo = GuildInfoImpl(
+                                    name = guildNode.guildName.decodeToString(),
+                                    id = guildNode.guildId,
+                                    guildCode = guildNode.guildCode,
+                                    createTime = guildMeta.origin.rsp.rsp.meta.createTime,
+                                    ownerId = guildMeta.origin.rsp.rsp.meta.ownerId,
+                                    memberCount = guildMeta.origin.rsp.rsp.meta.memberCount,
+                                    maxAdminCount = guildMeta.origin.rsp.rsp.meta.adminMaxNum,
+                                    maxRobotCount = guildMeta.origin.rsp.rsp.meta.robotMaxNum,
+                                    maxMemberCount = guildMeta.origin.rsp.rsp.meta.maxMemberCount,
+                                    guildProfile = guildMeta.origin.rsp.rsp.meta.profile,
+                                    coverUrl = "https://groupprocover-76483.picgzc.qpic.cn/${guildNode.guildId}/100",
+                                    avatarUrl = "https://groupprohead-76292.picgzc.qpic.cn/${guildNode.guildId}/100"
+                                )
+
+                                val guildImpl = GuildImpl(
+                                    bot = bot,
+                                    parentCoroutineContext = bot.coroutineContext,
+                                    id = guildNode.guildId,
+                                    guildInfo = guildInfo,
+                                    channelNodes = channelList,
+                                    members = memberList,
+                                )
+                                bot.guilds.delegate.add(guildImpl)
+                            }.getOrThrow()
+                        }
+                    }
+
                 }
-
-                //TODO 储存频道成员列表
-                val memberList = ContactList<GuildMemberImpl>()
-                //val members = bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchGuildMemberListWithRole(bot.client,guildNode.guildId,))
-
-                val guildInfo = GuildInfoImpl(
-                    name = guildNode.guildName.decodeToString(),
-                    id = guildNode.guildId,
-                    guildCode = guildNode.guildCode,
-                    createTime = guildMeta.origin.rsp.rsp.meta.createTime,
-                    ownerId = guildMeta.origin.rsp.rsp.meta.ownerId,
-                    memberCount = guildMeta.origin.rsp.rsp.meta.memberCount,
-                    maxAdminCount = guildMeta.origin.rsp.rsp.meta.adminMaxNum,
-                    maxRobotCount = guildMeta.origin.rsp.rsp.meta.robotMaxNum,
-                    maxMemberCount = guildMeta.origin.rsp.rsp.meta.maxMemberCount,
-                    guildProfile = guildMeta.origin.rsp.rsp.meta.profile,
-                    coverUrl = "https://groupprocover-76483.picgzc.qpic.cn/${guildNode.guildId}",
-                    avatarUrl = "https://groupprohead-76292.picgzc.qpic.cn/${guildNode.guildId}"
-                )
-
-                val guildImpl = GuildImpl(
-                    bot = bot,
-                    parentCoroutineContext = bot.coroutineContext,
-                    id = guildNode.guildId,
-                    guildInfo = guildInfo,
-                    channelNodes = channelList,
-                    members = memberList,
-                )
-                bot.guilds.delegate.add(guildImpl)
             }
         }
 
@@ -115,10 +132,4 @@ internal object PushFirstView : IncomingPacketFactory<Packet?>(
         return null
     }
 
-
-    override suspend fun QQAndroidBot.handle(packet: Packet?, sequenceId: Int): OutgoingPacket? {
-
-
-        return null
-    }
 }
