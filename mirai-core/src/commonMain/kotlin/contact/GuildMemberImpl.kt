@@ -20,7 +20,7 @@ import net.mamoe.mirai.utils.ExternalResource
 import kotlin.coroutines.CoroutineContext
 
 internal class GuildMemberImpl constructor(
-    guild: GuildImpl,
+    memberId: Long,
     parentCoroutineContext: CoroutineContext,
     guildMemberInfo: GuildMemberInfo,
 ) : GuildMember {
@@ -36,11 +36,15 @@ internal class GuildMemberImpl constructor(
         TODO("Not yet implemented")
     }
 
-    override val id: Long
-        get() = TODO("Not yet implemented")
+    override val id: Long = memberId
+
     override val nameCard: String
         get() = TODO("Not yet implemented")
     override val coroutineContext: CoroutineContext
+        get() = TODO("Not yet implemented")
+    override val avatarUrl: String
+        get() = TODO("Not yet implemented")
+    override val joinTime: Long
         get() = TODO("Not yet implemented")
 
 }

@@ -199,7 +199,7 @@ internal fun <T : ProtoBuf> BytePacketBuilder.writeOidb(
     serviceType: Int = 0,
     serializer: SerializationStrategy<T>,
     v: T,
-    clientVersion: String = "android 8.4.8",
+    clientVersion: String = "android 8.8.80",
 ) {
     return this.writeProtoBuf(
         OidbSso.OIDBSSOPkg.serializer(),

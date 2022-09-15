@@ -964,7 +964,8 @@ internal class OidbSso : ProtoBuf {
         @ProtoNumber(3) @JvmField val result: Int = 0,
         @ProtoNumber(4) @JvmField val bodybuffer: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val errorMsg: String = "",
-        @ProtoNumber(6) @JvmField val clientVersion: String = ""
+        @ProtoNumber(6) @JvmField val clientVersion: String = "",
+        @ProtoNumber(12) @JvmField val unknown: Long = 0L,
     ) : ProtoBuf, Packet {
         fun checkSuccess(actionName: String) {
             check(result == 0) {

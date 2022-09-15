@@ -19,8 +19,8 @@ import kotlin.jvm.JvmField
 internal class Oidb0xf551 : ProtoBuf{
     @Serializable
     internal class Req(
-        @JvmField @ProtoNumber(4) var guildId:Long,
-        @JvmField @ProtoNumber(4) var channelId:Long,
+        @JvmField @ProtoNumber(1) var guildId: Long,
+        @JvmField @ProtoNumber(2) var channelId: Long,
     ) : ProtoBuf
 
     @Serializable

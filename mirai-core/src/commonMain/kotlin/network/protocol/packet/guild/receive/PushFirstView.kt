@@ -19,14 +19,10 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.ChannelImpl
 import net.mamoe.mirai.internal.contact.GuildImpl
 import net.mamoe.mirai.internal.contact.GuildMemberImpl
-import net.mamoe.mirai.internal.contact.info.ChannelInfoImpl
-import net.mamoe.mirai.internal.contact.info.GuildInfoImpl
-import net.mamoe.mirai.internal.contact.info.SlowModeInfosItemImpl
-import net.mamoe.mirai.internal.contact.info.TopMsgImpl
+import net.mamoe.mirai.internal.contact.info.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.data.proto.Guild
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
-import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.guild.send.OidbSvcTrpcTcp
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.utils.retryCatching
@@ -46,10 +42,20 @@ internal object PushFirstView : IncomingPacketFactory<Packet?>(
                             retryCatching(5) {
                                 //子频道列表
                                 val channel =
-                                    bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchChannelList(bot.client, guildNode.guildId))
+                                    bot.network.sendAndExpect(
+                                        OidbSvcTrpcTcp.FetchChannelList(
+                                            bot.client,
+                                            guildNode.guildId
+                                        )
+                                    )
                                 //频道信息
                                 val guildMeta =
-                                    bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchGuestGuild(bot.client, guildNode.guildId))
+                                    bot.network.sendAndExpect(
+                                        OidbSvcTrpcTcp.FetchGuestGuild(
+                                            bot.client,
+                                            guildNode.guildId
+                                        )
+                                    )
                                 //储存子频道列表
                                 val channelList = mutableListOf<ChannelImpl>()
 
@@ -82,7 +88,7 @@ internal object PushFirstView : IncomingPacketFactory<Packet?>(
                                                 ),
                                                 slowModeInfos = slowModeInfosItemImpl,
                                                 talkPermission = it.talkPermission,
-//                            channelSubType = it.visibleType
+                                                //channelSubType = it.visibleType
                                             ),
                                             id = it.channelId,
                                             parentCoroutineContext = bot.coroutineContext
@@ -90,9 +96,55 @@ internal object PushFirstView : IncomingPacketFactory<Packet?>(
                                     )
                                 }
 
-                                //TODO 储存频道成员列表
+                                //TODO 后期鉴定一下是否已经拿到所有频道成员
                                 val memberList = ContactList<GuildMemberImpl>()
-                                //val members = bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchGuildMemberListWithRole(bot.client,guildNode.guildId,))
+                                var flag = true
+                                var roleIndex = 2L
+                                var startIndex: Short = 0
+                                var param: String? = null
+
+                                do {
+                                    val members = bot.network.sendAndExpect(
+                                        OidbSvcTrpcTcp.FetchGuildMemberListWithRole(
+                                            client = bot.client,
+                                            guildId = guildNode.guildId,
+                                            channelId = channel.origin.rsp.rsp.channels[0].channelId,
+                                            roleIdIndex = roleIndex,
+                                            startIndex = startIndex,
+                                            param = param
+                                        )
+                                    )
+
+                                    members.origin.data.memberWithRoles.also { it ->
+                                        it.forEach { guildGroupMembersInfo ->
+                                            guildGroupMembersInfo.members.forEach {
+                                                memberList.delegate.add(
+                                                    GuildMemberImpl(
+                                                        it.tinyId,
+                                                        bot.coroutineContext,
+                                                        GuildMemberInfoImpl(
+                                                            title = it.title,
+                                                            lastSpeakTime = it.lastSpeakTime,
+                                                            tinyId = it.tinyId,
+                                                            nickname = it.nickname,
+                                                            role = it.role,
+                                                            roleName = guildGroupMembersInfo.roleName,
+                                                        )
+                                                    )
+                                                )
+                                            }
+
+                                        }
+                                    }
+                                    if (null != members.origin.data.nextIndex) {
+                                        param = members.origin.data.nextQueryParam
+                                        startIndex = members.origin.data.nextIndex
+                                        roleIndex = members.origin.data.nextRoleIdIndex
+                                    } else {
+                                        flag = false
+                                    }
+                                } while (flag)
+
 
                                 val guildInfo = GuildInfoImpl(
                                     name = guildNode.guildName.decodeToString(),
@@ -131,5 +183,4 @@ internal object PushFirstView : IncomingPacketFactory<Packet?>(
         }
         return null
     }
-
 }

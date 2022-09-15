@@ -14,8 +14,6 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
-import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0xf551
-import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0xf5d1
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
@@ -69,6 +67,7 @@ internal object OidbSvcTrpcTcp {
             guildId: Long,
             channelId: Long,
         ) = buildOutgoingUniPacket(client) {
+
             writeOidb(
                 3925,
                 1,
@@ -103,22 +102,29 @@ internal object OidbSvcTrpcTcp {
             channelId: Long,
             startIndex: Short,
             roleIdIndex: Long,
-            param: String
+            param: String? = null
         ) = buildOutgoingUniPacket(client) {
             writeOidb(
                 3931,
                 1,
-                Oidb0xf5b1.Req.serializer(),
-                Oidb0xf5b1.Req(
+                Oidb0xf5b1.ReqBody.serializer(),
+                Oidb0xf5b1.ReqBody(
                     guildId = guildId,
                     channelId = channelId,
                     startIndex = startIndex,
                     roleIdIndex = roleIdIndex,
-                    param = param
+                    param = param,
+                    unKnown1 = 3,
+                    unKnown2 = 0,
+                    count = 500,
+                    unKnown3 = Oidb0xf5b1.UnKnown3(
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+                    )
                 )
             )
         }
     }
+
 
     //获取频道信息
     internal object FetchGuestGuild : OutgoingPacketFactory<FetchGuestGuild.Response>("OidbSvcTrpcTcp.0xf57_9") {

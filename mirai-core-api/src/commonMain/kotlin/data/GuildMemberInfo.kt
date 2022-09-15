@@ -34,7 +34,7 @@ public interface GuildMemberInfo {
     /**
      * 权限id
      */
-    public val role: Long
+    public val role: Short
 
     /**
      * 成员权限等级 例：普通成员
