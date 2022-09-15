@@ -19,7 +19,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.ExternalResource
 import kotlin.coroutines.CoroutineContext
 
-internal class  GuildMemberImpl constructor(
+internal class GuildMemberImpl constructor(
     guild: GuildImpl,
     parentCoroutineContext: CoroutineContext,
     guildMemberInfo: GuildMemberInfo,

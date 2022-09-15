@@ -14,7 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 /**
  * 频道成员信息
  */
-public interface GuildMember: Contact, CoroutineScope {
+public interface GuildMember : Contact, CoroutineScope {
     /**
      * Tiny id
      */
@@ -23,5 +23,5 @@ public interface GuildMember: Contact, CoroutineScope {
     /**
      * 成员昵称
      */
-    public val nameCard:String
+    public val nameCard: String
 }

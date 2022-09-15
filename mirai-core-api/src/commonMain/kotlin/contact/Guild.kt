@@ -14,7 +14,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.NotStableForInheritance
 
 @NotStableForInheritance
-public interface Guild : Contact,  CoroutineScope {
+public interface Guild : Contact, CoroutineScope {
 
     /**
      * 频道名称.
@@ -44,16 +44,15 @@ public interface Guild : Contact,  CoroutineScope {
     public val botAsMember: GuildMember
 
 
-
     /**
      * 子频道列表
      */
-    public val channelNodes : List<Channel>
+    public val channelNodes: List<Channel>
 
     /**
      * 频道成员
      */
-    public val members : ContactList<GuildMember>
+    public val members: ContactList<GuildMember>
 
     /**
      * 获取群成员实例. 不存在时返回 `null`.

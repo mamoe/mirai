@@ -102,7 +102,7 @@ internal class ContactUpdaterImpl(
         if (!initStrangerOk) {
             bot.strangers.delegate.removeAll { it.cancel(e); true }
         }
-        if(!initGuildOk){
+        if (!initGuildOk) {
             bot.guilds.delegate.removeAll { it.cancel(e); true }
         }
     }
@@ -317,7 +317,7 @@ internal class ContactUpdaterImpl(
         initGroupOk = true
     }
 
-    private suspend fun reloadGuildList(){
+    private suspend fun reloadGuildList() {
         if (initGuildOk) {
             return
         }

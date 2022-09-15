@@ -12,7 +12,7 @@ package net.mamoe.mirai.data
 import net.mamoe.mirai.LowLevelApi
 
 @LowLevelApi
-public interface  ChannelInfo {
+public interface ChannelInfo {
     /**
      * 子频道名称
      */

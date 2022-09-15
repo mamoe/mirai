@@ -14,10 +14,10 @@ import net.mamoe.mirai.data.ChannelInfo
 import net.mamoe.mirai.internal.network.Packet
 
 @Serializable
-internal data class TopMsgImpl (
+internal data class TopMsgImpl(
     override val topMsgSeq: Long,
     override val topMsgTime: Long,
     override val topMsgOperatorTinyId: Long
-): ChannelInfo.TopMsg,Packet, Packet.NoLog{
+) : ChannelInfo.TopMsg, Packet, Packet.NoLog {
 
 }

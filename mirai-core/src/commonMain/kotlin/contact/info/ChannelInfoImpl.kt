@@ -14,7 +14,7 @@ import net.mamoe.mirai.data.ChannelInfo
 import net.mamoe.mirai.internal.network.Packet
 
 @Serializable
-internal data class  ChannelInfoImpl(
+internal data class ChannelInfoImpl(
     override val name: String,
     override val id: Long,
     override val createTime: Long,
@@ -25,6 +25,6 @@ internal data class  ChannelInfoImpl(
     override val creatorTinyId: Long,
     override val topMsg: ChannelInfo.TopMsg,
     override val slowModeInfos: List<ChannelInfo.SlowModeInfosItem>
-) : ChannelInfo , Packet, Packet.NoLog{
+) : ChannelInfo, Packet, Packet.NoLog {
 
 }

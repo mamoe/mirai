@@ -84,7 +84,8 @@ internal object OidbSvcTrpcTcp {
     // FetchGuildMemberListWithRole 获取频道成员列表
     // 第一次请求: startIndex = 0 , roleIdIndex = 2 param = ""
     // 后续请求请根据上次请求的返回值进行设置
-    internal object FetchGuildMemberListWithRole : OutgoingPacketFactory<FetchGuildMemberListWithRole.Response>("OidbSvcTrpcTcp.0xf5b_1") {
+    internal object FetchGuildMemberListWithRole :
+        OutgoingPacketFactory<FetchGuildMemberListWithRole.Response>("OidbSvcTrpcTcp.0xf5b_1") {
         internal class Response(
             val origin: Oidb0xf5b1.Rsp
         ) : Packet {

@@ -20,7 +20,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 
-internal object SyncFirstView : OutgoingPacketFactory<SyncFirstView.Response>("trpc.group_pro.synclogic.SyncLogic.SyncFirstView") {
+internal object SyncFirstView :
+    OutgoingPacketFactory<SyncFirstView.Response>("trpc.group_pro.synclogic.SyncLogic.SyncFirstView") {
 
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
         val res = this.readProtoBuf(FirstViewResp.serializer())
@@ -42,7 +43,7 @@ internal object SyncFirstView : OutgoingPacketFactory<SyncFirstView.Response>("t
         writeProtoBuf(
             FirstViewReq.serializer(),
             FirstViewReq(
-                0,0,1
+                0, 0, 1
             )
         )
     }

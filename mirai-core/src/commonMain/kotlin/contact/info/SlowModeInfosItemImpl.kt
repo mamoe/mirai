@@ -19,6 +19,6 @@ internal data class SlowModeInfosItemImpl(
     override val speakFrequency: Long,
     override val slowModeCircle: Long,
     override val slowModeText: String
-): ChannelInfo.SlowModeInfosItem, Packet, Packet.NoLog{
+) : ChannelInfo.SlowModeInfosItem, Packet, Packet.NoLog {
 
 }

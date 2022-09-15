@@ -14,7 +14,7 @@ import net.mamoe.mirai.data.GuildInfo
 import net.mamoe.mirai.internal.network.Packet
 
 @Serializable
-internal data class GuildInfoImpl (
+internal data class GuildInfoImpl(
     override val name: String,
     override val id: Long,
     override val guildCode: Long,
@@ -27,6 +27,6 @@ internal data class GuildInfoImpl (
     override val maxRobotCount: Short,
     override val maxAdminCount: Short,
     override val ownerId: Long
-): GuildInfo, Packet, Packet.NoLog{
+) : GuildInfo, Packet, Packet.NoLog {
 
 }

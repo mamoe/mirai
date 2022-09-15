@@ -27,52 +27,55 @@ import net.mamoe.mirai.internal.network.protocol.packet.guild.send.OidbSvcTrpcTc
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 
 internal object PushFirstView : IncomingPacketFactory<Packet?>(
-    "trpc.group_pro.synclogic.SyncLogic.PushFirstView",""
+    "trpc.group_pro.synclogic.SyncLogic.PushFirstView", ""
 ) {
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {
         val res = this.readProtoBuf(Guild.FirstViewMsg.serializer())
         val guildNodes = res.guildNodes
-        if(guildNodes.isNotEmpty()){
+        if (guildNodes.isNotEmpty()) {
             for (guildNode in guildNodes) {
                 //子频道列表
-                val channel = bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchChannelList(bot.client,guildNode.guildId))
+                val channel = bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchChannelList(bot.client, guildNode.guildId))
                 //频道信息
-                val guildMeta = bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchGuestGuild(bot.client,guildNode.guildId))
+                val guildMeta = bot.network.sendAndExpect(OidbSvcTrpcTcp.FetchGuestGuild(bot.client, guildNode.guildId))
                 //储存子频道列表
                 val channelList = mutableListOf<ChannelImpl>()
 
                 channel.origin.rsp.rsp.channels.forEach {
                     val slowModeInfosItemImpl = mutableListOf<SlowModeInfosItemImpl>()
                     it.slowModeInfos.forEach { slow ->
-                        slowModeInfosItemImpl.add(SlowModeInfosItemImpl(
-                            slowModeCircle = slow.slowModeCircle,
-                            slowModeKey = slow.slowModeKey,
-                            slowModeText = slow.slowModeText,
-                            speakFrequency = slow.speakFrequency
-                        ))
+                        slowModeInfosItemImpl.add(
+                            SlowModeInfosItemImpl(
+                                slowModeCircle = slow.slowModeCircle,
+                                slowModeKey = slow.slowModeKey,
+                                slowModeText = slow.slowModeText,
+                                speakFrequency = slow.speakFrequency
+                            )
+                        )
                     }
                     channelList.add(
                         ChannelImpl(
-                        bot = bot,
-                        channelInfo = ChannelInfoImpl(
-                            id = it.channelId,
-                            name = it.channelName,
-                            createTime = it.createTime,
-                            channelType = it.channelType,
-                            finalNotifyType = it.finalNotifyType,
-                            creatorTinyId = it.creatorTinyId,
-                            topMsg = TopMsgImpl(
-                                topMsgOperatorTinyId = it.topMsg.topMsgOperatorTinyId,
-                                topMsgSeq = it.topMsg.topMsgSeq,
-                                topMsgTime = it.topMsg.topMsgTime
-                            ),
-                            slowModeInfos = slowModeInfosItemImpl,
-                            talkPermission = it.talkPermission,
+                            bot = bot,
+                            channelInfo = ChannelInfoImpl(
+                                id = it.channelId,
+                                name = it.channelName,
+                                createTime = it.createTime,
+                                channelType = it.channelType,
+                                finalNotifyType = it.finalNotifyType,
+                                creatorTinyId = it.creatorTinyId,
+                                topMsg = TopMsgImpl(
+                                    topMsgOperatorTinyId = it.topMsg.topMsgOperatorTinyId,
+                                    topMsgSeq = it.topMsg.topMsgSeq,
+                                    topMsgTime = it.topMsg.topMsgTime
+                                ),
+                                slowModeInfos = slowModeInfosItemImpl,
+                                talkPermission = it.talkPermission,
 //                            channelSubType = it.visibleType
-                        ),
-                        id = it.channelId,
-                        parentCoroutineContext = bot.coroutineContext
-                    ))
+                            ),
+                            id = it.channelId,
+                            parentCoroutineContext = bot.coroutineContext
+                        )
+                    )
                 }
 
                 //TODO 储存频道成员列表
@@ -82,7 +85,7 @@ internal object PushFirstView : IncomingPacketFactory<Packet?>(
                 val guildInfo = GuildInfoImpl(
                     name = guildNode.guildName.decodeToString(),
                     id = guildNode.guildId,
-                    guildCode =  guildNode.guildCode,
+                    guildCode = guildNode.guildCode,
                     createTime = guildMeta.origin.rsp.rsp.meta.createTime,
                     ownerId = guildMeta.origin.rsp.rsp.meta.ownerId,
                     memberCount = guildMeta.origin.rsp.rsp.meta.memberCount,
@@ -106,7 +109,7 @@ internal object PushFirstView : IncomingPacketFactory<Packet?>(
             }
         }
 
-        if(res.channelMsgs.isNotEmpty()){
+        if (res.channelMsgs.isNotEmpty()) {
             //TODO sync channel information
         }
         return null

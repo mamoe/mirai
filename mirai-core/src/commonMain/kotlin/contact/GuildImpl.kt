@@ -38,7 +38,7 @@ internal abstract class CommonGuildImpl constructor(
     guildInfo: GuildInfo,
     override val channelNodes: List<ChannelImpl>,
     override val members: ContactList<GuildMemberImpl>,
-) : Guild{
+) : Guild {
     override val coroutineContext: CoroutineContext
         get() = TODO("Not yet implemented")
     override val name: String

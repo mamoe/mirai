@@ -37,8 +37,7 @@ internal abstract class CommonChannelImpl constructor(
     parentCoroutineContext: CoroutineContext,
     override val id: Long,
     channelInfo: ChannelInfo,
-) : Channel,AbstractContact(bot, parentCoroutineContext){
-
+) : Channel, AbstractContact(bot, parentCoroutineContext) {
 
 
     override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio {

@@ -25,6 +25,7 @@ public interface GuildMemberInfo {
      * 昵称
      */
     public val nickname: String
+
     /**
      * 上次发言时间 秒
      */

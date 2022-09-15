@@ -35,7 +35,7 @@ internal class Guild : ProtoBuf {
         @ProtoNumber(3) @JvmField val channelNodes: List<ChannelNode> = mutableListOf(),
         @ProtoNumber(4) @JvmField val guildName: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val peerSource: DirectMessageSource = DirectMessageSource(),
-    ) : ProtoBuf{
+    ) : ProtoBuf {
         override fun toString(): String {
             return "GuildNode(guildId=$guildId, guildCode=$guildCode, channelNodes=$channelNodes, guildName=${guildName.contentToString()}, peerSource=$peerSource)"
         }
@@ -55,7 +55,7 @@ internal class Guild : ProtoBuf {
         @ProtoNumber(10) @JvmField val meta: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(11) @JvmField val readMsgMeta: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(12) @JvmField val eventTime: Short = 0,
-    ) : ProtoBuf{
+    ) : ProtoBuf {
         override fun toString(): String {
             return "ChannelNode(channelId=$channelId, seq=$seq, cntSeq=$cntSeq, time=$time, memberReadMsgSeq=$memberReadMsgSeq, memberReadCntSeq=$memberReadCntSeq, notifyType=$notifyType, channelName=${channelName.contentToString()}, channelType=$channelType, meta=${meta.contentToString()}, readMsgMeta=${readMsgMeta.contentToString()}, eventTime=$eventTime)"
         }
@@ -68,7 +68,7 @@ internal class Guild : ProtoBuf {
         @ProtoNumber(3) @JvmField val guildName: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(4) @JvmField val memberName: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val nickName: ByteArray = EMPTY_BYTE_ARRAY,
-    ) : ProtoBuf{
+    ) : ProtoBuf {
         override fun toString(): String {
             return "DirectMessageSource(tinyId=$tinyId, guildId=$guildId, guildName=${guildName.contentToString()}, memberName=${memberName.contentToString()}, nickName=${nickName.contentToString()})"
         }
@@ -210,6 +210,7 @@ internal class Guild : ProtoBuf {
         @ProtoNumber(6) @JvmField val time: Long = 0L,
         @ProtoNumber(7) @JvmField val meta: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
+
     @Serializable
     internal class GuildChannelInfo(
         @ProtoNumber(1) @JvmField val channelId: Long = 0L,
@@ -226,7 +227,7 @@ internal class Guild : ProtoBuf {
         @ProtoNumber(28) @JvmField val topMsg: GuildChannelTopMsgInfo = GuildChannelTopMsgInfo(),
         @ProtoNumber(31) @JvmField val currentSlowModeKey: Short = 0,
         @ProtoNumber(32) @JvmField val slowModeInfos: List<GuildChannelSlowModeInfo> = mutableListOf(),
-        ) : ProtoBuf{
+    ) : ProtoBuf {
         override fun toString(): String {
             return "GuildChannelInfo(channelId=$channelId, channelName='$channelName', creatorUin=$creatorUin, createTime=$createTime, guildId=$guildId, finalNotifyType=$finalNotifyType, channelType=$channelType, talkPermission=$talkPermission, creatorTinyId=$creatorTinyId, visibleType=$visibleType, topMsg=$topMsg, currentSlowModeKey=$currentSlowModeKey, slowModeInfos=$slowModeInfos)"
         }
@@ -237,18 +238,19 @@ internal class Guild : ProtoBuf {
         @ProtoNumber(1) @JvmField val topMsgSeq: Long = 0L,
         @ProtoNumber(2) @JvmField val topMsgTime: Long = 0L,
         @ProtoNumber(3) @JvmField val topMsgOperatorTinyId: Long = 0L,
-    ): ProtoBuf{
+    ) : ProtoBuf {
         override fun toString(): String {
             return "GuildChannelTopMsgInfo(topMsgSeq=$topMsgSeq, topMsgTime=$topMsgTime, topMsgOperatorTinyId=$topMsgOperatorTinyId)"
         }
     }
+
     @Serializable
     internal class GuildChannelSlowModeInfo(
         @ProtoNumber(1) @JvmField val slowModeKey: Long = 0L,
         @ProtoNumber(2) @JvmField val speakFrequency: Long = 0L,
         @ProtoNumber(3) @JvmField val slowModeCircle: Long = 0L,
         @ProtoNumber(4) @JvmField val slowModeText: String = "",
-    ): ProtoBuf{
+    ) : ProtoBuf {
         override fun toString(): String {
             return "GuildChannelSlowModeInfo(slowModeKey=$slowModeKey, speakFrequency=$speakFrequency, slowModeCircle=$slowModeCircle, slowModeText='$slowModeText')"
         }
