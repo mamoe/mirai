@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.contact.active
 
+import net.mamoe.mirai.utils.MiraiInternalApi
+
 /**
  * 活跃度数据图表， 键是 `yyyy-MM` 格式的日期，值是数量
  * @property members 每日总人数
@@ -18,7 +20,7 @@ package net.mamoe.mirai.contact.active
  * @property exit 每日退群人数
  * @since 2.13
  */
-public class ActiveChart internal constructor(
+public class ActiveChart @MiraiInternalApi public constructor(
     public val actives: Map<String, Int>,
     public val sentences: Map<String, Int>,
     public val members: Map<String, Int>,

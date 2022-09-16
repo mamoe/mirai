@@ -10,6 +10,7 @@
 package net.mamoe.mirai.contact.active
 
 import net.mamoe.mirai.data.GroupHonorType
+import net.mamoe.mirai.utils.MiraiInternalApi
 import kotlin.jvm.JvmName
 
 /**
@@ -19,7 +20,7 @@ import kotlin.jvm.JvmName
  * @property records 群荣耀历史记录
  * @since 2.13
  */
-public class ActiveHonorList internal constructor(
+public class ActiveHonorList @MiraiInternalApi public constructor(
     @get:JvmName("getType")
     public val type: GroupHonorType, // `public int getType()` for Java
     public val current: ActiveHonorInfo?,

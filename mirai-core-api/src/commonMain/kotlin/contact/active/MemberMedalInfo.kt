@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.contact.active
 
+import net.mamoe.mirai.utils.MiraiInternalApi
+
 
 /**
  * 群成员头衔详情
@@ -18,7 +20,7 @@ package net.mamoe.mirai.contact.active
  * @property medals 拥有的所有头衔
  * @since 2.13
  */
-public class MemberMedalInfo internal constructor(
+public class MemberMedalInfo @MiraiInternalApi public constructor(
     public val title: String,
     public val color: String,
     public val wearing: MemberMedalType,
