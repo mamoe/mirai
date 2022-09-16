@@ -693,7 +693,7 @@ internal suspend fun QQAndroidBot.getRawGroupHonorListData(
                 GroupHonorType.SILVER -> "silver"
                 GroupHonorType.GOLDEN -> "golden"
                 GroupHonorType.WHIRLWIND -> "whirlwind"
-                else -> type.value
+                else -> type.id
             }
         )
         headers {

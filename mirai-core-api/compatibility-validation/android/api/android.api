@@ -641,7 +641,7 @@ public final class net/mamoe/mirai/contact/active/ActiveHonorInfo {
 public final class net/mamoe/mirai/contact/active/ActiveHonorList {
 	public final fun getCurrent ()Lnet/mamoe/mirai/contact/active/ActiveHonorInfo;
 	public final fun getRecords ()Ljava/util/List;
-	public final fun getType-AVr_HNQ ()I
+	public final fun getType ()I
 }
 
 public final class net/mamoe/mirai/contact/active/ActiveRankRecord {
@@ -674,7 +674,7 @@ public abstract interface class net/mamoe/mirai/contact/active/GroupActive {
 	public abstract fun queryActiveRank (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun queryChart ()Lnet/mamoe/mirai/contact/active/ActiveChart;
 	public abstract fun queryChart (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun queryHonorHistory-UbtaSxo (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun queryHonorHistory (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun setHonorVisible (Z)V
 	public abstract fun setHonorVisible (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun setRankTitles (Ljava/util/Map;)V
@@ -1099,7 +1099,18 @@ public class net/mamoe/mirai/data/FriendInfoImpl : net/mamoe/mirai/data/FriendIn
 }
 
 public final class net/mamoe/mirai/data/GroupHonorType {
+	public static final field BRONZE_ID I
 	public static final field Companion Lnet/mamoe/mirai/data/GroupHonorType$Companion;
+	public static final field EMOTION_ID I
+	public static final field GOLDEN_ID I
+	public static final field LEGEND_ID I
+	public static final field PERFORMER_ID I
+	public static final field RED_PACKET_ID I
+	public static final field RICHER_ID I
+	public static final field SILVER_ID I
+	public static final field STRONG_NEWBIE_ID I
+	public static final field TALKATIVE_ID I
+	public static final field WHIRLWIND_ID I
 	public static final synthetic fun box-impl (I)Lnet/mamoe/mirai/data/GroupHonorType;
 	public fun equals (Ljava/lang/Object;)Z
 	public static fun equals-impl (ILjava/lang/Object;)Z
@@ -1107,6 +1118,7 @@ public final class net/mamoe/mirai/data/GroupHonorType {
 	public static final fun getBRONZE-AVr_HNQ ()I
 	public static final fun getEMOTION-AVr_HNQ ()I
 	public static final fun getGOLDEN-AVr_HNQ ()I
+	public final fun getId ()I
 	public static final fun getLEGEND-AVr_HNQ ()I
 	public static final fun getPERFORMER-AVr_HNQ ()I
 	public static final fun getRED_PACKET-AVr_HNQ ()I
@@ -1114,7 +1126,6 @@ public final class net/mamoe/mirai/data/GroupHonorType {
 	public static final fun getSILVER-AVr_HNQ ()I
 	public static final fun getSTRONG_NEWBIE-AVr_HNQ ()I
 	public static final fun getTALKATIVE-AVr_HNQ ()I
-	public final fun getValue ()I
 	public static final fun getWHIRLWIND-AVr_HNQ ()I
 	public fun hashCode ()I
 	public static fun hashCode-impl (I)I
@@ -2440,7 +2451,7 @@ public final class net/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve :
 	public final fun copy-aLnpm_Q (Lnet/mamoe/mirai/contact/NormalMember;I)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;
 	public static synthetic fun copy-aLnpm_Q$default (Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;Lnet/mamoe/mirai/contact/NormalMember;IILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;
 	public fun equals (Ljava/lang/Object;)Z
-	public fun getHonorType-AVr_HNQ ()I
+	public fun getHonorType ()I
 	public synthetic fun getMember ()Lnet/mamoe/mirai/contact/Member;
 	public fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun hashCode ()I
@@ -2454,7 +2465,7 @@ public final class net/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose : ne
 	public final fun copy-aLnpm_Q (Lnet/mamoe/mirai/contact/NormalMember;I)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;
 	public static synthetic fun copy-aLnpm_Q$default (Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;Lnet/mamoe/mirai/contact/NormalMember;IILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;
 	public fun equals (Ljava/lang/Object;)Z
-	public fun getHonorType-AVr_HNQ ()I
+	public fun getHonorType ()I
 	public synthetic fun getMember ()Lnet/mamoe/mirai/contact/Member;
 	public fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun hashCode ()I

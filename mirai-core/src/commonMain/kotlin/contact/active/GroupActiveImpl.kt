@@ -201,9 +201,9 @@ internal abstract class CommonGroupActiveImpl(
     private suspend fun getHonorInfo(type: GroupHonorType): MemberHonorList {
         val either = when (type) {
             GroupHonorType.TALKATIVE -> group.bot.getRawTalkativeInfo(group.id)
-            GroupHonorType.PERFORMER -> group.bot.getRawContinuousInfo(group.id, type.value)
-            GroupHonorType.LEGEND -> group.bot.getRawContinuousInfo(group.id, type.value)
-            GroupHonorType.STRONG_NEWBIE -> group.bot.getRawContinuousInfo(group.id, type.value)
+            GroupHonorType.PERFORMER -> group.bot.getRawContinuousInfo(group.id, type.id)
+            GroupHonorType.LEGEND -> group.bot.getRawContinuousInfo(group.id, type.id)
+            GroupHonorType.STRONG_NEWBIE -> group.bot.getRawContinuousInfo(group.id, type.id)
             GroupHonorType.EMOTION -> group.bot.getRawEmotionInfo(group.id)
             GroupHonorType.BRONZE -> group.bot.getRawHomeworkExcellentInfo(group.id, 1)
             GroupHonorType.SILVER -> group.bot.getRawHomeworkExcellentInfo(group.id, 2)
@@ -211,7 +211,7 @@ internal abstract class CommonGroupActiveImpl(
             GroupHonorType.WHIRLWIND -> group.bot.getRawHomeworkActiveInfo(group.id)
             GroupHonorType.RICHER -> group.bot.getRawRicherHonorInfo(group.id)
             GroupHonorType.RED_PACKET -> group.bot.getRawRedPacketInfo(group.id)
-            else -> group.bot.getRawContinuousInfo(group.id, type.value)
+            else -> group.bot.getRawContinuousInfo(group.id, type.id)
         }
 
         return either.onLeft {

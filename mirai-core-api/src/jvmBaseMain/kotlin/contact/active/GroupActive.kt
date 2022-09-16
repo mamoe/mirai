@@ -167,6 +167,8 @@ public actual interface GroupActive {
     /**
      * 获取群荣耀历史数据
      */
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("queryHonorHistory")
     public actual suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList
 
     /**

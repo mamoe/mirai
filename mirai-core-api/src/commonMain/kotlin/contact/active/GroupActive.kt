@@ -17,6 +17,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.utils.NotStableForInheritance
+import kotlin.jvm.JvmName
 
 /**
  * 表示一个群活跃度管理.
@@ -157,6 +158,8 @@ public expect interface GroupActive {
      * 获取群荣耀历史数据, 刷新 [Member.active] 中的 honors
      * @see Member.active
      */
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("queryHonorHistory")
     public suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList
 
     /**
