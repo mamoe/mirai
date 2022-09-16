@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -69,14 +69,14 @@ public interface Member : User {
     /**
      * 群等级头衔 (PC 端显示)
      * @see active
-     * @since 2.13.0
+     * @since 2.13
      */
     public val rankTitle: String get() = group.active.rankTitles[active.rank].orEmpty()
 
     /**
      * 群活跃头衔 (手机端显示)
      * @see active
-     * @since 2.13.0
+     * @since 2.13
      */
     public val temperatureTitle: String
         get() {
@@ -96,7 +96,7 @@ public interface Member : User {
      * 群活跃度相关属性.
      * @see [rankTitle]
      * @see [temperatureTitle]
-     * @since 2.13.0
+     * @since 2.13
      */
     public val active: MemberActive
 

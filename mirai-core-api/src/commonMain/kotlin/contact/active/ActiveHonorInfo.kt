@@ -20,7 +20,7 @@ import net.mamoe.mirai.contact.NormalMember
  * @property termDays 当前蝉联天数
  * @property historyDays 历史获得天数
  * @property maxTermDays 最大蝉联天数
- * @since 2.13.0
+ * @since 2.13
  */
 public class ActiveHonorInfo internal constructor(
     public val memberName: String,

@@ -14,7 +14,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
  * 群活跃度相关属性
- * @since 2.13.0
+ * @since 2.13
  */
 @NotStableForInheritance
 public expect interface MemberActive {

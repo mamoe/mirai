@@ -18,7 +18,7 @@ import net.mamoe.mirai.contact.NormalMember
  * @property member 发言者的群员实例
  * @property temperature 活跃度
  * @property score 活跃积分
- * @since 2.13.0
+ * @since 2.13
  */
 public class ActiveRankRecord internal constructor(
     public val memberName: String,

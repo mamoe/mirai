@@ -17,7 +17,7 @@ import kotlin.jvm.JvmName
  * @property type 群荣誉类型
  * @property current 当前荣耀持有者 (龙王，壕礼皇冠, 善财福禄寿)
  * @property records 群荣耀历史记录
- * @since 2.13.0
+ * @since 2.13
  */
 public class ActiveHonorList internal constructor(
     @get:JvmName("getType")

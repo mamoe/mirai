@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -73,31 +73,31 @@ public interface GroupInfo {
 
     /**
      * 荣誉是否显示
-     * @since 2.13.0
+     * @since 2.13
      */
     public val honorShow: Boolean
 
     /**
      * 头衔是否显示
-     * @since 2.13.0
+     * @since 2.13
      */
     public val titleShow: Boolean
 
     /**
      * 活跃度是否显示
-     * @since 2.13.0
+     * @since 2.13
      */
     public val temperatureShow: Boolean
 
     /**
      * 等级头衔
-     * @since 2.13.0
+     * @since 2.13
      */
     public val rankTitles: Map<Int, String>
 
     /**
      * 活跃度头衔
-     * @since 2.13.0
+     * @since 2.13
      */
     public val temperatureTitles: Map<Int, String>
 }

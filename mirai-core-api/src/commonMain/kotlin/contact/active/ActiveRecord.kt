@@ -18,7 +18,7 @@ import net.mamoe.mirai.contact.NormalMember
  * @property member 发言者的群员实例
  * @property periodDays 活跃连续天数
  * @property messagesCount 发言条数
- * @since 2.13.0
+ * @since 2.13
  */
 public class ActiveRecord internal constructor(
     public val memberName: String,

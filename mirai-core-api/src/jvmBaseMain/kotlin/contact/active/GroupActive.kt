@@ -61,7 +61,7 @@ import java.util.stream.Stream
  * * 当前荣耀持有者 (龙王，壕礼皇冠, 善财福禄寿) [ActiveHonorList.current]
  * * 群荣耀历史记录 [ActiveHonorList.records]
  *
- * @since 2.13.0
+ * @since 2.13
  */
 @NotStableForInheritance
 public actual interface GroupActive {

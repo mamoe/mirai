@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.contact.active
 
+import net.mamoe.mirai.contact.active.MemberMedalType.*
 import net.mamoe.mirai.utils.MiraiInternalApi
 
 
@@ -18,7 +19,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  * @property ADMIN 管理员独有的头衔
  * @property SPECIAL 群主授予的头衔
  * @property ACTIVE 群主设定的头衔, 保持活跃即可获得
- * @since 2.13.0
+ * @since 2.13
  */
 public enum class MemberMedalType(@MiraiInternalApi public val mask: Int) {
     OWNER(300),

@@ -16,7 +16,7 @@ package net.mamoe.mirai.contact.active
  * @property color 当前佩戴的头衔的颜色
  * @property wearing 当前佩戴的头衔类型
  * @property medals 拥有的所有头衔
- * @since 2.13.0
+ * @since 2.13
  */
 public class MemberMedalInfo internal constructor(
     public val title: String,

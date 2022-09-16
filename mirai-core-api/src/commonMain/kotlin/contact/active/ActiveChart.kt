@@ -16,7 +16,7 @@ package net.mamoe.mirai.contact.active
  * @property sentences 每日申请人数
  * @property join 每日入群人数
  * @property exit 每日退群人数
- * @since 2.13.0
+ * @since 2.13
  */
 public class ActiveChart internal constructor(
     public val actives: Map<String, Int>,
