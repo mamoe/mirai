@@ -71,7 +71,7 @@ public expect interface GroupActive {
     public val isHonorVisible: Boolean
 
     /**
-     * 设置 是否在群聊中显示荣誉
+     * 设置是否在群聊中显示荣誉
      * @see MemberActive.honors
      */
     public suspend fun setHonorVisible(newValue: Boolean)
@@ -84,9 +84,7 @@ public expect interface GroupActive {
     public val isTitleVisible: Boolean
 
     /**
-     * 设置 是否在群聊中显示头衔
-     *
-     * ps: 会一并刷新等级头衔信息。
+     * 设置是否在群聊中显示头衔。操作成功时会同时刷新等级头衔信息。
      * @see Member.rankTitle
      * @see Member.temperatureTitle
      */
@@ -99,9 +97,7 @@ public expect interface GroupActive {
     public val isTemperatureVisible: Boolean
 
     /**
-     * 设置 是否在群聊中显示活跃度
-     *
-     * ps: 会一并刷新等级头衔信息。
+     * 设置是否在群聊中显示活跃度。操作成功时会同时刷新等级头衔信息。
      * @see MemberActive.temperature
      */
     public suspend fun setTemperatureVisible(newValue: Boolean)
@@ -109,35 +105,30 @@ public expect interface GroupActive {
     /**
      * 等级头衔列表，键是等级，值是头衔
      *
-     * ps: 会一并刷新等级头衔信息。
      * @see Member.rankTitle
      */
     public val rankTitles: Map<Int, String>
 
     /**
-     * 设置 等级头衔列表，键是等级，值是头衔
-     *
-     * ps: 会一并刷新等级头衔信息。
+     * 设置等级头衔列表，键是等级，值是头衔。操作成功时会同时刷新等级头衔信息。
      * @see Member.rankTitle
      */
     public suspend fun setRankTitles(newValue: Map<Int, String>)
 
     /**
-     * 活跃度头衔列表，键是等级，值是头衔
+     * 活跃度头衔列表，键是等级，值是头衔。操作成功时会同时刷新活跃度头衔信息。
      * @see Member.temperatureTitle
      */
     public val temperatureTitles: Map<Int, String>
 
     /**
-     * 设置 活跃度头衔列表，键是等级，值是头衔
-     *
-     * ps: 会一并 刷新活跃度头衔信息。
+     * 设置活跃度头衔列表，键是等级，值是头衔。操作成功时会同时刷新活跃度头衔信息。
      * @see Member.temperatureTitle
      */
     public suspend fun setTemperatureTitles(newValue: Map<Int, String>)
 
     /**
-     * 刷新 [Member.active] 中的属性 (不包括 honors 和 temperature)
+     * 刷新 [Member.active] 中的属性 (不包括 [honors][MemberActive.honors] 和 [temperature][MemberActive.temperature])
      * @see Member.active
      */
     public suspend fun refresh()
@@ -155,7 +146,7 @@ public expect interface GroupActive {
     public suspend fun queryChart(): ActiveChart
 
     /**
-     * 获取群荣耀历史数据, 刷新 [Member.active] 中的 honors
+     * 获取群荣耀历史数据, 刷新 [Member.active] 中的 [MemberActive.honors]
      * @see Member.active
      */
     @Suppress("INAPPLICABLE_JVM_NAME")
