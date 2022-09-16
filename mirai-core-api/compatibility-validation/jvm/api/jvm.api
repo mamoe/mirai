@@ -1112,6 +1112,7 @@ public final class net/mamoe/mirai/data/GroupHonorType {
 	public static final field TALKATIVE_ID I
 	public static final field WHIRLWIND_ID I
 	public static final synthetic fun box-impl (I)Lnet/mamoe/mirai/data/GroupHonorType;
+	public static fun constructor-impl (I)I
 	public fun equals (Ljava/lang/Object;)Z
 	public static fun equals-impl (ILjava/lang/Object;)Z
 	public static final fun equals-impl0 (II)Z
