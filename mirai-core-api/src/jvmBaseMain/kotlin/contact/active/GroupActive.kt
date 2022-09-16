@@ -37,7 +37,7 @@ import java.util.stream.Stream
  *
  * ### 刷新群成员活跃数据
  *
- * 通过 [flush] 可以刷新 [Member.active] 中的属性 (不包括 honors 和 temperature)
+ * 通过 [refresh] 可以刷新 [Member.active] 中的属性 (不包括 honors 和 temperature)
  *
  * ### 活跃度记录
  *
@@ -140,7 +140,7 @@ public actual interface GroupActive {
      * 刷新 [Member.active] 中的属性 (不包括 honors 和 temperature)
      * @see Member.active
      */
-    public actual suspend fun flush()
+    public actual suspend fun refresh()
 
     /**
      * 创建一个能获取该群内所有群活跃度记录的 [Flow]. 在 [Flow] 被使用时才会分页下载 [ActiveRecord].

@@ -57,7 +57,7 @@ internal class MockGroupActiveImpl(
         temperatureTitles = newValue
     }
 
-    override suspend fun flush() {
+    override suspend fun refresh() {
     }
 
     @Volatile

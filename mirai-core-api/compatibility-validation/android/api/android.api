@@ -663,8 +663,6 @@ public final class net/mamoe/mirai/contact/active/ActiveRecord {
 public abstract interface class net/mamoe/mirai/contact/active/GroupActive {
 	public abstract fun asFlow ()Lkotlinx/coroutines/flow/Flow;
 	public abstract fun asStream ()Ljava/util/stream/Stream;
-	public fun flush ()V
-	public abstract fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getRankTitles ()Ljava/util/Map;
 	public abstract fun getTemperatureTitles ()Ljava/util/Map;
 	public abstract fun isHonorVisible ()Z
@@ -675,6 +673,8 @@ public abstract interface class net/mamoe/mirai/contact/active/GroupActive {
 	public fun queryChart ()Lnet/mamoe/mirai/contact/active/ActiveChart;
 	public abstract fun queryChart (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun queryHonorHistory (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun refresh ()V
+	public abstract fun refresh (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun setHonorVisible (Z)V
 	public abstract fun setHonorVisible (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun setRankTitles (Ljava/util/Map;)V

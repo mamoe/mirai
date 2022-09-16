@@ -146,7 +146,7 @@ internal abstract class CommonGroupActiveImpl(
         }.right
     }
 
-    override suspend fun flush() {
+    override suspend fun refresh() {
         group.bot.getRawMemberLevelInfo(groupCode = group.groupCode).onLeft {
             if (logger.isEnabled) { // createException
                 logger.warning(
