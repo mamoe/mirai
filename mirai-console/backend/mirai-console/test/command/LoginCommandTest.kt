@@ -21,11 +21,13 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.md5
 import net.mamoe.mirai.utils.toUHexString
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 @OptIn(ExperimentalCommandDescriptors::class)
 internal class LoginCommandTest : AbstractCommandTest() {
@@ -106,6 +108,41 @@ internal class LoginCommandTest : AbstractCommandTest() {
         val account = bot.account
         assertContentEquals(myPwd.md5(), account.passwordMd5)
         assertEquals(myId, account.id)
+    }
+
+    @Test
+    fun `login with saved configuration`() = runTest {
+        val myId = 123L
+        val myPwd = "password001"
+
+        dataScope.set(AutoLoginConfig().apply {
+            accounts.add(
+                Account(
+                    account = myId.toString(),
+                    password = Account.Password(PasswordKind.MD5, myPwd.md5().toUHexString("")),
+                    configuration = mapOf(
+                        Account.ConfigurationKey.protocol to BotConfiguration.MiraiProtocol.ANDROID_PAD.name,
+                        Account.ConfigurationKey.device to "device.new.json",
+                        Account.ConfigurationKey.heartbeatStrategy to BotConfiguration.HeartbeatStrategy.REGISTER.name
+                    )
+                )
+            )
+        })
+
+        val bot = awaitDeferred<QQAndroidBot> { cont ->
+            val command = object : LoginCommandImpl() {
+                override suspend fun doLogin(bot: Bot) {
+                    cont.complete(bot as QQAndroidBot)
+                }
+            }
+            command.register(true)
+            command.execute(consoleSender, "$myId")
+        }
+
+        val configuration = bot.configuration
+        assertEquals(BotConfiguration.MiraiProtocol.ANDROID_PAD, configuration.protocol)
+        assertEquals(BotConfiguration.HeartbeatStrategy.REGISTER, configuration.heartbeatStrategy)
+        assertNotNull(configuration.deviceInfo)
     }
 }
 

@@ -20,7 +20,7 @@ import net.mamoe.mirai.internal.network.subSigMap
 internal object WtLogin20 : WtLoginExt {
     operator fun invoke(
         client: QQAndroidClient
-    ) = WtLogin.Login.buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
+    ) = WtLogin.Login.buildLoginOutgoingPacket(client, bodyType = 2, remark = "20:dev-lock") { sequenceId ->
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(20) // subCommand

@@ -253,6 +253,7 @@ internal open class MultiMsgUploader(
             val msg0 = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
                     fromUin = pm.msg.senderId,
+                    fromNick = pm.msg.senderName,
                     toUin = if (isLong) {
                         contact.userIdOrNull ?: 0
                     } else 0,

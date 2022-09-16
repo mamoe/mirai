@@ -45,7 +45,30 @@ internal open class LoginCommandImpl : SimpleCommand(
         protocol: BotConfiguration.MiraiProtocol? = null,
     ) {
         fun BotConfiguration.setup(protocol: BotConfiguration.MiraiProtocol?): BotConfiguration {
-            if (protocol != null) this.protocol = protocol
+            val config = DataScope.get<AutoLoginConfig>()
+            val account = config.accounts.firstOrNull { it.account == id.toString() }
+            if (account != null) {
+                account.configuration[AutoLoginConfig.Account.ConfigurationKey.protocol]?.let { protocol ->
+                    try {
+                        this.protocol = BotConfiguration.MiraiProtocol.valueOf(protocol.toString())
+                    } catch (_: Throwable) {
+                        //
+                    }
+                }
+                account.configuration[AutoLoginConfig.Account.ConfigurationKey.heartbeatStrategy]?.let { heartStrate ->
+                    try {
+                        this.heartbeatStrategy = BotConfiguration.HeartbeatStrategy.valueOf(heartStrate.toString())
+                    } catch (_: Throwable) {
+                        //
+                    }
+                }
+                account.configuration[AutoLoginConfig.Account.ConfigurationKey.device]?.let { device ->
+                    fileBasedDeviceInfo(device.toString())
+                }
+            }
+            if (protocol != null) {
+                this.protocol = protocol
+            }
             return this
         }
 

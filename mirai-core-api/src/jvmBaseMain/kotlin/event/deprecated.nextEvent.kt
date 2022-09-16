@@ -37,7 +37,7 @@ import kotlin.reflect.KClass
  * @throws TimeoutCancellationException 在超时后抛出.
  */
 @JvmSynthetic
-@DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12")
+@DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12", hiddenSince = "2.13")
 @Deprecated(
     "Use GlobalEventChannel.nextEvent",
     ReplaceWith(
@@ -45,7 +45,7 @@ import kotlin.reflect.KClass
         "net.mamoe.mirai.event.GlobalEventChannel",
         "kotlinx.coroutines.withTimeout",
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
 public suspend inline fun <reified E : Event> nextEvent(
     timeoutMillis: Long = -1,
@@ -74,7 +74,7 @@ public suspend inline fun <reified E : Event> nextEvent(
  * @return 事件实例, 在超时后返回 `null`
  */
 @JvmSynthetic
-@DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12")
+@DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.12", hiddenSince = "2.13")
 @Deprecated(
     "Use GlobalEventChannel.nextEvent",
     ReplaceWith(
@@ -84,7 +84,7 @@ public suspend inline fun <reified E : Event> nextEvent(
         "net.mamoe.mirai.event.GlobalEventChannel",
         "net.mamoe.mirai.event.nextEvent"
     ),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
 public suspend inline fun <reified E : Event> nextEventOrNull(
     timeoutMillis: Long,

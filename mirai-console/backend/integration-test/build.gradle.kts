@@ -30,6 +30,7 @@ dependencies {
     testRuntimeOnly(project(":mirai-core"))
     api(project(":mirai-console-compiler-annotations"))
     api(project(":mirai-console"))
+    api(project(":mirai-console-frontend-base"))
     api(project(":mirai-console-terminal"))
 
     api(`kotlin-stdlib-jdk8`)

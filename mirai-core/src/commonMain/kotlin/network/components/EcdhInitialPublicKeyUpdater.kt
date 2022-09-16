@@ -17,25 +17,24 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
-import net.mamoe.mirai.internal.utils.crypto.ECDH
-import net.mamoe.mirai.internal.utils.crypto.ECDHInitialPublicKey
-import net.mamoe.mirai.internal.utils.crypto.ECDHWithPublicKey
-import net.mamoe.mirai.internal.utils.crypto.defaultInitialPublicKey
+import net.mamoe.mirai.internal.utils.crypto.QQEcdh
+import net.mamoe.mirai.internal.utils.crypto.QQEcdhInitialPublicKey
+import net.mamoe.mirai.internal.utils.crypto.verify
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.time.Duration.Companion.seconds
 
 
 /**
- * Updater for updating [ECDHInitialPublicKey].
+ * Updater for updating [QQEcdhInitialPublicKey].
  */
 internal interface EcdhInitialPublicKeyUpdater {
     /**
-     * Refresh the [ECDHInitialPublicKey]
+     * Refresh the [QQEcdhInitialPublicKey]
      */
-    suspend fun refreshInitialPublicKeyAndApplyECDH()
+    suspend fun refreshInitialPublicKeyAndApplyEcdh()
 
-    fun getECDHWithPublicKey(): ECDHWithPublicKey
+    fun getQQEcdh(): QQEcdh
 
     companion object : ComponentKey<EcdhInitialPublicKeyUpdater>
 }
@@ -67,19 +66,15 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
         val keyVer: Int
     )
 
-    companion object {
-        val json = Json {}
-    }
-
-    var ecdhWithPublicKey: ECDHWithPublicKey? = null
-    override fun getECDHWithPublicKey(): ECDHWithPublicKey {
-        if (ecdhWithPublicKey == null) {
-            error("Calling getECDHWithPublicKey without calling refreshInitialPublicKeyAndApplyECDH")
+    var qqEcdh: QQEcdh? = null
+    override fun getQQEcdh(): QQEcdh {
+        if (qqEcdh == null) {
+            error("Calling getQQEcdh without calling refreshInitialPublicKeyAndApplyEcdh")
         }
-        return ecdhWithPublicKey!!
+        return qqEcdh!!
     }
 
-    override suspend fun refreshInitialPublicKeyAndApplyECDH() {
+    override suspend fun refreshInitialPublicKeyAndApplyEcdh() {
 
         val initialPublicKey = kotlin.runCatching {
             val currentPublicKey = bot.client.ecdhInitialPublicKey
@@ -94,24 +89,20 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
                             .get("https://keyrotate.qq.com/rotate_key?cipher_suite_ver=305&uin=${bot.client.uin}")
                             .bodyAsText()
                     }
-                val resp = json.decodeFromString(ServerRespPOJO.serializer(), respStr)
+                val resp = Json.decodeFromString(ServerRespPOJO.serializer(), respStr)
                 resp.pubKeyMeta.let { meta ->
-                    val isValid = ECDH.verifyPublicKey(
-                        version = meta.keyVer,
-                        publicKey = meta.pubKey,
-                        publicKeySign = meta.pubKeySign
-                    )
-                    check(isValid) { "Ecdh public key which from server is invalid" }
+                    val key = QQEcdhInitialPublicKey(meta.keyVer, meta.pubKey, currentTimeSeconds() + resp.querySpan)
+                    check(key.verify(meta.pubKeySign)) { "Ecdh public key which from server is invalid" }
                     logger.info("Successfully fetched ecdh public key from server.")
-                    ECDHInitialPublicKey(meta.keyVer, meta.pubKey, currentTimeSeconds() + resp.querySpan)
+                    key
                 }
             }
         }.getOrElse {
             logger.error("Failed to fetch ECDH public key from server, using default key instead", it)
-            defaultInitialPublicKey
+            QQEcdhInitialPublicKey.default
         }
         bot.client.ecdhInitialPublicKey = initialPublicKey
-        ecdhWithPublicKey = ECDHWithPublicKey(initialPublicKey)
+        qqEcdh = QQEcdh(initialPublicKey)
     }
 
 

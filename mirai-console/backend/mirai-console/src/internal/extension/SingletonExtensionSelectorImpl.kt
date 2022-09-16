@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 
 package net.mamoe.mirai.console.internal.extension
 
@@ -24,12 +24,11 @@ import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.info
 import kotlin.reflect.KClass
 
-@Suppress("DEPRECATION")
 @Deprecated(
     "Order of extensions is not determined by its priority property since 2.11. SingletonExtensionSelector is not needed anymore. ",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 )
-@DeprecatedSinceMirai(warningSince = "2.11")
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
 internal object SingletonExtensionSelectorImpl : SingletonExtensionSelector {
 
     internal val config: SaveData = SaveData()

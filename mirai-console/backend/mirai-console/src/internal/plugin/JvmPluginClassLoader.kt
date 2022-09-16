@@ -10,7 +10,6 @@
 
 package net.mamoe.mirai.console.internal.plugin
 
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.jvm.ExportManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginClasspath
 import net.mamoe.mirai.utils.*
@@ -197,7 +196,12 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
     private val file_: File
         get() = file
 
-    var linkedLogger by lateinitMutableProperty { MiraiConsole.createLogger("JvmPlugin[" + file_.name + "]") }
+    var linkedLogger by lateinitMutableProperty {
+        MiraiLogger.Factory.create(
+            JvmPluginClassLoaderN::class,
+            "JvmPlugin[" + file_.name + "]"
+        )
+    }
     val undefinedDependencies = mutableSetOf<String>()
 
     @Suppress("UNUSED_PARAMETER")

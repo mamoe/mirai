@@ -58,6 +58,7 @@ fun includeConsoleProject(projectPath: String, dir: String? = null) =
 includeProject(":mirai-core-utils")
 includeProject(":mirai-core-api")
 includeProject(":mirai-core")
+includeProject(":mirai-core-mock")
 
 includeProject(":mirai-core-all")
 includeProject(":mirai-bom")
@@ -77,6 +78,7 @@ includeConsoleProject(":mirai-console-compiler-annotations", "tools/compiler-ann
 if (getLocalProperty("projects.mirai-console.enabled", true)) {
     includeConsoleProject(":mirai-console", "backend/mirai-console")
     includeConsoleProject(":mirai-console.codegen", "backend/codegen")
+    includeConsoleProject(":mirai-console-frontend-base", "frontend/mirai-console-frontend-base")
     includeConsoleProject(":mirai-console-terminal", "frontend/mirai-console-terminal")
     includeConsoleIntegrationTestProjects()
 

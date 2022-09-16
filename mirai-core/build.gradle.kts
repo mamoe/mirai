@@ -58,7 +58,6 @@ kotlin {
 
         findByName("jvmBaseMain")?.apply {
             dependencies {
-                implementation(bouncycastle)
                 implementation(`log4j-api`)
                 implementation(`netty-all`)
                 implementation(`ktor-client-okhttp`)
@@ -84,13 +83,13 @@ kotlin {
                 implementation(kotlin("test-junit5", Versions.kotlinCompiler))
                 implementation(kotlin("test-annotations-common"))
                 implementation(kotlin("test-common"))
-                //implementation("org.bouncycastle:bcprov-jdk15on:1.64")
+                implementation(bouncycastle)
             }
         }
 
         findByName("jvmMain")?.apply {
             dependencies {
-                //implementation("org.bouncycastle:bcprov-jdk15on:1.64")
+                implementation(bouncycastle)
                 // api(kotlinx("coroutines-debug", Versions.coroutines))
             }
         }

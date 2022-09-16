@@ -156,6 +156,22 @@ public fun ByteArray.toInt(offset: Int = 0): Int =
         .plus(this[offset + 2].toInt().and(255).shl(8))
         .plus(this[offset + 3].toInt().and(255).shl(0))
 
+/**
+ * Converts 8 bytes to an Long in network order (big-endian).
+ */
+public fun ByteArray.toLong(): Long {
+    var rsp: Long = 0
+    rsp += this[0].toLong().and(255).shl(56)
+    rsp += this[1].toLong().and(255).shl(48)
+    rsp += this[2].toLong().and(255).shl(40)
+    rsp += this[3].toLong().and(255).shl(32)
+    rsp += this[4].toLong().and(255).shl(24)
+    rsp += this[5].toLong().and(255).shl(16)
+    rsp += this[6].toLong().and(255).shl(8)
+    rsp += this[7].toLong().and(255).shl(0)
+    return rsp
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 // hexToBytes

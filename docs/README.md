@@ -72,6 +72,8 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 
 [AHpxChina/Mirai.Net]: https://github.com/AHpxChina/Mirai.Net
 
+[Cyl18/Chaldene]: https://github.com/Cyl18/Chaldene
+
 [Miyakowww/CocoaFramework2]: https://github.com/Miyakowww/CocoaFramework2
 
 [Shimogawa/rubirai]: https://github.com/Shimogawa/rubirai
@@ -93,6 +95,8 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 [MiraiBots.jl]: https://github.com/melonedo/MiraiBots.jl
 
 [Novices666/mirai-epl]:https://github.com/Novices666/mirai-epl
+
+[easyMirai]:https://github.com/easyMirais/easyMirai
 
 ### 原生接口
 
@@ -126,6 +130,7 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 | `C#`                      | [Hyperai][theGravityLab/ProjHyperai] |
 | `C#`                      | [Coloryr/ColorMirai]                 |
 | `C#`                      | [AhpxChina/Mirai.Net]                |
+| `C#`                      | [Cyl18/Chaldene]                     |
 | `C#`                      | [Miyakowww/CocoaFramework2]          |
 | `C++`                     | [cyanray/mirai-cpp]                  |
 | `C++`                     | [Chlorie/miraipp]                    |
@@ -140,6 +145,7 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 | `Python`                  | [AliceBot]                           |
 | `Python`                  | [Ariadne][GraiaProject/Ariadne]      |
 | `Python`                  | [Avilla][GraiaProject/Avilla]        |
+| `Python`                  | [easyMirai]                          |
 | `Python`                  | [Edoves][ArcletProject/Edoves]       |
 | `Python`                  | [Elaina]                             |
 | `Python`                  | [NoneBot]                            |
