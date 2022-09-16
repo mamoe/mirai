@@ -7,8 +7,11 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:JvmBlockingBridge
+
 package net.mamoe.mirai.contact.active
 
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.utils.NotStableForInheritance
 
@@ -17,10 +20,10 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  * @since 2.13
  */
 @NotStableForInheritance
-public expect interface MemberActive {
+public interface MemberActive {
 
     /**
-     * 群活跃等级. 取值为 1~6
+     * 群活跃等级. 取值为 1~6 (包含)
      *
      * 这个等级是在 PC 端成员管理功能中显示的等级
      *
@@ -43,9 +46,9 @@ public expect interface MemberActive {
     public val honors: Set<GroupHonorType>
 
     /**
-     * 群荣誉等级. 取值为 1~100
+     * 群荣誉等级. 取值为 1~100 (包含)
      *
-     * 这个等级是在 手机端 群荣誉功能中显示的等级
+     * 这个等级是在手机端群荣誉功能中显示的等级
      */
     public val temperature: Int
 
