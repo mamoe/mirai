@@ -31,11 +31,18 @@ import net.mamoe.mirai.mock.internal.contact.AQQ_RECALL_FAILED_MESSAGE
 import net.mamoe.mirai.mock.internal.contact.MockFriendImpl
 import net.mamoe.mirai.mock.internal.contact.MockImage
 import net.mamoe.mirai.mock.internal.contact.MockStrangerImpl
+import net.mamoe.mirai.mock.internal.msgsrc.registerMockMsgSerializers
 import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import net.mamoe.mirai.utils.currentTimeSeconds
 
 internal class MockMiraiImpl : MiraiImpl() {
+    companion object {
+        init {
+            registerMockMsgSerializers()
+        }
+    }
+
     override suspend fun solveBotInvitedJoinGroupRequestEvent(
         bot: Bot,
         eventId: Long,
