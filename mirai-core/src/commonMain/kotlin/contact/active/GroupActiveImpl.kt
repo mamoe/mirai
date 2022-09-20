@@ -36,15 +36,10 @@ internal abstract class CommonGroupActiveImpl(
     protected val logger: MiraiLogger,
     groupInfo: GroupInfo,
 ) : GroupActive {
-
-    private var _honorShow: Boolean = groupInfo.isHonorVisible
-
-    private var _titleShow: Boolean = groupInfo.isTitleVisible
-
-    private var _temperatureShow: Boolean = groupInfo.isTemperatureVisible
-
-    private var _rankTitles: Map<Int, String> = groupInfo.rankTitles
-
+    private var _isHonorVisible: Boolean = groupInfo.isHonorVisible
+    private var _isTitleVisible: Boolean = groupInfo.isTitleVisible
+    private var _isTemperatureVisible: Boolean = groupInfo.isTemperatureVisible
+    private var _isRankVisible: Map<Int, String> = groupInfo.rankTitles
     private var _temperatureTitles: Map<Int, String> = groupInfo.temperatureTitles
 
     private suspend fun getGroupLevelInfo(): GroupLevelInfo {
@@ -58,15 +53,15 @@ internal abstract class CommonGroupActiveImpl(
         }.right
     }
 
-    private suspend fun rankFlush() {
+    private suspend fun refreshRank() {
         val info = getGroupLevelInfo()
-        _titleShow = info.levelFlag == 1
-        _temperatureShow = info.levelNewFlag == 1
-        _rankTitles = info.levelName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
+        _isTitleVisible = info.levelFlag == 1
+        _isTemperatureVisible = info.levelNewFlag == 1
+        _isRankVisible = info.levelName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
         _temperatureTitles = info.levelNewName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
     }
 
-    override val isHonorVisible: Boolean get() = _honorShow
+    override val isHonorVisible: Boolean get() = _isHonorVisible
 
     override suspend fun setHonorVisible(newValue: Boolean) {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
@@ -78,11 +73,11 @@ internal abstract class CommonGroupActiveImpl(
                 )
             }
         }.onRight {
-            _honorShow = newValue
+            _isHonorVisible = newValue
         }.right
     }
 
-    override val rankTitles: Map<Int, String> get() = _rankTitles
+    override val rankTitles: Map<Int, String> get() = _isRankVisible
 
     override suspend fun setRankTitles(newValue: Map<Int, String>) {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
@@ -94,11 +89,11 @@ internal abstract class CommonGroupActiveImpl(
                 )
             }
         }.onRight {
-            rankFlush()
+            refreshRank()
         }.right
     }
 
-    override val isTitleVisible: Boolean get() = _titleShow
+    override val isTitleVisible: Boolean get() = _isTitleVisible
 
     override suspend fun setTitleVisible(newValue: Boolean) {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
@@ -110,7 +105,7 @@ internal abstract class CommonGroupActiveImpl(
                 )
             }
         }.onRight {
-            rankFlush()
+            refreshRank()
         }.right
     }
 
@@ -126,11 +121,11 @@ internal abstract class CommonGroupActiveImpl(
                 )
             }
         }.onRight {
-            rankFlush()
+            refreshRank()
         }.right
     }
 
-    override val isTemperatureVisible: Boolean get() = _temperatureShow
+    override val isTemperatureVisible: Boolean get() = _isTemperatureVisible
 
     override suspend fun setTemperatureVisible(newValue: Boolean) {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
@@ -142,7 +137,7 @@ internal abstract class CommonGroupActiveImpl(
                 )
             }
         }.onRight {
-            rankFlush()
+            refreshRank()
         }.right
     }
 
@@ -155,9 +150,9 @@ internal abstract class CommonGroupActiveImpl(
                 )
             }
         }.onRight { info ->
-            _honorShow = info.honourFlag == 1
-            _titleShow = info.levelFlag == 1
-            _rankTitles = info.levelName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
+            _isHonorVisible = info.honourFlag == 1
+            _isTitleVisible = info.levelFlag == 1
+            _isRankVisible = info.levelName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
 
             for (member in group.members) {
                 val (_, _, point, rank) = info.lv[member.id] ?: continue
