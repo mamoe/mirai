@@ -46,7 +46,7 @@ object Versions {
     const val androidGradlePlugin = "4.1.1"
     const val android = "4.1.1.4"
 
-    const val shadow = "6.1.0"
+    const val shadow = "7.1.3-mirai-modified-SNAPSHOT"
 
     const val logback = "1.2.5"
     const val slf4j = "1.7.32"
