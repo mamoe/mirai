@@ -37,11 +37,11 @@ internal abstract class CommonGroupActiveImpl(
     groupInfo: GroupInfo,
 ) : GroupActive {
 
-    private var _honorShow: Boolean = groupInfo.honorShow
+    private var _honorShow: Boolean = groupInfo.isHonorVisible
 
-    private var _titleShow: Boolean = groupInfo.titleShow
+    private var _titleShow: Boolean = groupInfo.isTitleVisible
 
-    private var _temperatureShow: Boolean = groupInfo.temperatureShow
+    private var _temperatureShow: Boolean = groupInfo.isTemperatureVisible
 
     private var _rankTitles: Map<Int, String> = groupInfo.rankTitles
 

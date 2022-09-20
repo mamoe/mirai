@@ -75,19 +75,19 @@ public interface GroupInfo {
      * 荣誉是否显示
      * @since 2.13
      */
-    public val honorShow: Boolean
+    public val isHonorVisible: Boolean
 
     /**
      * 头衔是否显示
      * @since 2.13
      */
-    public val titleShow: Boolean
+    public val isTitleVisible: Boolean
 
     /**
      * 活跃度是否显示
      * @since 2.13
      */
-    public val temperatureShow: Boolean
+    public val isTemperatureVisible: Boolean
 
     /**
      * 等级头衔
