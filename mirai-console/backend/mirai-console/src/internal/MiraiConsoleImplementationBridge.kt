@@ -208,6 +208,21 @@ ___  ____           _   _____                       _
 
                         */
                         append("\n\n")
+
+                        val textA = """[ Mirai consosle $version ]"""
+                        val logoLength = 94
+                        lightBlue()
+                        val barlength = logoLength - textA.length
+                        val leftWidth = barlength / 2
+                        repeat(leftWidth) {
+                            append('=')
+                        }
+                        append(textA)
+                        repeat(barlength - leftWidth) {
+                            append('=')
+                        }
+                        append('\n')
+
                         lightYellow().appendLine(""" __       __ __                   __  ______                                      __""")
                         lightYellow().appendLine("""|  \     /  \  \                 |  \/      \                                    |  \""")
                         lightYellow().appendLine("""| ▓▓\   /  ▓▓\▓▓ ______   ______  \▓▓  ▓▓▓▓▓▓\ ______  _______   _______  ______ | ▓▓ ______""")
