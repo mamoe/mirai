@@ -11,10 +11,12 @@ package net.mamoe.mirai.mock.internal.contact.active
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
+import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.active.ActiveChart
 import net.mamoe.mirai.contact.active.ActiveHonorList
 import net.mamoe.mirai.contact.active.ActiveRankRecord
 import net.mamoe.mirai.contact.active.ActiveRecord
+import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.mock.contact.active.MockGroupActive
 import net.mamoe.mirai.mock.internal.contact.MockGroupImpl
@@ -30,30 +32,35 @@ internal class MockGroupActiveImpl(
     @Volatile
     override var isHonorVisible: Boolean = false
     override suspend fun setHonorVisible(newValue: Boolean) {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
         isHonorVisible = newValue
     }
 
     @Volatile
     override var isTitleVisible: Boolean = false
     override suspend fun setTitleVisible(newValue: Boolean) {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
         isTitleVisible = newValue
     }
 
     @Volatile
     override var isTemperatureVisible: Boolean = false
     override suspend fun setTemperatureVisible(newValue: Boolean) {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
         isTemperatureVisible = newValue
     }
 
     @Volatile
     override var rankTitles: Map<Int, String> = ConcurrentHashMap()
     override suspend fun setRankTitles(newValue: Map<Int, String>) {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
         rankTitles = newValue
     }
 
     @Volatile
     override var temperatureTitles: Map<Int, String> = ConcurrentHashMap()
     override suspend fun setTemperatureTitles(newValue: Map<Int, String>) {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
         temperatureTitles = newValue
     }
 
