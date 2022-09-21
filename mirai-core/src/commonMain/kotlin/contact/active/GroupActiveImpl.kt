@@ -19,11 +19,8 @@ import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.groupCode
-import net.mamoe.mirai.utils.Either.Companion.onLeft
-import net.mamoe.mirai.utils.Either.Companion.onRight
-import net.mamoe.mirai.utils.Either.Companion.right
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.warning
+import net.mamoe.mirai.utils.check
 
 internal expect class GroupActiveImpl(
     group: GroupImpl,
@@ -43,14 +40,7 @@ internal abstract class CommonGroupActiveImpl(
     private var _temperatureTitles: Map<Int, String> = groupInfo.temperatureTitles
 
     private suspend fun getGroupLevelInfo(): GroupLevelInfo {
-        return group.bot.getRawGroupLevelInfo(groupCode = group.groupCode).onLeft {
-            if (logger.isEnabled) { // createException
-                logger.warning(
-                    { "Failed to load rank info for group ${group.id}" },
-                    it.createException()
-                )
-            }
-        }.right
+        return group.bot.getRawGroupLevelInfo(groupCode = group.groupCode).check()
     }
 
     private suspend fun refreshRank() {
@@ -65,113 +55,59 @@ internal abstract class CommonGroupActiveImpl(
 
     override suspend fun setHonorVisible(newValue: Boolean) {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
-        group.bot.setGroupHonourFlag(groupCode = group.groupCode, flag = newValue).onLeft {
-            if (logger.isEnabled) { // createException
-                logger.warning(
-                    { "Failed to set honor show for group ${group.id}" },
-                    it.createException()
-                )
-            }
-        }.onRight {
-            _isHonorVisible = newValue
-        }.right
+        group.bot.setGroupHonourFlag(groupCode = group.groupCode, flag = newValue).check()
+        _isHonorVisible = newValue
     }
 
     override val rankTitles: Map<Int, String> get() = _isRankVisible
 
     override suspend fun setRankTitles(newValue: Map<Int, String>) {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
-        group.bot.setGroupLevelInfo(groupCode = group.groupCode, new = false, titles = newValue).onLeft {
-            if (logger.isEnabled) { // createException
-                logger.warning(
-                    { "Failed to set rank titles for group ${group.id}" },
-                    it.createException()
-                )
-            }
-        }.onRight {
-            refreshRank()
-        }.right
+        group.bot.setGroupLevelInfo(groupCode = group.groupCode, new = false, titles = newValue).check()
+        refreshRank()
     }
 
     override val isTitleVisible: Boolean get() = _isTitleVisible
 
     override suspend fun setTitleVisible(newValue: Boolean) {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
-        group.bot.setGroupSetting(groupCode = group.groupCode, new = false, show = newValue).onLeft {
-            if (logger.isEnabled) { // createException
-                logger.warning(
-                    { "Failed to set title show for group ${group.id}" },
-                    it.createException()
-                )
-            }
-        }.onRight {
-            refreshRank()
-        }.right
+        group.bot.setGroupSetting(groupCode = group.groupCode, new = false, show = newValue).check()
+        refreshRank()
     }
 
     override val temperatureTitles: Map<Int, String> get() = _temperatureTitles
 
     override suspend fun setTemperatureTitles(newValue: Map<Int, String>) {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
-        group.bot.setGroupLevelInfo(groupCode = group.groupCode, new = true, titles = newValue).onLeft {
-            if (logger.isEnabled) { // createException
-                logger.warning(
-                    { "Failed to set temperature titles for group ${group.id}" },
-                    it.createException()
-                )
-            }
-        }.onRight {
-            refreshRank()
-        }.right
+        group.bot.setGroupLevelInfo(groupCode = group.groupCode, new = true, titles = newValue).check()
+        refreshRank()
     }
 
     override val isTemperatureVisible: Boolean get() = _isTemperatureVisible
 
     override suspend fun setTemperatureVisible(newValue: Boolean) {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
-        group.bot.setGroupSetting(groupCode = group.groupCode, new = true, show = newValue).onLeft {
-            if (logger.isEnabled) { // createException
-                logger.warning(
-                    { "Failed to set temperature show for group ${group.id}" },
-                    it.createException()
-                )
-            }
-        }.onRight {
-            refreshRank()
-        }.right
+        group.bot.setGroupSetting(groupCode = group.groupCode, new = true, show = newValue).check()
+        refreshRank()
     }
 
     override suspend fun refresh() {
-        group.bot.getRawMemberLevelInfo(groupCode = group.groupCode).onLeft {
-            if (logger.isEnabled) { // createException
-                logger.warning(
-                    { "Failed to flush member active for group ${group.id}" },
-                    it.createException()
-                )
-            }
-        }.onRight { info ->
-            _isHonorVisible = info.honourFlag == 1
-            _isTitleVisible = info.levelFlag == 1
-            _isRankVisible = info.levelName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
+        val info = group.bot.getRawMemberLevelInfo(groupCode = group.groupCode).check()
+        refreshRank()
+        _isHonorVisible = info.honourFlag == 1
+        _isTitleVisible = info.levelFlag == 1
+        _isRankVisible = info.levelName.mapKeys { (level, _) -> level.removePrefix("lvln").toInt() }
 
-            for (member in group.members) {
-                val (_, _, point, rank) = info.lv[member.id] ?: continue
+        for (member in group.members) {
+            val (_, _, point, rank) = info.lv[member.id] ?: continue
 
-                member.info.point = point
-                member.info.rank = rank
-            }
-        }.right
+            member.info.point = point
+            member.info.rank = rank
+        }
     }
 
     protected suspend fun getGroupActiveData(page: Int?): GroupActiveData {
-        return group.bot.getRawGroupActiveData(group.id, page).onLeft {
-            if (logger.isEnabled) { // createException
-                logger.warning(
-                    { "Failed to load active data for group ${group.id}" },
-                    it.createException()
-                )
-            }
-        }.right
+        return group.bot.getRawGroupActiveData(group.id, page).check()
     }
 
     override fun asFlow(): Flow<ActiveRecord> {
@@ -194,7 +130,7 @@ internal abstract class CommonGroupActiveImpl(
     }
 
     private suspend fun getHonorInfo(type: GroupHonorType): MemberHonorList {
-        val either = when (type) {
+        return when (type) {
             GroupHonorType.TALKATIVE -> group.bot.getRawTalkativeInfo(group.id)
             GroupHonorType.PERFORMER -> group.bot.getRawContinuousInfo(group.id, type.id)
             GroupHonorType.LEGEND -> group.bot.getRawContinuousInfo(group.id, type.id)
@@ -208,15 +144,6 @@ internal abstract class CommonGroupActiveImpl(
             GroupHonorType.RED_PACKET -> group.bot.getRawRedPacketInfo(group.id)
             else -> group.bot.getRawContinuousInfo(group.id, type.id)
         }
-
-        return either.onLeft {
-            if (logger.isEnabled) { // createException
-                logger.warning(
-                    { "Failed to load $type honor data for group ${group.id}" },
-                    it.createException()
-                )
-            }
-        }.right
     }
 
     override suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList {
@@ -266,14 +193,7 @@ internal abstract class CommonGroupActiveImpl(
     }
 
     private suspend fun getMemberScoreData(): MemberScoreData {
-        return group.bot.getRawMemberTitleList(group.id).onLeft {
-            if (logger.isEnabled) { // createException
-                logger.warning(
-                    { "Failed to load member score data for group ${group.id}" },
-                    it.createException()
-                )
-            }
-        }.right
+        return group.bot.getRawMemberTitleList(group.id).check()
     }
 
     override suspend fun queryActiveRank(): List<ActiveRankRecord> {
@@ -292,14 +212,7 @@ internal abstract class CommonGroupActiveImpl(
     }
 
     private suspend fun getMemberMedalInfo(uid: Long): MemberMedalData {
-        return group.bot.getRawMemberMedalInfo(group.id, uid).onLeft {
-            if (logger.isEnabled) { // createException
-                logger.warning(
-                    { "Failed to load member $uid medal info for group ${group.id}" },
-                    it.createException()
-                )
-            }
-        }.right
+        return group.bot.getRawMemberMedalInfo(group.id, uid)
     }
 
     suspend fun queryMemberMedal(uid: Long): MemberMedalInfo {

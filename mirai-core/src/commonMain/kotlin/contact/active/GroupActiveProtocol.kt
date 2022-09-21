@@ -13,8 +13,10 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.active.*
@@ -25,7 +27,6 @@ import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.Either.Companion.mapRight
 
 @Serializable
 internal data class SetResult(
@@ -63,9 +64,7 @@ internal data class MemberLevelInfo(
 
     @Serializable
     data class MemberInfo(
-        @SerialName("u") val u: Long = 0,
-        @SerialName("g") val g: Int = 0,
-        @SerialName("n") val n: String = ""
+        @SerialName("u") val u: Long = 0, @SerialName("g") val g: Int = 0, @SerialName("n") val n: String = ""
     )
 
     @Serializable
@@ -92,16 +91,14 @@ internal data class GroupActiveData(
 
     @Serializable
     data class Situation(
-        @SerialName("date") val date: String,
-        @SerialName("num") val num: Int
+        @SerialName("date") val date: String, @SerialName("num") val num: Int
     )
 
     @Serializable
     data class MostActive(
         @SerialName("name") val name: String,  // 名称 不完整
         @SerialName("sentences_num") val sentencesNum: Int,   // 发言数
-        @SerialName("sta") val sta: Int = 0,
-        @SerialName("uin") val uin: Long = 0
+        @SerialName("sta") val sta: Int = 0, @SerialName("uin") val uin: Long = 0
     )
 
     @Serializable
@@ -250,8 +247,7 @@ internal data class MemberTalkativeInfo(
 
 @Serializable
 internal data class MemberEmotionInfo(
-    @SerialName("emotion_list") val emotionList: List<MemberHonorInfo>,
-    @SerialName("total") override val total: Int
+    @SerialName("emotion_list") val emotionList: List<MemberHonorInfo>, @SerialName("total") override val total: Int
 ) : MemberHonorList {
     override val list: List<MemberHonorInfo> get() = emotionList
 }
@@ -266,8 +262,7 @@ internal data class MemberHomeworkExcellentInfo(
 
 @Serializable
 internal data class MemberHomeworkActiveInfo(
-    @SerialName("hwactive_list") val activeList: List<MemberHonorInfo>,
-    @SerialName("total") override val total: Int
+    @SerialName("hwactive_list") val activeList: List<MemberHonorInfo>, @SerialName("total") override val total: Int
 ) : MemberHonorList {
     override val list: List<MemberHonorInfo> get() = activeList
 }
@@ -313,8 +308,7 @@ internal data class MemberScoreData(
 ) : CheckableResponseA(), JsonStruct {
     @Serializable
     data class Level(
-        @SerialName("level") val level: String,
-        @SerialName("name") val name: String
+        @SerialName("level") val level: String, @SerialName("name") val name: String
     )
 
     @Serializable
@@ -339,7 +333,7 @@ internal data class MemberScoreData(
 
 internal suspend fun QQAndroidBot.getRawGroupLevelInfo(
     groupCode: Long
-): Either<DeserializationFailure, GroupLevelInfo> {
+): GroupLevelInfo {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qinfo.clt.qq.com/cgi-bin/qun_info/get_group_level_new_info")
         parameter("gc", groupCode)
@@ -349,16 +343,15 @@ internal suspend fun QQAndroidBot.getRawGroupLevelInfo(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}"
+                "cookie", "uin=o${id}; skey=${sKey}"
             )
         }
-    }.bodyAsText().loadSafelyAs(GroupLevelInfo.serializer())
+    }.bodyAsText().loadAs(GroupLevelInfo.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawMemberLevelInfo(
     groupCode: Long
-): Either<DeserializationFailure, MemberLevelInfo> {
+): MemberLevelInfo {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qinfo.clt.qq.com/cgi-bin/qun_info/get_group_members_lite")
         parameter("gc", groupCode)
@@ -368,17 +361,15 @@ internal suspend fun QQAndroidBot.getRawMemberLevelInfo(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}"
+                "cookie", "uin=o${id}; skey=${sKey}"
             )
         }
-    }.bodyAsText().loadSafelyAs(MemberLevelInfo.serializer())
+    }.bodyAsText().loadAs(MemberLevelInfo.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawMemberMedalInfo(
-    groupCode: Long,
-    uid: Long
-): Either<DeserializationFailure, MemberMedalData> {
+    groupCode: Long, uid: Long
+): MemberMedalData {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/qunwelcome/medal2/list")
         parameter("gc", groupCode)
@@ -388,19 +379,17 @@ internal suspend fun QQAndroidBot.getRawMemberMedalInfo(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+                "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
-        @Suppress("INVISIBLE_MEMBER")
-        defaultJson.decodeFromJsonElement(MemberMedalData.serializer(), it.data)
-    }
+    }.bodyAsText()
+        .loadAs(CgiData.serializer())
+        .loadData(MemberMedalData.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawTalkativeInfo(
     groupCode: Long
-): Either<DeserializationFailure, MemberTalkativeInfo> {
+): MemberTalkativeInfo {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/qunapp/honor_talkative")
         parameter("gc", groupCode)
@@ -410,19 +399,15 @@ internal suspend fun QQAndroidBot.getRawTalkativeInfo(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+                "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
-        @Suppress("INVISIBLE_MEMBER")
-        defaultJson.decodeFromJsonElement(MemberTalkativeInfo.serializer(), it.data)
-    }
+    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberTalkativeInfo.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawEmotionInfo(
     groupCode: Long
-): Either<DeserializationFailure, MemberEmotionInfo> {
+): MemberEmotionInfo {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/qunapp/honor_emotion")
         parameter("gc", groupCode)
@@ -432,23 +417,27 @@ internal suspend fun QQAndroidBot.getRawEmotionInfo(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+                "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
-        @Suppress("INVISIBLE_MEMBER")
-        defaultJson.decodeFromJsonElement(MemberEmotionInfo.serializer(), it.data)
-    }
+    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberEmotionInfo.serializer())
 }
+
+@PublishedApi
+internal val defaultJson: Json = Json {
+    isLenient = true
+    ignoreUnknownKeys = true
+}
+
+private fun <T> CgiData.loadData(serializer: KSerializer<T>): T =
+    defaultJson.decodeFromJsonElement(serializer, this.data)
 
 /**
  * @param type 取值 1 2 3 分别对应 学术新星 顶尖学霸 至尊学神
  */
 internal suspend fun QQAndroidBot.getRawHomeworkExcellentInfo(
-    groupCode: Long,
-    type: Int
-): Either<DeserializationFailure, MemberHomeworkExcellentInfo> {
+    groupCode: Long, type: Int
+): MemberHomeworkExcellentInfo {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/qunapp/honor_hwexcellent")
         parameter("gc", groupCode)
@@ -459,19 +448,15 @@ internal suspend fun QQAndroidBot.getRawHomeworkExcellentInfo(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+                "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
-        @Suppress("INVISIBLE_MEMBER")
-        defaultJson.decodeFromJsonElement(MemberHomeworkExcellentInfo.serializer(), it.data)
-    }
+    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberHomeworkExcellentInfo.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawHomeworkActiveInfo(
     groupCode: Long
-): Either<DeserializationFailure, MemberHomeworkActiveInfo> {
+): MemberHomeworkActiveInfo {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/qunapp/honor_hwactive")
         parameter("gc", groupCode)
@@ -481,23 +466,18 @@ internal suspend fun QQAndroidBot.getRawHomeworkActiveInfo(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+                "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
-        @Suppress("INVISIBLE_MEMBER")
-        defaultJson.decodeFromJsonElement(MemberHomeworkActiveInfo.serializer(), it.data)
-    }
+    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberHomeworkActiveInfo.serializer())
 }
 
 /**
  * @param type 取值 2 3 5 分别对应 群聊之火 群聊炽焰 冒尖小春笋
  */
 internal suspend fun QQAndroidBot.getRawContinuousInfo(
-    groupCode: Long,
-    type: Int
-): Either<DeserializationFailure, MemberContinuousInfo> {
+    groupCode: Long, type: Int
+): MemberContinuousInfo {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/qunapp/honor_continuous")
         parameter("gc", groupCode)
@@ -508,19 +488,15 @@ internal suspend fun QQAndroidBot.getRawContinuousInfo(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+                "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
-        @Suppress("INVISIBLE_MEMBER")
-        defaultJson.decodeFromJsonElement(MemberContinuousInfo.serializer(), it.data)
-    }
+    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberContinuousInfo.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawRicherHonorInfo(
     groupCode: Long
-): Either<DeserializationFailure, MemberRicherHonorInfo> {
+): MemberRicherHonorInfo {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/new_honor/list_honor/list_richer_honor")
         parameter("gc", groupCode)
@@ -530,19 +506,15 @@ internal suspend fun QQAndroidBot.getRawRicherHonorInfo(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+                "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
-        @Suppress("INVISIBLE_MEMBER")
-        defaultJson.decodeFromJsonElement(MemberRicherHonorInfo.serializer(), it.data)
-    }
+    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberRicherHonorInfo.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawRedPacketInfo(
     groupCode: Long
-): Either<DeserializationFailure, MemberRedPacketInfo> {
+): MemberRedPacketInfo {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/new_honor/list_honor/list_redpacket_honor")
         parameter("gc", groupCode)
@@ -552,14 +524,10 @@ internal suspend fun QQAndroidBot.getRawRedPacketInfo(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+                "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
-        @Suppress("INVISIBLE_MEMBER")
-        defaultJson.decodeFromJsonElement(MemberRedPacketInfo.serializer(), it.data)
-    }
+    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberRedPacketInfo.serializer())
 }
 
 /**
@@ -567,7 +535,7 @@ internal suspend fun QQAndroidBot.getRawRedPacketInfo(
  */
 internal suspend fun QQAndroidBot.getRawMemberTitleList(
     groupCode: Long
-): Either<DeserializationFailure, MemberScoreData> {
+): MemberScoreData {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/honorv2/honor_title_list")
         parameter("group_code", groupCode)
@@ -577,21 +545,15 @@ internal suspend fun QQAndroidBot.getRawMemberTitleList(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+                "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadSafelyAs(CgiData.serializer()).mapRight {
-        @Suppress("INVISIBLE_MEMBER")
-        defaultJson.decodeFromJsonElement(MemberScoreData.serializer(), it.data)
-    }
+    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberScoreData.serializer())
 }
 
 internal suspend fun QQAndroidBot.setGroupLevelInfo(
-    groupCode: Long,
-    new: Boolean,
-    titles: Map<Int, String>
-): Either<DeserializationFailure, SetResult> {
+    groupCode: Long, new: Boolean, titles: Map<Int, String>
+): SetResult {
     return components[HttpClientProvider].getHttpClient().post {
         url("https://qinfo.clt.qq.com/cgi-bin/qun_info/set_group_level_info")
         setBody(FormDataContent(Parameters.build {
@@ -607,18 +569,15 @@ internal suspend fun QQAndroidBot.setGroupLevelInfo(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}"
+                "cookie", "uin=o${id}; skey=${sKey}"
             )
         }
-    }.bodyAsText().loadSafelyAs(SetResult.serializer())
+    }.bodyAsText().loadAs(SetResult.serializer())
 }
 
 internal suspend fun QQAndroidBot.setGroupSetting(
-    groupCode: Long,
-    new: Boolean,
-    show: Boolean
-): Either<DeserializationFailure, SetResult> {
+    groupCode: Long, new: Boolean, show: Boolean
+): SetResult {
     return components[HttpClientProvider].getHttpClient().post {
         url("https://qinfo.clt.qq.com/cgi-bin/qun_info/set_group_setting")
         setBody(FormDataContent(Parameters.build {
@@ -631,17 +590,15 @@ internal suspend fun QQAndroidBot.setGroupSetting(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}"
+                "cookie", "uin=o${id}; skey=${sKey}"
             )
         }
-    }.bodyAsText().loadSafelyAs(SetResult.serializer())
+    }.bodyAsText().loadAs(SetResult.serializer())
 }
 
 internal suspend fun QQAndroidBot.setGroupHonourFlag(
-    groupCode: Long,
-    flag: Boolean
-): Either<DeserializationFailure, SetResult> {
+    groupCode: Long, flag: Boolean
+): SetResult {
     return components[HttpClientProvider].getHttpClient().post {
         url("https://qinfo.clt.qq.com/cgi-bin/qun_info/set_honour_flag")
         setBody(FormDataContent(Parameters.build {
@@ -654,17 +611,15 @@ internal suspend fun QQAndroidBot.setGroupHonourFlag(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}"
+                "cookie", "uin=o${id}; skey=${sKey}"
             )
         }
-    }.bodyAsText().loadSafelyAs(SetResult.serializer())
+    }.bodyAsText().loadAs(SetResult.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawGroupActiveData(
-    groupCode: Long,
-    page: Int? = null
-): Either<DeserializationFailure, GroupActiveData> {
+    groupCode: Long, page: Int? = null
+): GroupActiveData {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
         parameter("bkn", client.wLoginSigInfo.bkn)
@@ -673,17 +628,15 @@ internal suspend fun QQAndroidBot.getRawGroupActiveData(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+                "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadSafelyAs(GroupActiveData.serializer())
+    }.bodyAsText().loadAs(GroupActiveData.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawGroupHonorListData(
-    groupId: Long,
-    type: GroupHonorType
-): Either<DeserializationFailure, GroupHonorListData> {
+    groupId: Long, type: GroupHonorType
+): GroupHonorListData {
     val html = components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/interactive/honorlist")
         parameter("gc", groupId)
@@ -699,23 +652,18 @@ internal suspend fun QQAndroidBot.getRawGroupHonorListData(
         headers {
             // ktor bug
             append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+                "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
     }.bodyAsText()
     val jsonText = html.substringAfter("window.__INITIAL_STATE__=").substringBefore("</script>")
-    return jsonText.loadSafelyAs(GroupHonorListData.serializer())
+    return jsonText.loadAs(GroupHonorListData.serializer())
 }
 
 @Suppress("INVISIBLE_MEMBER")
 internal fun GroupActiveData.MostActive.toActiveRecord(group: Group): ActiveRecord {
     return ActiveRecord(
-        memberId = uin,
-        memberName = name,
-        periodDays = sentencesNum,
-        messagesCount = sta,
-        member = group.get(id = uin)
+        memberId = uin, memberName = name, periodDays = sentencesNum, messagesCount = sta, member = group.get(id = uin)
     )
 }
 
