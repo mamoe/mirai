@@ -191,7 +191,7 @@ public actual interface ExternalResource : Closeable {
      * 关闭此流不会关闭 [ExternalResource].
      * @throws IllegalStateException 当上一个流未关闭又尝试打开新的流时抛出
      *
-     * @since SINCE_NATIVE_TARGET
+     * @since 2.13
      */
     @MiraiExperimentalApi
     public actual fun input(): Input
