@@ -1169,16 +1169,16 @@ public abstract interface class net/mamoe/mirai/data/GroupInfo {
 	public abstract fun getBotMuteTimestamp ()I
 	public abstract fun getConfessTalk ()Z
 	public abstract fun getGroupCode ()J
-	public abstract fun getHonorShow ()Z
 	public abstract fun getMemo ()Ljava/lang/String;
 	public abstract fun getMuteAll ()Z
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun getOwner ()J
 	public abstract fun getRankTitles ()Ljava/util/Map;
-	public abstract fun getTemperatureShow ()Z
 	public abstract fun getTemperatureTitles ()Ljava/util/Map;
-	public abstract fun getTitleShow ()Z
 	public abstract fun getUin ()J
+	public abstract fun isHonorVisible ()Z
+	public abstract fun isTemperatureVisible ()Z
+	public abstract fun isTitleVisible ()Z
 }
 
 public abstract interface class net/mamoe/mirai/data/MemberInfo : net/mamoe/mirai/data/UserInfo {
