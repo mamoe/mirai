@@ -29,12 +29,13 @@ import net.mamoe.mirai.mock.contact.MockAnonymousMember
 import net.mamoe.mirai.mock.contact.MockGroup
 import net.mamoe.mirai.mock.contact.MockGroupControlPane
 import net.mamoe.mirai.mock.contact.MockNormalMember
+import net.mamoe.mirai.mock.contact.active.MockGroupActive
+import net.mamoe.mirai.mock.internal.contact.active.MockGroupActiveImpl
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToGroup
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
 import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.utils.*
-import java.util.*
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 
@@ -47,12 +48,14 @@ internal class MockGroupImpl(
 ) : AbstractMockContact(
     parentCoroutineContext, bot, id
 ), MockGroup {
-    override val honorMembers: MutableMap<GroupHonorType, MockNormalMember> = EnumMap(GroupHonorType::class.java)
+    override val honorMembers: MutableMap<GroupHonorType, MockNormalMember> = ConcurrentHashMap()
     private val txFileSystem by lazy { bot.mock().tmpResourceServer.mockServerFileDisk.newFsSystem() }
 
     override fun avatarUrl(spec: AvatarSpec): String {
         return avatarUrl
     }
+
+    override val active: MockGroupActive by lazy { MockGroupActiveImpl(this) }
 
     override fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType) {
         val onm = honorMembers[honorType]

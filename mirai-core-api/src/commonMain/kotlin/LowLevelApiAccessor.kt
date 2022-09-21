@@ -131,28 +131,6 @@ public interface LowLevelApiAccessor {
 
 
     /**
-     * 获取群活跃信息
-     * 不传page可得到趋势图
-     * page从0开始传入可以得到发言列表
-     */
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun getRawGroupActiveData(bot: Bot, groupId: Long, page: Int = -1): GroupActiveData
-
-
-    /**
-     * 获取群荣誉信息
-     */
-    @LowLevelApi
-    @MiraiExperimentalApi
-    public suspend fun getRawGroupHonorListData(
-        bot: Bot,
-        groupId: Long,
-        type: GroupHonorType
-    ): GroupHonorListData?
-
-
-    /**
      * 处理一个账号请求添加机器人为好友的事件
      */
     @LowLevelApi

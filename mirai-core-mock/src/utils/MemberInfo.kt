@@ -10,6 +10,7 @@
 package net.mamoe.mirai.mock.utils
 
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.MemberInfo
 
 public fun simpleMemberInfo(
@@ -29,6 +30,14 @@ public fun simpleMemberInfo(
         override val joinTimestamp: Int get() = 0
         override val lastSpeakTimestamp: Int get() = 0
         override val isOfficialBot: Boolean get() = false
+        override val rank: Int
+            get() = 0
+        override val point: Int
+            get() = 0
+        override val honors: Set<GroupHonorType>
+            get() = setOf()
+        override val temperature: Int
+            get() = 0
         override val uin: Long get() = uin
         override val nick: String get() = nick
         override val remark: String get() = remark

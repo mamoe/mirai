@@ -22,6 +22,8 @@ import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.contact.MockFriend
 import net.mamoe.mirai.mock.contact.MockGroup
 import net.mamoe.mirai.mock.contact.MockNormalMember
+import net.mamoe.mirai.mock.contact.active.MockMemberActive
+import net.mamoe.mirai.mock.internal.contact.active.MockMemberActiveImpl
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcFromGroup
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToTemp
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
@@ -106,7 +108,7 @@ internal class MockNormalMemberImpl(
 
     override val permission: MemberPermission
         get() = mockApi.permission
-
+    override val active: MockMemberActive by lazy { MockMemberActiveImpl() }
     override val joinTimestamp: Int
         get() = mockApi.joinTimestamp
 
