@@ -57,7 +57,6 @@ kotlin {
 
         findByName("jvmBaseMain")?.apply {
             dependencies {
-                api(`kotlinx-coroutines-jdk8`) // use -jvm modules for this magic target 'jvmBase'
                 implementation(`jetbrains-annotations`)
                 implementation(`log4j-api`)
                 compileOnly(`slf4j-api`)
