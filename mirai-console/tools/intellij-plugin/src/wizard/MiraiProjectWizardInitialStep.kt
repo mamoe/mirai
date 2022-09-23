@@ -26,6 +26,7 @@ import com.intellij.ui.dsl.builder.*
 import net.mamoe.mirai.console.intellij.wizard.MiraiProjectWizardBundle.message
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.runAsync
+import org.jetbrains.kotlin.tools.projectWizard.Versions
 
 private val log = logger<MiraiProjectWizardInitialStep>()
 
@@ -48,6 +49,8 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
 
     var miraiVersionKind by miraiVersionKindProperty
     var miraiVersion by miraiVersionProperty
+
+    var kotlinStdlibVersion = Versions.KOTLIN.text
 
     private lateinit var miraiVersionCell: Cell<ComboBox<String>>
 
@@ -117,6 +120,18 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                     .enabled(false)
                     .bindItem(miraiVersionProperty)
 
+                miraiVersionProperty.afterChange {
+                    kotlinStdlibVersion = "Loading"
+                    runAsync {
+                        KotlinStdlibVersionFetcher.getKotlinStdlibVersion(miraiVersion)
+                    }.onError {
+                        log.error(it)
+                        kotlinStdlibVersion = Versions.KOTLIN.text
+                    }.onProcessed {
+                        kotlinStdlibVersion = it
+                    }
+                }
+
                 miraiVersionKindProperty.afterChange {
                     if (!miraiVersionCell.component.isEnabled) return@afterChange
 
@@ -156,6 +171,7 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                     dependsOn = pluginDependencies.trim()
                 ),
                 miraiVersion = miraiVersion,
+                kotlinVersion = kotlinStdlibVersion,
                 buildSystemType = when (val projectType = projectTypeProperty.get()) {
                     MiraiModuleBuilder.GRADLE_KTS_PROJECT -> BuildSystemType.GradleKt
                     MiraiModuleBuilder.GRADLE_GROOVY_PROJECT -> BuildSystemType.GradleGroovy
@@ -171,7 +187,7 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
     }
 
     override fun validate(): Boolean {
-        if (miraiVersion == message("label.mirai.version.loading")) {
+        if (miraiVersion == message("label.mirai.version.loading") || kotlinStdlibVersion == "Loading") {
             JBPopupFactory.getInstance()
                 .createHtmlTextBalloonBuilder(
                     message("error.please.wait.for.mirai.version"),
@@ -186,7 +202,6 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                 )
             return false
         }
-
         return super.validate()
     }
 
