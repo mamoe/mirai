@@ -13,6 +13,7 @@ import io.ktor.utils.io.core.*
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import net.mamoe.mirai.utils.Closeable
 import net.mamoe.mirai.utils.runBIO
 import net.mamoe.mirai.utils.toLongUnsigned
 import net.mamoe.mirai.utils.withUse

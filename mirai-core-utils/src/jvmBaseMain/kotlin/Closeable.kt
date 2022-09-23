@@ -9,7 +9,13 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.utils.io.core.use as ktorUse
+
 public actual typealias Closeable = java.io.Closeable
 
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@kotlin.internal.LowPriorityInOverloadResolution
+public actual inline fun <C : Closeable, R> C.use(block: (C) -> R): R = ktorUse(block)
+
 public actual fun Closeable.asKtorCloseable(): io.ktor.utils.io.core.Closeable = this
-public actual fun io.ktor.utils.io.core.Closeable.asMiraiCloseable(): io.ktor.utils.io.core.Closeable = this
+public actual fun io.ktor.utils.io.core.Closeable.asMiraiCloseable(): Closeable = this
