@@ -120,7 +120,8 @@ import kotlin.jvm.JvmStatic
  *
  * @see FileCacheStrategy
  */
-public expect interface ExternalResource : Closeable {
+@Suppress("RemoveRedundantQualifierName")
+public expect interface ExternalResource : net.mamoe.mirai.utils.Closeable {
 
     /**
      * 是否在 _使用一次_ 后自动 [close].
