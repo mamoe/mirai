@@ -26,20 +26,24 @@ import kotlin.jvm.JvmName
  * @property user 打卡发起人
  * @property sign 打卡标记
  * @property hasRank 有排名的打卡，通常是前三名
+ * @property rank 打卡排名，没有排名或识别失败时为 null
+ * @since 2.14
  */
 public class SignEvent @MiraiInternalApi constructor(
     public val user: UserOrBot,
     public val sign: String,
-    public val hasRank: Boolean
+    @get:JvmName("hasRank")
+    public val hasRank: Boolean,
+    public val rank: Int?
 ) : AbstractEvent(), BotEvent, Packet {
     override val bot: Bot get() = user.bot
 
     override fun toString(): String {
         return when (user) {
-            is Bot -> "SignEvent(bot=${user.id}, sign=${sign}, hasRank=${hasRank})"
-            is Member -> "SignEvent(bot=${user.bot.id}, group=${user.group.id}, member=${user.id}, sign=${sign}, hasRank=${hasRank})"
-            is Friend -> "SignEvent(bot=${user.bot.id}, friend=${user.id} sign=${sign}, hasRank=${hasRank})"
-            else -> "SignEvent(user=${user}, sign=${sign}, hasRank=${hasRank})"
+            is Bot -> "SignEvent(bot=${user.id}, sign=${sign})"
+            is Member -> "SignEvent(bot=${user.bot.id}, group=${user.group.id}, member=${user.id}, sign=${sign})"
+            is Friend -> "SignEvent(bot=${user.bot.id}, friend=${user.id} sign=${sign})"
+            else -> "SignEvent(user=${user}, sign=${sign})"
         }
     }
 }

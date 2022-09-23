@@ -2817,9 +2817,10 @@ public final class net/mamoe/mirai/event/events/OtherClientOnlineEvent : net/mam
 
 public final class net/mamoe/mirai/event/events/SignEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/internal/network/Packet {
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
-	public final fun getHasRank ()Z
+	public final fun getRank ()Ljava/lang/Integer;
 	public final fun getSign ()Ljava/lang/String;
 	public final fun getUser ()Lnet/mamoe/mirai/contact/UserOrBot;
+	public final fun hasRank ()Z
 	public fun toString ()Ljava/lang/String;
 }
 
