@@ -175,6 +175,7 @@ public expect interface ExternalResource : Closeable {
      *
      * @since 2.13
      */
+    @MiraiInternalApi
     public fun input(): Input
 
     @MiraiInternalApi

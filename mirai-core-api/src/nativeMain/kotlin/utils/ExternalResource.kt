@@ -169,6 +169,7 @@ public actual interface ExternalResource : Closeable {
      *
      * @since 2.13
      */
+    @MiraiInternalApi
     public actual fun input(): Input
 
     @MiraiInternalApi
