@@ -12,6 +12,7 @@ package net.mamoe.mirai.contact.announcement
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.NotStableForInheritance
@@ -92,4 +93,30 @@ public actual interface Announcements {
      * @throws IllegalStateException 当协议异常时抛出
      */
     public actual suspend fun uploadImage(resource: ExternalResource): AnnouncementImage
+
+    /**
+     * 获取 已确认/未确认 的群成员
+     *
+     * @param fid 公告的 [OnlineAnnouncement.fid]
+     * @param confirmed 是否确认
+     * @return 群成员列表
+     *
+     * @throws PermissionDeniedException 当没有权限时抛出
+     * @throws IllegalStateException 当协议异常时抛出
+     *
+     * @see OnlineAnnouncement.members
+     */
+    public actual suspend fun members(fid: String, confirmed: Boolean): List<NormalMember>
+
+    /**
+     * 提醒 未确认 的群成员
+     *
+     * @param fid 公告的 [OnlineAnnouncement.fid]
+     *
+     * @throws PermissionDeniedException 当没有权限时抛出
+     * @throws IllegalStateException 当协议异常时抛出
+     *
+     * @see OnlineAnnouncement.remind
+     */
+    public actual suspend fun remind(fid: String)
 }
