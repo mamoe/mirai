@@ -16,20 +16,25 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.flow.*
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.announcement.*
 import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.OnlineAnnouncementImpl
+import net.mamoe.mirai.internal.contact.active.defaultJson
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.deleteGroupAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.getGroupAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.getRawGroupAnnouncements
+import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.getReadDetail
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.sendGroupAnnouncement
+import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.sendRemind
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toAnnouncement
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementProtocol.toGroupAnnouncement
 import net.mamoe.mirai.internal.message.contextualBugReportException
@@ -141,6 +146,17 @@ internal abstract class CommonAnnouncementsImpl(
 
             AnnouncementProtocol.uploadGroupAnnouncementImage(bot, resource)
         }
+    }
+
+    override suspend fun members(fid: String, confirmed: Boolean): List<NormalMember> {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission see announcement confirmed detail" }
+        val detail = bot.getReadDetail(groupId = group.id, fid = fid, read = confirmed)
+        return detail.users.mapNotNull { user -> group[user.uin] }
+    }
+
+    override suspend fun remind(fid: String) {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission send announcement remind" }
+        bot.sendRemind(groupId = group.id, fid = fid)
     }
 }
 
@@ -297,6 +313,50 @@ internal object AnnouncementProtocol {
         append("fid", fid)
         append("format", "json")
     })
+
+    private fun <T> CgiData.loadData(serializer: KSerializer<T>): T =
+        defaultJson.decodeFromJsonElement(serializer, this.data)
+
+    suspend fun QQAndroidBot.getReadDetail(groupId: Long, fid: String, read: Boolean): GroupAnnouncementReadDetail {
+        val cgi = bot.components[HttpClientProvider].getHttpClient().post {
+            url("https://qun.qq.com/cgi-bin/qunapp/announce_unread")
+            parameter("gc", groupId)
+            parameter("start", 0)
+            parameter("num", 3000)
+            parameter("feed_id", fid)
+            parameter("type", if (read) 1 else 0)
+            parameter("bkn", client.wLoginSigInfo.bkn)
+            headers {
+                // ktor bug
+                append(
+                    "cookie",
+                    "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
+                )
+            }
+        }.bodyAsText().loadAs(CgiData.serializer())
+        check(cgi.cgicode == 0) { cgi.errorMessage }
+        return cgi.loadData(GroupAnnouncementReadDetail.serializer())
+    }
+
+    suspend fun QQAndroidBot.sendRemind(groupId: Long, fid: String) {
+        val cgi = bot.components[HttpClientProvider].getHttpClient().post {
+            url("https://qun.qq.com/cgi-bin/qunapp/announce_remindread")
+            parameter("gc", groupId)
+            parameter("feed_id", fid)
+            parameter("bkn", client.wLoginSigInfo.bkn)
+            headers {
+                // ktor bug
+                append(
+                    "cookie",
+                    "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
+                )
+            }
+        }.bodyAsText().loadAs(CgiData.serializer())
+        // 14 "该公告不存在"
+        // 54016 "该公告已提醒多次，不可再提醒。"
+        // 54010 "提醒太频繁，请稍后再试"
+        check(cgi.cgicode == 0) { cgi.errorMessage }
+    }
 
     fun Announcement.toGroupAnnouncement(senderId: Long): GroupAnnouncement {
         return GroupAnnouncement(

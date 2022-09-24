@@ -13,6 +13,7 @@ package net.mamoe.mirai.internal.contact.announcement
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import net.mamoe.mirai.contact.announcement.AnnouncementImage
 import net.mamoe.mirai.utils.CheckableResponseA
 import net.mamoe.mirai.utils.JsonStruct
@@ -77,4 +78,27 @@ internal data class GroupAnnouncementSettings(
     companion object {
         val DEFAULT = GroupAnnouncementSettings()
     }
+}
+
+@Serializable
+internal data class CgiData(
+    @SerialName("cgicode") val cgicode: Int,
+    @SerialName("data") val `data`: JsonElement,
+    @SerialName("msg") override val errorMessage: String,
+    @SerialName("retcode") override val errorCode: Int
+) : CheckableResponseA(), JsonStruct
+
+@Serializable
+internal data class GroupAnnouncementReadDetail(
+    @SerialName("read_total") val readTotal: Int = 0,
+    @SerialName("unread_total") val unreadTotal: Int = 0,
+    @SerialName("users") val users: List<User> = emptyList()
+) {
+    @Serializable
+    data class User(
+        @SerialName("avatar") val avatar: String,
+        @SerialName("display_name") val displayName: String,
+        @SerialName("face_flag") val faceFlag: Int,
+        @SerialName("uin") val uin: Long
+    )
 }

@@ -77,6 +77,29 @@ public interface OnlineAnnouncement : Announcement {
      * @see Announcements.delete
      */
     public suspend fun delete(): Boolean = group.announcements.delete(fid)
+
+    /**
+     * 获取 已确认/未确认 的群成员
+     *
+     * @param confirmed 是否确认
+     * @return 群成员列表
+     *
+     * @throws PermissionDeniedException 当没有权限时抛出
+     * @throws IllegalStateException 当协议异常时抛出
+     *
+     * @see Announcements.members
+     */
+    public suspend fun members(confirmed: Boolean): List<NormalMember> = group.announcements.members(fid, confirmed)
+
+    /**
+     * 提醒 未确认 的群成员
+     *
+     * @throws PermissionDeniedException 当没有权限时抛出
+     * @throws IllegalStateException 当协议异常时抛出
+     *
+     * @see Announcements.remind
+     */
+    public suspend fun remind(): Unit = group.announcements.remind(fid)
 }
 
 /**

@@ -93,4 +93,18 @@ internal class MockAnnouncementsImpl(
     override suspend fun uploadImage(resource: ExternalResource): AnnouncementImage = resource.inResource {
         AnnouncementImage.create(generateImageId(resource.md5), 500, 500)
     }
+
+    override suspend fun members(fid: String, confirmed: Boolean): List<NormalMember> {
+        if (!group.botPermission.isOperator()) {
+            throw PermissionDeniedException("Only administrator have permission see announcement confirmed detail")
+        }
+
+        return group.members.toList()
+    }
+
+    override suspend fun remind(fid: String) {
+        if (!group.botPermission.isOperator()) {
+            throw PermissionDeniedException("Only administrator have permission send announcement remind")
+        }
+    }
 }
