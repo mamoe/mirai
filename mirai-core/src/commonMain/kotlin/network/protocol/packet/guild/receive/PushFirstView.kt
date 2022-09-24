@@ -120,7 +120,8 @@ internal object PushFirstView : IncomingPacketFactory<Packet?>(
                                             guildGroupMembersInfo.members.forEach {
                                                 memberList.delegate.add(
                                                     GuildMemberImpl(
-                                                        it.tinyId,
+                                                        bot,
+                                                        guildNode.guildId,
                                                         bot.coroutineContext,
                                                         GuildMemberInfoImpl(
                                                             title = it.title,

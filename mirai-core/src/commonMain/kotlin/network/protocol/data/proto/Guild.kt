@@ -94,10 +94,10 @@ internal class Guild : ProtoBuf {
 
     @Serializable
     internal class ChannelMsgContent(
-        @ProtoNumber(1) @JvmField val head: ChannelMsgHead,
-        @ProtoNumber(2) @JvmField val ctrlHead: ChannelMsgCtrlHead,
-        @ProtoNumber(3) @JvmField val body: MessageBody,
-        @ProtoNumber(4) @JvmField val extInfo: ChannelExtInfo,
+        @ProtoNumber(1) @JvmField val head: ChannelMsgHead = ChannelMsgHead(),
+        @ProtoNumber(2) @JvmField val ctrlHead: ChannelMsgCtrlHead = ChannelMsgCtrlHead(),
+        @ProtoNumber(3) @JvmField val body: MessageBody = MessageBody(),
+        @ProtoNumber(4) @JvmField val extInfo: ChannelExtInfo = ChannelExtInfo(),
     ) : ProtoBuf {
         override fun toString(): String {
             return "ChannelMsgContent(head=$head, ctrlHead=$ctrlHead, body=$body, extInfo=$extInfo)"
@@ -107,8 +107,8 @@ internal class Guild : ProtoBuf {
 
     @Serializable
     internal class ChannelMsgHead(
-        @ProtoNumber(1) @JvmField val routingHead: ChannelRoutingHead,
-        @ProtoNumber(2) @JvmField val contentHead: ChannelContentHead,
+        @ProtoNumber(1) @JvmField val routingHead: ChannelRoutingHead = ChannelRoutingHead(),
+        @ProtoNumber(2) @JvmField val contentHead: ChannelContentHead = ChannelContentHead(),
     ) : ProtoBuf {
         override fun toString(): String {
             return "ChannelMsgHead(routingHead=$routingHead, contentHead=$contentHead)"

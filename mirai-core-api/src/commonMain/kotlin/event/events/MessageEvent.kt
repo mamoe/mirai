@@ -270,10 +270,22 @@ public class StrangerMessageEvent constructor(
 public class GuildMessageEvent(
     override val guild: Guild,
     override val channel: Channel,
-    public val sender: GuildMember,
-    public val time: Long,
-    public val message: MessageChain,
-) : AbstractEvent(), GuildEvent {
+    override val sender: GuildMember,
+    override val time: Int,
+    override val message: MessageChain,
+) : AbstractMessageEvent(), MessageEvent, GuildEvent {
+
+    override val bot: Bot
+        get() = sender.bot
+    override val subject: Guild
+        get() = guild
+    override val senderName: String
+        get() = sender.nameCard
+
+    override fun toString(): String {
+        return "GuildMessageEvent(guild=$guild, channel=$channel, sender=$sender, time=$time, message=$message, bot=$bot, subject=$subject, senderName='$senderName')"
+    }
+
 
 }
 

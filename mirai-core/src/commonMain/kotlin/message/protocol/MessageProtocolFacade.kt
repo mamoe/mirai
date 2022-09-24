@@ -35,6 +35,7 @@ import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.buildComponentStorage
 import net.mamoe.mirai.internal.network.component.withFallback
+import net.mamoe.mirai.internal.network.protocol.data.proto.Guild
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.pipeline.ProcessResult
@@ -80,6 +81,15 @@ internal interface MessageProtocolFacade {
         bot: Bot,
         builder: MessageChainBuilder,
         containingMsg: MsgComm.Msg? = null,
+    )
+
+    fun decode(
+        elements: List<ImMsgBody.Elem>,
+        guildIdOrZero: Long,
+        isDirect: Boolean,
+        bot: Bot,
+        builder: MessageChainBuilder,
+        containingMsg: Guild.ChannelMsgContent? = null,
     )
 
 
@@ -135,8 +145,9 @@ internal interface MessageProtocolFacade {
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
         bot: Bot,
-    ): MessageChain = buildMessageChain { decode(elements, groupIdOrZero, messageSourceKind, bot, this, null) }
-
+    ): MessageChain = buildMessageChain {
+        decode(elements, groupIdOrZero, messageSourceKind, bot, this, null)
+    }
 
     fun createSerializersModule(): SerializersModule = SerializersModule {
         serializers.forEach { ms ->
@@ -279,6 +290,28 @@ internal class MessageProtocolFacadeImpl(
             set(MessageDecoderContext.MESSAGE_SOURCE_KIND, messageSourceKind)
             set(MessageDecoderContext.GROUP_ID, groupIdOrZero)
             set(MessageDecoderContext.CONTAINING_MSG, containingMsg)
+        }
+
+        runCoroutineInPlace {
+            elements.forEach { builder.addAll(pipeline.process(it, attributes).collected) }
+        }
+    }
+
+    override fun decode(
+        elements: List<ImMsgBody.Elem>,
+        guildIdOrZero: Long,
+        isDirect: Boolean,
+        bot: Bot,
+        builder: MessageChainBuilder,
+        containingMsg: Guild.ChannelMsgContent?
+    ) {
+        val pipeline = decoderPipeline
+
+        val attributes = buildTypeSafeMap {
+            set(MessageDecoderContext.BOT, bot)
+            set(MessageDecoderContext.IS_DIRECT, isDirect)
+            set(MessageDecoderContext.GUILD_ID, guildIdOrZero)
+            set(MessageDecoderContext.CHANNEL_MSG_CONTENT, containingMsg)
         }
 
         runCoroutineInPlace {

@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.protocol.impl.PokeMessageProtocol.Companion.UNSUPPORTED_POKE_MESSAGE_PLAIN
 import net.mamoe.mirai.internal.message.protocol.impl.RichMessageProtocol.Companion.UNSUPPORTED_MERGED_MESSAGE_PLAIN
 import net.mamoe.mirai.internal.message.source.*
+import net.mamoe.mirai.internal.network.protocol.data.proto.Guild
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.message.data.*
@@ -51,6 +52,16 @@ internal suspend fun List<MsgComm.Msg>.toMessageChainOnline(
     facade: MessageProtocolFacade = MessageProtocolFacade
 ): MessageChain {
     return toMessageChain(bot, groupIdOrZero, true, messageSourceKind, facade).refineDeep(bot, refineContext)
+}
+
+internal suspend fun List<Guild.ChannelMsgContent>.toMessageChainOnline(
+    bot: Bot,
+    guildIdOrZero: Long,
+    isDirect: Boolean,
+    refineContext: RefineContext = EmptyRefineContext,
+    facade: MessageProtocolFacade = MessageProtocolFacade
+): MessageChain {
+    return toMessageChain(bot, guildIdOrZero, true, isDirect, facade).refineDeep(bot, refineContext)
 }
 
 internal suspend fun MsgComm.Msg.toMessageChainOnline(
@@ -92,6 +103,47 @@ internal fun List<MsgComm.Msg>.toMessageChainNoSource(
     return toMessageChain(bot, groupIdOrZero, null, messageSourceKind).refineLight(bot, refineContext)
 }
 
+internal fun List<Guild.ChannelMsgContent>.toMessageChainNoSource(
+    bot: Bot,
+    guildIdOrZero: Long,
+    isDirect: Boolean,
+    refineContext: RefineContext = EmptyRefineContext,
+): MessageChain {
+    return toMessageChain(bot, guildIdOrZero, null, isDirect).refineLight(bot, refineContext)
+}
+
+private fun List<Guild.ChannelMsgContent>.toMessageChain(
+    bot: Bot,
+    guildIdOrZero: Long,
+    onlineSource: Boolean?,
+    isDirect: Boolean,
+    facade: MessageProtocolFacade = MessageProtocolFacade,
+): MessageChain {
+    val messageList = this
+
+
+    val builder = MessageChainBuilder(messageList.sumOf {
+        it.body.richText!!.elems.size
+    })
+
+    if (onlineSource != null) {
+        builder.add(ReceiveMessageTransformer.createMessageSource(bot, onlineSource, messageList))
+    }
+
+
+
+    messageList.forEach { msg ->
+        if (null != msg.body.richText) {
+            facade.decode(msg.body.richText.elems, guildIdOrZero, isDirect, bot, builder, msg)
+        }
+    }
+
+    for (msg in messageList) {
+        msg.body.richText?.ptt?.toAudio()?.let { builder.add(it) }
+    }
+
+    return builder.build().cleanupRubbishMessageElements()
+}
 
 private fun List<MsgComm.Msg>.toMessageChain(
     bot: Bot,
@@ -126,6 +178,23 @@ private fun List<MsgComm.Msg>.toMessageChain(
  * @see joinToMessageChain
  */
 internal object ReceiveMessageTransformer {
+    fun createMessageSource(
+        bot: Bot,
+        isDirect: Boolean,
+        messageList: List<Guild.ChannelMsgContent>,
+    ): MessageSource {
+        return OnlineMessageSourceFromGuildImpl(bot, messageList)
+//        return when (isDirect) {
+//            true ->{
+//                //TODO direct message
+//                OnlineMessageSourceFromGuildImpl(bot,messageList)
+//            }
+//            false ->{
+//                OnlineMessageSourceFromGuildImpl(bot,messageList)
+//            }
+//        }
+    }
+
     fun createMessageSource(
         bot: Bot,
         onlineSource: Boolean,

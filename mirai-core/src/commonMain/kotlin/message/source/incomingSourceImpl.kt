@@ -18,15 +18,15 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.GuildMember
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.internal.asQQAndroidBot
-import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.checkIsGroupImpl
-import net.mamoe.mirai.internal.contact.newAnonymous
+import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.getGroupByUinOrCodeOrFail
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.internal.message.toMessageChainNoSource
+import net.mamoe.mirai.internal.network.protocol.data.proto.Guild
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
@@ -238,6 +238,71 @@ internal class OnlineMessageSourceFromGroupImpl(
             elems = msg.flatMap { it.msgBody.richText.elems },
             type = 0,
             time = msg.first().msgHead.msgTime,
+            pbReserve = EMPTY_BYTE_ARRAY,
+            srcMsg = EMPTY_BYTE_ARRAY
+        )
+    }
+
+    override fun toJceData(): ImMsgBody.SourceMsg {
+        return jceData
+    }
+
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return super<IncomingMessageSourceInternal>.accept(visitor, data)
+    }
+}
+
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(OnlineMessageSourceFromGuildImpl.Serializer::class)
+internal class OnlineMessageSourceFromGuildImpl(
+    override val bot: Bot,
+    msg: List<Guild.ChannelMsgContent>,
+) : OnlineMessageSource.Incoming.FromGuild(), IncomingMessageSourceInternal {
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromGuildImpl")
+
+    @Transient
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
+    override val sequenceIds: IntArray = msg.mapToIntArray { it.head.contentHead.seq.toInt() }
+    override val internalIds: IntArray = msg.mapToIntArray { it.body.richText!!.attr!!.random }
+    override val ids: IntArray get() = sequenceIds
+    override val time: Int = msg.first().head.contentHead.time.toInt()
+    override var originalMessageLazy = lazy {
+        msg.toMessageChainNoSource(bot, guildIdOrZero = guild.id, false)
+    }
+    override val originalMessage: MessageChain get() = originalMessageLazy.value
+    override val isOriginalMessageInitialized: Boolean
+        get() = originalMessageLazy.isInitialized()
+
+
+    override val subject: GuildImpl by lazy {
+        val guildId = msg.first().head.routingHead.guildId
+            ?: error("cannot find guildCode for OnlineMessageSourceFromGuildImpl. msg=${msg.structureToString()}")
+
+        val guild = bot.getGuild(guildId)?.checkIsGuildImpl()
+            ?: error("cannot find guild for OnlineMessageSourceFromGuildImpl. msg=${msg.structureToString()}")
+
+        guild
+    }
+
+    override val sender: GuildMember by lazy {
+        val guild = subject
+        val member = guild.members.find { it.id == msg.first().head.routingHead.fromTinyId } as GuildMember ?: null
+        if (member != null) {
+            return@lazy member
+        } else {
+            error("cannot find sender for OnlineMessageSourceFromGuildImpl. msg=${msg.structureToString()}")
+        }
+    }
+
+    private val jceData: ImMsgBody.SourceMsg by lazy {
+        ImMsgBody.SourceMsg(
+            origSeqs = intArrayOf(msg.first().head.contentHead.seq.toInt()),
+            senderUin = msg.first().head.routingHead.fromTinyId,
+            toUin = 0,
+            flag = 1,
+            elems = msg.flatMap { it.body.richText!!.elems },
+            type = 0,
+            time = msg.first().head.contentHead.time.toInt(),
             pbReserve = EMPTY_BYTE_ARRAY,
             srcMsg = EMPTY_BYTE_ARRAY
         )

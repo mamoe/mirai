@@ -11,9 +11,11 @@ package net.mamoe.mirai.internal.network.notice.guild
 
 
 import io.ktor.utils.io.core.*
+import net.mamoe.mirai.event.events.GuildMessageEvent
 import net.mamoe.mirai.internal.contact.ChannelImpl
 import net.mamoe.mirai.internal.contact.GuildImpl
 import net.mamoe.mirai.internal.contact.GuildMemberImpl
+import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.protocol.data.proto.Guild
@@ -36,7 +38,11 @@ internal class GuildMessageProcessor(
                 val sender =
                     guild.members.find { it.id == item.head.routingHead.fromTinyId } as GuildMemberImpl? ?: return
 
+                val list = mutableListOf<Guild.ChannelMsgContent>()
+                list.add(item)
+
                 if (item.head.contentHead.type.toInt() == 3841) {
+
                     var common: ImMsgBody.CommonElem? = null
                     if (item.body.richText != null) {
                         for (elem in item.body.richText.elems) {
@@ -60,30 +66,31 @@ internal class GuildMessageProcessor(
                     if (eventBody.updateMsg?.eventType != null) {
                         //TODO 撤回
                         if (eventBody.updateMsg.eventType.toInt() == 1 || eventBody.updateMsg.eventType.toInt() == 2) {
-
+                            return
                         }
 
                         //TODO 消息贴表情更新 (包含添加或删除)
                         if (eventBody.updateMsg.eventType.toInt() == 4) {
-
+                            return
                         }
                     }
                     //TODO 创建子频道
                     if (null != eventBody.createChan) {
-
+                        return
                     }
 
                     //TODO 删除子频道
                     if (null != eventBody.destroyChan) {
-
+                        return
                     }
                     //TODO 修改子频道
                     if (null != eventBody.changeChanInfo) {
-
+                        return
                     }
                     //TODO 加入频道
                     if (null != eventBody.joinGuild) {
 
+                        return
                     }
                 }
 
@@ -110,15 +117,16 @@ internal class GuildMessageProcessor(
                 }
 
 
-//                collect(
-//                    GuildMessageEvent(
-//                        guild = guild,
-//                        channel= channel,
-//                        time = item.head.contentHead.time,
-//                        sender = sender,
-//                        message = ,
-//                    )
-//                )
+
+                collect(
+                    GuildMessageEvent(
+                        guild = guild,
+                        channel = channel,
+                        time = item.head.contentHead.time.toInt(),
+                        sender = sender,
+                        message = list.toMessageChainOnline(bot, guild.id, false),
+                    ),
+                )
             }
         }
     }

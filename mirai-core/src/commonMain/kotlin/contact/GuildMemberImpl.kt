@@ -9,26 +9,31 @@
 
 package net.mamoe.mirai.internal.contact
 
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.GuildMember
-import net.mamoe.mirai.data.GuildMemberInfo
+import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.info.GuildMemberInfoImpl
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.action.UserNudge
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.ExternalResource
 import kotlin.coroutines.CoroutineContext
 
 internal class GuildMemberImpl constructor(
-    memberId: Long,
+    bot: QQAndroidBot,
+    guildId: Long,
     parentCoroutineContext: CoroutineContext,
-    guildMemberInfo: GuildMemberInfo,
-) : GuildMember {
+    guildMemberInfo: GuildMemberInfoImpl,
+) : GuildMember, AbstractGuildMember(bot, guildId, parentCoroutineContext, guildMemberInfo) {
+    override val nick: String get() = info.nickname
+    override val remark: String get() = info.nickname
 
-    override val bot: Bot
-        get() = TODO("Not yet implemented")
+    override suspend fun sendMessage(message: Message): MessageReceipt<User> {
+        TODO("Not yet implemented")
+    }
 
-    override suspend fun sendMessage(message: Message): MessageReceipt<Contact> {
+    override fun nudge(): UserNudge {
         TODO("Not yet implemented")
     }
 
@@ -36,15 +41,9 @@ internal class GuildMemberImpl constructor(
         TODO("Not yet implemented")
     }
 
-    override val id: Long = memberId
-
     override val nameCard: String
-        get() = TODO("Not yet implemented")
-    override val coroutineContext: CoroutineContext
-        get() = TODO("Not yet implemented")
+        get() = info.nickname
     override val avatarUrl: String
-        get() = TODO("Not yet implemented")
-    override val joinTime: Long
-        get() = TODO("Not yet implemented")
+        get() = ""
 
 }

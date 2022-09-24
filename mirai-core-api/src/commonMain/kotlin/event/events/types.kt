@@ -47,7 +47,9 @@ public interface GroupEvent : BotEvent {
     override val bot: Bot
         get() = group.bot
 }
-
+/**
+ * 有关频道的事件
+ */
 public interface GuildEvent : BotEvent {
     public val guild: Guild
 

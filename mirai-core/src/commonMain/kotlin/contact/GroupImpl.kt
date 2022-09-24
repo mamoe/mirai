@@ -69,9 +69,20 @@ internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
     check(instance is GroupImpl) { "group is not an instanceof GroupImpl!! DO NOT interlace two or more protocol implementations!!" }
 }
 
+internal fun GuildImpl.Companion.checkIsInstance(instance: Guild) {
+    contract { returns() implies (instance is GuildImpl) }
+    check(instance is GuildImpl) { "guild is not an instanceof GuildImpl!! DO NOT interlace two or more protocol implementations!!" }
+}
+
 internal fun Group.checkIsGroupImpl(): GroupImpl {
     contract { returns() implies (this@checkIsGroupImpl is GroupImpl) }
     GroupImpl.checkIsInstance(this)
+    return this
+}
+
+internal fun Guild.checkIsGuildImpl(): GuildImpl {
+    contract { returns() implies (this@checkIsGuildImpl is GuildImpl) }
+    GuildImpl.checkIsInstance(this)
     return this
 }
 

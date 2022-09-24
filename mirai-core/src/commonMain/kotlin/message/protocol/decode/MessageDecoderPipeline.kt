@@ -10,7 +10,9 @@
 package net.mamoe.mirai.internal.message.protocol.decode
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext.Companion.CHANNEL_MSG_CONTENT
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext.Companion.CONTAINING_MSG
+import net.mamoe.mirai.internal.network.protocol.data.proto.Guild
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.pipeline.*
@@ -28,7 +30,10 @@ internal interface MessageDecoderContext : ProcessorPipelineContext<ImMsgBody.El
         val BOT = TypeKey<Bot>("bot")
         val MESSAGE_SOURCE_KIND = TypeKey<MessageSourceKind>("messageSourceKind")
         val GROUP_ID = TypeKey<Long>("groupId") // zero if not group
+        val GUILD_ID = TypeKey<Long>("guildId") // zero if not guild
         val CONTAINING_MSG = TypeKey<MsgComm.Msg?>("containingMsg")
+        val CHANNEL_MSG_CONTENT = TypeKey<Guild.ChannelMsgContent?>("channelMsgContent")
+        val IS_DIRECT = TypeKey<Boolean>("isDirect")
     }
 }
 
@@ -50,8 +55,14 @@ internal open class MessageDecoderPipelineImpl :
         context: MessageDecoderContext,
         attributes: TypeSafeMap
     ): ProcessResult<MessageDecoderContext, Message> {
-        context.attributes[CONTAINING_MSG]?.let { msg ->
-            traceLogging.info { "Processing MsgCommon.Msg: ${msg.structureToStringAndDesensitizeIfAvailable()}" }
+        try {
+            context.attributes[CONTAINING_MSG]?.let { msg ->
+                traceLogging.info { "Processing MsgCommon.Msg: ${msg.structureToStringAndDesensitizeIfAvailable()}" }
+            }
+        } catch (e: Exception) {
+            context.attributes[CHANNEL_MSG_CONTENT]?.let { msg ->
+                traceLogging.info { "Processing Guild.ChannelMsgContent: ${msg.structureToStringAndDesensitizeIfAvailable()}" }
+            }
         }
         return super.process(data, context, attributes)
     }

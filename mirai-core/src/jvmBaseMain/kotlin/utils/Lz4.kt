@@ -36,13 +36,13 @@ internal actual class Lz4 {
                     totalCount += count
                     byteOutputStream.write(buffer, 0, count)
                 }
-                logger.info("total size decompressed : $totalCount")
-                logger.info("number of compressed bytes decompressed into stream : " + lz4InputStream.getCompressedCount())
+                logger.verbose("total size decompressed : $totalCount")
+                logger.verbose("number of compressed bytes decompressed into stream : " + lz4InputStream.getCompressedCount())
                 byteOutputStream.flush()
                 decompressed = byteOutputStream.toByteArray()
                 byteOutputStream.close()
                 lz4InputStream.close()
-                logger.info(
+                logger.verbose(
                     "input compressed length : " + data.size + ", output decompressed length : "
                             + decompressed.size
                 )

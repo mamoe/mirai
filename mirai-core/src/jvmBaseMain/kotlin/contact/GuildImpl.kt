@@ -25,6 +25,4 @@ internal actual class GuildImpl actual constructor(
 ) : Guild, CommonGuildImpl(bot, parentCoroutineContext, id, guildInfo, channelNodes, members) {
     actual companion object;
 
-    override val coroutineContext: CoroutineContext
-        get() = TODO("Not yet implemented")
 }

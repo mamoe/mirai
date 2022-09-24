@@ -616,6 +616,21 @@ public sealed class OnlineMessageSource : MessageSource() { // TODO: 2021/1/10 E
             }
         }
 
+        @NotStableForInheritance
+        public abstract class FromGuild @MiraiInternalApi constructor() : Incoming() {
+            public companion object Key :
+                AbstractPolymorphicMessageKey<Incoming, FromGuild>(Incoming, { it.safeCast() })
+
+            public abstract override val sender: GuildMember
+            public override val subject: Guild get() = sender.guild
+            public final override val target: Guild get() = subject
+            public inline val guild: Guild get() = subject
+
+            final override fun toString(): String {
+                return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from guild $fromId to $targetId at $time]"
+            }
+        }
+
         public companion object Key :
             AbstractPolymorphicMessageKey<OnlineMessageSource, FromTemp>(OnlineMessageSource, { it.safeCast() })
     }

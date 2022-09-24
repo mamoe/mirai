@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.contact
 
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.Guild
@@ -41,15 +40,13 @@ internal abstract class CommonGuildImpl constructor(
     guildInfo: GuildInfo,
     override val channelNodes: List<ChannelImpl>,
     override val members: ContactList<GuildMemberImpl>,
-) : Guild {
+) : Guild, AbstractContact(bot, parentCoroutineContext) {
     companion object;
 
-    override val coroutineContext: CoroutineContext
-        get() = TODO("Not yet implemented")
     override val name: String
         get() = TODO("Not yet implemented")
     override val guildCode: Long
-        get() = TODO("Not yet implemented")
+        get() = id
     override val owner: GuildMember
         get() = TODO("Not yet implemented")
     override val botAsMember: GuildMember
@@ -71,14 +68,9 @@ internal abstract class CommonGuildImpl constructor(
         TODO("Not yet implemented")
     }
 
-    override suspend fun sendMessage(message: String): MessageReceipt<Contact> {
-        return super.sendMessage(message)
-    }
 
     override suspend fun uploadImage(resource: ExternalResource): Image {
         TODO("Not yet implemented")
     }
 
-    override val bot: Bot
-        get() = TODO("Not yet implemented")
 }

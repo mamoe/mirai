@@ -9,12 +9,10 @@
 
 package net.mamoe.mirai.contact
 
-import kotlinx.coroutines.CoroutineScope
-
 /**
  * 频道成员信息
  */
-public interface GuildMember : Contact, CoroutineScope {
+public interface GuildMember : User {
     /**
      * Tiny id
      */
@@ -28,10 +26,15 @@ public interface GuildMember : Contact, CoroutineScope {
     /**
      * 头像连接
      */
-    public override val avatarUrl: String
+//    public override val avatarUrl: String
 
     /**
      * 加入时间
      */
-    public val joinTime: Long
+//    public val joinTime: Long
+
+    /**
+     * 所在的频道.
+     */
+    public val guild: Guild
 }
