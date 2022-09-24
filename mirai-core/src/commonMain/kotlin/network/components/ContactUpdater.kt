@@ -30,6 +30,7 @@ import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.isValid
 import net.mamoe.mirai.internal.network.notice.NewContactSupport
+import net.mamoe.mirai.internal.network.protocol.data.jce.StGroupRankInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.data.jce.isValid
@@ -226,7 +227,7 @@ internal class ContactUpdaterImpl(
         initFriendOk = true
     }
 
-    private suspend fun addGroupToBot(stTroopNum: StTroopNum) = stTroopNum.run {
+    private suspend fun addGroupToBot(stTroopNum: StTroopNum, stGroupRankInfo: StGroupRankInfo?) = stTroopNum.run {
         suspend fun refreshGroupMemberList(): Sequence<MemberInfo> {
             return Mirai.getRawGroupMemberList(
                 bot,
@@ -257,7 +258,7 @@ internal class ContactUpdaterImpl(
                 bot = bot,
                 parentCoroutineContext = bot.coroutineContext,
                 id = groupCode,
-                groupInfo = GroupInfoImpl(stTroopNum),
+                groupInfo = GroupInfoImpl(stTroopNum, stGroupRankInfo),
                 members = members,
             ),
         )
@@ -306,7 +307,9 @@ internal class ContactUpdaterImpl(
             troopListData.groups.forEach { group ->
                 launch {
                     semaphore.withPermit {
-                        retryCatching(5) { addGroupToBot(group) }.getOrThrow()
+                        retryCatching(5) {
+                            addGroupToBot(group, troopListData.ranks.find { it.dwGroupCode == group.groupCode })
+                        }.getOrThrow()
                     }
                 }
             }

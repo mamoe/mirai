@@ -25,6 +25,8 @@ import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.contact.MockAnonymousMember
 import net.mamoe.mirai.mock.contact.MockGroup
 import net.mamoe.mirai.mock.contact.MockMember
+import net.mamoe.mirai.mock.contact.active.MockMemberActive
+import net.mamoe.mirai.mock.internal.contact.active.MockMemberActiveImpl
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcFromGroup
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
 import net.mamoe.mirai.utils.ExternalResource
@@ -67,6 +69,7 @@ internal class MockAnonymousMemberImpl(
         }
     override val specialTitle: String
         get() = "匿名"
+    override val active: MockMemberActive by lazy { MockMemberActiveImpl() }
 
     override suspend fun mute(durationSeconds: Int) {
     }

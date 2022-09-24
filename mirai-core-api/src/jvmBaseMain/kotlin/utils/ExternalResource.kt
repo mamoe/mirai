@@ -187,13 +187,14 @@ public actual interface ExternalResource : Closeable {
 
     /**
      * 打开 [Input]. 在返回的 [Input] 被 [关闭][Input.close] 前无法再次打开流.
+     * 注意: 此 API 不稳定, 请使用 [inputStream] 代替.
      *
      * 关闭此流不会关闭 [ExternalResource].
      * @throws IllegalStateException 当上一个流未关闭又尝试打开新的流时抛出
      *
-     * @since SINCE_NATIVE_TARGET
+     * @since 2.13
      */
-    @MiraiExperimentalApi
+    @MiraiInternalApi
     public actual fun input(): Input
 
     @MiraiInternalApi

@@ -9,12 +9,10 @@
 
 package net.mamoe.mirai.internal.pipeline
 
-import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
 import net.mamoe.mirai.internal.network.components.NoticeProcessor
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.structureToStringAndDesensitizeIfAvailable
 import kotlin.jvm.JvmInline
 
 internal interface Processor<C : ProcessorPipelineContext<D, *>, D> : PipelineConsumptionMarker {

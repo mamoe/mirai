@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.handler
 
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.Closeable
 
 private val debugLogger: MiraiLogger by lazy {
     MiraiLogger.Factory.create(

@@ -120,7 +120,8 @@ import kotlin.jvm.JvmStatic
  *
  * @see FileCacheStrategy
  */
-public expect interface ExternalResource : Closeable {
+@Suppress("RemoveRedundantQualifierName")
+public expect interface ExternalResource : net.mamoe.mirai.utils.Closeable {
 
     /**
      * 是否在 _使用一次_ 后自动 [close].
@@ -173,8 +174,9 @@ public expect interface ExternalResource : Closeable {
      * 关闭此流不会关闭 [ExternalResource].
      * @throws IllegalStateException 当上一个流未关闭又尝试打开新的流时抛出
      *
-     * @since SINCE_NATIVE_TARGET
+     * @since 2.13
      */
+    @MiraiInternalApi
     public fun input(): Input
 
     @MiraiInternalApi

@@ -13,6 +13,7 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.mock.MockBotDSL
+import net.mamoe.mirai.mock.contact.active.MockMemberActive
 
 @JvmBlockingBridge
 public interface MockMember : Member, MockContact, MockUser {
@@ -30,4 +31,6 @@ public interface MockMember : Member, MockContact, MockUser {
      */
     @MockBotDSL
     public override val mockApi: MockApi
+
+    override val active: MockMemberActive
 }

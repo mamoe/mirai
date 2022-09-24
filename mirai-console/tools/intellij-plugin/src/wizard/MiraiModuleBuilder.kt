@@ -77,7 +77,7 @@ class MiraiModuleBuilder : StarterModuleBuilder() {
             val projectCoordinates = projectCoordinates
             val pluginCoordinates = pluginCoordinates
             return mapOf<String, Any>(
-                "KOTLIN_VERSION" to KotlinVersion.CURRENT.toString(),
+                "KOTLIN_VERSION" to kotlinVersion,
                 "MIRAI_VERSION" to miraiVersion,
                 "GROUP_ID" to projectCoordinates.groupId,
                 "VERSION" to projectCoordinates.version,

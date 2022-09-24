@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,6 +14,7 @@ package net.mamoe.mirai.contact
 
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.active.MemberActive
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.MemberNudge
@@ -64,6 +65,40 @@ public interface Member : User {
      * @see [NormalMember.specialTitle]
      */
     public val specialTitle: String
+
+    /**
+     * 群等级头衔 (PC 端显示)
+     * @see active
+     * @since 2.13
+     */
+    public val rankTitle: String get() = group.active.rankTitles[active.rank].orEmpty()
+
+    /**
+     * 群活跃头衔 (手机端显示)
+     * @see active
+     * @since 2.13
+     */
+    public val temperatureTitle: String
+        get() {
+            val level = when (active.temperature) {
+                in 1..10 -> 1
+                in 11..20 -> 2
+                in 21..40 -> 3
+                in 41..60 -> 4
+                in 61..80 -> 5
+                in 81..100 -> 6
+                else -> 0
+            }
+            return group.active.temperatureTitles[level].orEmpty()
+        }
+
+    /**
+     * 群活跃度相关属性.
+     * @see [rankTitle]
+     * @see [temperatureTitle]
+     * @since 2.13
+     */
+    public val active: MemberActive
 
     /**
      * 禁言这个群成员 [durationSeconds] 秒, 在机器人无权限操作时抛出 [PermissionDeniedException].

@@ -7,16 +7,98 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+
 package net.mamoe.mirai.mock.internal.msgsrc
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSourceKind
-import net.mamoe.mirai.message.data.OnlineMessageSource
+import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacadeImpl
+import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
+import net.mamoe.mirai.message.MessageSerializers
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.mock.internal.contact.AbstractMockContact
+import net.mamoe.mirai.mock.internal.contact.MockImage
 import net.mamoe.mirai.utils.currentTimeSeconds
 
+internal fun registerMockMsgSerializers() {
+    val serializers = mutableListOf<MessageSerializer<*>>()
+
+    MessageSerializer.superclassesScope(Image::class, MessageContent::class, SingleMessage::class) {
+        serializers.add(
+            MessageSerializer(
+                MockImage::class,
+                MockImage.serializer()
+            )
+        )
+    }
+
+    MessageSerializer.superclassesScope(MessageSource::class, MessageMetadata::class, SingleMessage::class) {
+
+        serializers.add(
+            MessageSerializer(
+                OnlineMsgSrcToGroup::class,
+                OnlineMsgSrcToGroup.serializer()
+            )
+        )
+        serializers.add(
+            MessageSerializer(
+                OnlineMsgSrcToFriend::class,
+                OnlineMsgSrcToFriend.serializer()
+            )
+        )
+        serializers.add(
+            MessageSerializer(
+                OnlineMsgSrcToStranger::class,
+                OnlineMsgSrcToStranger.serializer()
+            )
+        )
+        serializers.add(
+            MessageSerializer(
+                OnlineMsgSrcToTemp::class,
+                OnlineMsgSrcToTemp.serializer()
+            )
+        )
+
+
+        serializers.add(
+            MessageSerializer(
+                OnlineMsgSrcFromGroup::class,
+                OnlineMsgSrcFromGroup.serializer()
+            )
+        )
+        serializers.add(
+            MessageSerializer(
+                OnlineMsgSrcFromFriend::class,
+                OnlineMsgSrcFromFriend.serializer()
+            )
+        )
+        serializers.add(
+            MessageSerializer(
+                OnlineMsgSrcFromStranger::class,
+                OnlineMsgSrcFromStranger.serializer()
+            )
+        )
+        serializers.add(
+            MessageSerializer(
+                OnlineMsgSrcFromTemp::class,
+                OnlineMsgSrcFromTemp.serializer()
+            )
+        )
+    }
+
+    val module = MessageProtocolFacadeImpl(listOf(), "").also {
+        it.serializers.addAll(serializers)
+    }.createSerializersModule()
+
+    MessageSerializers.registerSerializers(module)
+}
+
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(OnlineMsgSrcToGroup.Serializer::class)
 internal class OnlineMsgSrcToGroup(
     override val ids: IntArray,
     override val internalIds: IntArray,
@@ -27,8 +109,13 @@ internal class OnlineMsgSrcToGroup(
     override val target: Group
 ) : OnlineMessageSource.Outgoing.ToGroup() {
     override val isOriginalMessageInitialized: Boolean get() = true
+
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
+
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(OnlineMsgSrcToFriend.Serializer::class)
 internal class OnlineMsgSrcToFriend(
     override val ids: IntArray,
     override val internalIds: IntArray,
@@ -39,8 +126,14 @@ internal class OnlineMsgSrcToFriend(
     override val target: Friend
 ) : OnlineMessageSource.Outgoing.ToFriend() {
     override val isOriginalMessageInitialized: Boolean get() = true
+
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToFriend")
+
 }
 
+
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(OnlineMsgSrcToStranger.Serializer::class)
 internal class OnlineMsgSrcToStranger(
     override val ids: IntArray,
     override val internalIds: IntArray,
@@ -51,8 +144,12 @@ internal class OnlineMsgSrcToStranger(
     override val target: Stranger
 ) : OnlineMessageSource.Outgoing.ToStranger() {
     override val isOriginalMessageInitialized: Boolean get() = true
+
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToStranger")
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(OnlineMsgSrcToTemp.Serializer::class)
 internal class OnlineMsgSrcToTemp(
     override val ids: IntArray,
     override val internalIds: IntArray,
@@ -63,19 +160,13 @@ internal class OnlineMsgSrcToTemp(
     override val target: Member
 ) : OnlineMessageSource.Outgoing.ToTemp() {
     override val isOriginalMessageInitialized: Boolean get() = true
+
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToTemp")
 }
 
-internal class OnlineMsgFromGroup(
-    override val ids: IntArray,
-    override val internalIds: IntArray,
-    override val time: Int,
-    override val originalMessage: MessageChain,
-    override val bot: Bot,
-    override val sender: Member
-) : OnlineMessageSource.Incoming.FromGroup() {
-    override val isOriginalMessageInitialized: Boolean get() = true
-}
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(OnlineMsgSrcFromFriend.Serializer::class)
 internal class OnlineMsgSrcFromFriend(
     override val ids: IntArray,
     override val internalIds: IntArray,
@@ -85,8 +176,12 @@ internal class OnlineMsgSrcFromFriend(
     override val sender: Friend
 ) : OnlineMessageSource.Incoming.FromFriend() {
     override val isOriginalMessageInitialized: Boolean get() = true
+
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromFriend")
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(OnlineMsgSrcFromStranger.Serializer::class)
 internal class OnlineMsgSrcFromStranger(
     override val ids: IntArray,
     override val internalIds: IntArray,
@@ -96,8 +191,12 @@ internal class OnlineMsgSrcFromStranger(
     override val sender: Stranger
 ) : OnlineMessageSource.Incoming.FromStranger() {
     override val isOriginalMessageInitialized: Boolean get() = true
+
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromStranger")
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(OnlineMsgSrcFromTemp.Serializer::class)
 internal class OnlineMsgSrcFromTemp(
     override val ids: IntArray,
     override val internalIds: IntArray,
@@ -107,8 +206,13 @@ internal class OnlineMsgSrcFromTemp(
     override val sender: Member
 ) : OnlineMessageSource.Incoming.FromTemp() {
     override val isOriginalMessageInitialized: Boolean get() = true
+
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromTemp")
+
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(OnlineMsgSrcFromGroup.Serializer::class)
 internal class OnlineMsgSrcFromGroup(
     override val ids: IntArray,
     override val internalIds: IntArray,
@@ -118,6 +222,9 @@ internal class OnlineMsgSrcFromGroup(
     override val sender: Member
 ) : OnlineMessageSource.Incoming.FromGroup() {
     override val isOriginalMessageInitialized: Boolean get() = true
+
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromGroup")
+
 }
 
 internal typealias MsgSrcConstructor<R> = (
@@ -141,6 +248,7 @@ internal inline fun <R> AbstractMockContact.newMsgSrc(
                 is Stranger,
                 is Friend,
                 -> this.id
+
                 else -> error("Invalid contact: $this")
             },
             kind = when (this) {

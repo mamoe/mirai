@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.mock.internal.contact
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
@@ -95,6 +96,8 @@ internal suspend fun ExternalResource.mockImplUploadAudioAsOnline(bot: MockBot):
     )
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(MockImage.Serializer::class)
 internal class MockImage(
     override val imageId: String,
     private val urlPath: String,
@@ -111,6 +114,8 @@ internal class MockImage(
             return bot.uploadMockImage(text.toExternalResource().toAutoCloseable()).cast()
         }
     }
+
+    object Serializer : Image.FallbackSerializer("MockImage")
 
     private val _stringValue: String? by lazy(LazyThreadSafetyMode.NONE) { "[mirai:image:$imageId]" }
 

@@ -18,8 +18,6 @@ import io.ktor.utils.io.*
 import io.ktor.utils.io.charsets.*
 import io.ktor.utils.io.core.*
 import io.ktor.utils.io.core.internal.*
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -28,20 +26,6 @@ public val EMPTY_BYTE_ARRAY: ByteArray = ByteArray(0)
 
 public val DECRYPTER_16_ZERO: ByteArray = ByteArray(16)
 public val KEY_16_ZEROS: ByteArray = ByteArray(16)
-
-public inline fun <C : Closeable, R> C.withUse(block: C.() -> R): R {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-    }
-    return use(block)
-}
-
-public inline fun <I : Closeable, O : Closeable, R> I.withOut(output: O, block: I.(output: O) -> R): R {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-    }
-    return use { output.use { block(this, output) } }
-}
 
 /**
  * It's caller's responsibility to close the input

@@ -51,6 +51,7 @@ import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.name
+import net.mamoe.mirai.console.util.AnsiMessageBuilder
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.SemVersion
@@ -181,6 +182,61 @@ internal class MiraiConsoleImplementationBridge(
                 buildDate.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 
             mainLogger.info { "Starting mirai-console..." }
+
+            val printLogo = true // TODO
+            if (printLogo) {
+                mainLogger.info {
+                    AnsiMessageBuilder.create(noAnsi = !isAnsiSupported).apply {
+                        /*
+
+___  ____           _   _____                       _
+|  \/  (_)         (_) /  __ \                     | |
+| .  . |_ _ __ __ _ _  | /  \/ ___  _ __  ___  ___ | | ___
+| |\/| | | '__/ _` | | | |    / _ \| '_ \/ __|/ _ \| |/ _ \
+| |  | | | | | (_| | | | \__/\ (_) | | | \__ \ (_) | |  __/
+\_|  |_/_|_|  \__,_|_|  \____/\___/|_| |_|___/\___/|_|\___|
+
+ __       __ __                   __  ______                                      __
+|  \     /  \  \                 |  \/      \                                    |  \
+| ▓▓\   /  ▓▓\▓▓ ______   ______  \▓▓  ▓▓▓▓▓▓\ ______  _______   _______  ______ | ▓▓ ______
+| ▓▓▓\ /  ▓▓▓  \/      \ |      \|  \ ▓▓   \▓▓/      \|       \ /       \/      \| ▓▓/      \
+| ▓▓▓▓\  ▓▓▓▓ ▓▓  ▓▓▓▓▓▓\ \▓▓▓▓▓▓\ ▓▓ ▓▓     |  ▓▓▓▓▓▓\ ▓▓▓▓▓▓▓\  ▓▓▓▓▓▓▓  ▓▓▓▓▓▓\ ▓▓  ▓▓▓▓▓▓\
+| ▓▓\▓▓ ▓▓ ▓▓ ▓▓ ▓▓   \▓▓/      ▓▓ ▓▓ ▓▓   __| ▓▓  | ▓▓ ▓▓  | ▓▓\▓▓    \| ▓▓  | ▓▓ ▓▓ ▓▓    ▓▓
+| ▓▓ \▓▓▓| ▓▓ ▓▓ ▓▓     |  ▓▓▓▓▓▓▓ ▓▓ ▓▓__/  \ ▓▓__/ ▓▓ ▓▓  | ▓▓_\▓▓▓▓▓▓\ ▓▓__/ ▓▓ ▓▓ ▓▓▓▓▓▓▓▓
+| ▓▓  \▓ | ▓▓ ▓▓ ▓▓      \▓▓    ▓▓ ▓▓\▓▓    ▓▓\▓▓    ▓▓ ▓▓  | ▓▓       ▓▓\▓▓    ▓▓ ▓▓\▓▓     \
+ \▓▓      \▓▓\▓▓\▓▓       \▓▓▓▓▓▓▓\▓▓ \▓▓▓▓▓▓  \▓▓▓▓▓▓ \▓▓   \▓▓\▓▓▓▓▓▓▓  \▓▓▓▓▓▓ \▓▓ \▓▓▓▓▓▓▓
+
+                        */
+                        append("\n\n")
+
+                        val textA = """[ Mirai consosle $version ]"""
+                        val logoLength = 94
+                        lightBlue()
+                        val barlength = logoLength - textA.length
+                        val leftWidth = barlength / 2
+                        repeat(leftWidth) {
+                            append('=')
+                        }
+                        append(textA)
+                        repeat(barlength - leftWidth) {
+                            append('=')
+                        }
+                        append('\n')
+
+                        lightYellow().appendLine(""" __       __ __                   __  ______                                      __""")
+                        lightYellow().appendLine("""|  \     /  \  \                 |  \/      \                                    |  \""")
+                        lightYellow().appendLine("""| ▓▓\   /  ▓▓\▓▓ ______   ______  \▓▓  ▓▓▓▓▓▓\ ______  _______   _______  ______ | ▓▓ ______""")
+                        lightYellow().appendLine("""| ▓▓▓\ /  ▓▓▓  \/      \ |      \|  \ ▓▓   \▓▓/      \|       \ /       \/      \| ▓▓/      \""")
+                        lightYellow().appendLine("""| ▓▓▓▓\  ▓▓▓▓ ▓▓  ▓▓▓▓▓▓\ \▓▓▓▓▓▓\ ▓▓ ▓▓     |  ▓▓▓▓▓▓\ ▓▓▓▓▓▓▓\  ▓▓▓▓▓▓▓  ▓▓▓▓▓▓\ ▓▓  ▓▓▓▓▓▓\""")
+                        lightYellow().appendLine("""| ▓▓\▓▓ ▓▓ ▓▓ ▓▓ ▓▓   \▓▓/      ▓▓ ▓▓ ▓▓   __| ▓▓  | ▓▓ ▓▓  | ▓▓\▓▓    \| ▓▓  | ▓▓ ▓▓ ▓▓    ▓▓""")
+                        lightYellow().appendLine("""| ▓▓ \▓▓▓| ▓▓ ▓▓ ▓▓     |  ▓▓▓▓▓▓▓ ▓▓ ▓▓__/  \ ▓▓__/ ▓▓ ▓▓  | ▓▓_\▓▓▓▓▓▓\ ▓▓__/ ▓▓ ▓▓ ▓▓▓▓▓▓▓▓""")
+                        lightYellow().appendLine("""| ▓▓  \▓ | ▓▓ ▓▓ ▓▓      \▓▓    ▓▓ ▓▓\▓▓    ▓▓\▓▓    ▓▓ ▓▓  | ▓▓       ▓▓\▓▓    ▓▓ ▓▓\▓▓     \""")
+                        lightYellow().appendLine(""" \▓▓      \▓▓\▓▓\▓▓       \▓▓▓▓▓▓▓\▓▓ \▓▓▓▓▓▓  \▓▓▓▓▓▓ \▓▓   \▓▓\▓▓▓▓▓▓▓  \▓▓▓▓▓▓ \▓▓ \▓▓▓▓▓▓▓""")
+                        append("\n")
+                    }.toString()
+                }
+            }
+
             mainLogger.info { "Backend: version $version, built on $buildDateFormatted." }
             mainLogger.info { frontEndDescription.render() }
             mainLogger.info { "Welcome to visit https://mirai.mamoe.net/" }

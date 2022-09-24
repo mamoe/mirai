@@ -16,6 +16,7 @@ repositories {
     google()
     mavenCentral()
     gradlePluginPortal()
+    maven("https://repo.mirai.mamoe.net/keep") // for modified shadow plugin
 }
 
 kotlin {
@@ -49,7 +50,9 @@ dependencies {
 
     // compileOnly(kotlin("gradle-plugin-api", "1.3.72")) // Gradle's Kotlin is 1.3.72
 
-    api("com.github.jengelman.gradle.plugins", "shadow", version("shadow"))
+    // api("com.github.jengelman.gradle.plugins", "shadow", version("shadow"))
+    api("com.github.johnrengelman", "shadow", version("shadow"))
+
     api("org.jetbrains.kotlin", "kotlin-gradle-plugin", version("kotlinCompiler"))
 //    api("org.jetbrains.kotlin", "kotlin-compiler-embeddable", version("kotlinCompiler"))
 //    api(ktor("client-okhttp", "1.4.3"))

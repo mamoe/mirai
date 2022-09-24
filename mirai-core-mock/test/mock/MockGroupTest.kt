@@ -170,15 +170,16 @@ internal class MockGroupTest : MockBotTestBase() {
             val group = bot.addGroup(111, "aa")
             val member1 = group.addMember(simpleMemberInfo(222, "bb", permission = MemberPermission.MEMBER))
             val member2 = group.addMember(simpleMemberInfo(333, "cc", permission = MemberPermission.MEMBER))
-            group.honorMembers[GroupHonorType.ACTIVE] = member1
-            group.changeHonorMember(member2, GroupHonorType.ACTIVE)
+            group.honorMembers[GroupHonorType.TALKATIVE] = member1
+            group.changeHonorMember(member2, GroupHonorType.TALKATIVE)
         }.let { events ->
-            assertEquals(2, events.size)
-            assertIsInstance<MemberHonorChangeEvent.Lose>(events[0])
-            assertEquals(222, events[0].cast<MemberHonorChangeEvent.Lose>().member.id)
-            assertEquals(GroupHonorType.ACTIVE, events[1].cast<MemberHonorChangeEvent.Achieve>().honorType)
-            assertEquals(333, events[1].cast<MemberHonorChangeEvent.Achieve>().member.id)
-            assertIsInstance<MemberHonorChangeEvent.Achieve>(events[1])
+            assertEquals(3, events.size)
+            assertIsInstance<GroupTalkativeChangeEvent>(events[0])
+            assertIsInstance<MemberHonorChangeEvent.Lose>(events[1])
+            assertEquals(222, events[1].cast<MemberHonorChangeEvent.Lose>().member.id)
+            assertIsInstance<MemberHonorChangeEvent.Achieve>(events[2])
+            assertEquals(GroupHonorType.TALKATIVE, events[2].cast<MemberHonorChangeEvent.Achieve>().honorType)
+            assertEquals(333, events[2].cast<MemberHonorChangeEvent.Achieve>().member.id)
         }
     }
 

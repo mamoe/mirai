@@ -18,6 +18,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.internal.network.highway.HighwayProtocolChannel
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.Closeable
 import platform.posix.close
 import platform.posix.errno
 import platform.posix.recv

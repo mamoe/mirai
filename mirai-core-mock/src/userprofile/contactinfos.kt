@@ -10,10 +10,7 @@
 package net.mamoe.mirai.mock.userprofile
 
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.data.FriendInfo
-import net.mamoe.mirai.data.MemberInfo
-import net.mamoe.mirai.data.StrangerInfo
-import net.mamoe.mirai.data.UserInfo
+import net.mamoe.mirai.data.*
 import net.mamoe.mirai.utils.currentTimeSeconds
 
 public interface MockUserInfoBuilder {
@@ -71,6 +68,13 @@ public interface MockMemberInfoBuilder : MockUserInfoBuilder {
 
     public fun isOfficialBot(value: Boolean): MockMemberInfoBuilder
 
+    public fun rank(value: Int): MockMemberInfoBuilder
+
+    public fun temperature(value: Int): MockMemberInfoBuilder
+
+    public fun honors(value: Set<GroupHonorType>): MockMemberInfoBuilder
+
+    public fun point(value: Int): MockMemberInfoBuilder
     public fun permission(value: MemberPermission): MockMemberInfoBuilder
 
     override fun uin(value: Long): MockMemberInfoBuilder
@@ -130,6 +134,10 @@ private class ThreeInOneInfoBuilder :
     override var joinTimestamp: Int = currentTimeSeconds().toInt()
     override var lastSpeakTimestamp: Int = 0
     override var isOfficialBot: Boolean = false
+    override var rank: Int = 0
+    override var point: Int = 0
+    override var honors: Set<GroupHonorType> = setOf()
+    override var temperature: Int = 0
     override var fromGroup: Long = 0L
     override var remark: String = ""
     override var uin: Long = 0
@@ -149,6 +157,10 @@ private class ThreeInOneInfoBuilder :
     override fun uin(value: Long): ThreeInOneInfoBuilder = apply { this.uin = value }
     override fun nick(value: String): ThreeInOneInfoBuilder = apply { this.nick = value }
     override fun remark(value: String): ThreeInOneInfoBuilder = apply { this.remark = value }
+    override fun rank(value: Int): MockMemberInfoBuilder = apply { this.rank = value }
+    override fun point(value: Int): MockMemberInfoBuilder = apply { this.point = value }
+    override fun temperature(value: Int): MockMemberInfoBuilder = apply { this.temperature = value }
+    override fun honors(value: Set<GroupHonorType>): MockMemberInfoBuilder = apply { this.honors = value }
     override fun permission(value: MemberPermission): ThreeInOneInfoBuilder = apply { this.permission = value }
     override fun friendGroupId(value: Int): ThreeInOneInfoBuilder = apply { this.friendGroupId = value }
 }

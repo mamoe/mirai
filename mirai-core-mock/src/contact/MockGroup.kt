@@ -21,6 +21,7 @@ import net.mamoe.mirai.event.events.MemberHonorChangeEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.MockBotDSL
+import net.mamoe.mirai.mock.contact.active.MockGroupActive
 import net.mamoe.mirai.mock.contact.announcement.MockAnnouncements
 import net.mamoe.mirai.mock.userprofile.MockMemberInfoBuilder
 import net.mamoe.mirai.utils.cast
@@ -36,6 +37,7 @@ public interface MockGroup : Group, MockContact, MockMsgSyncSupport {
     override val botAsMember: MockNormalMember
     override val avatarUrl: String
     override val announcements: MockAnnouncements
+    override val active: MockGroupActive
 
     public interface MockApi : MockContact.MockApi {
         override var avatarUrl: String
