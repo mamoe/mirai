@@ -7,8 +7,6 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("DEPRECATION")
-
 package net.mamoe.mirai.internal.contact.announcement
 
 import io.ktor.client.request.*
@@ -67,7 +65,7 @@ internal abstract class CommonAnnouncementsImpl(
         }.rightOrNull
     }
 
-    override suspend fun asFlow(): Flow<OnlineAnnouncement> {
+    override fun asFlow(): Flow<OnlineAnnouncement> {
         return flow {
             var i = 1
             while (true) {
