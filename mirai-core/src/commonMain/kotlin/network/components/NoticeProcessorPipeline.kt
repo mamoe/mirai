@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.network.notice.decoders.MsgType0x2DC
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushStatus
+import net.mamoe.mirai.internal.network.protocol.data.proto.GuildMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans.PbMsgInfo
@@ -171,6 +172,7 @@ internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
             is Structmsg.StructMsg -> processImpl(data)
             is RequestPushStatus -> processImpl(data)
             is DecodedNotifyMsgBody -> processImpl(data)
+            is GuildMsg.MsgOnlinePush -> processImpl(data)
         }
     }
 
@@ -183,4 +185,5 @@ internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
     protected open suspend fun NoticePipelineContext.processImpl(data: RequestPushStatus) {}
 
     protected open suspend fun NoticePipelineContext.processImpl(data: DecodedNotifyMsgBody) {}
+    protected open suspend fun NoticePipelineContext.processImpl(data: GuildMsg.MsgOnlinePush) {}
 }

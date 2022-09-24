@@ -263,6 +263,21 @@ public class StrangerMessageEvent constructor(
 }
 
 /**
+ * 机器人收到的频道消息的事件
+ *
+ * @see MessageEvent
+ */
+public class GuildMessageEvent(
+    override val guild: Guild,
+    override val channel: Channel,
+    public val sender: GuildMember,
+    public val time: Long,
+    public val message: MessageChain,
+) : AbstractEvent(), GuildEvent {
+
+}
+
+/**
  * 消息事件的公共抽象父类, 保留将来使用. 这是内部 API, 请不要使用.
  */
 @MiraiInternalApi

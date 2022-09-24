@@ -10,7 +10,10 @@
 package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.ContactList
+import net.mamoe.mirai.contact.Guild
+import net.mamoe.mirai.contact.GuildMember
 import net.mamoe.mirai.data.GuildInfo
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.message.MessageReceipt
@@ -39,6 +42,8 @@ internal abstract class CommonGuildImpl constructor(
     override val channelNodes: List<ChannelImpl>,
     override val members: ContactList<GuildMemberImpl>,
 ) : Guild {
+    companion object;
+
     override val coroutineContext: CoroutineContext
         get() = TODO("Not yet implemented")
     override val name: String

@@ -170,3 +170,5 @@ const val `maven-resolver-connector-basic` =
 const val `maven-resolver-transport-http` =
     "org.apache.maven.resolver:maven-resolver-transport-http:${Versions.mavenArtifactResolver}"
 const val `maven-resolver-provider` = "org.apache.maven:maven-resolver-provider:${Versions.mavenResolverProvider}"
+
+const val `commons-compress` = "org.apache.commons:commons-compress:1.21"

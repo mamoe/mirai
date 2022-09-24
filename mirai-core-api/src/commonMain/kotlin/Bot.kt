@@ -156,13 +156,13 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     public val guilds: ContactList<Guild>
 
     /**
-     * 以 [群号码][id] 获取一个群对象, 在获取失败时返回 `null`.
+     * 以 频道号码][id] 获取一个频道对象, 在获取失败时返回 `null`.
      */
     public fun getGuild(id: Long): Guild? =
         guilds.firstOrNull { it.id == id }
 
     /**
-     * 以 [群号码][id] 获取一个群对象, 在获取失败时抛出 [NoSuchElementException].
+     * 以 [频道号码][id] 获取一个频道对象, 在获取失败时抛出 [NoSuchElementException].
      */
     public fun getGuildOrFail(id: Long): Guild = getGuild(id) ?: throw NoSuchElementException("guild $id")
 

@@ -38,4 +38,9 @@ internal actual class BotAccount actual constructor(
         result = 31 * result + passwordMd5.hashCode()
         return result
     }
+
+    /**
+     * 登录之后发送SyncFirstView才能获取 因此考虑一下var
+     */
+    internal actual var tinyId: Long = 0L
 }

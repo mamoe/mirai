@@ -48,6 +48,13 @@ public interface GroupEvent : BotEvent {
         get() = group.bot
 }
 
+public interface GuildEvent : BotEvent {
+    public val guild: Guild
+
+    public val channel: Channel
+    override val bot: Bot
+        get() = guild.bot
+}
 
 /**
  * 可由 [Member] 或 [Bot] 操作的事件

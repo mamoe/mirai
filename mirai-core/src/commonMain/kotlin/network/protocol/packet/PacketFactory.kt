@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
+import net.mamoe.mirai.internal.network.protocol.packet.guild.receive.MsgPushPushGroupProMsg
 import net.mamoe.mirai.internal.network.protocol.packet.guild.receive.PushFirstView
 import net.mamoe.mirai.internal.network.protocol.packet.guild.send.OidbSvcTrpcTcp
 import net.mamoe.mirai.internal.network.protocol.packet.guild.send.SyncFirstView
@@ -143,8 +144,6 @@ internal object KnownPacketFactories {
         MessageSvcPbSendMsg,
         MessageSvcPbDeleteMsg,
         MessageSvcPbGetRoamMsgReq,
-        SyncFirstView,
-
         FriendList.GetFriendGroupList,
         FriendList.DelFriend,
         FriendList.GetTroopListSimplify,
@@ -180,6 +179,7 @@ internal object KnownPacketFactories {
         SummaryCard.ReqSummaryCard,
         ChangeFriendRemark,
         MusicSharePacket,
+        SyncFirstView,
         OidbSvcTrpcTcp.FetchGuildMemberListWithRole,
         OidbSvcTrpcTcp.FetchGuestGuild,
         OidbSvcTrpcTcp.FetchChannelInfo,
@@ -199,7 +199,8 @@ internal object KnownPacketFactories {
         PbC2CMsgSync,
         StatSvc.ReqMSFOffline,
         StatSvc.SvcReqMSFLoginNotify,
-        PushFirstView
+        PushFirstView,
+        MsgPushPushGroupProMsg
     )
     // SvcReqMSFLoginNotify 自己的其他设备上限
     // MessageSvcPushReaded 电脑阅读了别人的消息, 告知手机

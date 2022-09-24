@@ -45,6 +45,7 @@ kotlin {
                 implementation(`kotlinx-atomicfu`)
                 implementation(`ktor-io`)
                 implementation(`ktor-client-core`)
+                implementation(`commons-compress`)
             }
         }
 

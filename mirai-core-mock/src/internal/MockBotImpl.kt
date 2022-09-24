@@ -15,10 +15,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.AvatarSpec
-import net.mamoe.mirai.contact.ContactList
-import net.mamoe.mirai.contact.ContactOrBot
-import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.friendgroup.FriendGroups
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.GlobalEventChannel
@@ -53,6 +50,7 @@ internal class MockBotImpl(
     override val configuration: BotConfiguration,
     override val id: Long,
     nick: String,
+
     override val nameGenerator: NameGenerator,
     override val tmpResourceServer: TmpResourceServer,
     override val msgDatabase: MessageDatabase,
@@ -130,6 +128,8 @@ internal class MockBotImpl(
     override val strangers: ContactList<MockStranger> = ContactList()
     override val otherClients: ContactList<MockOtherClient> = ContactList()
     override val friendGroups: FriendGroups = MockFriendGroups(this)
+    override val guilds: ContactList<Guild> = ContactList()
+
 
     @Suppress("DEPRECATION")
     override fun addGroup(id: Long, name: String): MockGroup =
