@@ -43,8 +43,7 @@ internal abstract class CommonGuildImpl constructor(
 ) : Guild, AbstractContact(bot, parentCoroutineContext) {
     companion object;
 
-    override val name: String
-        get() = TODO("Not yet implemented")
+    override val name: String by guildInfo::name
     override val guildCode: Long
         get() = id
     override val owner: GuildMember
