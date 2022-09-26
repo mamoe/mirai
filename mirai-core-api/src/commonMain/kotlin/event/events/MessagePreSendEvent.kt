@@ -57,6 +57,17 @@ public data class GroupMessagePreSendEvent @MiraiInternalApi constructor(
 ) : MessagePreSendEvent()
 
 /**
+ * 在发送频道消息前广播的事件.
+ * @see MessagePreSendEvent
+ */
+public data class ChannelMessagePreSendEvent @MiraiInternalApi constructor(
+    /** 发信目标. */
+    public override val target: Channel,
+    /** 待发送的消息. 修改后将会同时应用于发送. */
+    public override var message: Message
+) : MessagePreSendEvent()
+
+/**
  * 在发送好友或群临时会话消息前广播的事件.
  * @see MessagePreSendEvent
  */

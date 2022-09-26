@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.utils
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.message.image.FriendImage
 import net.mamoe.mirai.internal.message.image.OfflineGroupImage
+import net.mamoe.mirai.internal.message.image.OfflineGuildImage
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.utils.ResourceAccessLock
@@ -23,6 +24,7 @@ internal interface ImagePatcher {
     fun findCacheByImageId(id: String): ImageCache?
 
     fun putCache(image: OfflineGroupImage)
+    fun putCache(image: OfflineGuildImage)
 
     suspend fun patchOfflineGroupImage(
         group: GroupImpl,
@@ -42,6 +44,7 @@ internal data class ImageCache(
     val id: UnsafeMutableNonNullProperty<String> = unsafeMutableNonNullPropertyOf(),
     // OGI: OfflineGroupImage
     val cacheOGI: UnsafeMutableNonNullProperty<OfflineGroupImage> = unsafeMutableNonNullPropertyOf(),
+    val cacheGuildOGI: UnsafeMutableNonNullProperty<OfflineGuildImage> = unsafeMutableNonNullPropertyOf(),
     val accessLock: ResourceAccessLock = ResourceAccessLock(),
 )
 
@@ -65,6 +68,10 @@ internal open class ImagePatcherImpl : ImagePatcher {
 
     override fun putCache(image: OfflineGroupImage) {
         putCache(calcInternalIdByImageId(image.imageId)).cacheOGI.value0 = image
+    }
+
+    override fun putCache(image: OfflineGuildImage) {
+        putCache(calcInternalIdByImageId(image.imageId)).cacheGuildOGI.value0 = image
     }
 
     fun putCache(id: String): ImageCache {

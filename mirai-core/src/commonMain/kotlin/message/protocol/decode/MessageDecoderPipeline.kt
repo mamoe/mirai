@@ -30,10 +30,8 @@ internal interface MessageDecoderContext : ProcessorPipelineContext<ImMsgBody.El
         val BOT = TypeKey<Bot>("bot")
         val MESSAGE_SOURCE_KIND = TypeKey<MessageSourceKind>("messageSourceKind")
         val GROUP_ID = TypeKey<Long>("groupId") // zero if not group
-        val GUILD_ID = TypeKey<Long>("guildId") // zero if not guild
         val CONTAINING_MSG = TypeKey<MsgComm.Msg?>("containingMsg")
         val CHANNEL_MSG_CONTENT = TypeKey<Guild.ChannelMsgContent?>("channelMsgContent")
-        val IS_DIRECT = TypeKey<Boolean>("isDirect")
     }
 }
 

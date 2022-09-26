@@ -35,7 +35,11 @@ internal class Cmd0x388 : ProtoBuf {
         @ProtoNumber(1) @JvmField val result: Int = 0,
         @ProtoNumber(2) @JvmField val failMsg: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val fileResid: ByteArray = EMPTY_BYTE_ARRAY,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "DelImgRsp(result=$result, failMsg=${failMsg.decodeToString()}, fileResid=${fileResid.decodeToString()})"
+        }
+    }
 
     @Serializable
     internal class ExpRoamExtendInfo(
@@ -106,7 +110,11 @@ internal class Cmd0x388 : ProtoBuf {
         @ProtoNumber(20) @JvmField val httpsUrlFlag: Int = 0,
         @ProtoNumber(26) @JvmField val msgDownIp6: List<IPv6Info> = emptyList(),
         @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "GetImgUrlRsp(fileid=$fileid, fileMd5=${fileMd5.decodeToString()}, result=$result, failMsg=${failMsg.decodeToString()}, msgImgInfo=$msgImgInfo, bytesThumbDownUrl=$bytesThumbDownUrl, bytesOriginalDownUrl=$bytesOriginalDownUrl, bytesBigDownUrl=$bytesBigDownUrl, uint32DownIp=$uint32DownIp, uint32DownPort=$uint32DownPort, downDomain=${downDomain.decodeToString()}, thumbDownPara=${thumbDownPara.decodeToString()}, originalDownPara=${originalDownPara.decodeToString()}, bigDownPara=${bigDownPara.decodeToString()}, fileId=$fileId, autoDownType=$autoDownType, uint32OrderDownType=$uint32OrderDownType, bigThumbDownPara=${bigThumbDownPara.decodeToString()}, httpsUrlFlag=$httpsUrlFlag, msgDownIp6=$msgDownIp6, clientIp6=${clientIp6.decodeToString()})"
+        }
+    }
 
     @Serializable
     internal class GetPttUrlReq(
@@ -144,7 +152,11 @@ internal class Cmd0x388 : ProtoBuf {
         @ProtoNumber(26) @JvmField val msgDownIp6: List<IPv6Info> = emptyList(),
         @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(28) @JvmField val strDomain: String = "",
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "GetPttUrlRsp(fileid=$fileid, fileMd5=${fileMd5.contentToString()}, result=$result, failMsg=${failMsg.contentToString()}, bytesDownUrl=$bytesDownUrl, uint32DownIp=$uint32DownIp, uint32DownPort=$uint32DownPort, downDomain=${downDomain.contentToString()}, downPara=${downPara.contentToString()}, fileId=$fileId, transferType=$transferType, allowRetry=$allowRetry, msgDownIp6=$msgDownIp6, clientIp6=${clientIp6.contentToString()}, strDomain='$strDomain')"
+        }
+    }
 
     @Suppress("ArrayInDataClass")
     @Serializable
@@ -156,7 +168,7 @@ internal class Cmd0x388 : ProtoBuf {
         @ProtoNumber(5) @JvmField val fileHeight: Int = 0,
     ) : ProtoBuf {
         override fun toString(): String {
-            return "ImgInfo(fileMd5=${fileMd5.contentToString()}, fileType=$fileType, fileSize=$fileSize, fileWidth=$fileWidth, fileHeight=$fileHeight)"
+            return "ImgInfo(fileMd5=${fileMd5.decodeToString()}, fileType=$fileType, fileSize=$fileSize, fileWidth=$fileWidth, fileHeight=$fileHeight)"
         }
     }
 
@@ -164,7 +176,11 @@ internal class Cmd0x388 : ProtoBuf {
     internal class IPv6Info(
         @ProtoNumber(1) @JvmField val ip6: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val port: Int = 0,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "IPv6Info(ip6=${ip6.decodeToString()}, port=$port)"
+        }
+    }
 
     @Serializable
     internal class PicSize(
@@ -195,7 +211,11 @@ internal class Cmd0x388 : ProtoBuf {
         @ProtoNumber(5) @JvmField val msgTryupPttRsp: List<TryUpPttRsp> = emptyList(),
         @ProtoNumber(6) @JvmField val msgGetpttUrlRsp: List<GetPttUrlRsp> = emptyList(),
         @ProtoNumber(7) @JvmField val msgDelImgRsp: List<DelImgRsp> = emptyList(),
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "RspBody(clientIp=$clientIp, subcmd=$subcmd, msgTryupImgRsp=$msgTryupImgRsp, msgGetimgUrlRsp=$msgGetimgUrlRsp, msgTryupPttRsp=$msgTryupPttRsp, msgGetpttUrlRsp=$msgGetpttUrlRsp, msgDelImgRsp=$msgDelImgRsp)"
+        }
+    }
 
     @Serializable
     internal class TryUpImgReq(
@@ -226,6 +246,8 @@ internal class Cmd0x388 : ProtoBuf {
         @ProtoNumber(18) @JvmField val dstUin: Long = 0L,
         @ProtoNumber(19) @JvmField val srvUpload: Int = 0,
         @ProtoNumber(20) @JvmField val transferUrl: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(21) @JvmField val guildId: Long = 0L,
+        @ProtoNumber(22) @JvmField val channelId: Long = 0L,
     ) : ImgReq
 
     @Serializable
@@ -245,7 +267,11 @@ internal class Cmd0x388 : ProtoBuf {
         @ProtoNumber(26) @JvmField val msgUpIp6: List<IPv6Info> = emptyList(),
         @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(1001) @JvmField val msgInfo4busi: TryUpInfo4Busi? = null,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "TryUpImgRsp(fileId=$fileId, result=$result, failMsg='$failMsg', boolFileExit=$boolFileExit, msgImgInfo=$msgImgInfo, uint32UpIp=$uint32UpIp, uint32UpPort=$uint32UpPort, upUkey=${upUkey.decodeToString()}, fileid=$fileid, upOffset=$upOffset, blockSize=$blockSize, boolNewBigChan=$boolNewBigChan, msgUpIp6=$msgUpIp6, clientIp6=${clientIp6.decodeToString()}, msgInfo4busi=$msgInfo4busi)"
+        }
+    }
 
     @Serializable
     internal class TryUpInfo4Busi(
@@ -254,7 +280,11 @@ internal class Cmd0x388 : ProtoBuf {
         @ProtoNumber(3) @JvmField val originalDownUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(4) @JvmField val bigDownUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val fileResid: ByteArray = EMPTY_BYTE_ARRAY,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "TryUpInfo4Busi(downDomain=${downDomain.decodeToString()}, thumbDownUrl=${thumbDownUrl.decodeToString()}, originalDownUrl=${originalDownUrl.decodeToString()}, bigDownUrl=${bigDownUrl.decodeToString()}, fileResid=${fileResid.decodeToString()})"
+        }
+    }
 
     @Serializable
     internal class TryUpPttReq(
@@ -292,5 +322,9 @@ internal class Cmd0x388 : ProtoBuf {
         @ProtoNumber(12) @JvmField val channelType: Int = 0,
         @ProtoNumber(26) @JvmField val msgUpIp6: List<IPv6Info> = emptyList(),
         @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "TryUpPttRsp(fileId=$fileId, result=$result, failMsg=${failMsg?.decodeToString()}, boolFileExit=$boolFileExit, uint32UpIp=$uint32UpIp, uint32UpPort=$uint32UpPort, upUkey=${upUkey.decodeToString()}, fileid=$fileid, upOffset=$upOffset, blockSize=$blockSize, fileKey=${fileKey.decodeToString()}, channelType=$channelType, msgUpIp6=$msgUpIp6, clientIp6=${clientIp6.decodeToString()})"
+        }
+    }
 }

@@ -44,5 +44,5 @@ internal class ChunkedFlowSession<T>(
         }
     }
 
-    internal fun asFlow(): Flow<T> = flow { useAll { emit(it) } } // 'single thread' producer
+    internal suspend fun asFlow(): Flow<T> = flow { useAll { emit(it) } } // 'single thread' producer
 }

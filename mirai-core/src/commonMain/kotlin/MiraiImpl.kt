@@ -59,7 +59,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
-import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.crypto.TEA
@@ -405,7 +404,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
         val response: PbMessageSvc.PbMsgWithDraw.Response = when (source) {
             is OnlineMessageSourceToGroupImpl,
-            is OnlineMessageSourceFromGroupImpl
+            is OnlineMessageSourceFromGroupImpl,
             -> {
                 val group: Group = when (source) {
                     is OnlineMessageSourceToGroupImpl -> source.subject
@@ -499,6 +498,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                             ), 5000, 2
                         )
                     }
+
                     MessageSourceKind.GROUP -> {
                         bot.asQQAndroidBot().network.sendAndExpect(
                             PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
@@ -508,6 +508,16 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                                 source.internalIds
                             ), 5000, 2
                         )
+                    }
+
+                    MessageSourceKind.GUILD -> {
+                        //TODO
+                        error("MessageSourceKind.GUILD Nothing to do!")
+                    }
+
+                    MessageSourceKind.DIRECT -> {
+                        error("MessageSourceKind.DIRECT Nothing to do!")
+                        //TODO
                     }
                 }
             }

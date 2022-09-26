@@ -122,6 +122,27 @@ public data class GroupMessagePostSendEvent @MiraiInternalApi constructor(
 ) : MessagePostSendEvent<Group>()
 
 /**
+ * 在频道消息发送后广播的事件.
+ * @see MessagePostSendEvent
+ */
+public data class ChannelMessagePostSendEvent @MiraiInternalApi constructor(
+    /** 发信目标. */
+    public override val target: Channel,
+    /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
+    public override val message: MessageChain,
+    /**
+     * 发送消息时抛出的异常. `null` 表示消息成功发送.
+     * @see result
+     */
+    public override val exception: Throwable?,
+    /**
+     * 发送消息成功时的回执. `null` 表示消息发送失败.
+     * @see result
+     */
+    public override val receipt: MessageReceipt<Channel>?
+) : MessagePostSendEvent<Channel>()
+
+/**
  * 在好友或群临时会话消息发送后广播的事件.
  * @see MessagePostSendEvent
  */

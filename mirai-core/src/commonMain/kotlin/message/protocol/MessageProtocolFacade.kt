@@ -67,7 +67,7 @@ internal interface MessageProtocolFacade {
         messageTarget: ContactOrBot?, // for At.display, QuoteReply, Image, and more.
         withGeneralFlags: Boolean, // important for RichMessages, may also be helpful for others
         isForward: Boolean = false, // is inside forward, for At.display
-    ): List<ImMsgBody.Elem>
+    ): MutableList<ImMsgBody.Elem>
 
     /**
      * Decode list of low-level and protocol-specific [ImMsgBody.Elem]s to give a high-level [MessageChain].
@@ -86,10 +86,11 @@ internal interface MessageProtocolFacade {
     fun decode(
         elements: List<ImMsgBody.Elem>,
         guildIdOrZero: Long,
-        isDirect: Boolean,
+        messageSourceKind: MessageSourceKind,
         bot: Bot,
         builder: MessageChainBuilder,
         containingMsg: Guild.ChannelMsgContent? = null,
+        other: Boolean //nothing to do
     )
 
 
@@ -252,7 +253,7 @@ internal class MessageProtocolFacadeImpl(
         messageTarget: ContactOrBot?,
         withGeneralFlags: Boolean,
         isForward: Boolean
-    ): List<ImMsgBody.Elem> {
+    ): MutableList<ImMsgBody.Elem> {
         val pipeline = encoderPipeline
 
         val attributes = buildTypeSafeMap {
@@ -300,17 +301,18 @@ internal class MessageProtocolFacadeImpl(
     override fun decode(
         elements: List<ImMsgBody.Elem>,
         guildIdOrZero: Long,
-        isDirect: Boolean,
+        messageSourceKind: MessageSourceKind,
         bot: Bot,
         builder: MessageChainBuilder,
-        containingMsg: Guild.ChannelMsgContent?
+        containingMsg: Guild.ChannelMsgContent?,
+        other: Boolean
     ) {
         val pipeline = decoderPipeline
 
         val attributes = buildTypeSafeMap {
             set(MessageDecoderContext.BOT, bot)
-            set(MessageDecoderContext.IS_DIRECT, isDirect)
-            set(MessageDecoderContext.GUILD_ID, guildIdOrZero)
+            set(MessageDecoderContext.MESSAGE_SOURCE_KIND, messageSourceKind)
+            set(MessageDecoderContext.GROUP_ID, guildIdOrZero)
             set(MessageDecoderContext.CHANNEL_MSG_CONTENT, containingMsg)
         }
 

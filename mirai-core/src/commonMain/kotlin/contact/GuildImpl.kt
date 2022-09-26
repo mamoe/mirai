@@ -9,17 +9,29 @@
 
 package net.mamoe.mirai.internal.contact
 
-import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.Guild
 import net.mamoe.mirai.contact.GuildMember
 import net.mamoe.mirai.data.GuildInfo
+import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.ExternalResource
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
+
+internal fun GuildImpl.Companion.checkIsInstance(instance: Guild) {
+    contract { returns() implies (instance is GuildImpl) }
+    check(instance is GuildImpl) { "guild is not an instanceof GuildImpl!! DO NOT interlace two or more protocol implementations!!" }
+}
+
+internal fun Guild.checkIsGuildImpl(): GuildImpl {
+    contract { returns() implies (this@checkIsGuildImpl is GuildImpl) }
+    GuildImpl.checkIsInstance(this)
+    return this
+}
 
 internal expect class GuildImpl constructor(
     bot: QQAndroidBot,
@@ -46,30 +58,29 @@ internal abstract class CommonGuildImpl constructor(
     override val name: String by guildInfo::name
     override val guildCode: Long
         get() = id
-    override val owner: GuildMember
-        get() = TODO("Not yet implemented")
-    override val botAsMember: GuildMember
-        get() = TODO("Not yet implemented")
-
+    final override lateinit var owner: GuildMember
+    final override lateinit var botAsMember: GuildMember
+    internal val botAsMemberInitialized get() = ::botAsMember.isInitialized
     override fun get(id: Long): GuildMember? {
-        TODO("Not yet implemented")
+        if (id == bot.account.tinyId) return botAsMember
+        return members.firstOrNull { it.id == id }
     }
 
     override fun contains(id: Long): Boolean {
-        TODO("Not yet implemented")
+        return bot.account.tinyId == id || members.firstOrNull { it.id == id } != null
     }
 
     override suspend fun quit(): Boolean {
         TODO("Not yet implemented")
     }
 
-    override suspend fun sendMessage(message: Message): MessageReceipt<Contact> {
-        TODO("Not yet implemented")
+    override suspend fun sendMessage(message: Message): MessageReceipt<Guild> {
+        throw EventCancelledException("The Guild does not support sending messages, please channel them instead")
     }
 
 
     override suspend fun uploadImage(resource: ExternalResource): Image {
-        TODO("Not yet implemented")
+        throw EventCancelledException("The Guild does not support upload image, please channel them instead")
     }
 
 }

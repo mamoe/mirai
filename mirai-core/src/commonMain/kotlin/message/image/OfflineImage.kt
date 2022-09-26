@@ -77,3 +77,34 @@ internal data class OfflineGroupImage(
         }
     }
 }
+
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(with = OfflineGuildImage.Serializer::class)
+internal data class OfflineGuildImage(
+    override val imageId: String,
+    override val width: Int = 0,
+    override val height: Int = 0,
+    override val size: Long = 0L,
+    override val imageType: ImageType = ImageType.UNKNOWN,
+    override val isEmoji: Boolean = false,
+) : GroupImage(), OfflineImage, DeferredOriginUrlAware {
+    @Transient
+    internal var fileId: Int? = null
+
+    object Serializer : Image.FallbackSerializer("OfflineGuildImage")
+
+    //TODO Maybe need fix
+    override fun getUrl(bot: Bot): String {
+        return "http://gchat.qpic.cn/gchatpic_new/${bot.id}/0-0-${
+            imageId.substring(1..36)
+                .replace("-", "")
+        }/0?term=2"
+    }
+
+    init {
+        @Suppress("DEPRECATION")
+        require(imageId matches Image.IMAGE_ID_REGEX) {
+            "Illegal imageId. It must matches GUILD_IMAGE_ID_REGEX"
+        }
+    }
+}

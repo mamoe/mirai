@@ -91,6 +91,7 @@ internal object PushFirstView : IncomingPacketFactory<Packet?>(
                                                 //channelSubType = it.visibleType
                                             ),
                                             id = it.channelId,
+                                            guildId = guildNode.guildId,
                                             parentCoroutineContext = bot.coroutineContext
                                         )
                                     )

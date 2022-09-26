@@ -98,5 +98,10 @@ public open class SendMessageFailedException @MiraiInternalApi constructor(
          * @since 2.11
          */
         AT_ALL_LIMITED,
+
+        /**
+         * msg repeated
+         */
+        MSG_REPEATED
     }
 }

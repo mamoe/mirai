@@ -30,6 +30,7 @@ import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
+import net.mamoe.mirai.internal.network.protocol.packet.guild.send.MsgProxySendMsgSendMsg
 import net.mamoe.mirai.message.data.AtAll
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OnlineMessageSource
@@ -106,51 +107,71 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
             val protocolStrategy = components[MessageProtocolStrategy]
             val finalMessage = currentMessageChain
 
-            val resp = protocolStrategy.sendPacket(bot, packet) as MessageSvcPbSendMsg.Response
-            if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
-                logger.info { "STEP $step: message too large." }
-                val next = step.nextStepOrNull()
-                    ?: throw MessageTooLargeException(
-                        contact,
-                        originalMessage,
-                        finalMessage,
-                        "Message '${finalMessage.content.truncated(10)}' is too large."
-                    )
+            try {
+                val resp = protocolStrategy.sendPacket(bot, packet) as MessageSvcPbSendMsg.Response
+                if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
+                    logger.info { "STEP $step: message too large." }
+                    val next = step.nextStepOrNull()
+                        ?: throw MessageTooLargeException(
+                            contact,
+                            originalMessage,
+                            finalMessage,
+                            "Message '${finalMessage.content.truncated(10)}' is too large."
+                        )
 
-                // retry with next step
-                logger.info { "Retrying with STEP $next" }
-                val (_, receipts) = processAlso(
-                    attributes[MESSAGE_TO_RETRY],
-                    extraAttributes = buildTypeSafeMap {
-                        set(STEP, next)
-                    },
-                )
-                check(receipts.size == 1) { "Internal error: expected exactly one receipt collected from sub-process, but found ${receipts.size}." }
-                // We expect to get a Receipt from processAlso
-                return false
-            }
-            if (resp is MessageSvcPbSendMsg.Response.ServiceUnavailable) {
-                throw IllegalStateException("Send message to $contact failed, server service is unavailable.")
-            }
-            if (resp is MessageSvcPbSendMsg.Response.Failed) {
-                when (resp.resultType) {
-                    120 -> if (contact is Group) throw BotIsBeingMutedException(contact, originalMessage)
-                    121 -> if (AtAll in currentMessageChain) throw SendMessageFailedException(
-                        contact,
-                        SendMessageFailedException.Reason.AT_ALL_LIMITED,
-                        originalMessage
+                    // retry with next step
+                    logger.info { "Retrying with STEP $next" }
+                    val (_, receipts) = processAlso(
+                        attributes[MESSAGE_TO_RETRY],
+                        extraAttributes = buildTypeSafeMap {
+                            set(STEP, next)
+                        },
                     )
-                    299 -> if (contact is Group) throw SendMessageFailedException(
-                        contact,
-                        SendMessageFailedException.Reason.GROUP_CHAT_LIMITED,
-                        originalMessage
-                    )
+                    check(receipts.size == 1) { "Internal error: expected exactly one receipt collected from sub-process, but found ${receipts.size}." }
+                    // We expect to get a Receipt from processAlso
+                    return false
                 }
+                if (resp is MessageSvcPbSendMsg.Response.ServiceUnavailable) {
+                    throw IllegalStateException("Send message to $contact failed, server service is unavailable.")
+                }
+                if (resp is MessageSvcPbSendMsg.Response.Failed) {
+                    when (resp.resultType) {
+                        120 -> if (contact is Group) throw BotIsBeingMutedException(contact, originalMessage)
+                        121 -> if (AtAll in currentMessageChain) throw SendMessageFailedException(
+                            contact,
+                            SendMessageFailedException.Reason.AT_ALL_LIMITED,
+                            originalMessage
+                        )
+
+                        299 -> if (contact is Group) throw SendMessageFailedException(
+                            contact,
+                            SendMessageFailedException.Reason.GROUP_CHAT_LIMITED,
+                            originalMessage
+                        )
+                    }
+                }
+                check(resp is MessageSvcPbSendMsg.Response.SUCCESS) {
+                    "Send message failed: $resp"
+                }
+                return true
+            } catch (e: Exception) {
+                val resp = protocolStrategy.sendPacket(bot, packet) as MsgProxySendMsgSendMsg.Response
+                if (resp is MsgProxySendMsgSendMsg.Response.Failed) {
+                    when (resp.resultCode) {
+                        (-31072).toShort() -> throw SendMessageFailedException(
+                            contact,
+                            SendMessageFailedException.Reason.MSG_REPEATED,
+                            originalMessage
+                        )
+
+                        else -> error("${resp.resultCode}, reason: ${resp.message}")
+                    }
+                }
+                check(resp is MsgProxySendMsgSendMsg.Response.Success) {
+                    "Send message failed: $resp"
+                }
+                return true
             }
-            check(resp is MessageSvcPbSendMsg.Response.SUCCESS) {
-                "Send message failed: $resp"
-            }
-            return true
         }
 
     }

@@ -124,4 +124,105 @@ internal class ImgStore {
             }
         }
     }
+
+    object QQMeetPicUp : OutgoingPacketFactory<QQMeetPicUp.Response>("ImgStore.QQMeetPicUp") {
+        sealed class Response : Packet {
+            class FileExists(
+                val fileId: Long,
+                val fileInfo: Cmd0x388.ImgInfo
+            ) : Response() {
+                override fun toString(): String {
+                    return "FileExists(fileId=$fileId, fileInfo=$fileInfo)"
+                }
+            }
+
+            class RequireUpload(
+                val fileId: Long,
+                val uKey: ByteArray,
+                val uploadIpList: List<Int>,
+                val uploadPortList: List<Int>
+            ) : Response() {
+                override fun toString(): String {
+                    return "RequireUpload(fileId=$fileId, uKey=${uKey.contentToString()})"
+                }
+            }
+
+            data class Failed(
+                val resultCode: Int,
+                val message: String
+            ) : Response()
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val resp0 = readProtoBuf(Cmd0x388.RspBody.serializer())
+            println(resp0.toString())
+            val resp =
+                resp0.msgTryupImgRsp.firstOrNull() ?: error("cannot find `msgTryupImgRsp` from `Cmd0x388.RspBody`")
+            return when {
+                resp.result != 0 -> Response.Failed(resultCode = resp.result, message = resp.failMsg)
+                resp.boolFileExit -> Response.FileExists(fileId = resp.fileid, fileInfo = resp.msgImgInfo!!)
+                else -> Response.RequireUpload(
+                    fileId = resp.fileid,
+                    uKey = resp.upUkey,
+                    uploadIpList = resp.uint32UpIp,
+                    uploadPortList = resp.uint32UpPort
+                )
+            }
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient,
+            uin: Long,
+            guildId: Long,
+            channelId: Long,
+            md5: ByteArray,
+            size: Long,
+            picWidth: Int = 0, // not orthodox
+            picHeight: Int = 0, // not orthodox
+            picType: Int = 1000,
+            fileId: Long = 0,
+            filename: String = getRandomString(16) + ".gif", // make server happier
+            srcTerm: Int = 5,
+            platformType: Int = 9,
+            buType: Int = 211, // group 1, other 2
+            appPicType: Int = 1052,
+        ) = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                Cmd0x388.ReqBody.serializer(),
+                Cmd0x388.ReqBody(
+                    netType = 3, // wifi
+                    subcmd = 1,
+                    commandId = 83,
+                    msgTryupImgReq = listOf(
+                        Cmd0x388.TryUpImgReq(
+                            groupCode = channelId,
+                            srcUin = uin,
+                            fileId = fileId,
+                            fileMd5 = md5,
+                            fileSize = size,
+                            fileName = filename,
+                            picWidth = picWidth,
+                            picHeight = picHeight,
+                            picType = picType,
+                            appPicType = appPicType,
+                            buildVer = client.buildVer,
+                            srcTerm = srcTerm,
+                            srvUpload = 0,
+                            platformType = platformType,
+                            //For gif, not original there
+                            originalPic = if (picType == 1000) {
+                                0
+                            } else {
+                                1
+                            },
+                            buType = buType,
+                            channelId = channelId,
+                            guildId = guildId
+                        )
+                    )
+
+                )
+            )
+        }
+    }
 }

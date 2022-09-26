@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
+import net.mamoe.mirai.contact.Channel
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.message.data.transform
@@ -122,6 +123,7 @@ internal class ImageProtocol : MessageProtocol() {
                         collect(ImMsgBody.Elem(customFace = data.delegate.toCustomFace()))
                     }
                 }
+
                 is OfflineFriendImage -> {
                     if (contact is User) {
                         collect(ImMsgBody.Elem(notOnlineImage = data.toJceData()))
@@ -129,11 +131,46 @@ internal class ImageProtocol : MessageProtocol() {
                         collect(ImMsgBody.Elem(customFace = data.toJceData().toCustomFace()))
                     }
                 }
+
+                is OfflineGuildImage -> {
+                    if (contact is Channel) {
+                        collect(ImMsgBody.Elem(notOnlineImage = data.toJceData().toNotOnlineImage()))
+                    } else {
+                        collect(ImMsgBody.Elem(customFace = data.toJceData()))
+                    }
+                }
             }
         }
 
         companion object {
             private fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
+                return ImMsgBody.CustomFace(
+                    fileId = this.fileId ?: 0,
+                    filePath = this.imageId,
+                    picMd5 = this.md5,
+                    flag = ByteArray(4),
+                    size = size.toInt(),
+                    width = width.coerceAtLeast(1),
+                    height = height.coerceAtLeast(1),
+                    imageType = getIdByImageType(imageType),
+                    origin = if (imageType == ImageType.GIF) {
+                        0
+                    } else {
+                        1
+                    },
+                    //_400Height = 235,
+                    //_400Url = "/gchatpic_new/000000000/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
+                    //_400Width = 351,
+                    //        pbReserve = "08 00 10 00 32 00 50 00 78 08".autoHexToBytes(),
+                    bizType = 5,
+                    fileType = 66,
+                    useful = 1,
+                    //  pbReserve = CustomFaceExtPb.ResvAttr().toByteArray(CustomFaceExtPb.ResvAttr.serializer())
+                )
+            }
+
+            //TODO maybe fix
+            private fun OfflineGuildImage.toJceData(): ImMsgBody.CustomFace {
                 return ImMsgBody.CustomFace(
                     fileId = this.fileId ?: 0,
                     filePath = this.imageId,

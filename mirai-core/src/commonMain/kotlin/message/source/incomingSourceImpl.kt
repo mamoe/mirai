@@ -25,6 +25,7 @@ import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.getGroupByUinOrCodeOrFail
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
+import net.mamoe.mirai.internal.message.toGuildMessageChainNoSource
 import net.mamoe.mirai.internal.message.toMessageChainNoSource
 import net.mamoe.mirai.internal.network.protocol.data.proto.Guild
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -262,12 +263,12 @@ internal class OnlineMessageSourceFromGuildImpl(
 
     @Transient
     override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
-    override val sequenceIds: IntArray = msg.mapToIntArray { it.head.contentHead.seq.toInt() }
-    override val internalIds: IntArray = msg.mapToIntArray { it.body.richText!!.attr!!.random }
+    override val sequenceIds: IntArray = msg.mapToIntArray { it.head?.contentHead?.seq?.toInt()!! }
+    override val internalIds: IntArray = msg.mapToIntArray { it.body?.richText!!.attr!!.random }
     override val ids: IntArray get() = sequenceIds
-    override val time: Int = msg.first().head.contentHead.time.toInt()
+    override val time: Int = msg.first().head?.contentHead?.time?.toInt()!!
     override var originalMessageLazy = lazy {
-        msg.toMessageChainNoSource(bot, guildIdOrZero = guild.id, false)
+        msg.toGuildMessageChainNoSource(bot, guildIdOrZero = guild.id, MessageSourceKind.GUILD)
     }
     override val originalMessage: MessageChain get() = originalMessageLazy.value
     override val isOriginalMessageInitialized: Boolean
@@ -275,7 +276,7 @@ internal class OnlineMessageSourceFromGuildImpl(
 
 
     override val subject: GuildImpl by lazy {
-        val guildId = msg.first().head.routingHead.guildId
+        val guildId = msg.first().head?.routingHead?.guildId
             ?: error("cannot find guildCode for OnlineMessageSourceFromGuildImpl. msg=${msg.structureToString()}")
 
         val guild = bot.getGuild(guildId)?.checkIsGuildImpl()
@@ -286,7 +287,7 @@ internal class OnlineMessageSourceFromGuildImpl(
 
     override val sender: GuildMember by lazy {
         val guild = subject
-        val member = guild.members.find { it.id == msg.first().head.routingHead.fromTinyId } as GuildMember ?: null
+        val member = guild.members.find { it.id == msg.first().head?.routingHead?.fromTinyId } as GuildMember ?: null
         if (member != null) {
             return@lazy member
         } else {
@@ -296,13 +297,13 @@ internal class OnlineMessageSourceFromGuildImpl(
 
     private val jceData: ImMsgBody.SourceMsg by lazy {
         ImMsgBody.SourceMsg(
-            origSeqs = intArrayOf(msg.first().head.contentHead.seq.toInt()),
-            senderUin = msg.first().head.routingHead.fromTinyId,
+            origSeqs = intArrayOf(msg.first().head?.contentHead?.seq?.toInt()!!),
+            senderUin = msg.first().head!!.routingHead?.fromTinyId!!,
             toUin = 0,
             flag = 1,
-            elems = msg.flatMap { it.body.richText!!.elems },
+            elems = msg.flatMap { it.body?.richText!!.elems },
             type = 0,
-            time = msg.first().head.contentHead.time.toInt(),
+            time = msg.first().head?.contentHead?.time?.toInt()!!,
             pbReserve = EMPTY_BYTE_ARRAY,
             srcMsg = EMPTY_BYTE_ARRAY
         )

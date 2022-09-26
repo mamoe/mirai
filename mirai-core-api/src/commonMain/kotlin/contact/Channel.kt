@@ -25,5 +25,9 @@ public interface Channel : Contact, CoroutineScope, FileSupported, AudioSupporte
      */
     public override val id: Long
 
+    /**
+     * 所属频道Id
+     */
+    public val guildId: Long
 
 }

@@ -94,10 +94,10 @@ internal class Guild : ProtoBuf {
 
     @Serializable
     internal class ChannelMsgContent(
-        @ProtoNumber(1) @JvmField val head: ChannelMsgHead = ChannelMsgHead(),
-        @ProtoNumber(2) @JvmField val ctrlHead: ChannelMsgCtrlHead = ChannelMsgCtrlHead(),
-        @ProtoNumber(3) @JvmField val body: MessageBody = MessageBody(),
-        @ProtoNumber(4) @JvmField val extInfo: ChannelExtInfo = ChannelExtInfo(),
+        @ProtoNumber(1) @JvmField var head: ChannelMsgHead? = null,
+        @ProtoNumber(2) @JvmField val ctrlHead: ChannelMsgCtrlHead? = null,
+        @ProtoNumber(3) @JvmField var body: MessageBody? = null,
+        @ProtoNumber(4) @JvmField val extInfo: ChannelExtInfo? = null,
     ) : ProtoBuf {
         override fun toString(): String {
             return "ChannelMsgContent(head=$head, ctrlHead=$ctrlHead, body=$body, extInfo=$extInfo)"
@@ -107,8 +107,8 @@ internal class Guild : ProtoBuf {
 
     @Serializable
     internal class ChannelMsgHead(
-        @ProtoNumber(1) @JvmField val routingHead: ChannelRoutingHead = ChannelRoutingHead(),
-        @ProtoNumber(2) @JvmField val contentHead: ChannelContentHead = ChannelContentHead(),
+        @ProtoNumber(1) @JvmField var routingHead: ChannelRoutingHead? = null,
+        @ProtoNumber(2) @JvmField var contentHead: ChannelContentHead? = null,
     ) : ProtoBuf {
         override fun toString(): String {
             return "ChannelMsgHead(routingHead=$routingHead, contentHead=$contentHead)"
@@ -149,7 +149,7 @@ internal class Guild : ProtoBuf {
 
     @Serializable
     internal class MessageBody(
-        @ProtoNumber(1) @JvmField val richText: ImMsgBody.RichText? = null,
+        @ProtoNumber(1) @JvmField var richText: ImMsgBody.RichText? = null,
         @ProtoNumber(2) @JvmField val msgContent: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val msgEncryptContent: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf {
@@ -243,13 +243,13 @@ internal class Guild : ProtoBuf {
 
     @Serializable
     internal class ChannelRoutingHead(
-        @ProtoNumber(1) @JvmField val guildId: Long = 0L,
-        @ProtoNumber(2) @JvmField val channelId: Long = 0L,
-        @ProtoNumber(3) @JvmField val fromUin: Long = 0L,
-        @ProtoNumber(4) @JvmField val fromTinyId: Long = 0L,
-        @ProtoNumber(5) @JvmField val guildCode: Long = 0L,
-        @ProtoNumber(6) @JvmField val fromAppid: Long = 0L,
-        @ProtoNumber(7) @JvmField val directMessageFlag: Short = 0,
+        @ProtoNumber(1) @JvmField var guildId: Long? = null,
+        @ProtoNumber(2) @JvmField var channelId: Long? = null,
+        @ProtoNumber(3) @JvmField var fromUin: Long? = null,
+        @ProtoNumber(4) @JvmField val fromTinyId: Long? = null,
+        @ProtoNumber(5) @JvmField val guildCode: Long? = null,
+        @ProtoNumber(6) @JvmField val fromAppid: Long? = null,
+        @ProtoNumber(7) @JvmField val directMessageFlag: Short? = null,
     ) : ProtoBuf {
         override fun toString(): String {
             return "ChannelRoutingHead(guildId=$guildId, channelId=$channelId, fromUin=$fromUin, fromTinyId=$fromTinyId, guildCode=$guildCode, fromAppid=$fromAppid, directMessageFlag=$directMessageFlag)"
@@ -258,12 +258,12 @@ internal class Guild : ProtoBuf {
 
     @Serializable
     internal class ChannelContentHead(
-        @ProtoNumber(1) @JvmField val type: Long = 0L,
-        @ProtoNumber(2) @JvmField val subType: Long = 0L,
-        @ProtoNumber(3) @JvmField val random: Long = 0L,
-        @ProtoNumber(4) @JvmField val seq: Long = 0L,
-        @ProtoNumber(5) @JvmField val cntSeq: Long = 0L,
-        @ProtoNumber(6) @JvmField val time: Long = 0L,
+        @ProtoNumber(1) @JvmField var type: Long? = null,
+        @ProtoNumber(2) @JvmField val subType: Long? = null,
+        @ProtoNumber(3) @JvmField var random: Long? = null,
+        @ProtoNumber(4) @JvmField val seq: Long? = null,
+        @ProtoNumber(5) @JvmField val cntSeq: Long? = null,
+        @ProtoNumber(6) @JvmField val time: Long? = null,
         @ProtoNumber(7) @JvmField val meta: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf {
         override fun toString(): String {
@@ -701,5 +701,17 @@ internal class Guild : ProtoBuf {
     internal class CreateGuild(
         @ProtoNumber(1) @JvmField val operatorId: Long? = null,
         @ProtoNumber(2) @JvmField val guildId: Long? = null,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class PbReserve(
+        @ProtoNumber(1) @JvmField val unknown: Long? = null,
+        @ProtoNumber(20) @JvmField val downloadIndex: DownloadIndex? = null,
+
+        ) : ProtoBuf
+
+    @Serializable
+    internal class DownloadIndex(
+        @ProtoNumber(6) @JvmField val downloadIndex: String? = null,
     ) : ProtoBuf
 }

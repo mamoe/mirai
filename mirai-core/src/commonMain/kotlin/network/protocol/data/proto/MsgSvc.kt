@@ -286,7 +286,11 @@ internal class MsgSvc : ProtoBuf {
         @ProtoNumber(2) @JvmField val int32RetCode: Int = 0,
         @ProtoNumber(3) @JvmField val errMsg: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(4) @JvmField val transInfo: ByteArray = EMPTY_BYTE_ARRAY,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "TransSvrInfo(subType=$subType, int32RetCode=$int32RetCode, errMsg=${errMsg.contentToString()}, transInfo=${transInfo.contentToString()})"
+        }
+    }
 
     @Serializable
     internal class PbPullGroupMsgSeqResp(

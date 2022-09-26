@@ -27,6 +27,8 @@ import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageProcessor
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
+import net.mamoe.mirai.internal.network.protocol.packet.guild.send.MsgProxySendMsgSendMsg
+import net.mamoe.mirai.internal.network.protocol.packet.guild.send.createToChannel
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OnlineMessageSource
 
@@ -171,4 +173,33 @@ internal open class GroupMessageProtocolStrategy(
         )
     }
 
+}
+
+internal open class ChannelMessageProtocolStrategy(
+    private val contact: ChannelImpl,
+) : MessageProtocolStrategy<ChannelImpl> {
+    override suspend fun createPacketsForGeneralMessage(
+        client: QQAndroidClient,
+        contact: ChannelImpl,
+        message: MessageChain,
+        originalMessage: MessageChain,
+        fragmented: Boolean,
+        sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit
+    ): List<OutgoingPacket> {
+        return MsgProxySendMsgSendMsg.createToChannel(
+            client,
+            contact,
+            message,
+            originalMessage,
+            fragmented,
+            sourceCallback
+        )
+    }
+
+    override suspend fun constructSourceForSpecialMessage(
+        originalMessage: MessageChain,
+        fromAppId: Int
+    ): OnlineMessageSource.Outgoing {
+        TODO("Not yet implemented")
+    }
 }

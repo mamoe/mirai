@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.message.image
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Channel
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
@@ -50,8 +51,38 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
             val checkers = mapOf(
                 Group::class to ImageUploadedCheckerGroup(),
                 User::class to ImageUploadedCheckerUser(),
+                Channel::class to ImageUploadedCheckerChannel(),
                 null to ImageUploadedCheckerFallback()
             )
+        }
+    }
+
+    class ImageUploadedCheckerChannel : ImageUploadedChecker<Channel> {
+        override suspend fun isUploaded(
+            bot: QQAndroidBot,
+            context: Channel,
+            md5: ByteArray,
+            type: ImageType,
+            size: Long,
+            width: Int,
+            height: Int
+        ): Boolean {
+            val response: ImgStore.QQMeetPicUp.Response = bot.network.sendAndExpect(
+                ImgStore.QQMeetPicUp(
+                    bot.client,
+                    uin = bot.id,
+                    channelId = context.id,
+                    guildId = context.guildId,
+                    md5 = md5,
+                    size = size,
+                    filename = "${md5.toUHexString("")}.${type.formatName}",
+                    picWidth = width,
+                    picHeight = height,
+                    picType = getIdByImageType(type),
+                )
+            )
+
+            return response is ImgStore.QQMeetPicUp.Response.FileExists
         }
     }
 
@@ -141,6 +172,7 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
                 )
             )
 
+            //TODO 频道图片 FileExists
             return response is ImgStore.GroupPicUp.Response.FileExists
         }
     }
@@ -152,7 +184,9 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
 
                 patcher.findCacheByImageId(imageId)?.withCache { cache ->
                     val rsp = cache.cacheOGI.value0
+                    val rsp0 = cache.cacheGuildOGI.value0
                     if (rsp != null) return rsp
+                    if (rsp0 != null) return rsp0
                 }
             }
         }

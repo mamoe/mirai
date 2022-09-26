@@ -15,13 +15,14 @@ import net.mamoe.mirai.event.events.GuildMessageEvent
 import net.mamoe.mirai.internal.contact.ChannelImpl
 import net.mamoe.mirai.internal.contact.GuildImpl
 import net.mamoe.mirai.internal.contact.GuildMemberImpl
-import net.mamoe.mirai.internal.message.toMessageChainOnline
+import net.mamoe.mirai.internal.message.toGuildMessageChainNoSource
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.protocol.data.proto.Guild
 import net.mamoe.mirai.internal.network.protocol.data.proto.GuildMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.MiraiLogger
 
 internal class GuildMessageProcessor(
@@ -30,22 +31,22 @@ internal class GuildMessageProcessor(
     override suspend fun NoticePipelineContext.processImpl(data: GuildMsg.PressMsg) {
 
         for (item in data.msgs) {
-            val isFromSelfAccount = item.head.routingHead.fromTinyId == bot.account.tinyId
+            val isFromSelfAccount = item.head?.routingHead?.fromTinyId == bot.account.tinyId
             if (!isFromSelfAccount) {
-                val guild = bot.getGuild(item.head.routingHead.guildId) as GuildImpl? ?: return
+                val guild = bot.getGuild(item.head?.routingHead?.guildId!!) as GuildImpl? ?: return
                 val channel =
-                    guild.channelNodes.find { it.id == item.head.routingHead.channelId } as ChannelImpl? ?: return
+                    guild.channelNodes.find { it.id == item.head?.routingHead!!.channelId } as ChannelImpl? ?: return
                 val sender =
-                    guild.members.find { it.id == item.head.routingHead.fromTinyId } as GuildMemberImpl? ?: return
+                    guild.members.find { it.id == item.head?.routingHead!!.fromTinyId } as GuildMemberImpl? ?: return
 
                 val list = mutableListOf<Guild.ChannelMsgContent>()
                 list.add(item)
 
-                if (item.head.contentHead.type.toInt() == 3841) {
+                if (item.head?.contentHead?.type?.toInt() == 3841) {
 
                     var common: ImMsgBody.CommonElem? = null
-                    if (item.body.richText != null) {
-                        for (elem in item.body.richText.elems) {
+                    if (item.body?.richText != null) {
+                        for (elem in item.body!!.richText!!.elems) {
                             if (elem.commonElem != null) {
                                 common = elem.commonElem
                                 break
@@ -53,12 +54,12 @@ internal class GuildMessageProcessor(
                         }
                     }
                     //TODO: tips / maybe not todo XD
-                    if (item.head.contentHead.subType.toInt() == 2) {
+                    if (item.head!!.contentHead!!.subType?.toInt() == 2) {
 
                     }
 
                     if (common == null || common.serviceType != 500) {
-                        continue
+                        return
                     }
 
 
@@ -94,37 +95,21 @@ internal class GuildMessageProcessor(
                     }
                 }
 
-                if (item.head.contentHead.type.toInt() == 3840) {
-                    if (item.head.routingHead.directMessageFlag.toInt() == 1) {
+                if (item.head!!.contentHead?.type?.toInt() == 3840) {
+                    if (item.head!!.routingHead!!.directMessageFlag?.toInt() == 1) {
                         //TODO: 私聊信息解码
-                        continue
+                        return
                     }
                 }
 
-                if (item.body.richText != null) {
-                    for (elem in item.body.richText.elems) {
-                        if (null != elem.text) {
-
-                        }
-
-                        if (null != elem.face) {
-
-                        }
-                        if (null != elem.customFace) {
-
-                        }
-                    }
-                }
-
-
-
+                //TODO 记得在 [CommandSender] 添加相关方法
                 collect(
                     GuildMessageEvent(
                         guild = guild,
                         channel = channel,
-                        time = item.head.contentHead.time.toInt(),
+                        time = item.head!!.contentHead?.time!!.toInt(),
                         sender = sender,
-                        message = list.toMessageChainOnline(bot, guild.id, false),
+                        message = list.toGuildMessageChainNoSource(bot, guild.id, MessageSourceKind.FRIEND),
                     ),
                 )
             }

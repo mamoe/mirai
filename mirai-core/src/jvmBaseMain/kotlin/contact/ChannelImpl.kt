@@ -19,6 +19,7 @@ internal actual class ChannelImpl actual constructor(
     bot: QQAndroidBot,
     parentCoroutineContext: CoroutineContext,
     id: Long,
+    override val guildId: Long,
     channelInfo: ChannelInfo,
 ) : Channel, CommonChannelImpl(bot, parentCoroutineContext, id, channelInfo) {
     actual companion object;

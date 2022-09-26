@@ -34,12 +34,12 @@ public interface Guild : Contact, CoroutineScope {
     /**
      * 群主.
      *
-     * @return 若机器人是群主, 返回 [botAsMember]. 否则返回相应的成员
+     * @return 若机器人是频道主, 返回 [botAsMember]. 否则返回相应的成员
      */
     public val owner: GuildMember
 
     /**
-     * [Bot] 在群内的 [Member] 实例
+     * [Bot] 在频道内的 [Member] 实例
      */
     public val botAsMember: GuildMember
 
@@ -55,14 +55,14 @@ public interface Guild : Contact, CoroutineScope {
     public val members: ContactList<GuildMember>
 
     /**
-     * 获取群成员实例. 不存在时返回 `null`.
+     * 获取频道成员实例. 不存在时返回 `null`.
      *
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
      */
     public operator fun get(id: Long): GuildMember?
 
     /**
-     * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException].
+     * 获取频道成员实例. 不存在时抛出 [kotlin.NoSuchElementException].
      *
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
      */
@@ -71,14 +71,14 @@ public interface Guild : Contact, CoroutineScope {
 
 
     /**
-     * 当本群存在 [Member.id] 为 [id] 的群员时返回 `true`.
+     * 当本频道存在 [Member.id] 为 [id] 的群员时返回 `true`.
      *
      * 当 [id] 为 [Bot.id] 时返回 `true`
      */
     public operator fun contains(id: Long): Boolean
 
     /**
-     * 当 [member] 是本群成员时返回 `true`. 将同时成员 [所属群][Member.group]. 同一个用户在不同群内的 [Member] 对象不相等.
+     * 当 [member] 是本频道成员时返回 `true`. 将同时成员 [所属频道][Member.group]. 同一个用户在不同频道内的 [Member] 对象不相等.
      */
     public operator fun contains(member: GuildMember): Boolean = member in members
 

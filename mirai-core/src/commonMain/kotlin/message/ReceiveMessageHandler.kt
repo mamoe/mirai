@@ -54,14 +54,14 @@ internal suspend fun List<MsgComm.Msg>.toMessageChainOnline(
     return toMessageChain(bot, groupIdOrZero, true, messageSourceKind, facade).refineDeep(bot, refineContext)
 }
 
-internal suspend fun List<Guild.ChannelMsgContent>.toMessageChainOnline(
+internal suspend fun List<Guild.ChannelMsgContent>.toGuildMessageChainOnline(
     bot: Bot,
     guildIdOrZero: Long,
-    isDirect: Boolean,
+    messageSourceKind: MessageSourceKind,
     refineContext: RefineContext = EmptyRefineContext,
     facade: MessageProtocolFacade = MessageProtocolFacade
 ): MessageChain {
-    return toMessageChain(bot, guildIdOrZero, true, isDirect, facade).refineDeep(bot, refineContext)
+    return toGuildMessageChain(bot, guildIdOrZero, true, messageSourceKind, facade).refineDeep(bot, refineContext)
 }
 
 internal suspend fun MsgComm.Msg.toMessageChainOnline(
@@ -103,43 +103,50 @@ internal fun List<MsgComm.Msg>.toMessageChainNoSource(
     return toMessageChain(bot, groupIdOrZero, null, messageSourceKind).refineLight(bot, refineContext)
 }
 
-internal fun List<Guild.ChannelMsgContent>.toMessageChainNoSource(
+internal fun List<Guild.ChannelMsgContent>.toGuildMessageChainNoSource(
     bot: Bot,
     guildIdOrZero: Long,
-    isDirect: Boolean,
+    messageSourceKind: MessageSourceKind,
     refineContext: RefineContext = EmptyRefineContext,
 ): MessageChain {
-    return toMessageChain(bot, guildIdOrZero, null, isDirect).refineLight(bot, refineContext)
+    return toGuildMessageChain(bot, guildIdOrZero, null, messageSourceKind).refineLight(bot, refineContext)
 }
 
-private fun List<Guild.ChannelMsgContent>.toMessageChain(
+private fun List<Guild.ChannelMsgContent>.toGuildMessageChain(
     bot: Bot,
     guildIdOrZero: Long,
     onlineSource: Boolean?,
-    isDirect: Boolean,
+    messageSourceKind: MessageSourceKind,
     facade: MessageProtocolFacade = MessageProtocolFacade,
 ): MessageChain {
     val messageList = this
 
 
     val builder = MessageChainBuilder(messageList.sumOf {
-        it.body.richText!!.elems.size
+        it.body?.richText!!.elems.size
     })
 
     if (onlineSource != null) {
-        builder.add(ReceiveMessageTransformer.createMessageSource(bot, onlineSource, messageList))
+        builder.add(
+            ReceiveMessageTransformer.createGuildMessageSource(
+                bot,
+                onlineSource,
+                messageSourceKind,
+                messageList
+            )
+        )
     }
 
 
 
     messageList.forEach { msg ->
-        if (null != msg.body.richText) {
-            facade.decode(msg.body.richText.elems, guildIdOrZero, isDirect, bot, builder, msg)
+        if (null != msg.body?.richText) {
+            facade.decode(msg.body!!.richText!!.elems, guildIdOrZero, messageSourceKind, bot, builder, msg, true)
         }
     }
 
     for (msg in messageList) {
-        msg.body.richText?.ptt?.toAudio()?.let { builder.add(it) }
+        msg.body?.richText?.ptt?.toAudio()?.let { builder.add(it) }
     }
 
     return builder.build().cleanupRubbishMessageElements()
@@ -178,21 +185,27 @@ private fun List<MsgComm.Msg>.toMessageChain(
  * @see joinToMessageChain
  */
 internal object ReceiveMessageTransformer {
-    fun createMessageSource(
+    fun createGuildMessageSource(
         bot: Bot,
-        isDirect: Boolean,
+        onlineSource: Boolean,
+        messageSourceKind: MessageSourceKind,
         messageList: List<Guild.ChannelMsgContent>,
     ): MessageSource {
-        return OnlineMessageSourceFromGuildImpl(bot, messageList)
-//        return when (isDirect) {
-//            true ->{
-//                //TODO direct message
-//                OnlineMessageSourceFromGuildImpl(bot,messageList)
-//            }
-//            false ->{
-//                OnlineMessageSourceFromGuildImpl(bot,messageList)
-//            }
-//        }
+        //TODO fix
+        return when (onlineSource) {
+            true -> {
+                when (messageSourceKind) {
+                    MessageSourceKind.GUILD -> OnlineMessageSourceFromGuildImpl(bot, messageList)
+                    else -> {
+                        OnlineMessageSourceFromGuildImpl(bot, messageList)
+                    }
+                }
+            }
+
+            false -> {
+                OnlineMessageSourceFromGuildImpl(bot, messageList)
+            }
+        }
     }
 
     fun createMessageSource(
@@ -208,6 +221,9 @@ internal object ReceiveMessageTransformer {
                     MessageSourceKind.GROUP -> OnlineMessageSourceFromGroupImpl(bot, messageList)
                     MessageSourceKind.FRIEND -> OnlineMessageSourceFromFriendImpl(bot, messageList)
                     MessageSourceKind.STRANGER -> OnlineMessageSourceFromStrangerImpl(bot, messageList)
+                    else -> {
+                        OfflineMessageSourceImplData(bot, messageList, messageSourceKind)
+                    }
                 }
             }
             false -> {

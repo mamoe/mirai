@@ -168,7 +168,11 @@ internal class CSDataHighwayHead : ProtoBuf {
         @JvmField @ProtoNumber(9) val buildVer: String = "",
         @JvmField @ProtoNumber(10) val localeId: Int = 0,
         @JvmField @ProtoNumber(11) val envId: Int = 0,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "DataHighwayHead(version=$version, uin='$uin', command='$command', seq=$seq, retryTimes=$retryTimes, appid=$appid, dataflag=$dataflag, commandId=$commandId, buildVer='$buildVer', localeId=$localeId, envId=$envId)"
+        }
+    }
 
     @Serializable
     internal class DataHole(
@@ -210,7 +214,11 @@ internal class CSDataHighwayHead : ProtoBuf {
     internal class LoginSigHead(
         @JvmField @ProtoNumber(1) val loginsigType: Int = 0,
         @JvmField @ProtoNumber(2) val loginsig: ByteArray = EMPTY_BYTE_ARRAY,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "LoginSigHead(loginsigType=$loginsigType, loginsig=${loginsig.contentToString()})"
+        }
+    }
 
     @Serializable
     internal class NewServiceTicket(
@@ -253,7 +261,11 @@ internal class CSDataHighwayHead : ProtoBuf {
         @JvmField @ProtoNumber(3) val reqExtendinfo: ByteArray? = null, // = EMPTY_BYTE_ARRAY,
         @JvmField @ProtoNumber(4) val timestamp: Long = 0L,
         @JvmField @ProtoNumber(5) val msgLoginSigHead: LoginSigHead? = null,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "ReqDataHighwayHead(msgBasehead=$msgBasehead, msgSeghead=$msgSeghead, reqExtendinfo=${reqExtendinfo?.decodeToString()}, timestamp=$timestamp, msgLoginSigHead=$msgLoginSigHead)"
+        }
+    }
 
     @Serializable
     internal class RspBody(
@@ -272,7 +284,11 @@ internal class CSDataHighwayHead : ProtoBuf {
         @JvmField @ProtoNumber(8) val timestamp: Long = 0L,
         @JvmField @ProtoNumber(9) val range: Long = 0L,
         @JvmField @ProtoNumber(10) val isReset: Int = 0,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "RspDataHighwayHead(msgBasehead=$msgBasehead, msgSeghead=$msgSeghead, errorCode=$errorCode, allowRetry=$allowRetry, cachecost=$cachecost, htcost=$htcost, rspExtendinfo=${rspExtendinfo.decodeToString()}, timestamp=$timestamp, range=$range, isReset=$isReset)"
+        }
+    }
 
     @Serializable
     internal class SegHead(
@@ -288,7 +304,11 @@ internal class CSDataHighwayHead : ProtoBuf {
         @JvmField @ProtoNumber(10) val cacheAddr: Int = 0,
         @JvmField @ProtoNumber(11) val queryTimes: Int = 0,
         @JvmField @ProtoNumber(12) val updateCacheip: Int = 0,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "SegHead(serviceid=$serviceid, filesize=$filesize, dataoffset=$dataoffset, datalength=$datalength, rtcode=$rtcode, serviceticket=${serviceticket.decodeToString()}, flag=$flag, md5=${md5.decodeToString()}, fileMd5=${fileMd5.decodeToString()}, cacheAddr=$cacheAddr, queryTimes=$queryTimes, updateCacheip=$updateCacheip)"
+        }
+    }
 }
 
 @Serializable

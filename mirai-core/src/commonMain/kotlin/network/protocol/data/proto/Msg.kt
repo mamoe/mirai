@@ -21,7 +21,6 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.inflate
 import net.mamoe.mirai.utils.isSameType
-import net.mamoe.mirai.utils.structureToStringIfAvailable
 import kotlin.jvm.JvmField
 
 @Serializable
@@ -218,7 +217,11 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(8) @JvmField val pitchAndFamily: Int = 90,
         @ProtoNumber(9) @JvmField val fontName: String = "Times New Roman",
         @ProtoNumber(10) @JvmField val reserveData: ByteArray = EMPTY_BYTE_ARRAY,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "Attr(codePage=$codePage, time=$time, random=$random, color=$color, size=$size, effect=$effect, charSet=$charSet, pitchAndFamily=$pitchAndFamily, fontName='$fontName', reserveData=${reserveData.decodeToString()})"
+        }
+    }
 
     @Serializable
     internal class BitAppMsg(
@@ -390,7 +393,8 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(53) @JvmField val commonElem: CommonElem? = null,
     ) : ProtoBuf {
         override fun toString(): String {
-            return this.structureToStringIfAvailable() ?: super.toString()
+            return "Elem(text=$text, face=$face, onlineImage=$onlineImage, notOnlineImage=$notOnlineImage, transElemInfo=$transElemInfo, marketFace=$marketFace, elemFlags=$elemFlags, customFace=$customFace, elemFlags2=$elemFlags2, funFace=$funFace, secretFile=$secretFile, richMsg=$richMsg, groupFile=$groupFile, pubGroup=$pubGroup, marketTrans=$marketTrans, extraInfo=$extraInfo, shakeWindow=$shakeWindow, pubAccount=$pubAccount, videoFile=$videoFile, tipsInfo=$tipsInfo, anonGroupMsg=$anonGroupMsg, qqLiveOld=$qqLiveOld, lifeOnline=$lifeOnline, crmElem=$crmElem, conferenceTipsInfo=$conferenceTipsInfo, redbagInfo=$redbagInfo, lowVersionTips=$lowVersionTips, bankcodeCtrlInfo=${bankcodeCtrlInfo?.contentToString()}, nearByMsg=$nearByMsg, customElem=$customElem, locationInfo=$locationInfo, pubAccInfo=$pubAccInfo, smallEmoji=$smallEmoji, fsjMsgElem=$fsjMsgElem, arkApp=$arkApp, generalFlags=$generalFlags, hcFlashPic=$hcFlashPic, deliverGiftMsg=$deliverGiftMsg, bitappMsg=$bitappMsg, openQqData=$openQqData, apolloMsg=$apolloMsg, groupPubAccInfo=$groupPubAccInfo, blessMsg=$blessMsg, srcMsg=$srcMsg, lolaMsg=$lolaMsg, groupBusinessMsg=$groupBusinessMsg, msgWorkflowNotify=$msgWorkflowNotify, patElem=$patElem, groupPostElem=$groupPostElem, lightApp=$lightApp, eimInfo=$eimInfo, commonElem=$commonElem)"
+
         }
     }
 
@@ -694,7 +698,11 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(54) @JvmField val clientType: Int = 0,
         @ProtoNumber(55) @JvmField val expireTime: Int = 0,
         @ProtoNumber(56) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "NotOnlineFile(fileType=$fileType, sig=${sig.contentToString()}, fileUuid=${fileUuid.contentToString()}, fileMd5=${fileMd5.contentToString()}, fileName=${fileName.contentToString()}, fileSize=$fileSize, note=${note.contentToString()}, reserved=$reserved, subcmd=$subcmd, microCloud=$microCloud, bytesFileUrls=$bytesFileUrls, downloadFlag=$downloadFlag, dangerEvel=$dangerEvel, lifeTime=$lifeTime, uploadTime=$uploadTime, absFileType=$absFileType, clientType=$clientType, expireTime=$expireTime, pbReserve=${pbReserve.contentToString()})"
+        }
+    }
 
     interface NotOnlineImageOrCustomFace {
         val thumbUrl: String
@@ -956,12 +964,16 @@ internal class ImMsgBody : ProtoBuf {
     @Serializable
     internal class RichText(
         @ProtoNumber(1) @JvmField val attr: Attr? = null,
-        @ProtoNumber(2) @JvmField val elems: List<Elem> = listOf(),
+        @ProtoNumber(2) @JvmField val elems: MutableList<Elem> = mutableListOf(),
         @ProtoNumber(3) @JvmField val notOnlineFile: NotOnlineFile? = null,
         @ProtoNumber(4) @JvmField val ptt: Ptt? = null,
         @ProtoNumber(5) @JvmField val tmpPtt: TmpPtt? = null,
         @ProtoNumber(6) @JvmField val trans211TmpMsg: Trans211TmpMsg? = null,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "RichText(attr=$attr, elems=$elems, notOnlineFile=$notOnlineFile, ptt=$ptt, tmpPtt=$tmpPtt, trans211TmpMsg=$trans211TmpMsg)"
+        }
+    }
 
     @Serializable
     internal class SecretFileMsg(
@@ -1052,7 +1064,11 @@ internal class ImMsgBody : ProtoBuf {
     internal class Trans211TmpMsg(
         @ProtoNumber(1) @JvmField val msgBody: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val c2cCmd: Int = 0,
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        override fun toString(): String {
+            return "Trans211TmpMsg(msgBody=${msgBody.contentToString()}, c2cCmd=$c2cCmd)"
+        }
+    }
 
     @Serializable
     internal class TransElem(

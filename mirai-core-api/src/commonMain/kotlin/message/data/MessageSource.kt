@@ -323,7 +323,17 @@ public enum class MessageSourceKind {
     /**
      * 来自陌生人的消息
      */
-    STRANGER
+    STRANGER,
+
+    /**
+     * 来自频道的消息
+     */
+    GUILD,
+
+    /**
+     * 来自频道私信的消息
+     */
+    DIRECT
 }
 
 /**
