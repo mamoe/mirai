@@ -28,6 +28,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.childScope
+import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.coroutines.CoroutineContext
 
@@ -168,6 +169,12 @@ internal suspend fun executeCommandImpl(
         CommandExecuteResult.Success(resolved.callee, call, resolved)
     } catch (e: CommandArgumentParserException) {
         CommandExecuteResult.IllegalArgument(e, resolved.callee, call, resolved)
+    } catch (e: InvocationTargetException) {
+        when (val target = e.cause) {
+            is CommandArgumentParserException -> CommandExecuteResult.IllegalArgument(target, resolved.callee, call, resolved)
+            null -> CommandExecuteResult.ExecutionFailed(e, resolved.callee, call, resolved)
+            else -> CommandExecuteResult.ExecutionFailed(target, resolved.callee, call, resolved)
+        }
     } catch (e: Throwable) {
         CommandExecuteResult.ExecutionFailed(e, resolved.callee, call, resolved)
     }
