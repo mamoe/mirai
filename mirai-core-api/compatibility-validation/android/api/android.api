@@ -660,9 +660,7 @@ public final class net/mamoe/mirai/contact/active/ActiveRecord {
 	public final fun getPeriodDays ()I
 }
 
-public abstract interface class net/mamoe/mirai/contact/active/GroupActive {
-	public abstract fun asFlow ()Lkotlinx/coroutines/flow/Flow;
-	public abstract fun asStream ()Ljava/util/stream/Stream;
+public abstract interface class net/mamoe/mirai/contact/active/GroupActive : net/mamoe/mirai/utils/Streamable {
 	public abstract fun getRankTitles ()Ljava/util/Map;
 	public abstract fun getTemperatureTitles ()Ljava/util/Map;
 	public abstract fun isHonorVisible ()Z
@@ -837,19 +835,15 @@ public final class net/mamoe/mirai/contact/announcement/AnnouncementParametersBu
 	public static final fun buildAnnouncementParameters (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
 }
 
-public abstract interface class net/mamoe/mirai/contact/announcement/Announcements {
-	public fun asFlow ()Lkotlinx/coroutines/flow/Flow;
-	public abstract fun asFlow (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun asStream ()Ljava/util/stream/Stream;
+public abstract interface class net/mamoe/mirai/contact/announcement/Announcements : net/mamoe/mirai/utils/Streamable {
+	public synthetic fun asFlow (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun asFlow (Lnet/mamoe/mirai/contact/announcement/Announcements;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun delete (Ljava/lang/String;)Z
 	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun get (Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public abstract fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public abstract fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun toList ()Ljava/util/List;
-	public fun toList (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun toList$suspendImpl (Lnet/mamoe/mirai/contact/announcement/Announcements;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
 	public abstract fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -6161,6 +6155,14 @@ public final class net/mamoe/mirai/utils/SingleFileLogger : net/mamoe/mirai/util
 	public fun warning (Ljava/lang/String;)V
 	public fun warning (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun warning (Ljava/lang/Throwable;)V
+}
+
+public abstract interface class net/mamoe/mirai/utils/Streamable {
+	public abstract fun asFlow ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun asStream ()Ljava/util/stream/Stream;
+	public fun toList ()Ljava/util/List;
+	public fun toList (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun toList$suspendImpl (Lnet/mamoe/mirai/utils/Streamable;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/utils/Utils {

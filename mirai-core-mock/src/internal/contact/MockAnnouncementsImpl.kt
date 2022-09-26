@@ -35,7 +35,7 @@ internal class MockAnnouncementsImpl(
 ) : MockAnnouncements {
     val announcements = ConcurrentHashMap<String, OnlineAnnouncement>()
 
-    override suspend fun asFlow(): Flow<OnlineAnnouncement> = announcements.values.asFlow()
+    override fun asFlow(): Flow<OnlineAnnouncement> = announcements.values.asFlow()
 
     override fun asStream(): Stream<OnlineAnnouncement> = announcements.values.toList().stream()
 

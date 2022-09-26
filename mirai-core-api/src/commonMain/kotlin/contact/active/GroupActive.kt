@@ -11,12 +11,12 @@
 
 package net.mamoe.mirai.contact.active
 
-import kotlinx.coroutines.flow.Flow
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.utils.NotStableForInheritance
+import net.mamoe.mirai.utils.Streamable
 import kotlin.jvm.JvmName
 
 /**
@@ -62,7 +62,7 @@ import kotlin.jvm.JvmName
  * @since 2.13
  */
 @NotStableForInheritance
-public expect interface GroupActive {
+public interface GroupActive : Streamable<ActiveRecord> {
 
     /**
      * 是否在群聊中显示荣誉
@@ -132,13 +132,6 @@ public expect interface GroupActive {
      * @see Member.active
      */
     public suspend fun refresh()
-
-    /**
-     * 创建一个能获取该群内所有群活跃度记录的 [Flow]. 在 [Flow] 被使用时才会分页下载 [ActiveRecord].
-     *
-     * 异常不会抛出, 只会记录到网络日志. 当获取发生异常时将会终止获取, 不影响已经成功获取的 [ActiveRecord] 和 [Flow] 的[收集][Flow.collect].
-     */
-    public fun asFlow(): Flow<ActiveRecord>
 
     /**
      * 获取活跃度图表数据
