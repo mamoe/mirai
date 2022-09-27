@@ -254,3 +254,51 @@ public class GroupMessageSyncEvent private constructor(
     public override fun toString(): String =
         "GroupMessageSyncEvent(group=${group.id}, senderName=$senderName, sender=${sender.id}, message=$message)"
 }
+
+
+/**
+ * 机器人在其他客户端发送频道消息同步到这个客户端的事件
+ *
+ * @see MessageSyncEvent
+ */
+public class GuildMessageSyncEvent private constructor(
+    private val _client: OtherClient?,
+    public val guild: Guild,
+    public val channel: Channel,
+    public override val message: MessageChain,
+    public override val sender: GuildMember,
+    public override val senderName: String,
+    public override val time: Int,
+    @Suppress("UNUSED_PARAMETER") _primaryConstructorMark: Any?,
+) : AbstractMessageEvent(), MessageSyncEvent {
+    /**
+     * @since 2.13
+     */
+    public override val client: OtherClient
+        get() = _client ?: error("client is not set. Please use the new constructor.")
+
+    /**
+     * @since 2.13
+     */
+    public constructor(
+        client: OtherClient,
+        guild: Guild,
+        channel: Channel,
+        message: MessageChain,
+        sender: GuildMember,
+        senderName: String,
+        time: Int
+    ) : this(client, guild, channel, message, sender, senderName, time, null)
+
+    init {
+        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromGuild) { "source provided to a GuildMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromGuild" }
+    }
+
+    override val bot: Bot get() = sender.bot
+    override val subject: Channel get() = channel
+    override val source: OnlineMessageSource.Incoming.FromGuild get() = message.source as OnlineMessageSource.Incoming.FromGuild
+
+    public override fun toString(): String =
+        "GuildMessageSyncEvent(guild=${guild.id},channel=${channel.id} senderName=$senderName, sender=${sender.id}, message=$message)"
+}

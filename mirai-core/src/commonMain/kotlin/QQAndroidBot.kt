@@ -75,7 +75,7 @@ internal open class QQAndroidBot constructor(
 ) : AbstractBot(configuration, account.id) {
     override val bot: QQAndroidBot get() = this
     override val friendGroups: FriendGroupsImpl by lazy { FriendGroupsImpl(this) }
-
+    override val tinyId: Long get() = account.tinyId
     val client get() = components[SsoProcessor].client
 
     override fun close(cause: Throwable?) {

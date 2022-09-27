@@ -21,7 +21,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.guild.receive.MsgPushPushGroupProMsg
 import net.mamoe.mirai.internal.network.protocol.packet.guild.receive.PushFirstView
-import net.mamoe.mirai.internal.network.protocol.packet.guild.send.MsgProxySendMsgSendMsg
+import net.mamoe.mirai.internal.network.protocol.packet.guild.send.MsgProxySendMsg
 import net.mamoe.mirai.internal.network.protocol.packet.guild.send.OidbSvcTrpcTcp
 import net.mamoe.mirai.internal.network.protocol.packet.guild.send.SyncFirstView
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
@@ -185,7 +185,7 @@ internal object KnownPacketFactories {
         OidbSvcTrpcTcp.FetchGuestGuild,
         OidbSvcTrpcTcp.FetchChannelInfo,
         OidbSvcTrpcTcp.FetchChannelList,
-        MsgProxySendMsgSendMsg,
+        MsgProxySendMsg,
         ImgStore.QQMeetPicUp,
         *FileManagement.factories
     )

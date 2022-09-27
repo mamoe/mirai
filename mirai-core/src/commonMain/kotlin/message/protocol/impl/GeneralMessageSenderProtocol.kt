@@ -30,7 +30,7 @@ import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
-import net.mamoe.mirai.internal.network.protocol.packet.guild.send.MsgProxySendMsgSendMsg
+import net.mamoe.mirai.internal.network.protocol.packet.guild.send.MsgProxySendMsg
 import net.mamoe.mirai.message.data.AtAll
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OnlineMessageSource
@@ -155,19 +155,14 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
                 }
                 return true
             } catch (e: Exception) {
-                val resp = protocolStrategy.sendPacket(bot, packet) as MsgProxySendMsgSendMsg.Response
-                if (resp is MsgProxySendMsgSendMsg.Response.Failed) {
+                val resp = protocolStrategy.sendPacket(bot, packet) as MsgProxySendMsg.Response
+                if (resp is MsgProxySendMsg.Response.Failed) {
                     when (resp.resultCode) {
-                        (-31072).toShort() -> throw SendMessageFailedException(
-                            contact,
-                            SendMessageFailedException.Reason.MSG_REPEATED,
-                            originalMessage
-                        )
-
+                        (-31072).toShort() -> return true // MSG_REPEATED 不知道是什么问题，可以正常发送
                         else -> error("${resp.resultCode}, reason: ${resp.message}")
                     }
                 }
-                check(resp is MsgProxySendMsgSendMsg.Response.Success) {
+                check(resp is MsgProxySendMsg.Response.Success) {
                     "Send message failed: $resp"
                 }
                 return true

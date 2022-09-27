@@ -28,6 +28,8 @@ internal class GuildMemberImpl constructor(
 ) : GuildMember, AbstractGuildMember(bot, guildId, parentCoroutineContext, guildMemberInfo) {
     override val nick: String get() = info.nickname
     override val remark: String get() = info.nickname
+    override val tinyId: Long
+        get() = bot.tinyId
 
     override suspend fun sendMessage(message: Message): MessageReceipt<User> {
         TODO("Not yet implemented")

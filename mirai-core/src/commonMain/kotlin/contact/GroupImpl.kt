@@ -139,8 +139,9 @@ internal abstract class CommonGroupImpl constructor(
     groupInfo: GroupInfo,
     final override val members: ContactList<NormalMemberImpl>,
 ) : Group, AbstractContact(bot, parentCoroutineContext) {
-    companion object
-
+    companion object;
+    override val tinyId: Long
+        get() = bot.tinyId
     val uin: Long = groupInfo.uin
     final override val settings: GroupSettingsImpl = GroupSettingsImpl(this.cast(), groupInfo)
     final override var name: String by settings::name

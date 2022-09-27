@@ -13,6 +13,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.utils.toUHexString
 import kotlin.jvm.JvmField
 
 @Serializable
@@ -168,7 +169,7 @@ internal class Cmd0x388 : ProtoBuf {
         @ProtoNumber(5) @JvmField val fileHeight: Int = 0,
     ) : ProtoBuf {
         override fun toString(): String {
-            return "ImgInfo(fileMd5=${fileMd5.decodeToString()}, fileType=$fileType, fileSize=$fileSize, fileWidth=$fileWidth, fileHeight=$fileHeight)"
+            return "ImgInfo(fileMd5=${fileMd5.toUHexString()}, fileType=$fileType, fileSize=$fileSize, fileWidth=$fileWidth, fileHeight=$fileHeight)"
         }
     }
 
@@ -266,10 +267,11 @@ internal class Cmd0x388 : ProtoBuf {
         @ProtoNumber(12) @JvmField val boolNewBigChan: Boolean = false,
         @ProtoNumber(26) @JvmField val msgUpIp6: List<IPv6Info> = emptyList(),
         @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(28) @JvmField val downloadIndex: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(1001) @JvmField val msgInfo4busi: TryUpInfo4Busi? = null,
     ) : ProtoBuf {
         override fun toString(): String {
-            return "TryUpImgRsp(fileId=$fileId, result=$result, failMsg='$failMsg', boolFileExit=$boolFileExit, msgImgInfo=$msgImgInfo, uint32UpIp=$uint32UpIp, uint32UpPort=$uint32UpPort, upUkey=${upUkey.decodeToString()}, fileid=$fileid, upOffset=$upOffset, blockSize=$blockSize, boolNewBigChan=$boolNewBigChan, msgUpIp6=$msgUpIp6, clientIp6=${clientIp6.decodeToString()}, msgInfo4busi=$msgInfo4busi)"
+            return "TryUpImgRsp(fileId=$fileId, result=$result, failMsg='$failMsg', boolFileExit=$boolFileExit, msgImgInfo=$msgImgInfo, uint32UpIp=$uint32UpIp, uint32UpPort=$uint32UpPort, upUkey=${upUkey.toUHexString()}, fileid=$fileid, upOffset=$upOffset, blockSize=$blockSize, boolNewBigChan=$boolNewBigChan, msgUpIp6=$msgUpIp6, clientIp6=${clientIp6.contentToString()}, downloadIndex=${downloadIndex.contentToString()}, msgInfo4busi=$msgInfo4busi)"
         }
     }
 
@@ -327,4 +329,10 @@ internal class Cmd0x388 : ProtoBuf {
             return "TryUpPttRsp(fileId=$fileId, result=$result, failMsg=${failMsg?.decodeToString()}, boolFileExit=$boolFileExit, uint32UpIp=$uint32UpIp, uint32UpPort=$uint32UpPort, upUkey=${upUkey.decodeToString()}, fileid=$fileid, upOffset=$upOffset, blockSize=$blockSize, fileKey=${fileKey.decodeToString()}, channelType=$channelType, msgUpIp6=$msgUpIp6, clientIp6=${clientIp6.decodeToString()})"
         }
     }
+
+    @Serializable
+    internal class uploadGuildChannel(
+        @ProtoNumber(11) @JvmField val guildId: Long = 0L,
+        @ProtoNumber(12) @JvmField val channelId: Long = 0L,
+    ) : ProtoBuf
 }

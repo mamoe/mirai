@@ -197,16 +197,17 @@ internal object ReceiveMessageTransformer {
                 when (messageSourceKind) {
                     MessageSourceKind.GUILD -> OnlineMessageSourceFromGuildImpl(bot, messageList)
                     else -> {
-                        OnlineMessageSourceFromGuildImpl(bot, messageList)
+                        OfflineGuildMessageSourceImplData(bot, messageList, messageSourceKind)
                     }
                 }
             }
 
             false -> {
-                OnlineMessageSourceFromGuildImpl(bot, messageList)
+                OfflineGuildMessageSourceImplData(bot, messageList, messageSourceKind)
             }
         }
     }
+
 
     fun createMessageSource(
         bot: Bot,

@@ -65,8 +65,7 @@ internal object Highway {
         },
         callback: ProgressionCallback? = null,
         dataFlag: Int = 4096,
-        localeId: Int = 2052,
-        isGuild: Boolean = false
+        localeId: Int = 2052
     ): BdhUploadResponse {
         val bdhSession = kotlin.runCatching {
             val deferred = bot.asQQAndroidBot().components[BdhSessionSyncer].bdhSession
@@ -100,7 +99,6 @@ internal object Highway {
                     if (encrypt) TEA.encrypt(extendInfo, bdhSession.sessionKey) else extendInfo
                 },
                 callback = callback,
-                isGuild = isGuild
             ).sendConcurrently(
                 createConnection = { createConnection(ip, port) },
                 coroutines = bot.configuration.highwayUploadCoroutineCount,
@@ -112,74 +110,6 @@ internal object Highway {
             }
             resp
         }
-    }
-
-    suspend fun uploadGuildResourceBdh(
-        bot: QQAndroidBot,
-        resource: ExternalResource,
-        kind: ResourceKind,
-        commandId: Int,  // group image=2, friend image=1, groupPtt=29
-        extendInfo: ByteArray? = null,
-        encrypt: Boolean = false,
-        initialTicket: ByteArray? = null, // null then use sig session
-        tryOnce: Boolean = false,
-        noBdhAwait: Boolean = false,
-        fallbackSession: (Throwable) -> BdhSession = { throw IllegalStateException("Failed to get bdh session", it) },
-        resultChecker: (CSDataHighwayHead.RspDataHighwayHead) -> Boolean = { it.errorCode == 0 },
-        createConnection: suspend (ip: String, port: Int) -> HighwayProtocolChannel = { ip, port ->
-            PlatformSocket.connect(ip, port)
-        },
-        callback: ProgressionCallback? = null,
-        dataFlag: Int = 4096,
-        localeId: Int = 2052,
-        isGuild: Boolean = false
-    ): BdhUploadResponse {
-        val bdhSession = kotlin.runCatching {
-            val deferred = bot.asQQAndroidBot().components[BdhSessionSyncer].bdhSession
-            // no need to care about timeout. proceed by bot init
-            @OptIn(ExperimentalCoroutinesApi::class)
-            if (noBdhAwait) deferred.getCompleted() else deferred.await()
-        }.getOrElse(fallbackSession)
-
-
-        return tryServersUpload(
-            bot = bot,
-            servers = if (tryOnce) listOf(bdhSession.ssoAddresses.random()) else bdhSession.ssoAddresses,
-            resourceSize = resource.size,
-            resourceKind = kind,
-            channelKind = ChannelKind.HIGHWAY
-        ) { ip, port ->
-
-            val md5 = resource.md5
-            require(md5.size == 16) { "bad md5. Required size=16, got ${md5.size}" }
-
-            val resp = BdhUploadResponse()
-            highwayPacketSession(
-                client = bot.client,
-                appId = bot.client.subAppId.toInt(),
-                command = "PicUp.DataUp",
-                commandId = commandId,
-                initialTicket = initialTicket ?: bdhSession.sigSession,
-                data = resource,
-                dataFlag = dataFlag,
-                localeId = localeId,
-                fileMd5 = md5,
-                extendInfo = extendInfo?.let {
-                    if (encrypt) TEA.encrypt(extendInfo, bdhSession.sessionKey) else extendInfo
-                },
-                callback = callback,
-                isGuild = isGuild
-            ).sendSequentially(
-                socket = PlatformSocket.connect(ip, port)
-            ) { head ->
-                if (head.rspExtendinfo.isNotEmpty()) {
-                    resp.extendInfo = head.rspExtendinfo
-                }
-            }
-            resp
-        }
-
-
     }
 }
 
@@ -428,8 +358,10 @@ private suspend fun HighwayProtocolChannel.sendReceiveHighway(
         discardExact(4)
         val proto = readProtoBuf(CSDataHighwayHead.RspDataHighwayHead.serializer(), length = headLength)
         check(resultChecker(proto)) { "highway transfer failed, error ${proto.errorCode}" }
+        // error 69: uin错误
         // error 70: 某属性有误
         // error 79: 没有 body (可能)
+        // error 81: extInfo 缺失
         return proto
     }
 }
@@ -447,12 +379,10 @@ internal fun highwayPacketSession(
     fileMd5: ByteArray,
     sizePerPacket: Int = ByteArrayPool.BUFFER_SIZE,
     extendInfo: ByteArray? = null,
-    callback: Highway.ProgressionCallback? = null,
-    isGuild: Boolean
+    callback: Highway.ProgressionCallback? = null
 ): ChunkedFlowSession<ByteReadPacket> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     //   require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
-
     val ticket = atomic(initialTicket)
 
     return ChunkedFlowSession(data.input(), ByteArray(sizePerPacket), callback) { buffer, size, offset ->

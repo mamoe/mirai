@@ -57,28 +57,28 @@ public interface Guild : Contact, CoroutineScope {
     /**
      * 获取频道成员实例. 不存在时返回 `null`.
      *
-     * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
+     * 当 [tinyId] 为 [Bot.tinyId] 时返回 [botAsMember].
      */
-    public operator fun get(id: Long): GuildMember?
+    public operator fun get(tinyId: Long): GuildMember?
 
     /**
      * 获取频道成员实例. 不存在时抛出 [kotlin.NoSuchElementException].
      *
-     * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
+     * 当 [tinyId] 为 [Bot.tinyId] 时返回 [botAsMember].
      */
-    public fun getOrFail(id: Long): GuildMember =
-        get(id) ?: throw NoSuchElementException("member $id not found in guild ${this.id}")
+    public fun getOrFail(tinyId: Long): GuildMember =
+        get(id) ?: throw NoSuchElementException("member $tinyId not found in guild ${this.id}")
 
 
     /**
-     * 当本频道存在 [Member.id] 为 [id] 的群员时返回 `true`.
+     * 当本频道存在 [GuildMember.id] 为 [tinyId] 的群员时返回 `true`.
      *
-     * 当 [id] 为 [Bot.id] 时返回 `true`
+     * 当 [tinyId] 为 [Bot.tinyId] 时返回 `true`
      */
-    public operator fun contains(id: Long): Boolean
+    public operator fun contains(tinyId: Long): Boolean
 
     /**
-     * 当 [member] 是本频道成员时返回 `true`. 将同时成员 [所属频道][Member.group]. 同一个用户在不同频道内的 [Member] 对象不相等.
+     * 当 [member] 是本频道成员时返回 `true`. 将同时成员 [所属频道][GuildMember.guild]. 同一个用户在不同频道内的 [GuildMember] 对象不相等.
      */
     public operator fun contains(member: GuildMember): Boolean = member in members
 

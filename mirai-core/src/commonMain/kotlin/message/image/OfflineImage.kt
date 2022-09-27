@@ -14,6 +14,7 @@ import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 
 /**
  * 离线的图片, 即为客户端主动上传到服务器而获得的 [Image] 实例.
@@ -64,7 +65,7 @@ internal data class OfflineGroupImage(
     object Serializer : Image.FallbackSerializer("OfflineGroupImage")
 
     override fun getUrl(bot: Bot): String {
-        return "http://gchat.qpic.cn/gchatpic_new/${bot.id}/0-0-${
+        return "http://gchat.qpic.cn/gchatpic_new/${bot.tinyId}/0-0-${
             imageId.substring(1..36)
                 .replace("-", "")
         }/0?term=2"
@@ -87,15 +88,17 @@ internal data class OfflineGuildImage(
     override val size: Long = 0L,
     override val imageType: ImageType = ImageType.UNKNOWN,
     override val isEmoji: Boolean = false,
-) : GroupImage(), OfflineImage, DeferredOriginUrlAware {
+    val downloadIndex: ByteArray = EMPTY_BYTE_ARRAY,
+    val serverPort: Int = 0,
+    val serverIp: Int = 0
+) : GuildImage(), OfflineImage, DeferredOriginUrlAware {
     @Transient
     internal var fileId: Int? = null
 
     object Serializer : Image.FallbackSerializer("OfflineGuildImage")
 
-    //TODO Maybe need fix
     override fun getUrl(bot: Bot): String {
-        return "http://gchat.qpic.cn/gchatpic_new/${bot.id}/0-0-${
+        return "http://gchat.qpic.cn/gchatpic_new/${bot.tinyId}/0-0-${
             imageId.substring(1..36)
                 .replace("-", "")
         }/0?term=2"

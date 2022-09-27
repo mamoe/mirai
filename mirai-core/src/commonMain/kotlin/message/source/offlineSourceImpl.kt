@@ -18,7 +18,9 @@ import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
+import net.mamoe.mirai.internal.message.toGuildMessageChainNoSource
 import net.mamoe.mirai.internal.message.toMessageChainNoSource
+import net.mamoe.mirai.internal.network.protocol.data.proto.Guild
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
@@ -197,5 +199,29 @@ internal fun OfflineMessageSourceImplData(
         botId = bot.id
     ).apply {
         jceData = delegate
+    }
+}
+
+internal fun OfflineGuildMessageSourceImplData(
+    bot: Bot,
+    delegate: List<Guild.ChannelMsgContent>,
+    kind: MessageSourceKind
+): OfflineMessageSourceImplData {
+    val head = delegate.first().head
+    return OfflineMessageSourceImplData(
+        kind = kind,
+        time = head?.contentHead?.time?.toInt() ?: 0,
+        fromId = head?.routingHead?.fromUin ?: 0,
+        targetId = head?.routingHead?.guildId ?: head?.routingHead?.channelId ?: 0,
+        originalMessage = delegate.toGuildMessageChainNoSource(
+            bot,
+            guildIdOrZero = head?.routingHead?.guildId ?: 0,
+            messageSourceKind = kind
+        ),
+        ids = delegate.mapToIntArray { it.head?.contentHead?.seq?.toInt() ?: 0 },
+        internalIds = delegate.mapToIntArray { it.head?.contentHead?.seq?.toInt() ?: 0 },
+        botId = bot.id
+    ).apply {
+        originElems = delegate.flatMap { it.body?.richText?.elems ?: mutableListOf() }
     }
 }

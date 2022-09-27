@@ -47,6 +47,13 @@ public expect interface Contact : ContactOrBot, CoroutineScope {
     public override val id: Long
 
     /**
+     * 频道用户ID.
+     *
+     * @see GuildMember.id
+     */
+    override val tinyId: Long
+
+    /**
      * 向这个对象发送消息.
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.

@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.data.MemberInfo
-import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.getMiraiImpl
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.ExternalResource
@@ -26,6 +25,8 @@ internal class AnonymousMemberImpl(
         requireNotNull(memberInfo.anonymousId) { "anonymousId must not be null" }
     }
 
+    override val tinyId: Long
+        get() = group.bot.tinyId
     override val anonymousId: String get() = info.anonymousId!!
 
     override suspend fun mute(durationSeconds: Int) {

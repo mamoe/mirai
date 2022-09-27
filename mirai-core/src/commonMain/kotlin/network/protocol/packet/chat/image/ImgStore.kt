@@ -129,7 +129,10 @@ internal class ImgStore {
         sealed class Response : Packet {
             class FileExists(
                 val fileId: Long,
-                val fileInfo: Cmd0x388.ImgInfo
+                val fileInfo: Cmd0x388.ImgInfo,
+                val downloadIndex: ByteArray,
+                val serverPort: Int = 0,
+                val serverIp: Int = 0
             ) : Response() {
                 override fun toString(): String {
                     return "FileExists(fileId=$fileId, fileInfo=$fileInfo)"
@@ -140,7 +143,8 @@ internal class ImgStore {
                 val fileId: Long,
                 val uKey: ByteArray,
                 val uploadIpList: List<Int>,
-                val uploadPortList: List<Int>
+                val uploadPortList: List<Int>,
+                val downloadIndex: ByteArray
             ) : Response() {
                 override fun toString(): String {
                     return "RequireUpload(fileId=$fileId, uKey=${uKey.contentToString()})"
@@ -155,17 +159,24 @@ internal class ImgStore {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val resp0 = readProtoBuf(Cmd0x388.RspBody.serializer())
-            println(resp0.toString())
             val resp =
                 resp0.msgTryupImgRsp.firstOrNull() ?: error("cannot find `msgTryupImgRsp` from `Cmd0x388.RspBody`")
             return when {
                 resp.result != 0 -> Response.Failed(resultCode = resp.result, message = resp.failMsg)
-                resp.boolFileExit -> Response.FileExists(fileId = resp.fileid, fileInfo = resp.msgImgInfo!!)
+                resp.boolFileExit -> Response.FileExists(
+                    fileId = resp.fileid,
+                    fileInfo = resp.msgImgInfo!!,
+                    downloadIndex = resp.downloadIndex,
+                    serverIp = resp.uint32UpIp.firstOrNull() ?: 0,
+                    serverPort = resp.uint32UpPort.firstOrNull() ?: 0
+                )
+
                 else -> Response.RequireUpload(
                     fileId = resp.fileid,
                     uKey = resp.upUkey,
                     uploadIpList = resp.uint32UpIp,
-                    uploadPortList = resp.uint32UpPort
+                    uploadPortList = resp.uint32UpPort,
+                    downloadIndex = resp.downloadIndex
                 )
             }
         }

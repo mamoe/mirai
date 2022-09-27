@@ -24,8 +24,10 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrateg
 import net.mamoe.mirai.internal.network.components.BdhSession
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
+import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.utils.ImagePatcher
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
@@ -53,6 +55,9 @@ internal abstract class CommonChannelImpl constructor(
     override val id: Long,
     channelInfo: ChannelInfo,
 ) : Channel, AbstractContact(bot, parentCoroutineContext) {
+
+    override val tinyId: Long
+        get() = bot.tinyId
 
     private val messageProtocolStrategy: MessageProtocolStrategy<ChannelImpl> =
         ChannelMessageProtocolStrategy(this.cast())
@@ -110,11 +115,14 @@ internal abstract class CommonChannelImpl constructor(
                 val resourceId = resource.calculateResourceId()
                 return response.fileInfo.run {
                     OfflineGuildImage(
+                        serverPort = response.serverPort,
+                        serverIp = response.serverIp,
                         imageId = resourceId,
                         height = fileHeight,
                         width = fileWidth,
                         imageType = getImageTypeById(fileType) ?: ImageType.UNKNOWN,
-                        size = resource.size
+                        size = resource.size,
+                        downloadIndex = response.downloadIndex
                     )
                 }
                     .also {
@@ -125,7 +133,7 @@ internal abstract class CommonChannelImpl constructor(
             }
 
             is ImgStore.QQMeetPicUp.Response.RequireUpload -> {
-                Highway.uploadGuildResourceBdh(
+                Highway.uploadResourceBdh(
                     bot = bot,
                     resource = resource,
                     kind = ResourceKind.GUILD_IMAGE,
@@ -138,15 +146,22 @@ internal abstract class CommonChannelImpl constructor(
                             ssoAddresses = response.uploadIpList.zip(response.uploadPortList).toMutableSet(),
                         )
                     },
+                    extendInfo = Cmd0x388.uploadGuildChannel(
+                        guildId = guildId,
+                        channelId = id,
+                    ).toByteArray(Cmd0x388.uploadGuildChannel.serializer())
                 )
 
                 return imageInfo.run {
                     OfflineGuildImage(
+                        serverPort = response.uploadPortList.firstOrNull() ?: 0,
+                        serverIp = response.uploadIpList.firstOrNull() ?: 0,
                         imageId = resource.calculateResourceId(),
                         width = width,
                         height = height,
                         imageType = imageType,
-                        size = resource.size
+                        size = resource.size,
+                        downloadIndex = response.downloadIndex
                     )
                 }.also { it.fileId = response.fileId.toInt() }
                     .also { it.putIntoCache() }
@@ -157,4 +172,6 @@ internal abstract class CommonChannelImpl constructor(
 
     override val files: RemoteFiles
         get() = TODO("Not yet implemented")
+
+    override fun toString(): String = "Guild($guildId) Channel($id)"
 }

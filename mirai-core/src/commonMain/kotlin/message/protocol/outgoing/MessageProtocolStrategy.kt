@@ -16,6 +16,7 @@ import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToChannelImpl
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToFriendImpl
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToGroupImpl
 import net.mamoe.mirai.internal.network.Packet
@@ -23,11 +24,12 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
+import net.mamoe.mirai.internal.network.notice.guild.GuildMessageProcessor
 import net.mamoe.mirai.internal.network.notice.priv.PrivateMessageProcessor
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
-import net.mamoe.mirai.internal.network.protocol.packet.guild.send.MsgProxySendMsgSendMsg
+import net.mamoe.mirai.internal.network.protocol.packet.guild.send.MsgProxySendMsg
 import net.mamoe.mirai.internal.network.protocol.packet.guild.send.createToChannel
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OnlineMessageSource
@@ -186,7 +188,7 @@ internal open class ChannelMessageProtocolStrategy(
         fragmented: Boolean,
         sourceCallback: (Deferred<OnlineMessageSource.Outgoing>) -> Unit
     ): List<OutgoingPacket> {
-        return MsgProxySendMsgSendMsg.createToChannel(
+        return MsgProxySendMsg.createToChannel(
             client,
             contact,
             message,
@@ -200,6 +202,20 @@ internal open class ChannelMessageProtocolStrategy(
         originalMessage: MessageChain,
         fromAppId: Int
     ): OnlineMessageSource.Outgoing {
-        TODO("Not yet implemented")
+        val receipt: GuildMessageProcessor.SendGuildMessageReceipt = withTimeoutOrNull(3000) {
+            GlobalEventChannel.parentScope(this).nextEvent(EventPriority.MONITOR) {
+                it.bot === contact.bot && it.fromAppId == fromAppId
+            }
+        } ?: GuildMessageProcessor.SendGuildMessageReceipt.EMPTY
+
+        return OnlineMessageSourceToChannelImpl(
+            contact,
+            internalIds = intArrayOf(receipt.messageRandom),
+            providedSequenceIds = intArrayOf(receipt.sequenceId),
+            sender = contact.bot,
+            target = contact,
+            time = contact.bot.clock.server.currentTimeSeconds().toInt(),
+            originalMessage = originalMessage
+        )
     }
 }

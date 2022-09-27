@@ -72,7 +72,8 @@ internal class FriendImpl(
     override val info: FriendInfoImpl,
 ) : Friend, AbstractUser(bot, parentCoroutineContext, info) {
     override var nick: String by info::nick
-
+    override val tinyId: Long
+        get() = bot.tinyId
     override var remark: String
         get() = info.remark
         set(value) {

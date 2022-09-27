@@ -712,6 +712,6 @@ internal class Guild : ProtoBuf {
 
     @Serializable
     internal class DownloadIndex(
-        @ProtoNumber(6) @JvmField val downloadIndex: String? = null,
+        @ProtoNumber(6) @JvmField val downloadIndex: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 }

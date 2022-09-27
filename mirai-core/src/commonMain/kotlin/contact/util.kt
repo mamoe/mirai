@@ -79,6 +79,19 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
         }"
     }
 
+    fun renderGuildMessageSync(
+        guild: Guild,
+        channel: Channel,
+        sender: GuildMember,
+        message: MessageChain
+    ): String {
+        return "[${guild.name}(${guild.id})] [${channel.name}(${channel.id})] ${senderName}(${sender.id})[SYNC] <- ${
+            renderMessage(
+                message
+            )
+        }"
+    }
+
     bot.logger.verbose {
         when (this) {
             is net.mamoe.mirai.event.events.GroupMessageEvent ->
@@ -89,6 +102,7 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
 
             is net.mamoe.mirai.event.events.GroupTempMessageEvent ->
                 renderGroupTempMessage(group, senderName, sender, message)
+
             is net.mamoe.mirai.event.events.GroupTempMessageSyncEvent ->
                 renderGroupTempMessageSync(group, subject.nameCardOrNick, subject, message)
 
@@ -109,6 +123,9 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
 
             is net.mamoe.mirai.event.events.GuildMessageEvent ->
                 renderGuildMessage(guild, channel, sender.nameCard, sender, message)
+
+            is net.mamoe.mirai.event.events.GuildMessageSyncEvent ->
+                renderGuildMessageSync(guild, channel, sender, message)
 
             else -> toString()
         }.replaceMagicCodes() // group name & sender nick & message

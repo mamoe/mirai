@@ -56,18 +56,20 @@ internal abstract class CommonGuildImpl constructor(
     companion object;
 
     override val name: String by guildInfo::name
+    override val tinyId: Long
+        get() = bot.tinyId
     override val guildCode: Long
         get() = id
     final override lateinit var owner: GuildMember
     final override lateinit var botAsMember: GuildMember
     internal val botAsMemberInitialized get() = ::botAsMember.isInitialized
-    override fun get(id: Long): GuildMember? {
-        if (id == bot.account.tinyId) return botAsMember
-        return members.firstOrNull { it.id == id }
+    override fun get(tinyId: Long): GuildMember? {
+        if (tinyId == bot.account.tinyId) return botAsMember
+        return members.firstOrNull { it.id == tinyId }
     }
 
-    override fun contains(id: Long): Boolean {
-        return bot.account.tinyId == id || members.firstOrNull { it.id == id } != null
+    override fun contains(tinyId: Long): Boolean {
+        return bot.account.tinyId == tinyId || members.firstOrNull { it.id == tinyId } != null
     }
 
     override suspend fun quit(): Boolean {
