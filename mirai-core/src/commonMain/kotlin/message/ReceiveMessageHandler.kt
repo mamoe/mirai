@@ -141,7 +141,7 @@ private fun List<Guild.ChannelMsgContent>.toGuildMessageChain(
 
     messageList.forEach { msg ->
         if (null != msg.body?.richText) {
-            facade.decode(msg.body!!.richText!!.elems, guildIdOrZero, messageSourceKind, bot, builder, msg, true)
+            facade.decode(msg.body?.richText!!.elems, guildIdOrZero, messageSourceKind, bot, builder, msg, true)
         }
     }
 
@@ -195,6 +195,7 @@ internal object ReceiveMessageTransformer {
             true -> {
                 when (messageSourceKind) {
                     MessageSourceKind.GUILD -> OnlineMessageSourceFromGuildImpl(bot, messageList)
+                    MessageSourceKind.DIRECT -> OnlineMessageSourceFromDirectImpl(bot, messageList)
                     else -> {
                         OfflineGuildMessageSourceImplData(bot, messageList, messageSourceKind)
                     }

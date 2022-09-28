@@ -34,6 +34,7 @@ import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmStatic
 import kotlin.reflect.KClass
+import net.mamoe.mirai.internal.network.protocol.data.proto.GuildMsg.MsgOnlinePush as GuildMsgMsgOnlinePush
 
 /**
  * Centralized processor pipeline for [MessageSvcPbGetMsg] and [OnlinePushPbPushTransMsg]
@@ -172,7 +173,8 @@ internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
             is Structmsg.StructMsg -> processImpl(data)
             is RequestPushStatus -> processImpl(data)
             is DecodedNotifyMsgBody -> processImpl(data)
-            is GuildMsg.MsgOnlinePush -> processImpl(data)
+            is GuildMsgMsgOnlinePush -> processImpl(data)
+            is GuildMsg.PressMsg -> processImpl(data)
         }
     }
 
@@ -185,5 +187,6 @@ internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
     protected open suspend fun NoticePipelineContext.processImpl(data: RequestPushStatus) {}
 
     protected open suspend fun NoticePipelineContext.processImpl(data: DecodedNotifyMsgBody) {}
-    protected open suspend fun NoticePipelineContext.processImpl(data: GuildMsg.MsgOnlinePush) {}
+    protected open suspend fun NoticePipelineContext.processImpl(data: GuildMsgMsgOnlinePush) {}
+    protected open suspend fun NoticePipelineContext.processImpl(data: GuildMsg.PressMsg) {}
 }

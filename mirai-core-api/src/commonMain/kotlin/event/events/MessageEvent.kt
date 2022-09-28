@@ -290,6 +290,34 @@ public class GuildMessageEvent(
 }
 
 /**
+ * 机器人收到的频道私聊消息的事件
+ *
+ * @see MessageEvent
+ */
+public class DirectMessageEvent(
+    override val guild: Guild,
+    private val directGuildId: Long,    // 与guildId不是一个性质
+    private val directChannelId: Long,  // 与channelId不是一个性质
+    override val sender: GuildMember,
+    override val time: Int,
+    override val message: MessageChain,
+) : AbstractMessageEvent(), MessageEvent, DirectEvent {
+
+    override val bot: Bot
+        get() = sender.bot
+    override val subject: Guild
+        get() = guild
+    override val senderName: String
+        get() = sender.nameCard
+
+    override fun toString(): String {
+        return "DirectMessageEvent(guild=$guild, directGuildId=$directGuildId, directChannelId=$directChannelId, sender=$sender, time=$time, message=$message, subject=$subject, senderName='$senderName')"
+    }
+
+
+}
+
+/**
  * 消息事件的公共抽象父类, 保留将来使用. 这是内部 API, 请不要使用.
  */
 @MiraiInternalApi

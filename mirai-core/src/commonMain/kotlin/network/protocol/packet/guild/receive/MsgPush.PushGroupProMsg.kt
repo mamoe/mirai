@@ -35,9 +35,12 @@ internal object MsgPushPushGroupProMsg : IncomingPacketFactory<Packet?>("MsgPush
             }
             return null
         } else {
-
-            val pressMsg = ByteReadPacket(data.toByteArray(GuildMsg.MsgOnlinePush.serializer()))
-            return bot.processPacketThroughPipeline(pressMsg.readProtoBuf(GuildMsg.PressMsg.serializer()))
+            if (data.msgs.first().head?.routingHead?.directMessageFlag?.toInt() == 1) {
+                return bot.processPacketThroughPipeline(data)
+            }
+            val pressMsgByteArray = ByteReadPacket(data.toByteArray(GuildMsg.MsgOnlinePush.serializer()))
+            val pressMsg = pressMsgByteArray.readProtoBuf(GuildMsg.PressMsg.serializer())
+            return bot.processPacketThroughPipeline(pressMsg)
         }
     }
 }

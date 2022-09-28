@@ -317,3 +317,68 @@ internal class OnlineMessageSourceFromGuildImpl(
         return super<IncomingMessageSourceInternal>.accept(visitor, data)
     }
 }
+
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(OnlineMessageSourceFromDirectImpl.Serializer::class)
+internal class OnlineMessageSourceFromDirectImpl(
+    override val bot: Bot,
+    msg: List<Guild.ChannelMsgContent>,
+) : OnlineMessageSource.Incoming.FromDirect(), IncomingMessageSourceInternal {
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromDirectImpl")
+
+    @Transient
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
+    override val sequenceIds: IntArray = msg.mapToIntArray { it.head?.contentHead?.seq?.toInt()!! }
+    override val internalIds: IntArray = msg.mapToIntArray { it.body?.richText!!.attr!!.random }
+    override val ids: IntArray get() = sequenceIds
+    override val time: Int = msg.first().head?.contentHead?.time?.toInt()!!
+    override var originalMessageLazy = lazy {
+        msg.toGuildMessageChainNoSource(bot, guildIdOrZero = guild.id, MessageSourceKind.DIRECT)
+    }
+    override val originalMessage: MessageChain get() = originalMessageLazy.value
+    override val isOriginalMessageInitialized: Boolean
+        get() = originalMessageLazy.isInitialized()
+
+
+    override val subject: GuildImpl by lazy {
+        val guildId = msg.first().head?.routingHead?.guildId
+            ?: error("cannot find guildCode for OnlineMessageSourceFromDirectImpl. msg=${msg.structureToString()}")
+
+        val guild = bot.getGuild(guildId)?.checkIsGuildImpl()
+            ?: error("cannot find guild for OnlineMessageSourceFromDirectImpl. msg=${msg.structureToString()}")
+
+        guild
+    }
+
+    override val sender: GuildMember by lazy {
+        val guild = subject
+        val member = guild.members.find { it.id == msg.first().head?.routingHead?.fromTinyId } as GuildMember ?: null
+        if (member != null) {
+            return@lazy member
+        } else {
+            error("cannot find sender for OnlineMessageSourceFromDirectImpl. msg=${msg.structureToString()}")
+        }
+    }
+
+    private val jceData: ImMsgBody.SourceMsg by lazy {
+        ImMsgBody.SourceMsg(
+            origSeqs = intArrayOf(msg.first().head?.contentHead?.seq?.toInt()!!),
+            senderUin = msg.first().head!!.routingHead?.fromTinyId!!,
+            toUin = 0,
+            flag = 1,
+            elems = msg.flatMap { it.body?.richText!!.elems },
+            type = 0,
+            time = msg.first().head?.contentHead?.time?.toInt()!!,
+            pbReserve = EMPTY_BYTE_ARRAY,
+            srcMsg = EMPTY_BYTE_ARRAY
+        )
+    }
+
+    override fun toJceData(): ImMsgBody.SourceMsg {
+        return jceData
+    }
+
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return super<IncomingMessageSourceInternal>.accept(visitor, data)
+    }
+}

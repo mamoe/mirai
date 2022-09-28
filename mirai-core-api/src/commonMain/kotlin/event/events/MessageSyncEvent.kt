@@ -302,3 +302,55 @@ public class GuildMessageSyncEvent private constructor(
     public override fun toString(): String =
         "GuildMessageSyncEvent(guild=${guild.id},channel=${channel.id} senderName=$senderName, sender=${sender.id}, message=$message)"
 }
+
+/**
+ * 机器人在其他客户端发送频道私信消息同步到这个客户端的事件
+ *
+ * @see MessageSyncEvent
+ */
+public class DirectMessageSyncEvent private constructor(
+    private val _client: OtherClient?,
+    public val guild: Guild,
+    private val directGuildId: Long,    // 与guildId不是一个性质
+    private val directChannelId: Long,  // 与channelId不是一个性质
+    public override val message: MessageChain,
+    public override val sender: GuildMember,
+    public override val senderName: String,
+    public override val time: Int,
+    @Suppress("UNUSED_PARAMETER") _primaryConstructorMark: Any?,
+) : AbstractMessageEvent(), MessageSyncEvent {
+    /**
+     * @since 2.13
+     */
+    public override val client: OtherClient
+        get() = _client ?: error("client is not set. Please use the new constructor.")
+
+    /**
+     * @since 2.13
+     */
+    public constructor(
+        client: OtherClient,
+        guild: Guild,
+        directGuildId: Long,    // 与guildId不是一个性质
+        directChannelId: Long,  // 与channelId不是一个性质
+        message: MessageChain,
+        sender: GuildMember,
+        senderName: String,
+        time: Int
+    ) : this(client, guild, directGuildId, directChannelId, message, sender, senderName, time, null)
+
+    init {
+        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromDirect) { "source provided to a DirectMessageSyncEvent must be an instance of OnlineMessageSource.Incoming.FromGuild" }
+    }
+
+    override val bot: Bot get() = sender.bot
+    override val subject: GuildMember get() = sender
+    override val source: OnlineMessageSource.Incoming.FromDirect get() = message.source as OnlineMessageSource.Incoming.FromDirect
+    override fun toString(): String {
+        return "DirectMessageSyncEvent(guild=$guild, directGuildId=$directGuildId, directChannelId=$directChannelId, message=$message, sender=$sender, senderName='$senderName', time=$time)"
+    }
+
+
+}
+

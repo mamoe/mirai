@@ -59,6 +59,16 @@ public interface GuildEvent : BotEvent {
 }
 
 /**
+ * 有关频道私信的事件
+ */
+public interface DirectEvent : BotEvent {
+    public val guild: Guild
+
+    override val bot: Bot
+        get() = guild.bot
+}
+
+/**
  * 可由 [Member] 或 [Bot] 操作的事件
  * @see isByBot
  * @see operatorOrBot

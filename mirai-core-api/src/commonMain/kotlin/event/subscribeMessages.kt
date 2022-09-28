@@ -105,6 +105,25 @@ public fun <R> EventChannel<*>.subscribeGuildMessages(
     return createBuilder(::GuildMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority).run(listeners)
 }
 
+
+public typealias DirectMessageSubscribersBuilder = MessageSubscribersBuilder<DirectMessageEvent, Listener<DirectMessageEvent>, Unit, Unit>
+
+/**
+ * 通过 DSL 订阅来自所有 [Bot] 的所有频道私聊会话消息事件. DSL 语法查看 [subscribeMessages].
+ *
+ * @see EventChannel.subscribe 事件监听基础
+ * @see EventChannel 事件通道
+ */
+public fun <R> EventChannel<*>.subscribeDirectMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: ConcurrencyKind = CONCURRENT,
+    priority: EventPriority = EventPriority.MONITOR,
+    listeners: DirectMessageSubscribersBuilder.() -> R
+): R {
+    contract { callsInPlace(listeners, InvocationKind.EXACTLY_ONCE) }
+    return createBuilder(::DirectMessageSubscribersBuilder, coroutineContext, concurrencyKind, priority).run(listeners)
+}
+
 public typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<GroupMessageEvent, Listener<GroupMessageEvent>, Unit, Unit>
 
 /**

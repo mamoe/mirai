@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.contact.GuildImpl
 import net.mamoe.mirai.internal.contact.GuildMemberImpl
 import net.mamoe.mirai.internal.contact.appId
 import net.mamoe.mirai.internal.message.toGuildMessageChainNoSource
+import net.mamoe.mirai.internal.message.toGuildMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
@@ -51,7 +52,6 @@ internal class GuildMessageProcessor(
     }
 
     override suspend fun NoticePipelineContext.processImpl(data: GuildMsg.PressMsg) {
-
         for (item in data.msgs) {
             val isFromSelfAccount =
                 (item.head?.routingHead?.fromTinyId == bot.account.tinyId) || (item.head?.routingHead?.fromUin == bot.id)
@@ -61,8 +61,6 @@ internal class GuildMessageProcessor(
             val sender =
                 guild.members.find { it.id == item.head?.routingHead!!.fromTinyId } as GuildMemberImpl? ?: return
 
-            val list = mutableListOf<Guild.ChannelMsgContent>()
-            list.add(item)
 
             if (item.head?.contentHead?.type?.toInt() == 3841) {
 
@@ -117,37 +115,34 @@ internal class GuildMessageProcessor(
                 }
             }
 
-            if (item.head!!.contentHead?.type?.toInt() == 3840) {
-                if (item.head!!.routingHead!!.directMessageFlag?.toInt() == 1) {
-                    //TODO: 私聊信息解码
-                    return
-                }
-            }
 
-            if (!isFromSelfAccount) {
-                //TODO 记得在 [CommandSender] 添加相关方法
-                collect(
-                    GuildMessageEvent(
-                        guild = guild,
-                        channel = channel,
-                        time = item.head!!.contentHead?.time!!.toInt(),
-                        sender = sender,
-                        message = list.toGuildMessageChainNoSource(bot, guild.id, MessageSourceKind.FRIEND),
-                    ),
-                )
-            } else {
-                collect(
-                    GuildMessageSyncEvent(
-                        client = bot.otherClients.find { it.appId == item.head!!.routingHead!!.fromAppid?.toInt() }
-                            ?: return, // don't compare with dstAppId. diff.
-                        guild = guild,
-                        channel = channel,
-                        time = item.head!!.contentHead?.time!!.toInt(),
-                        sender = sender,
-                        senderName = sender.nameCard,
-                        message = list.toGuildMessageChainNoSource(bot, guild.id, MessageSourceKind.FRIEND),
-                    ),
-                )
+            if (item.head!!.contentHead?.type?.toInt() == 3840) {
+                val list = mutableListOf(item)
+                if (!isFromSelfAccount) {
+                    //TODO 记得在 [CommandSender] 添加相关方法
+                    collect(
+                        GuildMessageEvent(
+                            guild = guild,
+                            channel = channel,
+                            time = item.head!!.contentHead?.time!!.toInt(),
+                            sender = sender,
+                            message = list.toGuildMessageChainOnline(bot, guild.id, MessageSourceKind.GUILD),
+                        ),
+                    )
+                } else {
+                    collect(
+                        GuildMessageSyncEvent(
+                            client = bot.otherClients.find { it.appId == item.head!!.routingHead!!.fromAppid?.toInt() }
+                                ?: return, // don't compare with dstAppId. diff.
+                            guild = guild,
+                            channel = channel,
+                            time = item.head!!.contentHead?.time!!.toInt(),
+                            sender = sender,
+                            senderName = sender.nameCard,
+                            message = list.toGuildMessageChainNoSource(bot, guild.id, MessageSourceKind.GUILD),
+                        ),
+                    )
+                }
             }
         }
     }
