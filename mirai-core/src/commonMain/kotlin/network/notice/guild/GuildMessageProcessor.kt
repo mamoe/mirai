@@ -136,7 +136,6 @@ internal class GuildMessageProcessor(
                     ),
                 )
             } else {
-
                 collect(
                     GuildMessageSyncEvent(
                         client = bot.otherClients.find { it.appId == item.head!!.routingHead!!.fromAppid?.toInt() }

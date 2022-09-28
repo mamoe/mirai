@@ -191,7 +191,6 @@ internal object ReceiveMessageTransformer {
         messageSourceKind: MessageSourceKind,
         messageList: List<Guild.ChannelMsgContent>,
     ): MessageSource {
-        //TODO fix
         return when (onlineSource) {
             true -> {
                 when (messageSourceKind) {

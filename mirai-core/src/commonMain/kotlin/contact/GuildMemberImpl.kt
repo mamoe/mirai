@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.contact.GuildMember
-import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.info.GuildMemberInfoImpl
 import net.mamoe.mirai.message.MessageReceipt
@@ -31,7 +30,7 @@ internal class GuildMemberImpl constructor(
     override val tinyId: Long
         get() = bot.tinyId
 
-    override suspend fun sendMessage(message: Message): MessageReceipt<User> {
+    override suspend fun sendMessage(message: Message): MessageReceipt<GuildMember> {
         TODO("Not yet implemented")
     }
 
@@ -45,7 +44,6 @@ internal class GuildMemberImpl constructor(
 
     override val nameCard: String
         get() = info.nickname
-    override val avatarUrl: String
-        get() = ""
+
 
 }

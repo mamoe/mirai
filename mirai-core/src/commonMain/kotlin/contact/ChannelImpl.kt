@@ -15,6 +15,7 @@ import net.mamoe.mirai.data.ChannelInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl
 import net.mamoe.mirai.internal.message.image.OfflineGuildImage
 import net.mamoe.mirai.internal.message.image.calculateImageInfo
 import net.mamoe.mirai.internal.message.image.getIdByImageType
@@ -170,8 +171,7 @@ internal abstract class CommonChannelImpl constructor(
         }
     }
 
-    override val files: RemoteFiles
-        get() = TODO("Not yet implemented")
+    final override val files: RemoteFiles by lazy { RemoteFilesImpl(this) }
 
     override fun toString(): String = "Guild($guildId) Channel($id)"
 }

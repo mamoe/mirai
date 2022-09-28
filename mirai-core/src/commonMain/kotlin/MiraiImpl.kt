@@ -511,13 +511,13 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     }
 
                     MessageSourceKind.GUILD -> {
-                        //TODO
+                        //TODO 频道撤回
                         error("MessageSourceKind.GUILD Nothing to do!")
                     }
 
                     MessageSourceKind.DIRECT -> {
                         error("MessageSourceKind.DIRECT Nothing to do!")
-                        //TODO
+                        //TODO 频道私信撤回
                     }
                 }
             }

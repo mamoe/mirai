@@ -24,6 +24,7 @@ internal actual class ChannelImpl actual constructor(
 ) : Channel, CommonChannelImpl(bot, parentCoroutineContext, id, channelInfo) {
     actual companion object;
 
+    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"), level = DeprecationLevel.WARNING)
     override val filesRoot: RemoteFile
         get() = TODO("Not yet implemented");
 
