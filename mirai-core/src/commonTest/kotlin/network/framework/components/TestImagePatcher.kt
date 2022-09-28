@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.framework.components
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.message.image.FriendImage
 import net.mamoe.mirai.internal.message.image.OfflineGroupImage
+import net.mamoe.mirai.internal.message.image.OfflineGuildImage
 import net.mamoe.mirai.internal.utils.ImageCache
 import net.mamoe.mirai.internal.utils.ImagePatcher
 import net.mamoe.mirai.internal.utils.ImagePatcherImpl
@@ -27,6 +28,10 @@ internal class TestImagePatcher : ImagePatcher {
     }
 
     override fun putCache(image: OfflineGroupImage) {
+        patcher.putCache(image)
+    }
+
+    override fun putCache(image: OfflineGuildImage) {
         patcher.putCache(image)
     }
 
