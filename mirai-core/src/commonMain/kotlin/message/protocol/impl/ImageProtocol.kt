@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.Channel
+import net.mamoe.mirai.contact.GuildMember
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.message.data.transform
@@ -82,6 +83,7 @@ internal class ImageProtocol : MessageProtocol() {
                     collect(OnlineFriendImageImpl(data.notOnlineImage))
                 }
                 data.customFace != null -> {
+                    //TODO 考虑一下OnlineGuildImageImpl
                     collect(OnlineGroupImageImpl(data.customFace))
                     data.customFace.pbReserve.let {
                         if (it.isNotEmpty() && it.loadAs(CustomFace.ResvAttr.serializer()).msgImageShow != null) {
@@ -137,6 +139,14 @@ internal class ImageProtocol : MessageProtocol() {
                         collect(ImMsgBody.Elem(notOnlineImage = data.toJceData().toNotOnlineImage()))
                     } else {
                         collect(ImMsgBody.Elem(customFace = data.toJceData()))
+                    }
+                }
+
+                is OnlineGuildImageImpl -> {
+                    if (contact is GuildMember) {
+                        collect(ImMsgBody.Elem(notOnlineImage = data.delegate.toNotOnlineImage()))
+                    } else {
+                        collect(ImMsgBody.Elem(customFace = data.delegate))
                     }
                 }
             }

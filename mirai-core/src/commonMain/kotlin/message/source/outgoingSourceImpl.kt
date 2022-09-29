@@ -340,6 +340,89 @@ internal class OnlineMessageSourceToChannelImpl(
     }
 }
 
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(OnlineMessageSourceToDirectImpl.Serializer::class)
+internal class OnlineMessageSourceToDirectImpl(
+    coroutineScope: CoroutineScope,
+    override val internalIds: IntArray, // aka random
+    override val time: Int,
+    override var originalMessage: MessageChain,
+    override val sender: Bot,
+    override val target: GuildMember,
+    providedSequenceIds: IntArray? = null,
+) : OnlineMessageSource.Outgoing.ToDirect(), MessageSourceInternal, OutgoingMessageSourceInternal {
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
+
+    override val isOriginalMessageInitialized: Boolean
+        get() = true
+
+    override val ids: IntArray
+        get() = sequenceIds
+    override val bot: Bot
+        get() = sender
+    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
+
+    /**
+     * Note that in tests result of this Deferred is always `null`. See TestMessageSourceSequenceIdAwaiter.
+     */
+    private val sequenceIdDeferred: Deferred<IntArray?> = providedSequenceIds?.let { CompletableDeferred(it) } ?: run {
+        MessageSourceSequenceIdAwaiter.instance.getChannelSequenceIdAsync(this, coroutineScope)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val sequenceIds: IntArray
+        get() = when {
+            sequenceIdDeferred.isCompleted -> sequenceIdDeferred.getCompleted() ?: intArrayOf()
+            !sequenceIdDeferred.isActive -> intArrayOf()
+            else -> error("sequenceIds not yet available")
+        }
+
+
+    suspend fun ensureSequenceIdAvailable() = kotlin.run { sequenceIdDeferred.await() }
+
+    private val jceData: ImMsgBody.SourceMsg by lazy {
+        val elements = MessageProtocolFacade.encode(originalMessage, subject, withGeneralFlags = true)
+        ImMsgBody.SourceMsg(
+            origSeqs = sequenceIds,
+            senderUin = fromId,
+            toUin = target.uin,
+            flag = 1,
+            elems = elements,
+            type = 0,
+            time = time,
+            pbReserve = SourceMsg.ResvAttr(
+                origUids = internalIds.map { it.toLongUnsigned() } // ids is actually messageRandom
+            ).toByteArray(SourceMsg.ResvAttr.serializer()),
+            srcMsg = MsgComm.Msg(
+                msgHead = MsgComm.MsgHead(
+                    fromUin = fromId, // qq
+                    toUin = target.uin, // group
+                    msgType = 82, // 82?
+                    c2cCmd = 1,
+                    msgSeq = sequenceIds.single(),
+                    msgTime = time,
+                    msgUid = internalIds.single().toLongUnsigned(),
+                    groupInfo = MsgComm.GroupInfo(groupCode = targetId),
+                    isSrcMsg = true
+                ),
+                msgBody = ImMsgBody.MsgBody(
+                    richText = ImMsgBody.RichText(
+                        elems = elements.toMutableList().also {
+                            if (it.last().elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
+                        }
+                    )
+                )
+            ).toByteArray(MsgComm.Msg.serializer())
+        )
+    }
+
+    override fun toJceData(): ImMsgBody.SourceMsg = jceData
+
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return super<OutgoingMessageSourceInternal>.accept(visitor, data)
+    }
+}
+
 internal open class MessageSourceSequenceIdAwaiter {
     open fun getSequenceIdAsync(
         sourceToGroupImpl: OnlineMessageSourceToGroupImpl,
@@ -383,6 +466,31 @@ internal open class MessageSourceSequenceIdAwaiter {
                             if (multi.size == sourceToChannelImpl.internalIds.size) {
                                 IntArray(multi.size) { index ->
                                     multi[sourceToChannelImpl.internalIds[index]]!!
+                                }
+                            } else null
+                        } else null
+                    }
+            }
+        }
+    }
+
+    open fun getChannelSequenceIdAsync(
+        sourceToDirectImpl: OnlineMessageSourceToDirectImpl,
+        coroutineScope: CoroutineScope
+    ): Deferred<IntArray?> {
+        val multi = mutableMapOf<Int, Int>()
+        return coroutineScope.async {
+            withTimeoutOrNull(
+                timeMillis = 3000L * sourceToDirectImpl.internalIds.size
+            ) {
+                GlobalEventChannel.parentScope(this)
+                    .syncFromEvent<GuildMessageProcessor.SendGuildMessageReceipt, IntArray>(EventPriority.MONITOR) { receipt ->
+                        if (receipt.bot !== sourceToDirectImpl.bot) return@syncFromEvent null
+                        if (receipt.messageRandom in sourceToDirectImpl.internalIds) {
+                            multi[receipt.messageRandom] = receipt.sequenceId
+                            if (multi.size == sourceToDirectImpl.internalIds.size) {
+                                IntArray(multi.size) { index ->
+                                    multi[sourceToDirectImpl.internalIds[index]]!!
                                 }
                             } else null
                         } else null

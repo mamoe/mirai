@@ -54,7 +54,7 @@ internal class GuildMessageProcessor(
     override suspend fun NoticePipelineContext.processImpl(data: GuildMsg.PressMsg) {
         for (item in data.msgs) {
             val isFromSelfAccount =
-                (item.head?.routingHead?.fromTinyId == bot.account.tinyId) || (item.head?.routingHead?.fromUin == bot.id)
+                (item.head?.routingHead?.fromTinyId == bot.selfTinyId) || (item.head?.routingHead?.fromUin == bot.id)
             val guild = bot.getGuild(item.head?.routingHead?.guildId!!) as GuildImpl? ?: return
             val channel =
                 guild.channelNodes.find { it.id == item.head?.routingHead!!.channelId } as ChannelImpl? ?: return
@@ -96,20 +96,21 @@ internal class GuildMessageProcessor(
                     }
                 }
                 //TODO 创建子频道
-                if (null != eventBody.createChan) {
+                if (eventBody.createChan != null) {
                     return
                 }
 
                 //TODO 删除子频道
-                if (null != eventBody.destroyChan) {
+                if (eventBody.destroyChan != null) {
                     return
                 }
                 //TODO 修改子频道
-                if (null != eventBody.changeChanInfo) {
+                if (eventBody.changeChanInfo != null) {
                     return
                 }
+
                 //TODO 加入频道
-                if (null != eventBody.joinGuild) {
+                if (eventBody.joinGuild != null) {
 
                     return
                 }

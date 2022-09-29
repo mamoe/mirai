@@ -155,4 +155,40 @@ internal object OidbSvcTrpcTcp {
             )
         }
     }
+
+    internal object GetDirectMemberInfo :
+        OutgoingPacketFactory<GetDirectMemberInfo.Response>("OidbSvcTrpcTcp.0x103d_1") {
+        internal class Response(
+            val directGuildId: Long,
+            val directChannelId: Long,
+        ) : Packet {
+            override fun toString(): String {
+                return "Response(directGuildId=$directGuildId, directChannelId=$directChannelId)"
+            }
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val res = readProtoBuf(OidbSvcTrpcTcp0x103d1.Resp.serializer())
+            return Response(
+                directGuildId = res.rsp.directGuildId,
+                directChannelId = res.rsp.directChannelId,
+            )
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient,
+            guildId: Long,
+            tinyId: Long, //对方的tinyId
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                4157,
+                1,
+                OidbSvcTrpcTcp0x103d1.Req.serializer(),
+                OidbSvcTrpcTcp0x103d1.Req(
+                    guildId = guildId,
+                    tinyId = tinyId
+                )
+            )
+        }
+    }
 }

@@ -65,7 +65,7 @@ internal data class OfflineGroupImage(
     object Serializer : Image.FallbackSerializer("OfflineGroupImage")
 
     override fun getUrl(bot: Bot): String {
-        return "http://gchat.qpic.cn/gchatpic_new/${bot.tinyId}/0-0-${
+        return "http://gchat.qpic.cn/gchatpic_new/${bot.selfTinyId}/0-0-${
             imageId.substring(1..36)
                 .replace("-", "")
         }/0?term=2"
@@ -98,7 +98,7 @@ internal data class OfflineGuildImage(
     object Serializer : Image.FallbackSerializer("OfflineGuildImage")
 
     override fun getUrl(bot: Bot): String {
-        return "http://gchat.qpic.cn/gchatpic_new/${bot.tinyId}/0-0-${
+        return "http://gchat.qpic.cn/gchatpic_new/${bot.selfTinyId}/0-0-${
             imageId.substring(1..36)
                 .replace("-", "")
         }/0?term=2"

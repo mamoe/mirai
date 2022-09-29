@@ -51,7 +51,7 @@ public expect interface Contact : ContactOrBot, CoroutineScope {
      *
      * @see GuildMember.id
      */
-    override val tinyId: Long
+    override val selfTinyId: Long
 
     /**
      * 向这个对象发送消息.

@@ -24,8 +24,6 @@ internal object MsgPushPushGroupProMsg : IncomingPacketFactory<Packet?>("MsgPush
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {
         if (!bot.components[SsoProcessor].firstLoginSucceed) return null
         val data = readProtoBuf(GuildMsg.MsgOnlinePush.serializer())
-
-
         if (data.compressFlag.toInt() == 1) {
             val decode = Lz4.decode(data.compressMsg)
             if (null != decode) {

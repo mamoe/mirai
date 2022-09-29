@@ -57,8 +57,8 @@ internal abstract class CommonChannelImpl constructor(
     channelInfo: ChannelInfo,
 ) : Channel, AbstractContact(bot, parentCoroutineContext) {
 
-    override val tinyId: Long
-        get() = bot.tinyId
+    override val selfTinyId: Long
+        get() = bot.selfTinyId
 
     private val messageProtocolStrategy: MessageProtocolStrategy<ChannelImpl> =
         ChannelMessageProtocolStrategy(this.cast())

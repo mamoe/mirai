@@ -104,6 +104,12 @@ private fun <T : ImgExtPbResvAttrCommon> ByteArray.pbImageResv_checkIsEmoji(seri
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal sealed class OnlineGroupImage : GroupImage(), OnlineImage
 
+/**
+ * 接收消息时获取到的 [GuildImage]. 它可以直接获取下载链接 [originUrl]
+ */
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+internal sealed class OnlineGuildImage : GuildImage(), OnlineImage
+
 
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(with = OnlineGroupImageImpl.Serializer::class)
@@ -111,6 +117,38 @@ internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace,
 ) : OnlineGroupImage() {
     object Serializer : Image.FallbackSerializer("OnlineGroupImage")
+
+    override val size: Long get() = delegate.size.toLong()
+    override val width: Int
+        get() = delegate.width
+    override val height: Int
+        get() = delegate.height
+    override val imageType: ImageType
+        get() = OnlineImageIds.speculateImageType(delegate.filePath, delegate.imageType)
+
+    override val imageId: String = generateImageId(
+        delegate.picMd5,
+        OnlineImageIds.speculateImageTypeNameFromFilePath(delegate.filePath)
+    ).takeIf {
+        Image.IMAGE_ID_REGEX.matches(it)
+    } ?: generateImageId(delegate.picMd5)
+
+    override val originUrl: String
+        get() = if (delegate.origUrl.isBlank()) {
+            gchatImageUrlByImageId(imageId)
+        } else "http://gchat.qpic.cn" + delegate.origUrl
+
+    override val isEmoji: Boolean by lazy {
+        delegate.pbReserve.pbImageResv_checkIsEmoji(CustomFaceExtPb.ResvAttr.serializer())
+    }
+}
+
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(with = OnlineGuildImageImpl.Serializer::class)
+internal class OnlineGuildImageImpl(
+    internal val delegate: ImMsgBody.CustomFace,
+) : OnlineGuildImage() {
+    object Serializer : Image.FallbackSerializer("OnlineGuildImage")
 
     override val size: Long get() = delegate.size.toLong()
     override val width: Int

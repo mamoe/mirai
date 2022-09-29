@@ -705,10 +705,10 @@ internal class Guild : ProtoBuf {
 
     @Serializable
     internal class PbReserve(
-        @ProtoNumber(1) @JvmField val unknown: Long? = null,
+        @ProtoNumber(1) @JvmField val isEmoji: Boolean? = false,
+        @ProtoNumber(9) @JvmField val animationExpression: String? = null,
         @ProtoNumber(20) @JvmField val downloadIndex: DownloadIndex? = null,
-
-        ) : ProtoBuf
+    ) : ProtoBuf
 
     @Serializable
     internal class DownloadIndex(

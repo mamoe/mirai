@@ -44,8 +44,8 @@ internal class NormalMemberImpl constructor(
     override val lastSpeakTimestamp: Int get() = info.lastSpeakTimestamp
 
     private val messageProtocolStrategy: MessageProtocolStrategy<NormalMemberImpl> = GroupTempMessageProtocolStrategy
-    override val tinyId: Long
-        get() = group.bot.tinyId
+    override val selfTinyId: Long
+        get() = group.bot.selfTinyId
 
     override fun toString(): String = "NormalMember($id)"
 

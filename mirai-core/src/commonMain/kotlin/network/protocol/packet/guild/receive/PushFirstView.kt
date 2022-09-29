@@ -130,7 +130,7 @@ internal object PushFirstView : IncomingPacketFactory<Packet?>(
                                                             tinyId = it.tinyId,
                                                             nickname = it.nickname,
                                                             role = it.role,
-                                                            roleName = guildGroupMembersInfo.roleName,
+                                                            roleName = guildGroupMembersInfo.roleName
                                                         )
                                                     )
                                                 )

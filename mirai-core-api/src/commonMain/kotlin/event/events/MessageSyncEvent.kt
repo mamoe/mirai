@@ -311,8 +311,6 @@ public class GuildMessageSyncEvent private constructor(
 public class DirectMessageSyncEvent private constructor(
     private val _client: OtherClient?,
     public val guild: Guild,
-    private val directGuildId: Long,    // 与guildId不是一个性质
-    private val directChannelId: Long,  // 与channelId不是一个性质
     public override val message: MessageChain,
     public override val sender: GuildMember,
     public override val senderName: String,
@@ -331,13 +329,11 @@ public class DirectMessageSyncEvent private constructor(
     public constructor(
         client: OtherClient,
         guild: Guild,
-        directGuildId: Long,    // 与guildId不是一个性质
-        directChannelId: Long,  // 与channelId不是一个性质
         message: MessageChain,
         sender: GuildMember,
         senderName: String,
         time: Int
-    ) : this(client, guild, directGuildId, directChannelId, message, sender, senderName, time, null)
+    ) : this(client, guild, message, sender, senderName, time, null)
 
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
@@ -348,7 +344,7 @@ public class DirectMessageSyncEvent private constructor(
     override val subject: GuildMember get() = sender
     override val source: OnlineMessageSource.Incoming.FromDirect get() = message.source as OnlineMessageSource.Incoming.FromDirect
     override fun toString(): String {
-        return "DirectMessageSyncEvent(guild=$guild, directGuildId=$directGuildId, directChannelId=$directChannelId, message=$message, sender=$sender, senderName='$senderName', time=$time)"
+        return "DirectMessageSyncEvent(guild=$guild, message=$message, sender=$sender, senderName='$senderName', time=$time)"
     }
 
 

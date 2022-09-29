@@ -25,7 +25,7 @@ internal sealed class AbstractGuildMember(
     abstract override val nick: String
     abstract override val remark: String
 
-    open val info: GuildMemberInfo = guildMemberInfoImpl
+    open val guildMemberInfo: GuildMemberInfo = guildMemberInfoImpl
     private val guildIdByPrivate: Long = guildId
     open val guild: GuildImpl get() = bot.guilds.getOrFail(guildIdByPrivate)
 }

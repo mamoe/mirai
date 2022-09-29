@@ -185,6 +185,7 @@ internal object KnownPacketFactories {
         OidbSvcTrpcTcp.FetchGuestGuild,
         OidbSvcTrpcTcp.FetchChannelInfo,
         OidbSvcTrpcTcp.FetchChannelList,
+        OidbSvcTrpcTcp.GetDirectMemberInfo,
         MsgProxySendMsg,
         ImgStore.QQMeetPicUp,
         *FileManagement.factories

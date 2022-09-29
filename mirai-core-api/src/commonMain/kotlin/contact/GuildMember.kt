@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.data.GuildMemberInfo
+
 /**
  * 频道成员信息
  */
@@ -22,6 +24,7 @@ public interface GuildMember : User {
      * 成员昵称
      */
     public val nameCard: String
+
 
     /**
      * 头像连接
@@ -37,4 +40,9 @@ public interface GuildMember : User {
      * 所在的频道.
      */
     public val guild: Guild
+
+    /**
+     * 频道用户信息
+     */
+    public val guildMemberInfo: GuildMemberInfo
 }

@@ -44,8 +44,13 @@ public sealed interface MessageEvent : Event, Packet, BotPassiveEvent {
      *
      * - 对于私聊会话, 这个属性与 [sender] 相同;
      * - 对于群消息, 这个属性为 [Group] 的实例, 与 [GroupMessageEvent.group] 相同.
+     * - 对于频道消息, 这个属性为 [Channel] 的实例, 与 [GuildMessageEvent.channel] 相同.
+     * - 对于频道私信消息, 这个属性为 [sender] 的实例
      *
      * 如果在 [GroupMessageEvent] 对 [sender] 发送消息, 将会通过私聊发送给群员, 而不会发送在群内.
+     *
+     * 如果在 [GuildMessageEvent] 对 [sender] 发送消息, 将会通过私聊发送给频道成员, 而不会发送在频道内.
+     *
      * 使用 [subject] 作为消息目标则可以确保消息发送到用户所在的场景.
      *
      * 在回复消息时, 可通过 [subject] 作为回复对象.
@@ -277,8 +282,8 @@ public class GuildMessageEvent(
 
     override val bot: Bot
         get() = sender.bot
-    override val subject: Guild
-        get() = guild
+    override val subject: Channel
+        get() = channel
     override val senderName: String
         get() = sender.nameCard
 
@@ -296,8 +301,6 @@ public class GuildMessageEvent(
  */
 public class DirectMessageEvent(
     override val guild: Guild,
-    private val directGuildId: Long,    // 与guildId不是一个性质
-    private val directChannelId: Long,  // 与channelId不是一个性质
     override val sender: GuildMember,
     override val time: Int,
     override val message: MessageChain,
@@ -305,13 +308,13 @@ public class DirectMessageEvent(
 
     override val bot: Bot
         get() = sender.bot
-    override val subject: Guild
-        get() = guild
+    override val subject: GuildMember
+        get() = sender
     override val senderName: String
         get() = sender.nameCard
 
     override fun toString(): String {
-        return "DirectMessageEvent(guild=$guild, directGuildId=$directGuildId, directChannelId=$directChannelId, sender=$sender, time=$time, message=$message, subject=$subject, senderName='$senderName')"
+        return "DirectMessageEvent(guild=$guild, sender=$sender, time=$time, message=$message, senderName='$senderName')"
     }
 
 

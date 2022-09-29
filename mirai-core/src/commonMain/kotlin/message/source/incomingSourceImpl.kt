@@ -287,7 +287,7 @@ internal class OnlineMessageSourceFromGuildImpl(
 
     override val sender: GuildMember by lazy {
         val guild = subject
-        val member = guild.members.find { it.id == msg.first().head?.routingHead?.fromTinyId } as GuildMember ?: null
+        val member = guild.members.find { it.id == msg.first().head?.routingHead?.fromTinyId } as GuildMember
         if (member != null) {
             return@lazy member
         } else {
@@ -333,31 +333,27 @@ internal class OnlineMessageSourceFromDirectImpl(
     override val ids: IntArray get() = sequenceIds
     override val time: Int = msg.first().head?.contentHead?.time?.toInt()!!
     override var originalMessageLazy = lazy {
-        msg.toGuildMessageChainNoSource(bot, guildIdOrZero = guild.id, MessageSourceKind.DIRECT)
+        msg.toGuildMessageChainNoSource(bot, guildIdOrZero = sender.guild.id, MessageSourceKind.DIRECT)
     }
     override val originalMessage: MessageChain get() = originalMessageLazy.value
     override val isOriginalMessageInitialized: Boolean
         get() = originalMessageLazy.isInitialized()
 
 
-    override val subject: GuildImpl by lazy {
-        val guildId = msg.first().head?.routingHead?.guildId
-            ?: error("cannot find guildCode for OnlineMessageSourceFromDirectImpl. msg=${msg.structureToString()}")
+    override val subject: GuildMemberImpl by lazy {
+        val guildId = msg.first().extInfo?.directMessageMember?.find { it.tinyId != bot.selfTinyId }?.sourceGuildId
+            ?: error("cannot find guildId for OnlineMessageSourceFromDirectImpl. msg=${msg.structureToString()}")
 
         val guild = bot.getGuild(guildId)?.checkIsGuildImpl()
             ?: error("cannot find guild for OnlineMessageSourceFromDirectImpl. msg=${msg.structureToString()}")
 
-        guild
+        val sender = guild.members.find { it.id == msg.first().head?.routingHead?.fromTinyId }
+            ?: error("cannot find sender for OnlineMessageSourceFromDirectImpl. msg=${msg.structureToString()}")
+        sender
     }
 
     override val sender: GuildMember by lazy {
-        val guild = subject
-        val member = guild.members.find { it.id == msg.first().head?.routingHead?.fromTinyId } as GuildMember ?: null
-        if (member != null) {
-            return@lazy member
-        } else {
-            error("cannot find sender for OnlineMessageSourceFromDirectImpl. msg=${msg.structureToString()}")
-        }
+        return@lazy subject
     }
 
     private val jceData: ImMsgBody.SourceMsg by lazy {
