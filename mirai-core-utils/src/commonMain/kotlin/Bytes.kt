@@ -89,8 +89,8 @@ public fun ByteArray.toUHexString(
     return buildString(length * 2) {
         this@toUHexString.forEachIndexed { index, it ->
             if (index in offset until lastIndex) {
-                var ret = it.toUByte().toString(16).uppercase()
-                if (ret.length == 1) ret = "0$ret"
+                val ret = it.toUByte().toString(16).uppercase()
+                if (ret.length == 1) append('0')
                 append(ret)
                 if (index < lastIndex - 1) append(separator)
             }
@@ -112,8 +112,8 @@ public fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, len
     return buildString(length * 2) {
         this@toUHexString.forEachIndexed { index, it ->
             if (index in offset until lastIndex) {
-                var ret = it.toByte().toUByte().toString(16).uppercase()
-                if (ret.length == 1) ret = "0$ret"
+                val ret = it.toByte().toUByte().toString(16).uppercase()
+                if (ret.length == 1) append('0')
                 append(ret)
                 if (index < lastIndex - 1) append(separator)
             }

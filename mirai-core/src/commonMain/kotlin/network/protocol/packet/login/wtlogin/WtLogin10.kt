@@ -27,7 +27,9 @@ internal object WtLogin10 : WtLoginExt {
         client: QQAndroidClient,
         subAppId: Long = 100,
         mainSigMap: Int = client.mainSigMap
-    ) = WtLogin.ExchangeEmp.buildLoginOutgoingPacket(client, bodyType = 2, key = ByteArray(16)) { sequenceId ->
+    ) = WtLogin.ExchangeEmp.buildLoginOutgoingPacket(
+        client, bodyType = 2, key = ByteArray(16), remark = "10:fast-login"
+    ) { sequenceId ->
         writeSsoPacket(
             client,
             client.subAppId,

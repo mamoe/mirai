@@ -38,9 +38,13 @@ public abstract class AbstractExtensionPoint<T : Extension>(
 /**
  * 表示一个 [SingletonExtension] 的 [ExtensionPoint]
  */
-@Suppress("DEPRECATION")
-@Deprecated("Please use InstanceExtensionPoint instead.", replaceWith = ReplaceWith("InstanceExtensionPoint"))
-@DeprecatedSinceMirai(warningSince = "2.11")
+@Suppress("DEPRECATION_ERROR")
+@Deprecated(
+    "Please use InstanceExtensionPoint instead.",
+    replaceWith = ReplaceWith("InstanceExtensionPoint"),
+    level = DeprecationLevel.ERROR
+)
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
 public interface SingletonExtensionPoint<T : SingletonExtension<*>> : ExtensionPoint<T>
 
 /**
@@ -68,10 +72,11 @@ public constructor(
     replaceWith = ReplaceWith(
         "AbstractInstanceExtension",
         "net.mamoe.mirai.console.extension.AbstractInstanceExtensionPoint"
-    )
+    ),
+    level = DeprecationLevel.ERROR
 )
-@DeprecatedSinceMirai(warningSince = "2.11")
-@Suppress("DEPRECATION")
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
+@Suppress("DEPRECATION", "DEPRECATION_ERROR")
 public abstract class AbstractSingletonExtensionPoint<E : SingletonExtension<T>, T>
 /**
  * @since 2.10

@@ -16,13 +16,16 @@ import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.file.RemoteFiles
+import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.active.GroupActiveImpl
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
 import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
@@ -132,7 +135,7 @@ internal abstract class CommonGroupImpl constructor(
     parentCoroutineContext: CoroutineContext,
     override val id: Long,
     groupInfo: GroupInfo,
-    override val members: ContactList<NormalMemberImpl>,
+    final override val members: ContactList<NormalMemberImpl>,
 ) : Group, AbstractContact(bot, parentCoroutineContext) {
     companion object
 
@@ -146,12 +149,20 @@ internal abstract class CommonGroupImpl constructor(
 
     final override val files: RemoteFiles by lazy { RemoteFilesImpl(this) }
 
-    val lastTalkative = atomic<NormalMemberImpl?>(null)
+    val lastTalkative = atomic(members.find { GroupHonorType.TALKATIVE in it.active.honors })
 
     final override val announcements: Announcements by lazy {
         AnnouncementsImpl(
             this as GroupImpl,
             bot.network.logger.subLogger("Group $id")
+        )
+    }
+
+    final override val active: GroupActive by lazy {
+        GroupActiveImpl(
+            this as GroupImpl,
+            bot.network.logger.subLogger("Group $id"),
+            groupInfo
         )
     }
 

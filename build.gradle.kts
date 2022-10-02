@@ -45,6 +45,7 @@ plugins {
 }
 
 osDetector = osdetector
+BuildSrcRootProjectHolder.value = rootProject
 
 GpgSigner.setup(project)
 

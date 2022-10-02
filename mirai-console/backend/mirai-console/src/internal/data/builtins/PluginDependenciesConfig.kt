@@ -16,5 +16,5 @@ import net.mamoe.mirai.console.data.value
 @Suppress("RemoveExplicitTypeArguments")
 internal class PluginDependenciesConfig : ReadOnlyPluginConfig("PluginDependencies") {
     @ValueDescription("远程仓库, 如无必要无需修改")
-    val repoLoc by value(listOf<String>("https://maven.aliyun.com/repository/public"))
+    val repoLoc by value(listOf<String>("https://maven.aliyun.com/repository/central"))
 }

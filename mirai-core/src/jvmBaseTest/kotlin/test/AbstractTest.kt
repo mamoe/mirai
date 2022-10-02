@@ -51,16 +51,24 @@ internal actual abstract class AbstractTest actual constructor() : CommonAbstrac
 
             DebugProbes.install()
 
-            @Suppress("DEPRECATION_ERROR")
-            MiraiLogger.setDefaultLoggerCreator {
-                SynchronizedStdoutLogger(it)
+            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+            net.mamoe.mirai.utils.MiraiLoggerFactoryImplementationBridge.wrapCurrent {
+                object : MiraiLogger.Factory {
+                    override fun create(requester: Class<*>, identity: String?): MiraiLogger {
+                        return SynchronizedStdoutLogger(identity ?: requester.simpleName)
+                    }
+
+                    override fun create(requester: KClass<*>, identity: String?): MiraiLogger {
+                        return SynchronizedStdoutLogger(identity ?: requester.simpleName)
+                    }
+                }
             }
 
             setSystemProp("mirai.network.packet.logger", "true")
             setSystemProp("mirai.network.state.observer.logging", "true")
             setSystemProp("mirai.network.show.all.components", "true")
             setSystemProp("mirai.network.show.components.creation.stacktrace", "true")
-            setSystemProp("mirai.network.handle.selector.logging", "true")
+            setSystemProp("mirai.network.handler.selector.logging", "true")
 
             Exception() // create a exception to load relevant classes to estimate invocation time of test cases more accurately.
             IMirai::class.simpleName // similarly, load classes.

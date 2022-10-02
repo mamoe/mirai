@@ -41,7 +41,7 @@ class MiraiConsoleIntegrationTestBootstrap {
             // Avoid error in resolving points
             assertTrue { points.contains("net.mamoe.console.integrationtest.testpoints.MCITBSelfAssertions") }
             assertTrue { points.contains("net.mamoe.console.integrationtest.testpoints.DoNothingPoint") }
-            assertTrue { points.contains("net.mamoe.console.integrationtest.testpoints.terminal.TestTerminalLogging") }
+            assertTrue { points.contains("net.mamoe.console.integrationtest.testpoints.plugin.PluginDataRenameToIdTest") }
         }.asSequence().map { v ->
             when (v) {
                 is Class<*> -> v.name

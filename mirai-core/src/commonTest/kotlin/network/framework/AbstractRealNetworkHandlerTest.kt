@@ -206,7 +206,11 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
     }
 
     val eventDispatcher get() = bot.components[EventDispatcher]
-    val firstLoginResult: FirstLoginResult? get() = bot.components[SsoProcessor].firstLoginResult.value
+    var firstLoginResult: FirstLoginResult?
+        get() = bot.components[SsoProcessor].firstLoginResult.value
+        set(value) {
+            bot.components[SsoProcessor].firstLoginResult.value = value
+        }
 }
 
 internal fun AbstractRealNetworkHandlerTest<*>.setSsoProcessor(action: suspend SsoProcessor.(handler: NetworkHandler) -> Unit) {

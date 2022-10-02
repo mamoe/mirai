@@ -17,8 +17,8 @@ import net.mamoe.mirai.internal.network.components.PacketCodec.Companion.PacketL
 import net.mamoe.mirai.internal.network.components.PacketCodecException.Kind.*
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.protocol.packet.*
+import net.mamoe.mirai.internal.utils.crypto.Ecdh
 import net.mamoe.mirai.internal.utils.crypto.TEA
-import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
 import net.mamoe.mirai.utils.*
 
 
@@ -254,20 +254,20 @@ internal class PacketCodecImpl : PacketCodec {
         val encryptionMethod = this.readUShort().toInt()
 
         this.discardExact(1)
-        val ecdhWithPublicKey =
-            (client as QQAndroidClient).bot.components[EcdhInitialPublicKeyUpdater].getECDHWithPublicKey()
+        val qqEcdh =
+            (client as QQAndroidClient).bot.components[EcdhInitialPublicKeyUpdater].getQQEcdh()
         return when (encryptionMethod) {
             4 -> {
                 val size = (this.remaining - 1).toInt()
                 val data =
                     TEA.decrypt(
                         this.readBytes(),
-                        ecdhWithPublicKey.keyPair.maskedShareKey,
+                        qqEcdh.initialQQShareKey,
                         length = size
                     )
 
                 val peerShareKey =
-                    ecdhWithPublicKey.calculateShareKeyByPeerPublicKey(readUShortLVByteArray().adjustToPublicKey())
+                    qqEcdh.calculateQQShareKey(Ecdh.Instance.importPublicKey(readUShortLVByteArray()))
                 TEA.decrypt(data, peerShareKey)
             }
             3 -> {
@@ -285,7 +285,7 @@ internal class PacketCodecImpl : PacketCodec {
                     val byteArrayBuffer = this.readBytes(size)
 
                     runCatching {
-                        TEA.decrypt(byteArrayBuffer, ecdhWithPublicKey.keyPair.maskedShareKey, length = size)
+                        TEA.decrypt(byteArrayBuffer, qqEcdh.initialQQShareKey, length = size)
                     }.getOrElse {
                         TEA.decrypt(byteArrayBuffer, client.randomKey, length = size)
                     }

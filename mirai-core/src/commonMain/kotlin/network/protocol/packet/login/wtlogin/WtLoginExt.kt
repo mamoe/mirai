@@ -38,6 +38,9 @@ internal inline fun WtLoginExt.analysisTlv0x531(
     }
 }
 
+/**
+ * @see WtLogin
+ */
 internal interface WtLoginExt { // so as not to register to global extension
 
     fun onErrorMessage(type: Int, tlvMap: TlvMap, bot: QQAndroidBot): WtLogin.Login.LoginPacketResponse.Error? {

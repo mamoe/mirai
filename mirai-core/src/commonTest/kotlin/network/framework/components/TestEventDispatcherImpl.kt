@@ -14,9 +14,9 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.internal.network.components.EventDispatcherImpl
+import net.mamoe.mirai.internal.network.handler.NetworkHandler.Companion.runUnwrapCancellationException
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.TestOnly
-import net.mamoe.mirai.utils.runUnwrapCancellationException
 import kotlin.coroutines.CoroutineContext
 
 internal open class TestEventDispatcherImpl(

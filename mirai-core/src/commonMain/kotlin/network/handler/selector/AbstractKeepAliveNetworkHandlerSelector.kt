@@ -9,22 +9,17 @@
 
 package net.mamoe.mirai.internal.network.handler.selector
 
+import io.ktor.client.utils.*
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.yield
+import kotlinx.coroutines.*
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.handler.logger
-import net.mamoe.mirai.network.LoginFailedException
-import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.utils.*
-import kotlin.jvm.JvmField
-import kotlin.native.concurrent.ThreadLocal
+import kotlin.jvm.Volatile
 
 /**
  * A lazy stateful implementation of [NetworkHandlerSelector].
@@ -65,7 +60,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
 
     final override suspend fun awaitResumeInstance(): H = AwaitResumeInstance().run()
 
-    private inner class AwaitResumeInstance {
+    private inner class AwaitResumeInstance : SynchronizedObject() {
         private inline fun logIfEnabled(block: () -> String) {
             if (SELECTOR_LOGGING) {
                 logger.debug { "Attempt #$attempted: ${block.invoke()}" }
@@ -74,14 +69,39 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
 
         private var attempted: Int = 0
         private var lastNetwork: H? = null
-        private val exceptionCollector: ExceptionCollector = object : ExceptionCollector() {
-            override fun beforeCollect(throwable: Throwable) {
-                lastNetwork?.logger?.warning(throwable)
-            }
-        }
 
+        @Volatile
+        private var _exceptionCollector: ExceptionCollector? = null
+
+        // lazily initialize ExceptionCollector.
+        private val exceptionCollector: ExceptionCollector
+            get() {
+                _exceptionCollector?.let { return it }
+                return synchronized(this) {
+                    _exceptionCollector?.let { return it }
+                    object : ExceptionCollector() {
+                        override fun beforeCollect(throwable: Throwable) {
+                            lastNetwork?.logger?.warning("Exception in resumeConnection.", throwable)
+                        }
+                    }.also {
+                        _exceptionCollector = it
+                    }
+                }
+            }
+
+        /**
+         * 尝试重置状态, 捕获并处理发生的可被挽救的异常, 重新抛出其他异常. 每次此函数运行时都会创建新的 [H].
+         * 抛出异常: 表示 [NetworkHandler.resumeConnection] 抛出了某个异常, 且这个问题不可挽救 (需要停止 selector).
+         *
+         * 只有 [NetworkException] 是期望的异常 (根据 [NetworkException.recoverable] 决定是否可挽救). 任何其他异常都是未期望的, 将会被原封不动地抛出.
+         */
+        @Throws(
+            NetworkException::class, MaxAttemptsReachedException::class, CancellationException::class, Throwable::class
+        )
         suspend fun run(): H {
-            return runImpl().also {
+            return try {
+                runImpl()
+            } finally {
                 exceptionCollector.dispose()
                 lastNetwork = null // help gc
             }
@@ -91,8 +111,6 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
             if (attempted >= maxAttempts) {
                 logIfEnabled { "Max attempt $maxAttempts reached." }
                 throw MaxAttemptsReachedException(exceptionCollector.getLast())
-//                throw exceptionCollector.getLast()?.apply { addSuppressed(MaxAttemptsReachedException(null)) }
-//                    ?: MaxAttemptsReachedException(null)
             }
             if (!currentCoroutineContext().isActive) {
                 yield() // check cancellation
@@ -112,45 +130,41 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
             }
 
             /**
-             * @return `false` if failed
+             * 执行 [NetworkHandler.resumeConnection].
+             *
+             * 本函数有三个终止状态:
+             * - 返回 `true`: 表示 [NetworkHandler.resumeConnection] 正常返回.
+             * - 返回 `false`: 表示 [NetworkHandler.resumeConnection] 抛出了某个异常, 但这个问题可以挽救 (需要重置状态).
+             * - 抛出异常: 表示 [NetworkHandler.resumeConnection] 抛出了某个异常, 且这个问题不可挽救 (需要停止 selector).
+             *
+             * 只有 [NetworkException] 是期望的异常 (根据 [NetworkException.recoverable] 决定是否可挽救). 任何其他异常都是未期望的, 将会被原封不动地抛出.
              */
+            @Throws(NetworkException::class, CancellationException::class, Throwable::class)
             suspend fun H.resumeInstanceCatchingException(): Boolean {
                 logIfEnabled { "Try resumeConnection" }
                 try {
-                    resumeConnection() // once finished, it should has been LOADING or OK
-                    return true
-                } catch (e: LoginFailedException) {
-                    logIfEnabled { "... failed with LoginFailedException $e" }
-                    logIfEnabled { "CLOSING SELECTOR" }
-                    close(e)
-                    logIfEnabled { "... CLOSED" }
-                    exceptionCollector.collect(e)
-                    if (e is RetryLaterException) {
-                        return false
-                    }
-                    // LoginFailedException is not resumable
-                    exceptionCollector.throwLast()
+                    resumeConnection()
+                    return true // 一切正常
                 } catch (e: NetworkException) {
-                    logIfEnabled { "... failed with NetworkException $e" }
-                    logIfEnabled { "... recoverable=${e.recoverable}" }
+                    logIfEnabled { "... failed with NetworkException (recoverable=${e.recoverable}): $e" }
                     exceptionCollector.collect(e)
+                    close(e) // close H
+
+                    logIfEnabled { "CLOSED instance" }
                     if (e.recoverable) {
-                        logIfEnabled { "IGNORING" }
-                        // allow recoverable NetworkException, see #1361
+                        // 可挽救
+                        return false
                     } else {
-                        logIfEnabled { "CLOSING SELECTOR" }
-                        close(e)
-                        logIfEnabled { "... CLOSED" }
+                        // 不可挽救
+                        exceptionCollector.throwLast()
                     }
-                    return false
-                } catch (e: Exception) {
-                    logIfEnabled { "... failed with $e" }
-                    logIfEnabled { "CLOSING SELECTOR" }
-                    close(e)
-                    logIfEnabled { "... CLOSED" }
-                    // exception will be collected by `exceptionCollector.collectException(current.getLastFailure())`
-                    // so that duplicated exceptions are ignored in logging
-                    return false
+                } catch (e: Throwable) {
+                    // 不可挽救
+                    logIfEnabled { "... failed with unexpected: $e" }
+                    exceptionCollector.collect(e)
+                    close(e) // close H
+                    logIfEnabled { "CLOSED instance" }
+                    exceptionCollector.throwLast()
                 }
             }
 
@@ -158,11 +172,21 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
             return if (current != null) {
                 when (current.state) {
                     NetworkHandler.State.CLOSED -> {
+                        current.resumeInstanceCatchingException()
+                        // This may return false, meaning the error causing the state to be CLOSED is recoverable.
+                        // Otherwise, it throws, meaning it is unrecoverable.
+
                         if (this@AbstractKeepAliveNetworkHandlerSelector.current.compareAndSet(current, null)) {
                             logIfEnabled { "... Set current to null." }
                             // invalidate the instance and try again.
 
-                            val lastFailure = current.getLastFailure()?.unwrapCancellationException()
+                            // NetworkHandler is CancellationException if closed by `NetworkHandler.close`
+                            // `unwrapCancellationException` will give a rather long and complicated trace showing all internal traces.
+                            // The traces may help locate exactly where the `NetworkHandler.close` is called,
+                            // but this is not usually desired.
+                            val lastFailure =
+                                current.getLastFailure()?.unwrapCancellationException(NetworkHandler.CANCELLATION_TRACE)
+
                             logIfEnabled { "...    Last failure was $lastFailure." }
                             exceptionCollector.collectException(lastFailure)
                         }
@@ -173,22 +197,31 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                         attempted += 1
                         runImpl() // will create new instance (see the `else` branch).
                     }
-                    NetworkHandler.State.CONNECTING,
-                    NetworkHandler.State.INITIALIZED,
-                    -> {
+                    NetworkHandler.State.INITIALIZED -> {
                         if (!current.resumeInstanceCatchingException()) {
                             attempted += 1
+                            return runImpl()
                         }
-                        return runImpl()
+                        logIfEnabled { "RETURN" }
+                        return current
+                    }
+                    NetworkHandler.State.CONNECTING -> {
+                        logIfEnabled { "RETURN" }
+                        // can send packet
+                        return current
                     }
                     NetworkHandler.State.LOADING -> {
                         logIfEnabled { "RETURN" }
                         return current
                     }
                     NetworkHandler.State.OK -> {
-                        current.resumeInstanceCatchingException()
-                        logIfEnabled { "RETURN" }
-                        return current
+                        if (current.resumeInstanceCatchingException()) {
+                            logIfEnabled { "RETURN" }
+                            return current
+                        } else {
+                            attempted += 1
+                            return runImpl()
+                        }
                     }
                 }
             } else {
@@ -208,22 +241,19 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
     }
 
 
-    @ThreadLocal
     companion object {
-        @JvmField
-        var DEFAULT_MAX_ATTEMPTS =
-            systemProp("mirai.network.handler.selector.max.attempts", Long.MAX_VALUE)
-                .coerceIn(1..Int.MAX_VALUE.toLongUnsigned()).toInt()
+        var DEFAULT_MAX_ATTEMPTS by atomic(
+            systemProp(
+                "mirai.network.handler.selector.max.attempts", Long.MAX_VALUE
+            ).coerceIn(1..Int.MAX_VALUE.toLongUnsigned()).toInt()
+        )
 
         /**
          * millis
          */
-        @JvmField
-        var RECONNECT_DELAY = systemProp("mirai.network.reconnect.delay", 3000L)
-            .coerceIn(0..Long.MAX_VALUE)
+        var RECONNECT_DELAY by atomic(systemProp("mirai.network.reconnect.delay", 3000L).coerceIn(0..Long.MAX_VALUE))
 
-        @JvmField
-        var SELECTOR_LOGGING = systemProp("mirai.network.handle.selector.logging", false)
+        var SELECTOR_LOGGING by atomic(systemProp("mirai.network.handler.selector.logging", false))
     }
 }
 

@@ -76,8 +76,21 @@ open class MockConsoleImplementation : MiraiConsoleImplementation {
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
         LoginSolver.Default!!
 
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated(
+        "Deprecated for removal. Implement the other overload, or use MiraiConsole.createLogger instead.",
+        level = DeprecationLevel.ERROR
+    )
     override fun createLogger(identity: String?): MiraiLogger {
         return PlatformLogger(identity)
+    }
+
+    override fun createLoggerFactory(context: MiraiConsoleImplementation.FrontendLoggingInitContext): MiraiLogger.Factory {
+        return object : MiraiLogger.Factory {
+            override fun create(requester: Class<*>, identity: String?): MiraiLogger {
+                return PlatformLogger(identity)
+            }
+        }
     }
 
     override val consoleDataScope: MiraiConsoleImplementation.ConsoleDataScope by lazy {

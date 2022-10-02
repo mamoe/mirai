@@ -10,9 +10,12 @@
 package net.mamoe.mirai.internal.utils.test
 
 import net.mamoe.mirai.internal.test.AbstractTest
-import net.mamoe.mirai.internal.utils.structureToString
+import net.mamoe.mirai.internal.utils.StructureToStringTransformerNew
+import net.mamoe.mirai.utils.StructureToStringTransformer
+import net.mamoe.mirai.utils.structureToString
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 internal class StructureToStringTransformerNewTest : AbstractTest() {
 
@@ -22,6 +25,11 @@ internal class StructureToStringTransformerNewTest : AbstractTest() {
 
     @Test
     fun `can load service`() {
+        assertIs<StructureToStringTransformerNew>(StructureToStringTransformer.instance)
+    }
+
+    @Test
+    fun `can use`() {
         assertEquals(
             """
             ${MyClass::class.qualifiedName}(

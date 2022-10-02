@@ -14,55 +14,97 @@ import io.ktor.utils.io.core.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.DebuggingProperties.SHOW_TLV_MAP_ON_LOGIN_SUCCESS
 import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.packet.*
+import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin8
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLoginExt
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.analysisTlv0x531
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.orEmpty
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.printStructure
-import net.mamoe.mirai.internal.utils.structureToString
+import net.mamoe.mirai.network.RetryLaterException
+import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.utils.*
+
+
+internal class SmsVerifyInfo(
+    override val countryCode: String?, // 86
+    override val phoneNumber: String?, // 123*******1
+    private val token: ByteArray, // t174
+    private val bot: AbstractBot,
+) : DeviceVerificationRequests.SmsRequest {
+    override suspend fun requestSms() {
+        val result = try {
+            bot.network.sendAndExpect(WtLogin8(bot.client, token))
+        } catch (e: Exception) {
+            bot.logger.warning("Exception while requesting SMS.", e)
+            throw e
+        }
+        if (result !is WtLogin.Login.LoginPacketResponse.SmsRequestSuccess) {
+            bot.logger.warning("Failed requestSms, result = $result")
+
+            if (result is WtLogin.Login.LoginPacketResponse.Error) {
+                when (result.code) {
+                    161, 162 -> {
+                        // 今日操作次数过多，请等待一天后再试。
+                        throw RetryLaterException(
+                            result.message,
+                            null,
+                            killBot = true
+                        )
+                    }
+                }
+            }
+
+            throw WrongPasswordException("Failed requestSms, result = $result")
+        }
+    }
+
+    override fun solved(code: String): DeviceVerificationResult {
+        return SmsDeviceVerificationResult(code, token)
+    }
+
+    override fun toString(): String {
+        return "SmsVerifyInfo(+$countryCode $phoneNumber)"
+    }
+}
+
+internal class FallbackRequestImpl(override val url: String) : DeviceVerificationRequests.FallbackRequest {
+    override fun solved(): DeviceVerificationResult {
+        return UrlDeviceVerificationResult
+    }
+
+    override fun toString(): String {
+        return "FallbackRequestImpl($url)"
+    }
+}
+
+internal sealed interface DeviceVerificationResultImpl : DeviceVerificationResult
+
+internal object UrlDeviceVerificationResult : DeviceVerificationResultImpl {
+    override fun toString(): String {
+        return "UrlVerificationResult"
+    }
+}
+
+internal class SmsDeviceVerificationResult(
+    val code: String,
+    val token: ByteArray, // t174
+) : DeviceVerificationResultImpl {
+    override fun toString(): String {
+        return "SmsVerificationResult(code=$code, token=${token.toUHexString("")})"
+    }
+}
 
 internal class WtLogin {
     /**
      * OicqRequest
      */
-    @Suppress("FunctionName")
     internal object Login : OutgoingPacketFactory<Login.LoginPacketResponse>("wtlogin.login"), WtLoginExt {
-
-        /**
-         * 提交 SMS
-         */
-        object SubCommand7 {
-            operator fun invoke(
-                client: QQAndroidClient
-            ) = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
-                writeSsoPacket(
-                    client,
-                    client.subAppId,
-                    commandName,
-                    sequenceId = sequenceId,
-                    unknownHex = "01 00 00 00 00 00 00 00 00 00 01 00"
-                ) {
-                    writeOicqRequestPacket(client, commandId = 0x0810) {
-                        writeShort(8) // subCommand
-                        writeShort(6) // count of TLVs, probably ignored by server?
-                        t8(2052)
-                        t104(client.t104)
-                        t116(client.miscBitMap, client.subSigMap)
-                        t174(EMPTY_BYTE_ARRAY)
-                        t17a(9)
-                        t197(byteArrayOf(0.toByte()))
-                        //t401(md5(client.device.guid + "12 34567890123456".toByteArray() + t402))
-                        //t19e(0)//==tlv408
-                    }
-                }
-            }
-        }
 
         /**
          * Check SMS Login
@@ -104,6 +146,10 @@ internal class WtLogin {
                 override fun toString(): String = "LoginPacketResponse.Success"
             }
 
+            class SmsRequestSuccess(override val bot: Bot) : LoginPacketResponse() {
+                override fun toString(): String = "LoginPacketResponse.SmsRequestSuccess"
+            }
+
             data class Error(
                 override val bot: Bot,
                 val code: Int,
@@ -130,31 +176,25 @@ internal class WtLogin {
                 }
             }
 
-            data class UnsafeLogin(
+            class VerificationNeeded(
                 override val bot: Bot,
-                val url: String,
-            ) : LoginPacketResponse()
-
-            class SMSVerifyCodeNeeded(
-                override val bot: Bot,
-                val t402: ByteArray,
-                val t403: ByteArray,
+                val message: String?,
+                val requests: DeviceVerificationRequests,
             ) : LoginPacketResponse() {
-                override fun toString(): String {
-                    return "LoginPacketResponse.SMSVerifyCodeNeeded(t402=${t402.toUHexString()}, t403=${t403.toUHexString()})"
-                }
+                override fun toString(): String =
+                    "LoginPacketResponse.VerificationNeeded(requests=$requests)"
             }
 
             class DeviceLockLogin(
                 override val bot: Bot,
             ) : LoginPacketResponse() {
-                override fun toString(): String = "WtLogin.Login.LoginPacketResponse.DeviceLockLogin"
+                override fun toString(): String = "LoginPacketResponse.DeviceLockLogin"
             }
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse {
 
-            val subCommand = readUShort().toInt() // subCommand
+            val subCommand = readUShort() // subCommand
             // println("subCommand=$subCommand")
             val type = readUByte()
             // println("type=$type")
@@ -177,10 +217,23 @@ internal class WtLogin {
 //                writeFully(tlvMap[0x402] ?: EMPTY_BYTE_ARRAY)
 //            }.readBytes().md5()
             //   }
+
+            tlvMap[0x402]?.let { t402 ->
+                bot.client.dpwd = getRandomByteArray(16)
+                bot.client.t402 = t402
+                bot.run {
+                    // client.dpwd = getRandomString(16).toByteArray()
+                    client.G = (client.device.guid + client.dpwd + t402).md5()
+                }
+            }
+
             return when (type.toInt()) {
-                0 -> onLoginSuccess(subCommand, tlvMap, bot)
+                0 -> onLoginSuccess(subCommand.toInt(), tlvMap, bot)
                 2 -> onSolveLoginCaptcha(tlvMap, bot)
-                160, 239 /*-96*/ -> onUnsafeDeviceLogin(tlvMap, bot)
+                160, 239 /*-96*/ -> onVerificationNeeded(subCommand.toShort(), tlvMap, bot)
+                // 40: blocked
+                // 161: 今日操作次数过多，请等待一天后再试。   (SMS)
+                // 162: 可能也是 SMS 太频繁
                 204 /*-52*/ -> onDevLockLogin(tlvMap, bot)
                 // 1, 15 -> onErrorMessage(tlvMap) ?: error("Cannot find error message")
                 else -> {
@@ -190,22 +243,65 @@ internal class WtLogin {
             }
         }
 
-
         private fun onDevLockLogin(
             tlvMap: TlvMap,
             bot: QQAndroidBot
         ): LoginPacketResponse.DeviceLockLogin {
             bot.client.t104 = tlvMap.getOrFail(0x104)
-            bot.run {
-                // client.dpwd = getRandomString(16).toByteArray()
-                client.G = (client.device.guid + client.dpwd + tlvMap.getOrFail(0x402)).md5()
-            }
             // println("403： " + tlvMap[0x403]?.toUHexString())
             return LoginPacketResponse.DeviceLockLogin(bot)
         }
 
-        private fun onUnsafeDeviceLogin(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.UnsafeLogin {
-            return LoginPacketResponse.UnsafeLogin(bot, tlvMap.getOrFail(0x204).decodeToString())
+        private fun onVerificationNeeded(subCommand: Short, tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse {
+            val t174 = tlvMap[0x174]
+            val t17b = tlvMap[0x17b]
+            val message = tlvMap[0x17e]?.decodeToString()
+
+            t174?.let {
+                bot.client.t174 = it
+            }
+
+            if (t174 != null || t17b != null) {
+                tlvMap[0x104]?.let {
+                    // verify token
+                    bot.client.t104 = it
+                }
+            }
+
+            tlvMap[0x403]?.let {
+                bot.client.randSeed = it
+            }
+
+            if (subCommand == WtLogin8.subCommand) {
+                // response of submit sms
+                // tlvMap 只有 0x17b 和 0x174
+                return LoginPacketResponse.SmsRequestSuccess(bot)
+            }
+            var countryCode: String? = null
+            var phoneNumber: String? = null
+            tlvMap[0x178]?.read {
+                // phone number
+                countryCode = readUShortLVString()
+                phoneNumber = readUShortLVString()
+            }
+            val url = tlvMap[0x204]?.decodeToString()
+            check(url != null || t174 != null) {
+                "Verification is needed but no method available."
+            }
+            return LoginPacketResponse.VerificationNeeded(
+                bot,
+                message = message,
+                requests = object : DeviceVerificationRequests {
+                    override val sms: DeviceVerificationRequests.SmsRequest? =
+                        t174?.let { SmsVerifyInfo(countryCode, phoneNumber, t174, bot) }
+                    override val fallback: DeviceVerificationRequests.FallbackRequest? =
+                        url?.let { FallbackRequestImpl(it) }
+                    override val preferSms: Boolean = tlvMap[0x17b] != null
+                    override fun toString(): String {
+                        return "DeviceVerificationRequests(sms=$sms, preferSms=$preferSms, fallback=$fallback)"
+                    }
+                },
+            )
         }
 
         private fun onSolveLoginCaptcha(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Captcha {

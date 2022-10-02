@@ -20,11 +20,9 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Vec0xd50
 import net.mamoe.mirai.internal.network.protocol.data.proto.Vec0xd6b
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.utils.io.serialization.jceRequestSBuffer
-import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
-import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
-import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
+import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.utils.toByteArray
 
 
 internal class FriendList {
@@ -81,11 +79,12 @@ internal class FriendList {
         OutgoingPacketFactory<GetTroopListSimplify.Response>("friendlist.GetTroopListReqV2") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val res = this.readUniPacket(GetTroopListRespV2.serializer())
-            return Response(res.vecTroopList.orEmpty())
+            return Response(res.vecTroopList.orEmpty(), res.vecTroopRank.orEmpty())
         }
 
         class Response(
-            val groups: List<StTroopNum>
+            val groups: List<StTroopNum>,
+            val ranks: List<StGroupRankInfo>
         ) : Packet {
             override fun toString(): String = "FriendList.GetFriendGroupList.Response"
         }
@@ -163,7 +162,10 @@ internal class FriendList {
         class Response(
             val selfInfo: FriendInfo?,
             val totalFriendCount: Short,
-            val friendList: List<FriendInfo>
+            val friendList: List<FriendInfo>,
+            // for FriendGroup
+            val groupList: List<GroupInfo>,
+            val totoalGroupCount: Short
         ) : Packet {
             override fun toString(): String = "FriendList.GetFriendGroupList.Response"
         }
@@ -177,7 +179,9 @@ internal class FriendList {
             return Response(
                 res.stSelfInfo,
                 res.totoalFriendCount,
-                res.vecFriendInfo.orEmpty()
+                res.vecFriendInfo.orEmpty(),
+                res.vecGroupInfo.orEmpty(),
+                res.totoalGroupCount ?: -1
             )
         }
 
@@ -247,7 +251,7 @@ internal class FriendList {
                         GetFriendListReq.serializer(),
                         GetFriendListReq(
                             reqtype = 3,
-                            ifReflush = if (friendListStartIndex <= 0) {
+                            ifReflush = if (friendListStartIndex + groupListStartIndex <= 0) {
                                 0
                             } else {
                                 1
@@ -281,6 +285,120 @@ internal class FriendList {
                             vecSnsTypelist = listOf(13580L, 13581L, 13582L)
                         )
                     )
+                )
+            )
+        }
+    }
+
+    // for FriendGroup
+    internal object SetGroupReqPack : OutgoingPacketFactory<SetGroupReqPack.Response>("friendlist.SetGroupReq") {
+        class Response(
+            // Success: result == 0x00
+            val result: Byte,
+            val errStr: String,
+            // groupId for delete
+            val groupId: Int,
+            val isSuccess: Boolean = result.toInt() == 0
+        ) : Packet {
+            override fun toString(): String {
+                return "SetGroupResp(isSuccess=$isSuccess,resultCode=$result, errString=$errStr, groupId=$groupId)"
+            }
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val pack = this.readUniPacket(SetGroupResp.serializer())
+            return if (pack.result.toInt() == 0) {
+                Response(pack.result, pack.errorString, pack.vecBody?.get(8)?.toInt() ?: -1)
+            } else {
+                Response(pack.result, pack.errorString, -1)
+            }
+        }
+
+        object New {
+            operator fun invoke(
+                client: QQAndroidClient, groupName: String
+            ) = buildOutgoingUniPacket(client) {
+                val arr = groupName.toByteArray()
+                // maybe is constant
+                val constant: Byte = 0x01
+                writeJceRequestPacket(
+                    servantName = "mqq.IMService.FriendListServiceServantObj",
+                    funcName = "SetGroupReq",
+                    serializer = SetGroupReq.serializer(),
+                    body = SetGroupReq(0, client.uin, byteArrayOf(constant, arr.size.toByte()) + arr)
+                )
+            }
+        }
+
+        object Rename {
+            operator fun invoke(client: QQAndroidClient, newName: String, id: Int) = buildOutgoingUniPacket(client) {
+                val arr = newName.toByteArray()
+                writeJceRequestPacket(
+                    servantName = "mqq.IMService.FriendListServiceServantObj",
+                    funcName = "SetGroupReq",
+                    serializer = SetGroupReq.serializer(),
+                    body = SetGroupReq(1, client.uin, byteArrayOf(id.toByte(), arr.size.toByte()) + arr)
+                )
+            }
+        }
+
+        object Delete {
+            operator fun invoke(client: QQAndroidClient, id: Int) = buildOutgoingUniPacket(client) {
+                writeJceRequestPacket(
+                    servantName = "mqq.IMService.FriendListServiceServantObj",
+                    funcName = "SetGroupReq",
+                    serializer = SetGroupReq.serializer(),
+                    body = SetGroupReq(2, client.uin, byteArrayOf(id.toByte()))
+                )
+            }
+        }
+    }
+
+    // for FriendGroup
+    internal object MoveGroupMemReqPack :
+        OutgoingPacketFactory<MoveGroupMemReqPack.Response>("friendlist.MovGroupMemReq") {
+        private fun Long.toByteArray2(): ByteArray {
+            val arr = this.toByteArray()
+            val index = arr.indexOfFirst { it.toInt() != 0 }
+            return arr.sliceArray(index until arr.size)
+        }
+
+        // 如果不成功会自动移动到id = 0的默认好友分组, result 还是会返回0
+        class Response(
+            // Success: result == 0x00
+            val result: Byte,
+            val errStr: String,
+            val isSuccess: Boolean = result.toInt() == 0
+        ) : Packet {
+            override fun toString(): String {
+                return "MoveGroupMemReq(isSuccess=$isSuccess,resultCode=$result, errString=$errStr)"
+            }
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val pack = this.readUniPacket(MovGroupMemResp.serializer())
+            return Response(pack.result, pack.errorString)
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient,
+            // friend id
+            id: Long,
+            // friend group id
+            groupId: Int
+        ) = buildOutgoingUniPacket(client) {
+            writeJceRequestPacket(
+                servantName = "mqq.IMService.FriendListServiceServantObj",
+                funcName = "MovGroupMemReq",
+                serializer = MovGroupMemReq.serializer(),
+                body = MovGroupMemReq(
+                    client.uin,
+                    0,
+                    byteArrayOf(
+                        0x01,
+                        0x00,
+                        (id.toByteArray2().size + 1).toByte()
+                    ) + id.toByteArray2() + byteArrayOf(groupId.toByte(), 0x00, 0x00)
                 )
             )
         }

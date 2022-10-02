@@ -526,57 +526,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         ignoreUnknownKeys = true
     }
 
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun getRawGroupActiveData(bot: Bot, groupId: Long, page: Int): GroupActiveData =
-        bot.asQQAndroidBot().run {
-            val rep = network.run {
-                httpClient.get() {
-                    url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
-                    parameter("bkn", client.wLoginSigInfo.bkn)
-                    parameter("gc", groupId)
-                    if (page != -1) {
-                        parameter("page", page)
-                    }
-                    headers {
-                        // ktor bug
-                        append(
-                            "cookie",
-                            "uin=o${bot.id}; skey=${bot.sKey}; p_uin=o${bot.id}; p_skey=${bot.psKey("qqweb.qq.com")};"
-                        )
-                    }
-                }
-            }
-            return json.decodeFromString(GroupActiveData.serializer(), rep.bodyAsText())
-        }
-
-    @LowLevelApi
-    @MiraiExperimentalApi
-    override suspend fun getRawGroupHonorListData(
-        bot: Bot,
-        groupId: Long,
-        type: GroupHonorType
-    ): GroupHonorListData? = bot.asQQAndroidBot().run {
-        val rep = network.run {
-            httpClient.get {
-                url("https://qun.qq.com/interactive/honorlist")
-                parameter("gc", groupId)
-                parameter("type", type.value)
-                headers {
-                    // ktor bug
-                    append(
-                        "cookie",
-                        "uin=o${bot.id};" +
-                                " skey=${bot.sKey};" +
-                                " p_uin=o${bot.id};" +
-                                " p_skey=${bot.psKey("qun.qq.com")}; "
-                    )
-                }
-            }
-        }
-        val jsonText = Regex("""window.__INITIAL_STATE__=(.+?)</script>""").find(rep.bodyAsText())?.groupValues?.get(1)
-        return jsonText?.let { json.decodeFromString(GroupHonorListData.serializer(), it) }
-    }
 
     override suspend fun solveNewFriendRequestEvent(
         bot: Bot,
@@ -599,7 +548,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         if (!accept) return
 
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        bot.friends.delegate.add(newFriend(bot, FriendInfoImpl(fromId, fromNick, "")))
+        bot.friends.delegate.add(newFriend(bot, FriendInfoImpl(fromId, fromNick, "", 0)))
     }
 
     override suspend fun solveBotInvitedJoinGroupRequestEvent(

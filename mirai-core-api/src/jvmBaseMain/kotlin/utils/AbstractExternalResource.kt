@@ -9,7 +9,9 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.utils.io.core.*
 import io.ktor.utils.io.errors.*
+import io.ktor.utils.io.streams.*
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
@@ -253,5 +255,10 @@ public constructor(
     @Throws(IOException::class)
     final override fun close() {
         holder.close()
+    }
+
+    @MiraiExperimentalApi
+    override fun input(): Input {
+        return inputStream().asInput()
     }
 }

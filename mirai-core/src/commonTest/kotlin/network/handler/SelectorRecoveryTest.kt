@@ -13,16 +13,18 @@ package net.mamoe.mirai.internal.network.handler
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import net.mamoe.mirai.internal.network.components.EventDispatcher
-import net.mamoe.mirai.internal.network.components.HeartbeatFailureHandler
-import net.mamoe.mirai.internal.network.components.HeartbeatScheduler
+import net.mamoe.mirai.event.events.BotOfflineEvent
+import net.mamoe.mirai.internal.contact.uin
+import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTestWithSelector
+import net.mamoe.mirai.internal.network.framework.components.TestSsoProcessor
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
+import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.network.NoServerAvailableException
+import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.utils.TestOnly
-import kotlin.test.Test
-import kotlin.test.assertFails
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 /**
  * Test whether the selector can recover the connection after first successful login.
@@ -37,6 +39,23 @@ internal class SelectorRecoveryTest : AbstractCommonNHTestWithSelector() {
 //    fun afterTest(info: TestInfo) {
 //        println("=".repeat(31) + "END: ${info.displayName}" + "=".repeat(31))
 //    }
+
+    /**
+     * @see NetworkHandler.State.CONNECTING
+     */
+    var throwExceptionOnLogin: (() -> Unit)? = null
+
+    init {
+        overrideComponents[SsoProcessor] = object : TestSsoProcessor(bot) {
+            private val delegate = overrideComponents[SsoProcessor]
+            override suspend fun login(handler: NetworkHandler) {
+                delegate.login(handler)
+                throwExceptionOnLogin?.invoke()
+            }
+        }.apply {
+            firstLoginResult.value = FirstLoginResult.PASSED
+        }
+    }
 
     @Test
     fun `stop on manual close`() = runBlockingUnit {
@@ -57,6 +76,52 @@ internal class SelectorRecoveryTest : AbstractCommonNHTestWithSelector() {
 
         // BotOfflineMonitor immediately launches a recovery which is UNDISPATCHED, so connection is immediately recovered.
         assertTrue { bot.network.state != NetworkHandler.State.CLOSED }
+    }
+
+    @Test
+    fun `can recover on LoginFailedException with killBot=false`() = runBlockingUnit {
+        throwExceptionOnLogin = {
+            if (selector.createdInstanceCount != 3) {
+                throw NoServerAvailableException(null)
+            }
+        }
+
+        bot.login()
+        eventDispatcher.joinBroadcast()
+        assertState(NetworkHandler.State.OK)
+        assertEquals(3, selector.createdInstanceCount)
+    }
+
+    @Test
+    fun `can recover on LoginFailedException with killBot=true`() = runBlockingUnit {
+        throwExceptionOnLogin = {
+            throw WrongPasswordException("Congratulations! Your bot has been blocked!")
+        }
+
+        assertFailsWith<WrongPasswordException> { bot.login() }
+        eventDispatcher.joinBroadcast()
+        assertState(NetworkHandler.State.CLOSED)
+        assertEquals(1, selector.createdInstanceCount)
+    }
+
+    @Test
+    fun `can recover on MsfOffline but fail and close bot on next login`() = runBlockingUnit {
+        bot.login()
+        firstLoginResult = FirstLoginResult.PASSED
+        eventDispatcher.joinBroadcast()
+        // Now first login succeed, and all events have been processed.
+        assertState(NetworkHandler.State.OK)
+
+        // Assume bot is blocked.
+        throwExceptionOnLogin = {
+            throw WrongPasswordException("Congratulations! Your bot has been blocked!")
+        }
+        // When blocked, server sends this event.
+        eventDispatcher.broadcast(BotOfflineEvent.MsfOffline(bot, StatSvc.ReqMSFOffline.MsfOfflineToken(bot.uin, 1, 1)))
+        eventDispatcher.joinBroadcast() // Sync for processing the async recovery launched by [BotOfflineEventMonitor]
+
+        // Now we should expect
+        assertState(NetworkHandler.State.CLOSED)
     }
 
     @Test

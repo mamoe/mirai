@@ -75,6 +75,19 @@ mirai 等。
 ，若一个修改适合发布为小版本更新，mirai 会从 `dev`
 中提取该修复到目标 `-release` 分支。
 
+## 安装 JDK
+
+需要安装 JDK 才能编译 mirai。mirai 主分支最新提交在如下环境测试可以编译:
+
+| 操作系统         | JDK                | 架构      |
+|--------------|--------------------|---------|
+| macOS 12.0.1 | AdoptOpenJDK 17    | aarch64 |
+| macOS 12.0.1 | Amazon Corretto 11 | amd64   |
+| Windows 10   | OpenJDK 17         | amd64   |
+| Ubuntu 20.04 | AdoptOpenJDK 17    | amd64   |
+
+若在其他环境下无法正常编译, 请尝试选择上述一个环境配置。
+
 ## `mirai-core` 术语
 
 根据语境，mirai-core 有时候可能指 `mirai-core`
@@ -108,54 +121,75 @@ core 的源集结构如图所示：
                        <darwin targets>
 ```
 
+| 发布平台名称     | 描述               |
+|------------|------------------|
+| jvm        | JVM              |
+| android    | Android (Dalvik) |
+| mingwX64   | Windows x64      |
+| macosX64   | macOS x64        |
+| macosArm64 | macOS arm64      |
+| linuxX64   | Linux x64        |
+
 备注：
 
 - common 包含全平台通用代码，绝大部分代码都位于 common；
 - jvmBase 包含针对 JVM 平台的通用代码；
 - `<darwin targets>` 为 macOS，iOS，WatchOS 等 Apple 平台目标。
 
-## 安装 JDK
+## 开发提示
 
-需要安装 JDK 才能编译 mirai。mirai 主分支最新提交在如下环境测试可以编译:
+建议使用 IntelliJ IDEA 或 Android Studio，并安装最新的 Kotlin 插件。
 
-| 操作系统         | JDK                | 架构      |
-|--------------|--------------------|---------|
-| macOS 12.0.1 | AdoptOpenJDK 17    | aarch64 |
-| macOS 12.0.1 | Amazon Corretto 11 | amd64   |
-| Windows 10   | OpenJDK 17         | amd64   |
-| Ubuntu 20.04 | AdoptOpenJDK 17    | amd64   |
+建议设置 IntelliJ 的内存为至少 6GB，否则 IDE 可能会频繁冻结编辑器收集垃圾。（可在 `Help -> Edit Custom VM Options` 中添加 `-Xmx6000m`）
 
-若在其他环境下无法正常编译, 请尝试选择上述一个环境配置。
+### 关闭部分项目以提升速度
 
-## 构建 JVM 目标项目
+你可以在项目根目录创建 `local.properties`，中按照如下配置，关闭部分项目来提升开发速度。
 
-要构建只有 JVM 目标的项目（如 `mirai-console`，只需在项目根目录使用如下命令执行
-Gradle 任务：
-
-```shell
-$ ./gradlew :mirai-console:assemble # 编译
-$ ./gradlew :mirai-console:check # 测试
-$ ./gradlew :mirai-console:build # 编译和测试
+```properties
+# 关闭 IntelliJ IDEA 插件模块
+projects.mirai-console-intellij.enabled=false
+# 关闭 Gradle 插件模块
+projects.mirai-console-gradle.enabled=false
+# 关闭 mirai 依赖测试模块
+projects.mirai-deps-test.enabled=false
+# 用其他模块的路径替换 module-path，可关闭该模块
+projects.module-path.enabled=false
+# 特殊配置，关闭 mirai-console 后端，这同时也会关闭全部 console 相关的项目
+projects.mirai-console.enabled=false
+# 特殊配置，关闭 mirai-logging，这会关闭所有日志转接模块
+projects.mirai-logging.enabled=false
 ```
 
-其中 `:mirai-console` 是目标项目的路径（path）。
+通常关闭 IDEA 插件和 Gradle 插件可以显著提高初始化速度（IDEA 插件项目在初始化时需要下载 1G 左右编译依赖）。
 
-你也可以在 IDEA 等有 Gradle 支持的 IDE
-中在通过侧边栏等方式选择项目的 `assemble` 等任务：
+### 关闭 core 的部分构建目标
 
-![](images/run-gradle-tasks-in-idea.png)
+可以在上述 `local.properties` 中，配置 `projects.mirai-core.targets=` 使用以下配置语法关闭部分构建目标。关闭后可以减轻 IDE 负担，也可以避免下载工具链而加快初始化速度。
 
-### 获得 mirai-console JAR
+所有目标默认都启用。
 
-在项目根目录执行如下命令可以获得包含依赖的 mirai-console JAR。对于其他模块类似。
+**注意**，在关闭一个目标后，将无法编辑该目标的相关源集的源码。关闭 native 目标后也可能会影响 native 目标平台原生接口的数据类型。
+因此若非主机性能太差或在 CI 机器运行，**不建议**关闭 native 目标。
 
-```shell
-$ ./gradlew :mirai-console:shadowJar
-```
+- `xxx`：显式启用 `xxx` 目标
+- `!xxx`：显式禁用 `xxx` 目标
+- `native`：显式启用所有 native 目标
+- `!native`：禁用没有显式启用的所有 native 目标
+- `others`：显式启用其他所有所有目标
+- `!others`：禁用没有显式启用的所有目标
 
-## 构建多平台项目
+其中 xxx 表示构建目标名称。可用的目标名称有（区分大小写）：`jvm`、`android`、`macosX64`、`macosArm64`、`mingwX64`、`linuxX64`
 
-core 是多平台项目。请参考 [构建 Core](BuildingCore.md)。
+示例（前两条目前等价）：
+
+- `!native;others` 指定禁用所有 native 目标，启用其他目标
+- `jvm;android;!others` 指定启用 `jvm` 和 `android` 目标，禁用其他所有目标
+- `jvm;macosX64;!others` 指定启用 `jvm` 和 `macosX64` 目标，禁用其他所有目标
+
+## 构建
+
+查看 [Building](Building.md)
 
 ## 寻找带解决的问题
 

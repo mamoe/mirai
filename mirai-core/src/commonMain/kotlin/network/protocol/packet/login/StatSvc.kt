@@ -42,7 +42,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcSimpleGet
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.io.serialization.*
-import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.utils.*
 
 @Suppress("EnumEntryName", "unused")
@@ -201,7 +200,7 @@ internal class StatSvc {
             bodyType = 1,
             extraData = client.wLoginSigInfo.d2.data,
             key = client.wLoginSigInfo.d2Key,
-            name = name,
+            remark = name,
         ) { sequenceId ->
             writeSsoPacket(
                 client, subAppId = client.subAppId, commandName = commandName,

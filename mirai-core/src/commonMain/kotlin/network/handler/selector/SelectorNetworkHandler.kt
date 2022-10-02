@@ -19,6 +19,7 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
+import net.mamoe.mirai.internal.network.handler.logger
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketWithRespType
 import net.mamoe.mirai.utils.addNameHierarchically
@@ -56,12 +57,28 @@ internal open class SelectorNetworkHandler<out H : NetworkHandler>(
     }
     private val lock = SynchronizedObject()
 
+    /**
+     * 挂起协程直到获取一个可用的 [instance]. 此函数有副作用: 获取 [instance] 应当是必须成功的, 不成功(在本函数重新抛出捕获的异常之前)则会关闭 bot.
+     *
+     * "不成功"包括多次重连后仍然不成功, bot 被 ban, 内部错误等已经被适当重试过了的情况.
+     *
+     * @see NetworkHandlerSelector.awaitResumeInstance
+     */
+    @Throws(Exception::class)
     protected suspend inline fun instance(): H {
         if (!scope.isActive) {
             throw lastCancellationCause?.let(::CancellationException)
                 ?: CancellationException("SelectorNetworkHandler is already closed")
         }
-        return selector.awaitResumeInstance()
+
+        return try {
+            selector.awaitResumeInstance()
+        } catch (e: Throwable) {
+            // selector 抛出了无法处理的, 不可挽救的异常. close bot.
+            logger.warning("Network selector received exception, closing bot. (${e})")
+            context.bot.close(e)
+            throw e
+        }
     }
 
     override val state: State

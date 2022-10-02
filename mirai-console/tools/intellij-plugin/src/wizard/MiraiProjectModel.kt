@@ -34,6 +34,7 @@ class MiraiProjectModel(
     val projectCoordinates: ProjectCoordinates,
     val pluginCoordinates: PluginCoordinates,
     val miraiVersion: String,
+    val kotlinVersion: String,
 
     val buildSystemType: BuildSystemType,
     val languageType: LanguageType,

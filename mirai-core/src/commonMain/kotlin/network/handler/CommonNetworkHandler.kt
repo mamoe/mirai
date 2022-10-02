@@ -14,11 +14,13 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import net.mamoe.mirai.internal.network.components.*
+import net.mamoe.mirai.internal.network.handler.NetworkHandler.Companion.runUnwrapCancellationException
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.selector.NetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.impl.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
+import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 
@@ -171,14 +173,14 @@ internal abstract class CommonNetworkHandler<Conn>(
     ///////////////////////////////////////////////////////////////////////////
 
     override fun close(cause: Throwable?) {
-        super.close(cause) // cancel coroutine scope
         if (state == NetworkHandler.State.CLOSED) return // quick check if already closed
         if (setState { StateClosed(cause) } == null) return // atomic check
+        super.close(cause) // cancel coroutine scope
     }
 
     init {
         coroutineContext.job.invokeOnCompletion { e ->
-            close(e?.unwrapCancellationException())
+            close(e)
         }
     }
 
@@ -231,7 +233,6 @@ internal abstract class CommonNetworkHandler<Conn>(
     ) : CommonState(NetworkHandler.State.CONNECTING) {
         private lateinit var connection: Deferred<Conn>
 
-        @Suppress("JoinDeclarationAndAssignment")
         private lateinit var connectResult: Deferred<Unit>
 
         override fun startState() {
@@ -241,18 +242,27 @@ internal abstract class CommonNetworkHandler<Conn>(
 
             connectResult = async {
                 connection.join()
-                context[SsoProcessor].login(this@CommonNetworkHandler)
+                try {
+                    context[SsoProcessor].login(this@CommonNetworkHandler)
+                } catch (e: LoginFailedException) {
+                    throw LoginFailedExceptionAsNetworkException(e)
+                }
             }
             connectResult.invokeOnCompletion { error ->
                 if (error == null) {
-                    this@CommonNetworkHandler.launch { resumeConnection() }
+                    this@CommonNetworkHandler.launch { resumeConnection() } // go to next state.
                 } else {
                     // failed in SSO stage
                     context[SsoProcessor].firstLoginResult.compareAndSet(null, FirstLoginResult.OTHER_FAILURE)
 
-                    if (error is StateSwitchingException && error.new is CommonNetworkHandler<*>.StateConnecting) {
-                        return@invokeOnCompletion // state already switched, so do not do it again.
+                    if (error is CancellationException) {
+                        // CancellationException is either caused by parent cancellation or manual `connectResult.cancel`.
+                        // The later should not happen, so it's definitely due to the parent cancellation.
+                        // It means that the super scope, the NetworkHandler is closed.
+                        // If we don't `return` here, state will be set to StateClosed with CancellationException, which isn't the real cause.
+                        return@invokeOnCompletion
                     }
+
                     setState {
                         // logon failure closes the network handler.
                         StateClosed(collectiveExceptions.collectGet(error))
@@ -304,17 +314,14 @@ internal abstract class CommonNetworkHandler<Conn>(
             return true
         }
 
-        private val configPush = this@CommonNetworkHandler.launch(CoroutineName("ConfigPush sync")) {
-            context[ConfigPushProcessor].syncConfigPush(this@CommonNetworkHandler)
-        }
+        // Yes, nothing to do in this state.
 
         override suspend fun resumeConnection0(): Unit = runUnwrapCancellationException {
             (coroutineContext.job as CompletableJob).run {
                 complete()
                 join()
             }
-            joinCompleted(configPush) // throw exception
-            setState { StateOK(connection, configPush) }
+            setState { StateOK(connection) }
         } // noop
 
         override fun toString(): String = "StateLoading"
@@ -322,7 +329,6 @@ internal abstract class CommonNetworkHandler<Conn>(
 
     protected inner class StateOK(
         private val connection: Conn,
-        private val configPush: Job,
     ) : CommonState(NetworkHandler.State.OK) {
         override fun startState() {
             coroutineContext.job.invokeOnCompletion { err ->
@@ -345,6 +351,11 @@ internal abstract class CommonNetworkHandler<Conn>(
         private val keyRefresh = launch(CoroutineName("Key refresh")) {
             context[KeyRefreshProcessor].keyRefreshLoop(this@CommonNetworkHandler)
         }
+
+        private val configPush = this@CommonNetworkHandler.launch(CoroutineName("ConfigPush sync")) {
+            context[ConfigPushProcessor].syncConfigPush(this@CommonNetworkHandler)
+        }
+
 
         override suspend fun sendPacketImpl(packet: OutgoingPacket): Boolean {
             connection.writeAndFlushOrCloseAsync(packet)

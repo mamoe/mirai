@@ -23,15 +23,14 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.StrangerImpl
-import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
-import net.mamoe.mirai.internal.contact.info.GroupInfoImpl
-import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
-import net.mamoe.mirai.internal.contact.info.StrangerInfoImpl
+import net.mamoe.mirai.internal.contact.friendgroup.FriendGroupImpl
+import net.mamoe.mirai.internal.contact.info.*
 import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.isValid
 import net.mamoe.mirai.internal.network.notice.NewContactSupport
+import net.mamoe.mirai.internal.network.protocol.data.jce.StGroupRankInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.data.jce.isValid
@@ -160,6 +159,38 @@ internal class ContactUpdaterImpl(
             return friendInfos
         }
 
+        suspend fun refreshFriendGroupList(): List<FriendGroupImpl> {
+            logger.info { "Start loading friendGroup list..." }
+            val friendGroupInfos = mutableListOf<FriendGroupImpl>()
+
+            var count = 0
+            var total: Short
+            while (true) {
+                val data = bot.network.sendAndExpect(
+                    FriendList.GetFriendGroupList(bot.client, 0, 0, count, 150)
+                )
+
+                total = data.totoalGroupCount
+
+                for (jceInfo in data.groupList) {
+                    friendGroupInfos.add(
+                        FriendGroupImpl(
+                            bot, FriendGroupInfo(
+                                jceInfo.groupId.toInt(),
+                                jceInfo.groupname
+                            )
+                        )
+                    )
+                }
+
+                count += data.groupList.size
+                logger.verbose { "Loading friendGroup list: ${count}/${total}" }
+                if (count >= total) break
+            }
+            logger.info { "Successfully loaded friendGroup list: $count in total" }
+            return friendGroupInfos
+        }
+
         val list = if (friendListCache?.isValid(registerResp) == true) {
             val list = friendListCache.list
             logger.info { "Loaded ${list.size} friends from local cache." }
@@ -178,15 +209,17 @@ internal class ContactUpdaterImpl(
             }
         }
 
+        bot.friendGroups.friendGroups.clear()
+        bot.friendGroups.friendGroups.addAll(refreshFriendGroupList())
+
         for (friendInfoImpl in list) {
             bot.addNewFriendAndRemoveStranger(friendInfoImpl)
         }
 
-
         initFriendOk = true
     }
 
-    private suspend fun addGroupToBot(stTroopNum: StTroopNum) = stTroopNum.run {
+    private suspend fun addGroupToBot(stTroopNum: StTroopNum, stGroupRankInfo: StGroupRankInfo?) = stTroopNum.run {
         suspend fun refreshGroupMemberList(): Sequence<MemberInfo> {
             return Mirai.getRawGroupMemberList(
                 bot,
@@ -217,7 +250,7 @@ internal class ContactUpdaterImpl(
                 bot = bot,
                 parentCoroutineContext = bot.coroutineContext,
                 id = groupCode,
-                groupInfo = GroupInfoImpl(stTroopNum),
+                groupInfo = GroupInfoImpl(stTroopNum, stGroupRankInfo),
                 members = members,
             ),
         )
@@ -266,7 +299,9 @@ internal class ContactUpdaterImpl(
             troopListData.groups.forEach { group ->
                 launch {
                     semaphore.withPermit {
-                        retryCatching(5) { addGroupToBot(group) }.getOrThrow()
+                        retryCatching(5) {
+                            addGroupToBot(group, troopListData.ranks.find { it.dwGroupCode == group.groupCode })
+                        }.getOrThrow()
                     }
                 }
             }

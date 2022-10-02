@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress(
@@ -28,10 +28,7 @@ import net.mamoe.mirai.console.terminal.noconsole.SystemOutputPrintStream
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.childScope
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.info
-import net.mamoe.mirai.utils.verbose
+import net.mamoe.mirai.utils.*
 import org.jline.utils.Signals
 import java.io.FileDescriptor
 import java.io.FileOutputStream
@@ -48,6 +45,9 @@ import kotlin.system.exitProcess
  * mirai-console-terminal CLI 入口点
  */
 object MiraiConsoleTerminalLoader {
+
+    // Note: Do not run this in IDEA, as you will get invalid classpath and `java.lang.NoClassDefFoundError`.
+    // Run `RunTerminal.kt` under `test` source set instead.
     @JvmStatic
     fun main(args: Array<String>) {
         parse(args, exitProcess = true)
@@ -123,19 +123,24 @@ object MiraiConsoleTerminalLoader {
                     if (exitProcess) exitProcess(0)
                     return
                 }
+
                 "--no-console" -> {
                     ConsoleTerminalSettings.noConsole = true
                 }
+
                 "--dont-setup-terminal-ansi" -> {
                     ConsoleTerminalSettings.setupAnsi = false
                 }
+
                 "--no-logging" -> {
                     ConsoleTerminalSettings.noLogging = true
                 }
+
                 "--no-ansi" -> {
                     ConsoleTerminalSettings.noAnsi = true
                     ConsoleTerminalSettings.setupAnsi = false
                 }
+
                 "--reading-replacement" -> {
                     ConsoleTerminalSettings.noConsoleSafeReading = true
                     if (iterator.hasNext()) {
@@ -148,9 +153,11 @@ object MiraiConsoleTerminalLoader {
                         return
                     }
                 }
+
                 "--safe-reading" -> {
                     ConsoleTerminalSettings.noConsoleSafeReading = true
                 }
+
                 else -> {
                     println("Unknown option `$option`")
                     printHelpMessage()
@@ -279,36 +286,11 @@ internal fun exitProcessAndForceHalt(code: Int): Nothing {
     }
 }
 
-internal fun overrideSTD(terminal: MiraiConsoleImplementation) {
-    if (ConsoleTerminalSettings.noConsole) {
-        SystemOutputPrintStream // Avoid StackOverflowError when launch with no console mode
-    }
-    lineReader // Initialize real frontend first. #1936
-    System.setOut(
-        PrintStream(
-            BufferedOutputStream(
-                logger = terminal.createLogger("stdout")::info
-            ),
-            false,
-            "UTF-8"
-        )
-    )
-    System.setErr(
-        PrintStream(
-            BufferedOutputStream(
-                logger = terminal.createLogger("stderr")::warning
-            ),
-            false,
-            "UTF-8"
-        )
-    )
-}
-
 
 internal object ConsoleCommandSenderImplTerminal : MiraiConsoleImplementation.ConsoleCommandSenderImpl {
     override suspend fun sendMessage(message: String) {
         kotlin.runCatching {
-            lineReader.printAbove(message + ANSI_RESET)
+            printToScreen(message + ANSI_RESET)
         }.onFailure { exception ->
             // If failed. It means JLine Terminal not working...
             PrintStream(FileOutputStream(FileDescriptor.err)).use {

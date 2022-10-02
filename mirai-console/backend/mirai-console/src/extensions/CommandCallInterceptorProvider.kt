@@ -24,14 +24,20 @@ public interface CommandCallInterceptorProvider : InstanceExtension<CommandCallI
         )
 }
 
-@Deprecated("Deprecated for removal. Please implement your own CommandCallInterceptorProvider.")
-@DeprecatedSinceMirai(warningSince = "2.11") // for removal.
+@Deprecated(
+    "Deprecated for removal. Please implement your own CommandCallInterceptorProvider.",
+    level = DeprecationLevel.ERROR
+)
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13") // for removal.
 @ExperimentalCommandDescriptors
 public class CommandCallInterceptorProviderImpl(override val instance: CommandCallInterceptor) :
     CommandCallInterceptorProvider
 
-@Deprecated("Deprecated for removal. Please implement your own CommandCallInterceptorProvider.")
-@DeprecatedSinceMirai(warningSince = "2.11") // for removal.
+@Deprecated(
+    "Deprecated for removal. Please implement your own CommandCallInterceptorProvider.",
+    level = DeprecationLevel.ERROR
+)
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13") // for removal.
 @ExperimentalCommandDescriptors
 public class CommandCallInterceptorProviderImplLazy(initializer: () -> CommandCallInterceptor) :
     CommandCallInterceptorProvider {

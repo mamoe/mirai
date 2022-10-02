@@ -39,7 +39,6 @@ kotlin {
                 api(`kotlinx-serialization-core`)
                 api(`kotlinx-serialization-json`)
                 api(`kotlinx-coroutines-core`) // don't remove it, otherwise IDE will complain
-                implementation(`ktor-client-core`)
 
                 implementation(project(":mirai-core-utils"))
                 implementation(project(":mirai-console-compiler-annotations"))
@@ -58,7 +57,6 @@ kotlin {
 
         findByName("jvmBaseMain")?.apply {
             dependencies {
-                api(`kotlinx-coroutines-jdk8`) // use -jvm modules for this magic target 'jvmBase'
                 implementation(`jetbrains-annotations`)
                 implementation(`log4j-api`)
                 compileOnly(`slf4j-api`)
@@ -69,7 +67,6 @@ kotlin {
             dependsOn(commonMain)
             dependencies {
                 compileOnly(`android-runtime`)
-//                    api(`ktor-client-android`)
             }
         }
 

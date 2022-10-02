@@ -15,6 +15,7 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public abstract fun getConfiguration ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public abstract fun getEventChannel ()Lnet/mamoe/mirai/event/EventChannel;
 	public fun getFriend (J)Lnet/mamoe/mirai/contact/Friend;
+	public abstract fun getFriendGroups ()Lnet/mamoe/mirai/contact/friendgroup/FriendGroups;
 	public fun getFriendOrFail (J)Lnet/mamoe/mirai/contact/Friend;
 	public abstract fun getFriends ()Lnet/mamoe/mirai/contact/ContactList;
 	public fun getGroup (J)Lnet/mamoe/mirai/contact/Group;
@@ -129,8 +130,6 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {
 	public fun getGroupVoiceDownloadUrl (Lnet/mamoe/mirai/Bot;[BJJ)Ljava/lang/String;
 	public abstract fun getGroupVoiceDownloadUrl (Lnet/mamoe/mirai/Bot;[BJJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun getRawGroupActiveData$default (Lnet/mamoe/mirai/LowLevelApiAccessor;Lnet/mamoe/mirai/Bot;JIILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupActiveData;
-	public static synthetic fun getRawGroupActiveData$default (Lnet/mamoe/mirai/LowLevelApiAccessor;Lnet/mamoe/mirai/Bot;JILkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun getRawGroupList (Lnet/mamoe/mirai/Bot;)Lkotlin/sequences/Sequence;
 	public abstract fun getRawGroupList (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getRawGroupMemberList (Lnet/mamoe/mirai/Bot;JJJ)Lkotlin/sequences/Sequence;
@@ -354,6 +353,7 @@ public abstract interface class net/mamoe/mirai/contact/FileSupported : net/mamo
 public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/User, net/mamoe/mirai/contact/roaming/RoamingSupported {
 	public fun delete ()V
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getFriendGroup ()Lnet/mamoe/mirai/contact/friendgroup/FriendGroup;
 	public abstract fun getRemark ()Ljava/lang/String;
 	public fun nudge ()Lnet/mamoe/mirai/message/action/FriendNudge;
 	public synthetic fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
@@ -372,6 +372,7 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public abstract fun contains (J)Z
 	public fun contains (Lnet/mamoe/mirai/contact/NormalMember;)Z
 	public abstract fun get (J)Lnet/mamoe/mirai/contact/NormalMember;
+	public abstract fun getActive ()Lnet/mamoe/mirai/contact/active/GroupActive;
 	public abstract fun getAnnouncements ()Lnet/mamoe/mirai/contact/announcement/Announcements;
 	public fun getAvatarUrl ()Ljava/lang/String;
 	public synthetic fun getAvatarUrl (Lnet/mamoe/mirai/contact/AvatarSpec;)Ljava/lang/String;
@@ -424,10 +425,13 @@ public abstract interface class net/mamoe/mirai/contact/GroupSettings {
 }
 
 public abstract interface class net/mamoe/mirai/contact/Member : net/mamoe/mirai/contact/User {
+	public abstract fun getActive ()Lnet/mamoe/mirai/contact/active/MemberActive;
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 	public abstract fun getNameCard ()Ljava/lang/String;
 	public abstract fun getPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
+	public fun getRankTitle ()Ljava/lang/String;
 	public abstract fun getSpecialTitle ()Ljava/lang/String;
+	public fun getTemperatureTitle ()Ljava/lang/String;
 	public fun mute (I)V
 	public abstract fun mute (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/MemberNudge;
@@ -616,6 +620,97 @@ public abstract interface class net/mamoe/mirai/contact/UserOrBot : net/mamoe/mi
 	public abstract fun nudge ()Lnet/mamoe/mirai/message/action/Nudge;
 }
 
+public final class net/mamoe/mirai/contact/active/ActiveChart {
+	public final fun getActives ()Ljava/util/Map;
+	public final fun getExit ()Ljava/util/Map;
+	public final fun getJoin ()Ljava/util/Map;
+	public final fun getMembers ()Ljava/util/Map;
+	public final fun getSentences ()Ljava/util/Map;
+}
+
+public final class net/mamoe/mirai/contact/active/ActiveHonorInfo {
+	public final fun getAvatar ()Ljava/lang/String;
+	public final fun getHistoryDays ()I
+	public final fun getMaxTermDays ()I
+	public final fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
+	public final fun getMemberId ()J
+	public final fun getMemberName ()Ljava/lang/String;
+	public final fun getTermDays ()I
+}
+
+public final class net/mamoe/mirai/contact/active/ActiveHonorList {
+	public final fun getCurrent ()Lnet/mamoe/mirai/contact/active/ActiveHonorInfo;
+	public final fun getRecords ()Ljava/util/List;
+	public final fun getType ()I
+}
+
+public final class net/mamoe/mirai/contact/active/ActiveRankRecord {
+	public final fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
+	public final fun getMemberId ()J
+	public final fun getMemberName ()Ljava/lang/String;
+	public final fun getScore ()I
+	public final fun getTemperature ()I
+}
+
+public final class net/mamoe/mirai/contact/active/ActiveRecord {
+	public final fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
+	public final fun getMemberId ()J
+	public final fun getMemberName ()Ljava/lang/String;
+	public final fun getMessagesCount ()I
+	public final fun getPeriodDays ()I
+}
+
+public abstract interface class net/mamoe/mirai/contact/active/GroupActive : net/mamoe/mirai/utils/Streamable {
+	public abstract fun getRankTitles ()Ljava/util/Map;
+	public abstract fun getTemperatureTitles ()Ljava/util/Map;
+	public abstract fun isHonorVisible ()Z
+	public abstract fun isTemperatureVisible ()Z
+	public abstract fun isTitleVisible ()Z
+	public fun queryActiveRank ()Ljava/util/List;
+	public abstract fun queryActiveRank (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun queryChart ()Lnet/mamoe/mirai/contact/active/ActiveChart;
+	public abstract fun queryChart (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun queryHonorHistory (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun refresh ()V
+	public abstract fun refresh (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setHonorVisible (Z)V
+	public abstract fun setHonorVisible (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setRankTitles (Ljava/util/Map;)V
+	public abstract fun setRankTitles (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setTemperatureTitles (Ljava/util/Map;)V
+	public abstract fun setTemperatureTitles (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setTemperatureVisible (Z)V
+	public abstract fun setTemperatureVisible (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setTitleVisible (Z)V
+	public abstract fun setTitleVisible (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class net/mamoe/mirai/contact/active/MemberActive {
+	public abstract fun getHonors ()Ljava/util/Set;
+	public abstract fun getPoint ()I
+	public abstract fun getRank ()I
+	public abstract fun getTemperature ()I
+	public fun queryMedal ()Lnet/mamoe/mirai/contact/active/MemberMedalInfo;
+	public abstract fun queryMedal (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/contact/active/MemberMedalInfo {
+	public final fun getColor ()Ljava/lang/String;
+	public final fun getMedals ()Ljava/util/Set;
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getWearing ()Lnet/mamoe/mirai/contact/active/MemberMedalType;
+}
+
+public final class net/mamoe/mirai/contact/active/MemberMedalType : java/lang/Enum {
+	public static final field ACTIVE Lnet/mamoe/mirai/contact/active/MemberMedalType;
+	public static final field ADMIN Lnet/mamoe/mirai/contact/active/MemberMedalType;
+	public static final field OWNER Lnet/mamoe/mirai/contact/active/MemberMedalType;
+	public static final field SPECIAL Lnet/mamoe/mirai/contact/active/MemberMedalType;
+	public final fun getMask ()I
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/contact/active/MemberMedalType;
+	public static fun values ()[Lnet/mamoe/mirai/contact/active/MemberMedalType;
+}
+
 public abstract interface class net/mamoe/mirai/contact/announcement/Announcement {
 	public static final field Companion Lnet/mamoe/mirai/contact/announcement/Announcement$Companion;
 	public abstract fun getContent ()Ljava/lang/String;
@@ -740,19 +835,15 @@ public final class net/mamoe/mirai/contact/announcement/AnnouncementParametersBu
 	public static final fun buildAnnouncementParameters (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
 }
 
-public abstract interface class net/mamoe/mirai/contact/announcement/Announcements {
-	public fun asFlow ()Lkotlinx/coroutines/flow/Flow;
-	public abstract fun asFlow (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun asStream ()Ljava/util/stream/Stream;
+public abstract interface class net/mamoe/mirai/contact/announcement/Announcements : net/mamoe/mirai/utils/Streamable {
+	public synthetic fun asFlow (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun asFlow (Lnet/mamoe/mirai/contact/announcement/Announcements;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun delete (Ljava/lang/String;)Z
 	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun get (Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public abstract fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public abstract fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun toList ()Ljava/util/List;
-	public fun toList (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun toList$suspendImpl (Lnet/mamoe/mirai/contact/announcement/Announcements;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
 	public abstract fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -908,6 +999,27 @@ public abstract interface class net/mamoe/mirai/contact/file/RemoteFiles {
 	public static synthetic fun uploadNewFile$suspendImpl (Lnet/mamoe/mirai/contact/file/RemoteFiles;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public abstract interface class net/mamoe/mirai/contact/friendgroup/FriendGroup {
+	public fun delete ()Z
+	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getCount ()I
+	public abstract fun getFriends ()Ljava/util/Collection;
+	public abstract fun getId ()I
+	public abstract fun getName ()Ljava/lang/String;
+	public fun moveIn (Lnet/mamoe/mirai/contact/Friend;)Z
+	public abstract fun moveIn (Lnet/mamoe/mirai/contact/Friend;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun renameTo (Ljava/lang/String;)Z
+	public abstract fun renameTo (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class net/mamoe/mirai/contact/friendgroup/FriendGroups {
+	public abstract fun asCollection ()Ljava/util/Collection;
+	public fun create (Ljava/lang/String;)Lnet/mamoe/mirai/contact/friendgroup/FriendGroup;
+	public abstract fun create (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun get (I)Lnet/mamoe/mirai/contact/friendgroup/FriendGroup;
+	public fun getDefault ()Lnet/mamoe/mirai/contact/friendgroup/FriendGroup;
+}
+
 public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessage {
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
 	public abstract fun getContact ()Lnet/mamoe/mirai/contact/Contact;
@@ -962,6 +1074,7 @@ public abstract interface class net/mamoe/mirai/contact/roaming/RoamingSupported
 }
 
 public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mirai/data/UserInfo {
+	public abstract fun getFriendGroupId ()I
 	public abstract fun getNick ()Ljava/lang/String;
 	public abstract fun getRemark ()Ljava/lang/String;
 	public abstract fun getUin ()J
@@ -970,541 +1083,76 @@ public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mira
 
 public class net/mamoe/mirai/data/FriendInfoImpl : net/mamoe/mirai/data/FriendInfo {
 	public fun <init> (JLjava/lang/String;Ljava/lang/String;)V
+	public fun getFriendGroupId ()I
 	public fun getNick ()Ljava/lang/String;
 	public fun getRemark ()Ljava/lang/String;
 	public fun getUin ()J
+	public fun setFriendGroupId (I)V
 	public fun setNick (Ljava/lang/String;)V
 	public fun setRemark (Ljava/lang/String;)V
 }
 
-public final class net/mamoe/mirai/data/GroupActiveData$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupActiveData$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupActiveData;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupActiveData;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo {
-	public static final field Companion Lnet/mamoe/mirai/data/GroupActiveData$GInfo$Companion;
-	public fun <init> ()V
-	public synthetic fun <init> (ILjava/util/List;Ljava/lang/Integer;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/util/List;Ljava/lang/Integer;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;)V
-	public synthetic fun <init> (Ljava/util/List;Ljava/lang/Integer;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/util/List;
-	public final fun component10 ()Ljava/lang/String;
-	public final fun component11 ()Ljava/lang/Integer;
-	public final fun component2 ()Ljava/lang/Integer;
-	public final fun component3 ()Ljava/util/List;
-	public final fun component4 ()Ljava/util/List;
-	public final fun component5 ()Ljava/util/List;
-	public final fun component6 ()Ljava/util/List;
-	public final fun component7 ()Ljava/util/List;
-	public final fun component8 ()Ljava/lang/Integer;
-	public final fun component9 ()Ljava/lang/String;
-	public final fun copy (Ljava/util/List;Ljava/lang/Integer;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupActiveData$GInfo;Ljava/util/List;Ljava/lang/Integer;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo;
+public final class net/mamoe/mirai/data/GroupHonorType {
+	public static final field BRONZE_ID I
+	public static final field Companion Lnet/mamoe/mirai/data/GroupHonorType$Companion;
+	public static final field EMOTION_ID I
+	public static final field GOLDEN_ID I
+	public static final field LEGEND_ID I
+	public static final field PERFORMER_ID I
+	public static final field RED_PACKET_ID I
+	public static final field RICHER_ID I
+	public static final field SILVER_ID I
+	public static final field STRONG_NEWBIE_ID I
+	public static final field TALKATIVE_ID I
+	public static final field WHIRLWIND_ID I
+	public static final synthetic fun box-impl (I)Lnet/mamoe/mirai/data/GroupHonorType;
+	public static fun constructor-impl (I)I
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getActNum ()Ljava/util/List;
-	public final fun getCreateTime ()Ljava/lang/Integer;
-	public final fun getExitNum ()Ljava/util/List;
-	public final fun getGc ()Ljava/lang/Integer;
-	public final fun getGn ()Ljava/lang/String;
-	public final fun getGowner ()Ljava/lang/String;
-	public final fun getJoinNum ()Ljava/util/List;
-	public final fun getMemNum ()Ljava/util/List;
-	public final fun getMostAct ()Ljava/util/List;
-	public final fun getSentences ()Ljava/util/List;
+	public static fun equals-impl (ILjava/lang/Object;)Z
+	public static final fun equals-impl0 (II)Z
+	public static final fun getBRONZE-AVr_HNQ ()I
+	public static final fun getEMOTION-AVr_HNQ ()I
+	public static final fun getGOLDEN-AVr_HNQ ()I
+	public final fun getId ()I
+	public static final fun getLEGEND-AVr_HNQ ()I
+	public static final fun getPERFORMER-AVr_HNQ ()I
+	public static final fun getRED_PACKET-AVr_HNQ ()I
+	public static final fun getRICHER-AVr_HNQ ()I
+	public static final fun getSILVER-AVr_HNQ ()I
+	public static final fun getSTRONG_NEWBIE-AVr_HNQ ()I
+	public static final fun getTALKATIVE-AVr_HNQ ()I
+	public static final fun getWHIRLWIND-AVr_HNQ ()I
 	public fun hashCode ()I
-	public final fun isEnd ()Ljava/lang/Integer;
+	public static fun hashCode-impl (I)I
 	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+	public static fun toString-impl (I)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()I
 }
 
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupActiveData$GInfo$$serializer;
+public final class net/mamoe/mirai/data/GroupHonorType$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupHonorType$$serializer;
 	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo;
+	public fun deserialize-NYH6FXw (Lkotlinx/serialization/encoding/Decoder;)I
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupActiveData$GInfo;)V
+	public fun serialize-aLnpm_Q (Lkotlinx/serialization/encoding/Encoder;I)V
 	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GActNum {
-	public static final field Companion Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GActNum$Companion;
-	public fun <init> ()V
-	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/Integer;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/Integer;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Integer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/Integer;
-	public final fun copy (Ljava/lang/String;Ljava/lang/Integer;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GActNum;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GActNum;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GActNum;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getDate ()Ljava/lang/String;
-	public final fun getNum ()Ljava/lang/Integer;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GActNum;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GActNum$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GActNum$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GActNum;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GActNum;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GActNum$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum {
-	public static final field Companion Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum$Companion;
-	public fun <init> ()V
-	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/Integer;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/Integer;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Integer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/Integer;
-	public final fun copy (Ljava/lang/String;Ljava/lang/Integer;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getDate ()Ljava/lang/String;
-	public final fun getNum ()Ljava/lang/Integer;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GExitNum$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum {
-	public static final field Companion Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum$Companion;
-	public fun <init> ()V
-	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/Integer;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/Integer;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Integer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/Integer;
-	public final fun copy (Ljava/lang/String;Ljava/lang/Integer;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getDate ()Ljava/lang/String;
-	public final fun getNum ()Ljava/lang/Integer;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GJoinNum$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum {
-	public static final field Companion Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum$Companion;
-	public fun <init> ()V
-	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/Integer;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/Integer;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Integer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/Integer;
-	public final fun copy (Ljava/lang/String;Ljava/lang/Integer;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getDate ()Ljava/lang/String;
-	public final fun getNum ()Ljava/lang/Integer;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GMemNum$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct {
-	public static final field Companion Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct$Companion;
-	public fun <init> ()V
-	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Long;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Long;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/Integer;
-	public final fun component3 ()Ljava/lang/Integer;
-	public final fun component4 ()Ljava/lang/Long;
-	public final fun copy (Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Long;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Long;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getName ()Ljava/lang/String;
-	public final fun getSentencesNum ()Ljava/lang/Integer;
-	public final fun getSta ()Ljava/lang/Integer;
-	public final fun getUin ()Ljava/lang/Long;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GMostAct$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GSentence {
-	public static final field Companion Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GSentence$Companion;
-	public fun <init> ()V
-	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/Integer;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/Integer;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Integer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/Integer;
-	public final fun copy (Ljava/lang/String;Ljava/lang/Integer;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GSentence;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GSentence;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GSentence;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getDate ()Ljava/lang/String;
-	public final fun getNum ()Ljava/lang/Integer;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GSentence;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GSentence$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GSentence$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GSentence;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupActiveData$GInfo$GSentence;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupActiveData$GInfo$GSentence$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupHonorListData$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupHonorListData;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupHonorListData;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$Actor {
-	public static final field Companion Lnet/mamoe/mirai/data/GroupHonorListData$Actor$Companion;
-	public synthetic fun <init> (ILjava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;)V
-	public synthetic fun <init> (Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/Long;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun component6 ()Ljava/lang/String;
-	public final fun component7 ()Ljava/lang/Integer;
-	public final fun copy (Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;)Lnet/mamoe/mirai/data/GroupHonorListData$Actor;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupHonorListData$Actor;Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupHonorListData$Actor;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAvatar ()Ljava/lang/String;
-	public final fun getBtnText ()Ljava/lang/String;
-	public final fun getDesc ()Ljava/lang/String;
-	public final fun getIcon ()Ljava/lang/Integer;
-	public final fun getName ()Ljava/lang/String;
-	public final fun getText ()Ljava/lang/String;
-	public final fun getUin ()Ljava/lang/Long;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupHonorListData$Actor;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$Actor$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupHonorListData$Actor$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupHonorListData$Actor;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupHonorListData$Actor;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$Actor$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$CurrentTalkative {
-	public static final field Companion Lnet/mamoe/mirai/data/GroupHonorListData$CurrentTalkative$Companion;
-	public fun <init> ()V
-	public synthetic fun <init> (ILjava/lang/Long;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/Long;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/Long;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/Long;
-	public final fun component2 ()Ljava/lang/Integer;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/Integer;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/Long;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;)Lnet/mamoe/mirai/data/GroupHonorListData$CurrentTalkative;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupHonorListData$CurrentTalkative;Ljava/lang/Long;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupHonorListData$CurrentTalkative;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAvatar ()Ljava/lang/String;
-	public final fun getAvatarSize ()Ljava/lang/Integer;
-	public final fun getDayCount ()Ljava/lang/Integer;
-	public final fun getNick ()Ljava/lang/String;
-	public final fun getUin ()Ljava/lang/Long;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupHonorListData$CurrentTalkative;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$CurrentTalkative$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupHonorListData$CurrentTalkative$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupHonorListData$CurrentTalkative;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupHonorListData$CurrentTalkative;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$CurrentTalkative$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$GroupHonorTypeSerializer : kotlinx/serialization/KSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupHonorListData$GroupHonorTypeSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupHonorType;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupHonorType;)V
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$Language {
-	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Double;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Double;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/Double;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Double;)Lnet/mamoe/mirai/data/GroupHonorListData$Language;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupHonorListData$Language;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Double;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupHonorListData$Language;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getCode ()Ljava/lang/String;
-	public final fun getQuality ()Ljava/lang/Double;
-	public final fun getRegion ()Ljava/lang/String;
-	public final fun getScript ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$LevelName {
-	public static final field Companion Lnet/mamoe/mirai/data/GroupHonorListData$LevelName$Companion;
-	public fun <init> ()V
-	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun component6 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/data/GroupHonorListData$LevelName;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupHonorListData$LevelName;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupHonorListData$LevelName;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getLv1 ()Ljava/lang/String;
-	public final fun getLv2 ()Ljava/lang/String;
-	public final fun getLv3 ()Ljava/lang/String;
-	public final fun getLv4 ()Ljava/lang/String;
-	public final fun getLv5 ()Ljava/lang/String;
-	public final fun getLv6 ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupHonorListData$LevelName;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$LevelName$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupHonorListData$LevelName$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupHonorListData$LevelName;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupHonorListData$LevelName;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$LevelName$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$Tag {
-	public static final field Companion Lnet/mamoe/mirai/data/GroupHonorListData$Tag$Companion;
-	public fun <init> ()V
-	public synthetic fun <init> (ILjava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/Long;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun component6 ()Ljava/lang/String;
-	public final fun component7 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/data/GroupHonorListData$Tag;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupHonorListData$Tag;Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupHonorListData$Tag;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAvatar ()Ljava/lang/String;
-	public final fun getBtnText ()Ljava/lang/String;
-	public final fun getName ()Ljava/lang/String;
-	public final fun getTag ()Ljava/lang/String;
-	public final fun getTagColor ()Ljava/lang/String;
-	public final fun getText ()Ljava/lang/String;
-	public final fun getUin ()Ljava/lang/Long;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupHonorListData$Tag;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$Tag$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupHonorListData$Tag$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupHonorListData$Tag;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupHonorListData$Tag;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$Tag$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$Talkative {
-	public static final field Companion Lnet/mamoe/mirai/data/GroupHonorListData$Talkative$Companion;
-	public fun <init> ()V
-	public synthetic fun <init> (ILjava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public fun <init> (Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/Long;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun component6 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/data/GroupHonorListData$Talkative;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/data/GroupHonorListData$Talkative;Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/data/GroupHonorListData$Talkative;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAvatar ()Ljava/lang/String;
-	public final fun getBtnText ()Ljava/lang/String;
-	public final fun getDesc ()Ljava/lang/String;
-	public final fun getName ()Ljava/lang/String;
-	public final fun getText ()Ljava/lang/String;
-	public final fun getUin ()Ljava/lang/Long;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-	public static final fun write$Self (Lnet/mamoe/mirai/data/GroupHonorListData$Talkative;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$Talkative$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupHonorListData$Talkative$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/GroupHonorListData$Talkative;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/data/GroupHonorListData$Talkative;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
-public final class net/mamoe/mirai/data/GroupHonorListData$Talkative$Companion {
+public final class net/mamoe/mirai/data/GroupHonorType$Companion {
+	public final fun getBRONZE-AVr_HNQ ()I
+	public final fun getEMOTION-AVr_HNQ ()I
+	public final fun getGOLDEN-AVr_HNQ ()I
+	public final fun getLEGEND-AVr_HNQ ()I
+	public final fun getPERFORMER-AVr_HNQ ()I
+	public final fun getRED_PACKET-AVr_HNQ ()I
+	public final fun getRICHER-AVr_HNQ ()I
+	public final fun getSILVER-AVr_HNQ ()I
+	public final fun getSTRONG_NEWBIE-AVr_HNQ ()I
+	public final fun getTALKATIVE-AVr_HNQ ()I
+	public final fun getWHIRLWIND-AVr_HNQ ()I
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -1519,17 +1167,26 @@ public abstract interface class net/mamoe/mirai/data/GroupInfo {
 	public abstract fun getMuteAll ()Z
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun getOwner ()J
+	public abstract fun getRankTitles ()Ljava/util/Map;
+	public abstract fun getTemperatureTitles ()Ljava/util/Map;
 	public abstract fun getUin ()J
+	public abstract fun isHonorVisible ()Z
+	public abstract fun isTemperatureVisible ()Z
+	public abstract fun isTitleVisible ()Z
 }
 
 public abstract interface class net/mamoe/mirai/data/MemberInfo : net/mamoe/mirai/data/UserInfo {
 	public fun getAnonymousId ()Ljava/lang/String;
+	public abstract fun getHonors ()Ljava/util/Set;
 	public abstract fun getJoinTimestamp ()I
 	public abstract fun getLastSpeakTimestamp ()I
 	public abstract fun getMuteTimestamp ()I
 	public abstract fun getNameCard ()Ljava/lang/String;
 	public abstract fun getPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
+	public abstract fun getPoint ()I
+	public abstract fun getRank ()I
 	public abstract fun getSpecialTitle ()Ljava/lang/String;
+	public abstract fun getTemperature ()I
 	public abstract fun isOfficialBot ()Z
 }
 
@@ -1688,6 +1345,7 @@ public abstract interface class net/mamoe/mirai/data/UserInfo {
 public abstract interface class net/mamoe/mirai/data/UserProfile {
 	public abstract fun getAge ()I
 	public abstract fun getEmail ()Ljava/lang/String;
+	public abstract fun getFriendGroupId ()I
 	public abstract fun getNickname ()Ljava/lang/String;
 	public abstract fun getQLevel ()I
 	public abstract fun getSex ()Lnet/mamoe/mirai/data/UserProfile$Sex;
@@ -1790,8 +1448,6 @@ public abstract interface annotation class net/mamoe/mirai/event/EventHandler : 
 public final class net/mamoe/mirai/event/EventKt {
 	public static final fun broadcast (Lnet/mamoe/mirai/event/Event;)Lnet/mamoe/mirai/event/Event;
 	public static final fun broadcast (Lnet/mamoe/mirai/event/Event;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static final fun getEventDisabled ()Z
-	public static final fun setEventDisabled (Z)V
 }
 
 public final class net/mamoe/mirai/event/EventPriority : java/lang/Enum {
@@ -2782,13 +2438,13 @@ public final class net/mamoe/mirai/event/events/MemberCardChangeEvent : net/mamo
 }
 
 public final class net/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve : net/mamoe/mirai/event/events/MemberHonorChangeEvent {
-	public fun <init> (Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/data/GroupHonorType;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/contact/NormalMember;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lnet/mamoe/mirai/contact/NormalMember;
-	public final fun component2 ()Lnet/mamoe/mirai/data/GroupHonorType;
-	public final fun copy (Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/data/GroupHonorType;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/data/GroupHonorType;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;
+	public final fun component2-AVr_HNQ ()I
+	public final fun copy-aLnpm_Q (Lnet/mamoe/mirai/contact/NormalMember;I)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;
+	public static synthetic fun copy-aLnpm_Q$default (Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;Lnet/mamoe/mirai/contact/NormalMember;IILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve;
 	public fun equals (Ljava/lang/Object;)Z
-	public fun getHonorType ()Lnet/mamoe/mirai/data/GroupHonorType;
+	public fun getHonorType ()I
 	public synthetic fun getMember ()Lnet/mamoe/mirai/contact/Member;
 	public fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun hashCode ()I
@@ -2796,13 +2452,13 @@ public final class net/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve :
 }
 
 public final class net/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose : net/mamoe/mirai/event/events/MemberHonorChangeEvent {
-	public fun <init> (Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/data/GroupHonorType;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/contact/NormalMember;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lnet/mamoe/mirai/contact/NormalMember;
-	public final fun component2 ()Lnet/mamoe/mirai/data/GroupHonorType;
-	public final fun copy (Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/data/GroupHonorType;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;Lnet/mamoe/mirai/contact/NormalMember;Lnet/mamoe/mirai/data/GroupHonorType;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;
+	public final fun component2-AVr_HNQ ()I
+	public final fun copy-aLnpm_Q (Lnet/mamoe/mirai/contact/NormalMember;I)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;
+	public static synthetic fun copy-aLnpm_Q$default (Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;Lnet/mamoe/mirai/contact/NormalMember;IILjava/lang/Object;)Lnet/mamoe/mirai/event/events/MemberHonorChangeEvent$Lose;
 	public fun equals (Ljava/lang/Object;)Z
-	public fun getHonorType ()Lnet/mamoe/mirai/data/GroupHonorType;
+	public fun getHonorType ()I
 	public synthetic fun getMember ()Lnet/mamoe/mirai/contact/Member;
 	public fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun hashCode ()I
@@ -5666,11 +5322,14 @@ public final class net/mamoe/mirai/network/NoStandardInputForCaptchaException : 
 }
 
 public final class net/mamoe/mirai/network/RetryLaterException : net/mamoe/mirai/network/LoginFailedException {
-	public synthetic fun <init> (Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun getCause ()Ljava/lang/Throwable;
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public final class net/mamoe/mirai/network/UnsupportedSliderCaptchaException : net/mamoe/mirai/network/LoginFailedException {
+	public fun <init> (Ljava/lang/String;)V
+}
+
+public final class net/mamoe/mirai/network/UnsupportedSmsLoginException : net/mamoe/mirai/network/LoginFailedException {
 	public fun <init> (Ljava/lang/String;)V
 }
 
@@ -5909,6 +5568,27 @@ public final class net/mamoe/mirai/utils/DeviceInfoKt {
 	public static final fun generateDeviceInfoData (Lnet/mamoe/mirai/utils/DeviceInfo;)[B
 }
 
+public abstract interface class net/mamoe/mirai/utils/DeviceVerificationRequests {
+	public abstract fun getFallback ()Lnet/mamoe/mirai/utils/DeviceVerificationRequests$FallbackRequest;
+	public abstract fun getPreferSms ()Z
+	public abstract fun getSms ()Lnet/mamoe/mirai/utils/DeviceVerificationRequests$SmsRequest;
+}
+
+public abstract interface class net/mamoe/mirai/utils/DeviceVerificationRequests$FallbackRequest {
+	public abstract fun getUrl ()Ljava/lang/String;
+	public abstract fun solved ()Lnet/mamoe/mirai/utils/DeviceVerificationResult;
+}
+
+public abstract interface class net/mamoe/mirai/utils/DeviceVerificationRequests$SmsRequest {
+	public abstract fun getCountryCode ()Ljava/lang/String;
+	public abstract fun getPhoneNumber ()Ljava/lang/String;
+	public abstract fun requestSms (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun solved (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceVerificationResult;
+}
+
+public abstract interface class net/mamoe/mirai/utils/DeviceVerificationResult {
+}
+
 public final class net/mamoe/mirai/utils/DirectoryLogger : net/mamoe/mirai/utils/SimpleLogger {
 	public fun <init> (Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;Ljava/io/File;)V
@@ -6097,6 +5777,7 @@ public abstract class net/mamoe/mirai/utils/LoginSolver {
 	public static final field Default Lnet/mamoe/mirai/utils/LoginSolver;
 	public fun <init> ()V
 	public fun isSliderCaptchaSupported ()Z
+	public fun onSolveDeviceVerification (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/utils/DeviceVerificationRequests;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun onSolvePicCaptcha (Lnet/mamoe/mirai/Bot;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun onSolveSliderCaptcha (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun onSolveUnsafeDeviceLoginVerify (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -6137,7 +5818,7 @@ public abstract interface class net/mamoe/mirai/utils/MiraiLogger {
 	public fun isVerboseEnabled ()Z
 	public fun isWarningEnabled ()Z
 	public synthetic fun plus (Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/MiraiLogger;
-	public static fun setDefaultLoggerCreator (Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun setDefaultLoggerCreator (Lkotlin/jvm/functions/Function1;)V
 	public synthetic fun setFollower (Lnet/mamoe/mirai/utils/MiraiLogger;)V
 	public abstract fun verbose (Ljava/lang/String;)V
 	public abstract fun verbose (Ljava/lang/String;Ljava/lang/Throwable;)V
@@ -6150,7 +5831,7 @@ public abstract interface class net/mamoe/mirai/utils/MiraiLogger {
 public final class net/mamoe/mirai/utils/MiraiLogger$Companion {
 	public final synthetic fun create (Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
 	public final synthetic fun getTopLevel ()Lnet/mamoe/mirai/utils/MiraiLogger;
-	public final fun setDefaultLoggerCreator (Lkotlin/jvm/functions/Function1;)V
+	public final synthetic fun setDefaultLoggerCreator (Lkotlin/jvm/functions/Function1;)V
 }
 
 public abstract interface class net/mamoe/mirai/utils/MiraiLogger$Factory {
@@ -6285,14 +5966,14 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 	public static synthetic fun resolveById$suspendImpl (Lnet/mamoe/mirai/utils/RemoteFile;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun resolveSibling (Ljava/lang/String;)Lnet/mamoe/mirai/utils/RemoteFile;
 	public abstract fun resolveSibling (Lnet/mamoe/mirai/utils/RemoteFile;)Lnet/mamoe/mirai/utils/RemoteFile;
-	public static fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;)Lnet/mamoe/mirai/message/MessageReceipt;
-	public static fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/MessageReceipt;
-	public static fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/MessageReceipt;
-	public static fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/MessageReceipt;
-	public static fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;)Lnet/mamoe/mirai/message/MessageReceipt;
+	public static synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/MessageReceipt;
+	public static synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/MessageReceipt;
+	public static synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/MessageReceipt;
+	public static synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun toMessage ()Lnet/mamoe/mirai/message/data/FileMessage;
 	public abstract fun toMessage (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun toString ()Ljava/lang/String;
@@ -6323,14 +6004,14 @@ public abstract interface class net/mamoe/mirai/utils/RemoteFile {
 
 public final class net/mamoe/mirai/utils/RemoteFile$Companion {
 	public static final field ROOT_PATH Ljava/lang/String;
-	public final fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;)Lnet/mamoe/mirai/message/MessageReceipt;
-	public final fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/MessageReceipt;
-	public final fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/MessageReceipt;
-	public final fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/MessageReceipt;
-	public final fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;)Lnet/mamoe/mirai/message/MessageReceipt;
+	public final synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/MessageReceipt;
+	public final synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/message/MessageReceipt;
+	public final synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;)Lnet/mamoe/mirai/message/MessageReceipt;
+	public final synthetic fun sendFile (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun sendFile$default (Lnet/mamoe/mirai/utils/RemoteFile$Companion;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;ILjava/lang/Object;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public static synthetic fun sendFile$default (Lnet/mamoe/mirai/utils/RemoteFile$Companion;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Ljava/io/File;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun sendFile$default (Lnet/mamoe/mirai/utils/RemoteFile$Companion;Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/RemoteFile$ProgressionCallback;ILjava/lang/Object;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -6474,6 +6155,14 @@ public final class net/mamoe/mirai/utils/SingleFileLogger : net/mamoe/mirai/util
 	public fun warning (Ljava/lang/String;)V
 	public fun warning (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun warning (Ljava/lang/Throwable;)V
+}
+
+public abstract interface class net/mamoe/mirai/utils/Streamable {
+	public abstract fun asFlow ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun asStream ()Ljava/util/stream/Stream;
+	public fun toList ()Ljava/util/List;
+	public fun toList (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun toList$suspendImpl (Lnet/mamoe/mirai/utils/Streamable;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/utils/Utils {

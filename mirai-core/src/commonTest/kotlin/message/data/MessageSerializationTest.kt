@@ -17,10 +17,10 @@ import kotlinx.serialization.serializer
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.test.AbstractTest
-import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.structureToString
 import net.mamoe.mirai.utils.mapToByteArray
 import kotlin.test.*
 

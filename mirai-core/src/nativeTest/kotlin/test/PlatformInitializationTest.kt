@@ -44,7 +44,7 @@ internal actual abstract class AbstractTest actual constructor() : CommonAbstrac
             setSystemProp("mirai.network.state.observer.logging", "true")
             setSystemProp("mirai.network.show.all.components", "true")
             setSystemProp("mirai.network.show.components.creation.stacktrace", "true")
-            setSystemProp("mirai.network.handle.selector.logging", "true")
+            setSystemProp("mirai.network.handler.selector.logging", "true")
 
             Exception() // create a exception to load relevant classes to estimate invocation time of test cases more accurately.
             IMirai::class.simpleName // similarly, load classes.

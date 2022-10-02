@@ -15,6 +15,7 @@ package net.mamoe.mirai.contact
 import kotlinx.coroutines.CoroutineScope
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.friendgroup.FriendGroup
 import net.mamoe.mirai.contact.roaming.RoamingSupported
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
@@ -37,6 +38,14 @@ import net.mamoe.mirai.utils.NotStableForInheritance
 @Suppress("RedundantSetter")
 @NotStableForInheritance
 public interface Friend : User, CoroutineScope, AudioSupported, RoamingSupported {
+
+    /**
+     * 该好友所在的好友分组
+     *
+     * @since 2.13
+     */
+    public val friendGroup: FriendGroup
+
 
     /**
      * 备注信息

@@ -30,13 +30,18 @@ internal class StacktraceException(override val message: String?, private val st
     override fun getStackTrace(): Array<StackTraceElement> = stacktrace
 }
 
-public actual inline fun <reified E> Throwable.unwrap(): Throwable {
+public actual inline fun <reified E> Throwable.unwrap(addSuppressed: Boolean): Throwable {
     if (this !is E) return this
-    val e = StacktraceException("Unwrapped exception: $this", this.stackTrace)
-    for (throwable in this.suppressed) {
-        e.addSuppressed(throwable)
+    return if (addSuppressed) {
+        val e = StacktraceException("Unwrapped exception: $this", this.stackTrace)
+        for (throwable in this.suppressed) {
+            e.addSuppressed(throwable)
+        }
+        this.findCause { it !is E }
+            ?.also { it.addSuppressed(e) }
+            ?: this
+    } else {
+        this.findCause { it !is E }
+            ?: this
     }
-    return this.findCause { it !is E }
-        ?.also { it.addSuppressed(e) }
-        ?: this
 }

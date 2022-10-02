@@ -35,7 +35,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList.GetFriendGroupList
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.utils.*
 
 /**
@@ -264,6 +263,7 @@ internal class FriendNoticeProcessor(
                 uin = body.msgAddFrdNotify.fuin,
                 nick = body.msgAddFrdNotify.fuinNick,
                 remark = "",
+                friendGroupId = 0,
             )
 
             val removed = bot.removeStranger(info.uin)

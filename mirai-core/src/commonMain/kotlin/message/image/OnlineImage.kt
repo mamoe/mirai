@@ -17,11 +17,11 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImgExtPbResvAttrCommon
 import net.mamoe.mirai.internal.network.protocol.data.proto.NotOnlineImageExtPb
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.internal.utils.structureToString
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.generateImageId
 import net.mamoe.mirai.utils.generateImageIdFromResourceId
+import net.mamoe.mirai.utils.structureToString
 
 internal sealed interface OnlineImage : Image, ConstOriginUrlAware {
     override val originUrl: String

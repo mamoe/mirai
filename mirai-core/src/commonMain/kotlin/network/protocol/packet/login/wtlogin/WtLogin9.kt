@@ -20,7 +20,9 @@ internal object WtLogin9 : WtLoginExt {
     operator fun invoke(
         client: QQAndroidClient,
         allowSlider: Boolean
-    ) = WtLogin.Login.buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
+    ) = WtLogin.Login.buildLoginOutgoingPacket(
+        client, bodyType = 2, remark = "9:password-login"
+    ) { sequenceId ->
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(9) // subCommand

@@ -35,6 +35,7 @@ val OS_NAME = System.getProperty("os.name").toLowerCase()
 
 lateinit var osDetector: OsDetector
 
+
 // aarch = arm
 val OsDetector.isAarch
     get() = osDetector.arch.run {
@@ -76,21 +77,26 @@ enum class HostArch {
 /// eg. "!a;!b" means to enable all targets but a or b
 /// eg. "a;b;!other" means to disable all targets but a or b
 val ENABLED_TARGETS by lazy {
-    System.getProperty(
-        "mirai.target",
-        if (IDEA_ACTIVE)
-            // "jvm;android;${HOST_KIND.targetName};!other"
-            "other" // we must enable all targets otherwise you won't be able to edit code for non-host targets
-        else
-            ""
-    ).split(';').toSet()
+
+    val targets = System.getProperty(
+        "mirai.target"
+    ) ?: rootProject.getLocalProperty("projects.mirai-core.targets")
+    ?: "others" // enable all by default
+
+    targets.split(';').toSet()
 }
 
 fun isTargetEnabled(name: String): Boolean {
+    val isNative = name in POSSIBLE_NATIVE_TARGETS
     return when {
-        name in ENABLED_TARGETS -> true
-        "!$name" in ENABLED_TARGETS -> false
-        else -> "!other" !in ENABLED_TARGETS
+        name in ENABLED_TARGETS -> true // explicitly enabled
+        "!$name" in ENABLED_TARGETS -> false // explicitly disabled
+
+        "native" in ENABLED_TARGETS && isNative -> true // native targets explicitly enabled
+        "!native" in ENABLED_TARGETS && isNative -> false // native targets explicitly disabled
+
+        "!other" in ENABLED_TARGETS -> false // others disabled
+        else -> true
     }
 }
 
@@ -129,6 +135,8 @@ val LINUX_TARGETS by lazy { setOf("linuxX64").filterTargets() }
 val UNIX_LIKE_TARGETS by lazy { LINUX_TARGETS + MAC_TARGETS }
 
 val NATIVE_TARGETS by lazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
+
+private val POSSIBLE_NATIVE_TARGETS by lazy { setOf("mingwX64", "macosX64", "macosArm64", "linuxX64") }
 
 fun Project.configureJvmTargetsHierarchical() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
@@ -206,6 +214,8 @@ fun Project.configureJvmTargetsHierarchical() {
 fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     project: Project
 ) {
+    if (NATIVE_TARGETS.isEmpty()) return
+
     val nativeMainSets = mutableListOf<KotlinSourceSet>()
     val nativeTestSets = mutableListOf<KotlinSourceSet>()
     val nativeTargets = mutableListOf<KotlinNativeTarget>()
@@ -243,39 +253,41 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
         }
     }
 
-    val unixMain by lazy {
-        this.sourceSets.maybeCreate("unixMain").apply {
-            dependsOn(nativeMain)
+    if (UNIX_LIKE_TARGETS.isNotEmpty()) {
+        val unixMain by lazy {
+            this.sourceSets.maybeCreate("unixMain").apply {
+                dependsOn(nativeMain)
+            }
         }
-    }
-    val unixTest by lazy {
-        this.sourceSets.maybeCreate("unixTest").apply {
-            dependsOn(nativeTest)
+        val unixTest by lazy {
+            this.sourceSets.maybeCreate("unixTest").apply {
+                dependsOn(nativeTest)
+            }
         }
-    }
 
-    val darwinMain by lazy {
-        this.sourceSets.maybeCreate("darwinMain").apply {
-            dependsOn(unixMain)
+        val darwinMain by lazy {
+            this.sourceSets.maybeCreate("darwinMain").apply {
+                dependsOn(unixMain)
+            }
         }
-    }
-    val darwinTest by lazy {
-        this.sourceSets.maybeCreate("darwinTest").apply {
-            dependsOn(unixTest)
+        val darwinTest by lazy {
+            this.sourceSets.maybeCreate("darwinTest").apply {
+                dependsOn(unixTest)
+            }
         }
-    }
 
-    presets.filter { it.name in MAC_TARGETS }.forEach { preset ->
-        addNativeTarget(preset).run {
-            compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(darwinMain) }
-            compilations[TEST_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(darwinTest) }
+        presets.filter { it.name in MAC_TARGETS }.forEach { preset ->
+            addNativeTarget(preset).run {
+                compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(darwinMain) }
+                compilations[TEST_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(darwinTest) }
+            }
         }
-    }
 
-    presets.filter { it.name in LINUX_TARGETS }.forEach { preset ->
-        addNativeTarget(preset).run {
-            compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(unixMain) }
-            compilations[TEST_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(unixTest) }
+        presets.filter { it.name in LINUX_TARGETS }.forEach { preset ->
+            addNativeTarget(preset).run {
+                compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(unixMain) }
+                compilations[TEST_COMPILATION_NAME].kotlinSourceSets.forEach { it.dependsOn(unixTest) }
+            }
         }
     }
 

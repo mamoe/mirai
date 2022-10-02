@@ -83,12 +83,15 @@ public fun Throwable.causes(maxDepth: Int = 20): Sequence<Throwable> = sequence 
 
 public inline fun Throwable.findCause(maxDepth: Int = 20, filter: (Throwable) -> Boolean): Throwable? {
     var depth = 0
-    var rootCause: Throwable? = this
+    var curr: Throwable? = this
     while (true) {
-        if (rootCause?.cause === rootCause) return rootCause
-        val current = rootCause?.cause ?: return null
-        if (filter(current)) return current
-        rootCause = rootCause.cause
+        if (curr == null) return null
+        val cause = curr.cause ?: return null
+        if (filter(cause)) return cause
+
+        if (curr.cause === curr) return null // circular reference
+        curr = curr.cause
+
         if (depth++ >= maxDepth) return null
     }
 }

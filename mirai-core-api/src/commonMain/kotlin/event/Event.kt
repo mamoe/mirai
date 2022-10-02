@@ -15,8 +15,6 @@ import kotlinx.coroutines.sync.Mutex
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.utils.DeprecatedSinceMirai
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import kotlin.jvm.JvmField
 import kotlin.jvm.Volatile
@@ -159,18 +157,6 @@ public suspend fun <E : Event> E.broadcast(): E {
     Mirai.broadcastEvent(this)
     return this
 }
-
-/**
- * 设置为 `true` 以关闭事件.
- * 所有的 `subscribe` 都能正常添加到监听器列表, 但所有的广播都会直接返回.
- */
-@MiraiExperimentalApi
-@Deprecated(
-    "Deprecated without replacement. If you really need this, please file an issue.",
-    level = DeprecationLevel.ERROR
-)
-@DeprecatedSinceMirai(errorSince = "2.12")
-public var EventDisabled: Boolean = false
 
 /**
  * 可控制是否需要广播这个事件

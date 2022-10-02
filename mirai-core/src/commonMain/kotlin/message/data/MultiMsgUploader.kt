@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.message.data
 
-import io.ktor.utils.io.core.*
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.contact.groupCode
@@ -34,6 +33,7 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.concatAsLong
 import net.mamoe.mirai.utils.gzip
 import net.mamoe.mirai.utils.toLongUnsigned
+import net.mamoe.mirai.utils.use
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -253,6 +253,7 @@ internal open class MultiMsgUploader(
             val msg0 = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
                     fromUin = pm.msg.senderId,
+                    fromNick = pm.msg.senderName,
                     toUin = if (isLong) {
                         contact.userIdOrNull ?: 0
                     } else 0,

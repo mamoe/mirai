@@ -11,10 +11,7 @@ package net.mamoe.mirai.internal.network.handler.state
 
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.coroutineName
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.systemProp
+import net.mamoe.mirai.utils.*
 import kotlin.coroutines.coroutineContext
 import kotlin.native.concurrent.ThreadLocal
 
@@ -68,7 +65,10 @@ internal class LoggingStateObserver(
                 logger.debug { "State resumed: [${coroutineContext.coroutineName}] ${state.correspondingState}." }
             },
             onFailure = {
-                logger.debug { "State resumed: [${coroutineContext.coroutineName}] ${state.correspondingState} ${result.exceptionOrNull()}" }
+                logger.debug {
+                    "State resumed: [${coroutineContext.coroutineName}] ${state.correspondingState} " +
+                            "${result.exceptionOrNull()?.unwrapCancellationException(false)}"
+                }
             }
         )
     }

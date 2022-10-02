@@ -584,14 +584,18 @@ public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, 
     /**
      * 改变的荣誉类型
      */
-    public abstract val honorType: GroupHonorType
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @get:JvmName("getHonorType")
+    public abstract val honorType: GroupHonorType // `public int getHonorType()` on Java's point of view
 
     /**
      * 获得荣誉时的事件
      */
-    public data class Achieve(override val member: NormalMember, override val honorType: GroupHonorType) :
-        MemberHonorChangeEvent() {
-
+    public data class Achieve(
+        override val member: NormalMember,
+        @get:JvmName("getHonorType")
+        override val honorType: GroupHonorType
+    ) : MemberHonorChangeEvent() {
         override fun toString(): String {
             return "MemberHonorChangeEvent.Achieve(member=$member, honorType=$honorType)"
         }
@@ -600,9 +604,11 @@ public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, 
     /**
      * 失去荣誉时的事件
      */
-    public data class Lose(override val member: NormalMember, override val honorType: GroupHonorType) :
-        MemberHonorChangeEvent() {
-
+    public data class Lose(
+        override val member: NormalMember,
+        @get:JvmName("getHonorType")
+        override val honorType: GroupHonorType
+    ) : MemberHonorChangeEvent() {
         override fun toString(): String {
             return "MemberHonorChangeEvent.Lose(member=$member, honorType=$honorType)"
         }

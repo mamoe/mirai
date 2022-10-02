@@ -1,0 +1,83 @@
+public abstract class net/mamoe/mirai/console/frontendbase/AbstractMiraiConsoleFrontendImplementation : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/console/MiraiConsoleImplementation {
+	public fun <init> (Ljava/lang/String;)V
+	public fun createLogger (Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun createLoggerFactory (Lnet/mamoe/mirai/console/MiraiConsoleImplementation$FrontendLoggingInitContext;)Lnet/mamoe/mirai/utils/MiraiLogger$Factory;
+	public fun getBuiltInPluginLoaders ()Ljava/util/List;
+	public fun getCommandManager ()Lnet/mamoe/mirai/console/command/CommandManager;
+	public fun getConfigStorageForBuiltIns ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
+	public fun getConfigStorageForJvmPluginLoader ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
+	public fun getConsoleDataScope ()Lnet/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleDataScope;
+	public fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
+	public fun getDataStorageForBuiltIns ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
+	public fun getDataStorageForJvmPluginLoader ()Lnet/mamoe/mirai/console/data/PluginDataStorage;
+	protected abstract fun getFrontendBase ()Lnet/mamoe/mirai/console/frontendbase/FrontendBase;
+	public fun getJvmPluginLoader ()Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginLoader;
+}
+
+public abstract class net/mamoe/mirai/console/frontendbase/FrontendBase {
+	public fun <init> ()V
+	public fun getDaemonThreadGroup ()Ljava/lang/ThreadGroup;
+	public fun getLogDropAnsi ()Z
+	public fun getLoggingDirectory ()Ljava/nio/file/Path;
+	public fun getLoggingRecorder ()Lnet/mamoe/mirai/console/frontendbase/logging/LogRecorder;
+	public abstract fun getScope ()Lkotlinx/coroutines/CoroutineScope;
+	public fun getThreadGroup ()Ljava/lang/ThreadGroup;
+	public abstract fun getWorkingDirectory ()Ljava/nio/file/Path;
+	protected fun initLogRecorder ()Lnet/mamoe/mirai/console/frontendbase/logging/LogRecorder;
+	protected fun initScreen_forwardStdToMiraiLogger ()V
+	protected fun initScreen_forwardStdToScreen ()V
+	public fun newDaemon (Ljava/lang/String;Ljava/lang/Runnable;)Ljava/lang/Thread;
+	public fun newThread (Ljava/lang/String;Ljava/lang/Runnable;)Ljava/lang/Thread;
+	public fun newThreadFactory (Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Ljava/util/concurrent/ThreadFactory;
+	public static synthetic fun newThreadFactory$default (Lnet/mamoe/mirai/console/frontendbase/FrontendBase;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/util/concurrent/ThreadFactory;
+	public abstract fun printToScreenDirectly (Ljava/lang/String;)V
+	public fun recordToLogging (Ljava/lang/String;)V
+}
+
+public final class net/mamoe/mirai/console/frontendbase/logging/AllDroppedLogRecorder : net/mamoe/mirai/console/frontendbase/logging/LogRecorder {
+	public static final field INSTANCE Lnet/mamoe/mirai/console/frontendbase/logging/AllDroppedLogRecorder;
+	public fun record (Ljava/lang/String;)V
+}
+
+public abstract class net/mamoe/mirai/console/frontendbase/logging/AsyncLogRecorder : net/mamoe/mirai/console/frontendbase/logging/LogRecorder {
+	public fun <init> (Lnet/mamoe/mirai/console/frontendbase/FrontendBase;I)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/console/frontendbase/FrontendBase;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected abstract fun asyncRecord (Ljava/lang/String;)V
+	protected final fun getChannel ()Lkotlinx/coroutines/channels/Channel;
+	protected final fun getDispatcher ()Lkotlinx/coroutines/CoroutineDispatcher;
+	protected final fun getSubscope ()Lkotlinx/coroutines/CoroutineScope;
+	protected final fun getThreadPool ()Ljava/util/concurrent/ScheduledExecutorService;
+	public fun record (Ljava/lang/String;)V
+}
+
+public class net/mamoe/mirai/console/frontendbase/logging/AsyncLogRecorderForwarded : net/mamoe/mirai/console/frontendbase/logging/AsyncLogRecorder {
+	public fun <init> (Lnet/mamoe/mirai/console/frontendbase/logging/LogRecorder;Lnet/mamoe/mirai/console/frontendbase/FrontendBase;I)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/console/frontendbase/logging/LogRecorder;Lnet/mamoe/mirai/console/frontendbase/FrontendBase;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun asyncRecord (Ljava/lang/String;)V
+	protected final fun getDelegate ()Lnet/mamoe/mirai/console/frontendbase/logging/LogRecorder;
+}
+
+public class net/mamoe/mirai/console/frontendbase/logging/DailySplitLogRecorder : net/mamoe/mirai/console/frontendbase/logging/LogRecorder {
+	protected field lastDate I
+	protected field writer Ljava/io/Writer;
+	public fun <init> (Ljava/nio/file/Path;Lnet/mamoe/mirai/console/frontendbase/FrontendBase;Ljava/time/format/DateTimeFormatter;)V
+	public synthetic fun <init> (Ljava/nio/file/Path;Lnet/mamoe/mirai/console/frontendbase/FrontendBase;Ljava/time/format/DateTimeFormatter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected final fun acquireFileWriter ()V
+	protected final fun getBase ()Lnet/mamoe/mirai/console/frontendbase/FrontendBase;
+	protected final fun getDateFormatter ()Ljava/time/format/DateTimeFormatter;
+	protected final fun getDirectory ()Ljava/nio/file/Path;
+	public fun record (Ljava/lang/String;)V
+}
+
+public abstract class net/mamoe/mirai/console/frontendbase/logging/LogRecorder {
+	public fun <init> ()V
+	public abstract fun record (Ljava/lang/String;)V
+}
+
+public class net/mamoe/mirai/console/frontendbase/logging/WriterLogRecorder : net/mamoe/mirai/console/frontendbase/logging/LogRecorder {
+	public fun <init> (Ljava/io/Writer;Lnet/mamoe/mirai/console/frontendbase/FrontendBase;)V
+	protected final fun getBase ()Lnet/mamoe/mirai/console/frontendbase/FrontendBase;
+	protected final fun getWriter ()Ljava/io/Writer;
+	public fun record (Ljava/lang/String;)V
+}
+

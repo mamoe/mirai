@@ -23,7 +23,7 @@ object Versions {
 
     val core = project
     val console = project
-    val consoleIntellij = "221-$project-171-1" // idea-mirai-kotlin-patch
+    val consoleIntellij = "221-$project-171-2" // idea-mirai-kotlin-patch
     val consoleTerminal = project
 
     const val kotlinCompiler = "1.7.10"
@@ -33,7 +33,7 @@ object Versions {
     const val kotlinCompilerForIdeaPlugin = "1.7.10"
 
     const val coroutines = "1.6.4"
-    const val atomicFU = "0.17.3"
+    const val atomicFU = "0.18.3"
     const val serialization = "1.3.3"
     const val ktor = "2.1.0"
 
@@ -46,7 +46,7 @@ object Versions {
     const val androidGradlePlugin = "4.1.1"
     const val android = "4.1.1.4"
 
-    const val shadow = "6.1.0"
+    const val shadow = "7.1.3-mirai-modified-SNAPSHOT"
 
     const val logback = "1.2.5"
     const val slf4j = "1.7.32"
@@ -62,6 +62,11 @@ object Versions {
 
     const val yamlkt = "0.12.0"
     const val intellijGradlePlugin = "1.7.0"
+
+    // https://github.com/google/jimfs
+    // Java In Memory File System
+    const val jimfs = "1.2"
+
 
     // don't update easily unless you want your disk space -= 1000 MB
     // (700 MB for IDEA, 150 MB for sources, 150 MB for JBR)
@@ -114,6 +119,10 @@ val `ktor-client-android` = ktor("client-android", Versions.ktor)
 val `ktor-client-logging` = ktor("client-logging", Versions.ktor)
 val `ktor-network` = ktor("network-jvm", Versions.ktor)
 val `ktor-client-serialization` = ktor("client-serialization", Versions.ktor)
+
+val `ktor-server-core` = ktor("server-core", Versions.ktor)
+val `ktor-server-netty` = ktor("server-netty", Versions.ktor)
+const val `java-in-memory-file-system` = "com.google.jimfs:jimfs:" + Versions.jimfs
 
 const val `logback-classic` = "ch.qos.logback:logback-classic:" + Versions.logback
 

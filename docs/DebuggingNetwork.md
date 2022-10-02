@@ -14,7 +14,8 @@
 |:----------------------------------------------------|:---------------------------------|:---------------------------------------------------------------------------------------|
 | `mirai.network.handler.selector.max.attempts`       | `[1, 2147483647]`                | 最大重连尝试次数                                                                               |
 | `mirai.network.reconnect.delay`                     | `[0, 9223372036854775807]`       | 两次重连尝试的间隔毫秒数                                                                           |
-| `mirai.network.handle.selector.logging`             | `true`/`false`                   | 启用执行重连时的详细日志                                                                           |
+| `mirai.network.handler.selector.logging`            | `true`/`false`                   | 启用执行重连时的详细日志                                                                           |
+| `mirai.network.handler.cancellation.trace`          | `true`/`false`                   | 让网络层的异常时包含详细原因                                                                         |
 | `mirai.network.state.observer.logging`              | `true`/`on`/`false`/`off`/`full` | 启用网络层状态变更的日志                                                                           |
 | `mirai.event.launch.undispatched`                   | `true`/`false`                   | 详见 [源码内注释][launch-undispatched]                                                        |
 | `mirai.resource.creation.stack.enabled`             | `true`/`false`                   | 启用 `ExternalResource` 创建时的 stacktrace 记录 (影响性能), 在资源泄露时展示                              |
@@ -31,5 +32,5 @@
 
 修改示例：
 
-在启动 JVM 时添加参数 `-Dmirai.network.handle.selector.logging=true`
+在启动 JVM 时添加参数 `-Dmirai.network.handler.selector.logging=true`
 则启用执行重连时的详细日志

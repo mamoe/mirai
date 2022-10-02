@@ -9,11 +9,9 @@
 
 package net.mamoe.mirai.internal.pipeline
 
-import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
 import net.mamoe.mirai.internal.network.components.NoticeProcessor
-import net.mamoe.mirai.internal.utils.structureToStringAndDesensitizeIfAvailable
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmInline
 
