@@ -42,6 +42,9 @@ internal fun main() {
 关于 `MockBot` 可以在 [这里](https://github.com/mamoe/mirai/tree/dev/mirai-core-mock/test/mock)
 找到 mirai-core-mock 的相关用法
 
+可以在 [DslTest.kt](https://github.com/mamoe/mirai/blob/dev/mirai-core-mock/test/DslTest.kt)
+中找到关于 mirai-core-mock DSL 的用法
+
 ----------------
 
 # 在 console 中进行模拟
