@@ -10,7 +10,6 @@
 package net.mamoe.mirai.mock.internal.contact
 
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.AvatarSpec
 import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.event.broadcast
@@ -21,11 +20,11 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.contact.MockStranger
+import net.mamoe.mirai.mock.internal.impl
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcFromStranger
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToStranger
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
 import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.lateinitMutableProperty
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 
@@ -37,34 +36,23 @@ internal class MockStrangerImpl(
     remark: String,
     nick: String
 ) : AbstractMockContact(parentCoroutineContext, bot, id), MockStranger {
+    private val ccinfo = bot.impl().contactDatabase.acquireCI(id, nick)
 
     override val mockApi: MockStranger.MockApi = object : MockStranger.MockApi {
         override val contact: MockStranger get() = this@MockStrangerImpl
-        override var nick: String = nick
+        override var nick: String by ccinfo::nick
         override var remark: String = remark
-        override var avatarUrl: String
-            get() = this@MockStrangerImpl.avatarUrl
-            set(value) {
-                this@MockStrangerImpl.avatarUrl = value
+        override var avatarUrl: String by ccinfo::avatarUrl
+    }
 
-                bot.getFriend(this@MockStrangerImpl.id)?.let { f ->
-                    f.mockApi.avatarUrl = value
-                    return
-                }
-            }
-    }
-    override var avatarUrl: String by lateinitMutableProperty {
-        bot.getFriend(id)?.let { return@lateinitMutableProperty it.avatarUrl }
-        runBlocking { MockImage.random(bot).getUrl(bot) }
-    }
+    override val avatarUrl: String get() = ccinfo.avatarUrl
 
     override fun avatarUrl(spec: AvatarSpec): String {
         return avatarUrl
     }
 
     override fun changeAvatarUrl(newAvatar: String) {
-        this.avatarUrl = newAvatar
-        bot.getFriend(id)?.let { return it.changeAvatarUrl(newAvatar) }
+        ccinfo.changeAvatarUrl(newAvatar)
     }
 
     override val nick: String

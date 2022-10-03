@@ -10,7 +10,6 @@
 package net.mamoe.mirai.mock.internal.contact
 
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
@@ -24,13 +23,13 @@ import net.mamoe.mirai.mock.contact.MockGroup
 import net.mamoe.mirai.mock.contact.MockNormalMember
 import net.mamoe.mirai.mock.contact.active.MockMemberActive
 import net.mamoe.mirai.mock.internal.contact.active.MockMemberActiveImpl
+import net.mamoe.mirai.mock.internal.impl
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcFromGroup
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToTemp
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
 import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.currentTimeSeconds
-import net.mamoe.mirai.utils.lateinitMutableProperty
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.max
@@ -52,18 +51,19 @@ internal class MockNormalMemberImpl(
     parentCoroutineContext, bot,
     id
 ), MockNormalMember {
-    override var avatarUrl: String by lateinitMutableProperty {
-        bot.getFriend(id)?.let { return@lateinitMutableProperty it.avatarUrl }
-        runBlocking { MockImage.random(bot).getUrl(bot) }
+    private val ccinfo = bot.impl().contactDatabase.let {
+        if (nick.isEmpty()) it.acquireCI(id)
+        else it.acquireCI(id, nick)
     }
+
+    override val avatarUrl: String get() = ccinfo.avatarUrl
 
     override fun avatarUrl(spec: AvatarSpec): String {
         return avatarUrl
     }
 
     override fun changeAvatarUrl(newAvatar: String) {
-        bot.getFriend(id)?.let { return it.changeAvatarUrl(newAvatar) }
-        this.avatarUrl = newAvatar
+        ccinfo.changeAvatarUrl(newAvatar)
     }
 
     private inline fun <T> crossFriendAccess(
@@ -80,11 +80,7 @@ internal class MockNormalMemberImpl(
         override var joinTimestamp: Int = joinTimestamp
         override var muteTimeEndTimestamp: Long = currentTimeSeconds() + muteTimeRemaining
 
-        override var nick: String = nick
-            get() = crossFriendAccess(ifExists = { it.nick }, ifNotExists = { field })
-            set(value) {
-                crossFriendAccess(ifExists = { it.mockApi.nick = value }, ifNotExists = { field = value })
-            }
+        override var nick: String by ccinfo::nick
 
         override var remark: String = remark
             get() = crossFriendAccess(ifExists = { it.remark }, ifNotExists = { field })
@@ -95,15 +91,7 @@ internal class MockNormalMemberImpl(
         override var permission: MemberPermission = permission
         override var nameCard: String = nameCard
         override var specialTitle: String = specialTitle
-        override var avatarUrl: String
-            get() = this@MockNormalMemberImpl.avatarUrl
-            set(value) {
-                this@MockNormalMemberImpl.avatarUrl = value
-
-                bot.getFriend(this@MockNormalMemberImpl.id)?.let { f ->
-                    f.mockApi.avatarUrl = value
-                }
-            }
+        override var avatarUrl: String by ccinfo::avatarUrl
     }
 
     override val permission: MemberPermission
