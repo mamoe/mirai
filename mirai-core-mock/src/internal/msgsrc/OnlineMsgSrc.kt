@@ -110,7 +110,7 @@ internal class OnlineMsgSrcToGroup(
 ) : OnlineMessageSource.Outgoing.ToGroup() {
     override val isOriginalMessageInitialized: Boolean get() = true
 
-    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToGroup")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("Mock_OnlineMessageSourceToGroup")
 
 }
 
@@ -127,7 +127,7 @@ internal class OnlineMsgSrcToFriend(
 ) : OnlineMessageSource.Outgoing.ToFriend() {
     override val isOriginalMessageInitialized: Boolean get() = true
 
-    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToFriend")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("Mock_OnlineMessageSourceToFriend")
 
 }
 
@@ -145,7 +145,7 @@ internal class OnlineMsgSrcToStranger(
 ) : OnlineMessageSource.Outgoing.ToStranger() {
     override val isOriginalMessageInitialized: Boolean get() = true
 
-    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToStranger")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("Mock_OnlineMessageSourceToStranger")
 }
 
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
@@ -161,7 +161,7 @@ internal class OnlineMsgSrcToTemp(
 ) : OnlineMessageSource.Outgoing.ToTemp() {
     override val isOriginalMessageInitialized: Boolean get() = true
 
-    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceToTemp")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("Mock_OnlineMessageSourceToTemp")
 }
 
 
@@ -177,7 +177,7 @@ internal class OnlineMsgSrcFromFriend(
 ) : OnlineMessageSource.Incoming.FromFriend() {
     override val isOriginalMessageInitialized: Boolean get() = true
 
-    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromFriend")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("Mock_OnlineMessageSourceFromFriend")
 }
 
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
@@ -192,7 +192,7 @@ internal class OnlineMsgSrcFromStranger(
 ) : OnlineMessageSource.Incoming.FromStranger() {
     override val isOriginalMessageInitialized: Boolean get() = true
 
-    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromStranger")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("Mock_OnlineMessageSourceFromStranger")
 }
 
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
@@ -207,7 +207,7 @@ internal class OnlineMsgSrcFromTemp(
 ) : OnlineMessageSource.Incoming.FromTemp() {
     override val isOriginalMessageInitialized: Boolean get() = true
 
-    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromTemp")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("Mock_OnlineMessageSourceFromTemp")
 
 }
 
@@ -223,7 +223,7 @@ internal class OnlineMsgSrcFromGroup(
 ) : OnlineMessageSource.Incoming.FromGroup() {
     override val isOriginalMessageInitialized: Boolean get() = true
 
-    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromGroup")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("Mock_OnlineMessageSourceFromGroup")
 
 }
 
