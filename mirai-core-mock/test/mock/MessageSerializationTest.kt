@@ -11,6 +11,8 @@ package net.mamoe.mirai.mock.test.mock
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.EmptySerializersModule
+import kotlinx.serialization.modules.plus
 import kotlinx.serialization.serializer
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
@@ -99,6 +101,10 @@ internal class MessageSerializationTest : MockBotTestBase() {
         assertEquals(t.originalMessage, deserialized.originalMessage, msg)
     }
 
+    @Test
+    fun testSerializersModulePlus() {
+        MessageSerializers.serializersModule + EmptySerializersModule
+    }
 
     @Test
     fun testMockMessageSources() = runTest {

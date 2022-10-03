@@ -12,7 +12,6 @@
 package net.mamoe.mirai.mock.internal.contact
 
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.AvatarSpec
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.friendgroup.FriendGroup
@@ -28,13 +27,13 @@ import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.contact.MockFriend
 import net.mamoe.mirai.mock.internal.contact.friendfroup.MockFriendGroups
 import net.mamoe.mirai.mock.internal.contact.roaming.MockRoamingMessages
+import net.mamoe.mirai.mock.internal.impl
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcFromFriend
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToFriend
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
 import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.lateinitMutableProperty
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 
@@ -48,33 +47,15 @@ internal class MockFriendImpl(
     parentCoroutineContext,
     bot, id
 ), MockFriend {
+    private val ccinfo = bot.impl().contactDatabase.acquireCI(id, nick)
+
     override val mockApi: MockFriend.MockApi = object : MockFriend.MockApi {
         override val contact: MockFriend get() = this@MockFriendImpl
 
-        override var nick: String = nick
         override var remark: String = remark
-        override var avatarUrl: String
-            get() = this@MockFriendImpl._avatarUrl
-            set(value) {
-                this@MockFriendImpl._avatarUrl = value
-                bot.groups.forEach { g ->
-                    val mems = if (this@MockFriendImpl.id == bot.id) {
-                        sequenceOf(g.botAsMember)
-                    } else g.members.asSequence().filter {
-                        it.id == this@MockFriendImpl.id
-                    }
-                    mems.forEach { m ->
-                        m.cast<MockNormalMemberImpl>().avatarUrl = value
-                    }
-                }
-                if (this@MockFriendImpl.id == bot.id) {
-                    sequenceOf(bot.asStranger)
-                } else {
-                    bot.strangers.asSequence().filter { s ->
-                        s.id == this@MockFriendImpl.id
-                    }
-                }.forEach { it.cast<MockStrangerImpl>().avatarUrl = value }
-            }
+
+        override var nick: String by ccinfo::nick
+        override var avatarUrl: String by ccinfo::avatarUrl
 
         override var friendGroupId: Int = 0
     }
@@ -82,15 +63,13 @@ internal class MockFriendImpl(
     override val friendGroup: FriendGroup
         get() = bot.friendGroups.cast<MockFriendGroups>().findOrDefault(mockApi.friendGroupId)
 
-    private var _avatarUrl: String by lateinitMutableProperty { runBlocking { MockImage.random(bot).getUrl(bot) } }
-    override val avatarUrl: String get() = _avatarUrl
+    override val avatarUrl: String get() = ccinfo.avatarUrl
     internal fun initAvatarUrl(v: String) {
-        _avatarUrl = v
+        ccinfo.avatarUrl = v
     }
 
     override fun changeAvatarUrl(newAvatar: String) {
-        mockApi.avatarUrl = newAvatar
-        FriendAvatarChangedEvent(this).broadcastBlocking()
+        ccinfo.changeAvatarUrl(newAvatar)
     }
 
     override fun avatarUrl(spec: AvatarSpec): String {
@@ -98,12 +77,9 @@ internal class MockFriendImpl(
     }
 
     override var nick: String
-        get() = mockApi.nick
+        get() = ccinfo.nick
         set(value) {
-            val ov = mockApi.nick
-            if (ov == value) return
-            mockApi.nick = value
-            FriendNickChangedEvent(this, ov, value).broadcastBlocking()
+            ccinfo.changeNick(value)
         }
 
     override var remark: String
