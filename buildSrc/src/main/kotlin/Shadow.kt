@@ -264,6 +264,8 @@ private fun ShadowJar.setRelocations() {
 
 fun Project.configureRelocationForCore() {
     relocateAllFromGroupId("io.ktor")
+    relocateAllFromGroupId("com.squareup.okhttp3")
+    relocateAllFromGroupId("com.squareup.okio")
 }
 
 fun Project.relocateAllFromGroupId(groupId: String) {
