@@ -263,6 +263,9 @@ private fun ShadowJar.setRelocations() {
 }
 
 fun Project.configureRelocationForCore() {
+    // WARNING: You must also consider relocating transitive dependencies.
+    // Otherwise, user will get NoClassDefFound error when using mirai as a classpath dependency. See #2263.
+
     relocateAllFromGroupId("io.ktor")
     relocateAllFromGroupId("com.squareup.okhttp3")
     relocateAllFromGroupId("com.squareup.okio")
