@@ -81,6 +81,9 @@ internal class MockBotImpl(
         return avatarUrl
     }
 
+    override val tinyId: Long
+        get() = bot.tinyId
+
     override val logger: MiraiLogger by lazy {
         configuration.botLoggerSupplier(this)
     }
