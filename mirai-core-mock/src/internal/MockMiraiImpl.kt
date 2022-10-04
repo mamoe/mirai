@@ -267,10 +267,20 @@ internal class MockMiraiImpl : MiraiImpl() {
                     )
                     if (!resp) doFailed()
                 }
+
                 MessageSourceKind.TEMP -> {
                     // TODO: No Event
                 }
+
                 MessageSourceKind.STRANGER -> {
+                    // TODO: No Event
+                }
+
+                MessageSourceKind.GUILD -> {
+                    // TODO: No Event
+                }
+
+                MessageSourceKind.DIRECT -> {
                     // TODO: No Event
                 }
             }

@@ -57,14 +57,11 @@ internal abstract class CommonChannelImpl constructor(
     channelInfo: ChannelInfo,
 ) : Channel, AbstractContact(bot, parentCoroutineContext) {
 
-    override val selfTinyId: Long
-        get() = bot.selfTinyId
-
     private val messageProtocolStrategy: MessageProtocolStrategy<ChannelImpl> =
         ChannelMessageProtocolStrategy(this.cast())
 
     override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio {
-        throw EventCancelledException("The channel does not support sending messages")
+        throw EventCancelledException("The channel does not support upload audio")
     }
 
     override val name: String = channelInfo.name

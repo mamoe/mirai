@@ -54,7 +54,7 @@ internal class GuildMessageProcessor(
     override suspend fun NoticePipelineContext.processImpl(data: GuildMsg.PressMsg) {
         for (item in data.msgs) {
             val isFromSelfAccount =
-                (item.head?.routingHead?.fromTinyId == bot.selfTinyId) || (item.head?.routingHead?.fromUin == bot.id)
+                (item.head?.routingHead?.fromTinyId == bot.tinyId) || (item.head?.routingHead?.fromUin == bot.id)
             val guild = bot.getGuild(item.head?.routingHead?.guildId!!) as GuildImpl? ?: return
             val channel =
                 guild.channelNodes.find { it.id == item.head?.routingHead!!.channelId } as ChannelImpl? ?: return

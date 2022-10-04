@@ -118,6 +118,7 @@ internal class ImageProtocol : MessageProtocol() {
                         collect(ImMsgBody.Elem(customFace = data.delegate))
                     }
                 }
+
                 is OnlineFriendImageImpl -> {
                     if (contact is User) {
                         collect(ImMsgBody.Elem(notOnlineImage = data.delegate))
@@ -125,7 +126,6 @@ internal class ImageProtocol : MessageProtocol() {
                         collect(ImMsgBody.Elem(customFace = data.delegate.toCustomFace()))
                     }
                 }
-
                 is OfflineFriendImage -> {
                     if (contact is User) {
                         collect(ImMsgBody.Elem(notOnlineImage = data.toJceData()))
@@ -149,6 +149,8 @@ internal class ImageProtocol : MessageProtocol() {
                         collect(ImMsgBody.Elem(customFace = data.delegate))
                     }
                 }
+
+                else -> markNotConsumed()
             }
         }
 

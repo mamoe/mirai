@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.message.image
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
@@ -65,7 +66,7 @@ internal data class OfflineGroupImage(
     object Serializer : Image.FallbackSerializer("OfflineGroupImage")
 
     override fun getUrl(bot: Bot): String {
-        return "http://gchat.qpic.cn/gchatpic_new/${bot.selfTinyId}/0-0-${
+        return "http://gchat.qpic.cn/gchatpic_new/${bot.uin}/0-0-${
             imageId.substring(1..36)
                 .replace("-", "")
         }/0?term=2"
@@ -98,7 +99,7 @@ internal data class OfflineGuildImage(
     object Serializer : Image.FallbackSerializer("OfflineGuildImage")
 
     override fun getUrl(bot: Bot): String {
-        return "http://gchat.qpic.cn/gchatpic_new/${bot.selfTinyId}/0-0-${
+        return "http://gchat.qpic.cn/gchatpic_new/${bot.tinyId}/0-0-${
             imageId.substring(1..36)
                 .replace("-", "")
         }/0?term=2"

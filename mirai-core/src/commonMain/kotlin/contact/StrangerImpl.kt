@@ -52,8 +52,6 @@ internal class StrangerImpl(
 ) : Stranger, AbstractUser(bot, parentCoroutineContext, info) {
     override val nick: String by info::nick
     override val remark: String by info::remark
-    override val selfTinyId: Long
-        get() = bot.selfTinyId
 
     override suspend fun delete() {
         check(bot.strangers[this.id] != null) {

@@ -329,7 +329,6 @@ internal class ContactUpdaterImpl(
         val initData = bot.network.sendAndExpect(SyncFirstView(bot.client))
         logger.info { "Start loading guild list..." }
         bot.account.tinyId = initData.origin.selfTinyId
-
         logger.info { "Successfully loaded guild list: ${initData.origin.guildCount} in total." }
         initGuildOk = true
     }

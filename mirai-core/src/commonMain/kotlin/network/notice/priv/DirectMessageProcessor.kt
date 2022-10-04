@@ -51,8 +51,8 @@ internal class DirectMessageProcessor(
             val tinyId = item.head?.routingHead?.fromTinyId
             val fromUin = item.head?.routingHead?.fromUin
 
-            val directMessageMember = item.extInfo?.directMessageMember?.find { it.tinyId != bot.selfTinyId } ?: return
-            val isFromSelfAccount = (tinyId == bot.selfTinyId) || (fromUin == bot.id)
+            val directMessageMember = item.extInfo?.directMessageMember?.find { it.tinyId != bot.tinyId } ?: return
+            val isFromSelfAccount = (tinyId == bot.tinyId) || (fromUin == bot.id)
             val guild = bot.getGuild(directMessageMember.sourceGuildId) as GuildImpl? ?: return
             val sender = guild.members.find { it.id == tinyId } ?: return
 

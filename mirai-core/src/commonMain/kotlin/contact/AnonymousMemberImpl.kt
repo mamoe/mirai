@@ -24,9 +24,6 @@ internal class AnonymousMemberImpl(
     init {
         requireNotNull(memberInfo.anonymousId) { "anonymousId must not be null" }
     }
-
-    override val selfTinyId: Long
-        get() = group.bot.selfTinyId
     override val anonymousId: String get() = info.anonymousId!!
 
     override suspend fun mute(durationSeconds: Int) {

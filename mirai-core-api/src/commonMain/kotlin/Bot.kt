@@ -58,6 +58,13 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     public override val bot: Bot get() = this
 
     /**
+     * 机器人频道用户ID.
+     *
+     * @see GuildMember.id
+     */
+    public val tinyId: Long
+
+    /**
      * 日志记录器
      */
     public val logger: MiraiLogger

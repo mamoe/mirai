@@ -31,11 +31,6 @@ public interface ContactOrBot : CoroutineScope {
     public val id: Long
 
     /**
-     * 机器人频道用户ID
-     */
-    public val selfTinyId: Long
-
-    /**
      * 相关 [Bot]
      */
     public val bot: Bot

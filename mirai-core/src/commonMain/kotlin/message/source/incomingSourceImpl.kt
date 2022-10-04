@@ -341,7 +341,7 @@ internal class OnlineMessageSourceFromDirectImpl(
 
 
     override val subject: GuildMemberImpl by lazy {
-        val guildId = msg.first().extInfo?.directMessageMember?.find { it.tinyId != bot.selfTinyId }?.sourceGuildId
+        val guildId = msg.first().extInfo?.directMessageMember?.find { it.tinyId != bot.tinyId }?.sourceGuildId
             ?: error("cannot find guildId for OnlineMessageSourceFromDirectImpl. msg=${msg.structureToString()}")
 
         val guild = bot.getGuild(guildId)?.checkIsGuildImpl()

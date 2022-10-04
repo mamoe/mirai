@@ -32,8 +32,6 @@ internal class OtherClientImpl(
     coroutineContext: CoroutineContext,
     override val info: OtherClientInfo,
 ) : OtherClient, AbstractContact(bot, coroutineContext) {
-    override val selfTinyId: Long
-        get() = bot.selfTinyId
 
     override suspend fun sendMessage(message: Message): MessageReceipt<OtherClient> {
         throw UnsupportedOperationException("OtherClientImpl.sendMessage is not yet supported.")

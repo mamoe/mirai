@@ -29,7 +29,7 @@ public interface Guild : Contact, CoroutineScope {
     /**
      * guildCode
      */
-    public val guildCode: Long
+//    public val guildCode: Long
 
     /**
      * 群主.

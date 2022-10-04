@@ -56,9 +56,8 @@ internal abstract class CommonGuildImpl constructor(
     companion object;
 
     override val name: String by guildInfo::name
-    override val selfTinyId: Long
-        get() = bot.selfTinyId
-    override val guildCode: Long
+
+    val guildId: Long
         get() = id
     final override lateinit var owner: GuildMember
     final override lateinit var botAsMember: GuildMember
