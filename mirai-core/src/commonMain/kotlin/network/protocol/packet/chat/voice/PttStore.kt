@@ -171,7 +171,7 @@ internal class PttStore {
                             buType = 3,
                             innerIp = 0,
                             buildVer = "8.5.5".encodeToByteArray(),
-                            codec = 0,
+                            codec = ptt.format,
                             reqTerm = 5,
                             reqPlatformType = 9,
                         )
