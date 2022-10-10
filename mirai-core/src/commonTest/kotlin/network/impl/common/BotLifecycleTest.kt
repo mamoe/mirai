@@ -15,11 +15,13 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.job
+import kotlinx.coroutines.test.runTest
 import net.mamoe.mirai.internal.MockBot
 import net.mamoe.mirai.internal.network.components.EventDispatcher
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTest
 import net.mamoe.mirai.internal.network.framework.components.TestSsoProcessor
+import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State.*
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
@@ -124,6 +126,21 @@ internal class BotLifecycleTest : AbstractCommonNHTest() {
         )
         network.coroutineContext.job.join()
         network.assertState(CLOSED) // we do not use selector in this test so it will be CLOSED. It will recover (reconnect) instead in real.
+        assertFalse { network.isActive }
+    }
+
+    @Test // #2266
+    fun `no StackOverflowError on Bot close`() = runTest {
+        assertTrue { network.isActive }
+        bot.login()
+        assertTrue { network.isActive }
+        overrideComponents[SsoProcessor] = object : TestSsoProcessor(bot) {
+            override suspend fun logout(handler: NetworkHandler) {
+                bot.close()
+            }
+        }
+        bot.close()
+        network.assertState(CLOSED)
         assertFalse { network.isActive }
     }
 
