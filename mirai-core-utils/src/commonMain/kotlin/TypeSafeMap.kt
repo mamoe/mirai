@@ -19,6 +19,10 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
+/**
+ * 携带值类型信息的键.
+ * @see TypeSafeMap
+ */
 @Serializable
 @JvmInline
 public value class TypeKey<T>(public val name: String) {
@@ -28,16 +32,34 @@ public value class TypeKey<T>(public val name: String) {
 }
 
 /**
+ * 类型安全的表. [TypeSafeMap] 使用带有值类型信息的 [TypeKey] 作为键, 可放入不同类型的值, 并且在取出时能获得期望的安全类型.
+ *
+ * **注意: 类型仅在编译期检查. 进行未受检类型转换将可能导致运行时问题.**
+ *
+ * 与 [Map] 类似, [TypeSafeMap] 是只读的实现.
+ * 使用 [buildTypeSafeMap] 以构建一个表.
+ *
  * @see buildTypeSafeMap
+ * @see MutableTypeSafeMap
  */
 public sealed interface TypeSafeMap {
     public val size: Int
 
+    /**
+     * @throws NoSuchElementException
+     */
     public operator fun <T> get(key: TypeKey<T>): T
     public operator fun <T : S, S> get(key: TypeKey<T>, defaultValue: S): S
     public operator fun <T> contains(key: TypeKey<T>): Boolean = get(key) != null
 
+    /**
+     * 创建键为包装类型 [TypeKey] 的 [Map]. 此方法将会包装全部键因而性能低下, 尽可能使用 [toMap] 替代.
+     */
     public fun toMapBoxed(): Map<TypeKey<*>, Any>
+
+    /**
+     * 得到实际数据表.
+     */
     public fun toMap(): Map<String, Any>
 
     public operator fun <T> provideDelegate(thisRef: Any?, property: KProperty<*>): ReadOnlyProperty<Any?, T> {

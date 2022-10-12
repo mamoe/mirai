@@ -41,6 +41,9 @@ internal open class OutgoingMessagePipelineImpl :
     inner class OutgoingMessagePipelineContextImpl(
         attributes: TypeSafeMap, override var currentMessageChain: MessageChain
     ) : OutgoingMessagePipelineContext, BaseContextImpl(attributes) {
+        /**
+         * Calls super [AbstractProcessorPipeline.BaseContextImpl.processAlso], Also updates [currentMessageChain].
+         */
         override suspend fun processAlso(
             data: OutgoingMessagePipelineInput,
             extraAttributes: TypeSafeMap
