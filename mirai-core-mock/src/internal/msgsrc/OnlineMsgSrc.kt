@@ -17,6 +17,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacadeImpl
+import net.mamoe.mirai.internal.message.protocol.StubMessageProtocol
 import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
@@ -90,7 +91,7 @@ internal fun registerMockMsgSerializers() {
         )
     }
 
-    val module = MessageProtocolFacadeImpl(listOf(), "").also {
+    val module = MessageProtocolFacadeImpl(listOf(StubMessageProtocol), "").also {
         it.serializers.addAll(serializers)
     }.createSerializersModule()
 
@@ -192,7 +193,9 @@ internal class OnlineMsgSrcFromStranger(
 ) : OnlineMessageSource.Incoming.FromStranger() {
     override val isOriginalMessageInitialized: Boolean get() = true
 
-    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("Mock_OnlineMessageSourceFromStranger")
+    object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl(
+        "Mock_OnlineMessageSourceFromStranger"
+    )
 }
 
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")

@@ -78,6 +78,11 @@ internal abstract class ProcessorCollector {
     abstract fun <T : Any> add(serializer: MessageSerializer<T>)
 }
 
+/* This stub is used for allocate new empty MessageProtocolFacade only */
+internal object StubMessageProtocol : MessageProtocol() {
+    override fun ProcessorCollector.collectProcessorsImpl() {
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////
 // refiners
