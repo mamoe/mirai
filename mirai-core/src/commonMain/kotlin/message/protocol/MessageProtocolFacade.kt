@@ -184,6 +184,12 @@ internal suspend fun MessageProtocolFacade.decodeAndRefineDeep(
 ): MessageChain = decode(elements, groupIdOrZero, messageSourceKind, bot).refineDeep(bot, refineContext)
 
 
+private const val errorTips =
+    "This should not happen if you are using mirai under default JVM classloader or using Mirai Console." +
+            "If so, please file an issue. " +
+            "If you are trying to load mirai manually from other classloader, " +
+            "e.g. in another plugin system like Minecraft, it's your responsibility to ensure the Java SPI works."
+
 internal class MessageProtocolFacadeImpl(
     private val protocols: Iterable<MessageProtocol> = loadServices(MessageProtocol::class).asIterable(),
     override val remark: String = "MessageProtocolFacade"
@@ -197,6 +203,12 @@ internal class MessageProtocolFacadeImpl(
     override val loaded: List<MessageProtocol> = kotlin.run {
         val instances = protocols
             .sortedWith(MessageProtocol.PriorityComparator.reversed())
+        if (instances.isEmpty()) {
+            error(
+                "Failed to load services for MessageProtocol from your classpath. " +
+                        "Check you ClassLoader environment and ensure services for '${MessageProtocol::class.qualifiedName}' can be loaded. $errorTips"
+            )
+        }
         for (instance in instances) {
             instance.collectProcessors(object : ProcessorCollector() {
                 override fun <T : SingleMessage> add(encoder: MessageEncoder<T>, elementType: KClass<T>) {
@@ -234,6 +246,14 @@ internal class MessageProtocolFacadeImpl(
             })
         }
         instances.toList()
+    }
+
+    private fun checkOutgoingPipeline() {
+        if (outgoingPipeline.processors.isEmpty()) {
+            error(
+                "`outgoingPipeline` is empty. It means you have corrupted classpath or bad service configuration. $errorTips"
+            )
+        }
     }
 
     override fun encode(
@@ -309,13 +329,13 @@ internal class MessageProtocolFacadeImpl(
         target: C, message: Message,
         components: ComponentStorage
     ): MessageReceipt<C> {
-        val attributes = createAttributesForOutgoingMessage(target, message, components)
+        checkOutgoingPipeline()
 
+        val attributes = createAttributesForOutgoingMessage(target, message, components)
         val (_, result) = outgoingPipeline.process(message.toMessageChain(), attributes)
 
         return getSingleReceipt(result, message)
     }
-
     override suspend fun <C : AbstractContact> preprocessAndSendOutgoing(
         target: C,
         message: Message,
@@ -331,6 +351,7 @@ internal class MessageProtocolFacadeImpl(
         message: Message,
         components: ComponentStorage
     ): ProcessResult<OutgoingMessagePipelineContext, MessageReceipt<*>> {
+        checkOutgoingPipeline()
         val attributes = createAttributesForOutgoingMessage(target, message, components)
 
         val data = message.toMessageChain()
