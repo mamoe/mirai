@@ -162,6 +162,9 @@ internal object ConstrainSingleHelper {
 
 }
 
+/**
+ * 要求 opt-in, 避免意外调用构造器.
+ */
 @RequiresOptIn
 internal annotation class MessageChainConstructor
 

@@ -13,14 +13,9 @@
 
 package net.mamoe.mirai.message
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.withTimeoutOrNull
-import net.mamoe.mirai.event.EventPriority
-import net.mamoe.mirai.event.GlobalEventChannel
+import kotlinx.coroutines.*
+import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.MessageEvent
-import net.mamoe.mirai.event.syncFromEvent
 import net.mamoe.mirai.message.data.MessageChain
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -30,7 +25,7 @@ import kotlin.jvm.JvmSynthetic
 
 
 /**
- * 判断两个 [MessageEvent] 的 [MessageEvent.sender] 和 [MessageEvent.subject] 是否相同
+ * 判断两个 [MessageEvent] 的语境, 即 [MessageEvent.sender] 和 [MessageEvent.subject] 是否相同
  */
 public fun MessageEvent.isContextIdenticalWith(another: MessageEvent): Boolean {
     return this.sender == another.sender && this.subject == another.subject
@@ -38,13 +33,14 @@ public fun MessageEvent.isContextIdenticalWith(another: MessageEvent): Boolean {
 
 
 /**
- * 挂起当前协程, 等待下一条 [MessageEvent.sender] 和 [MessageEvent.subject] 与 [this] 相同且通过 [筛选][filter] 的 [MessageEvent]
+ * 挂起当前协程, 等待下一条语境与 [this] 相同且通过 [筛选][filter] 的 [MessageEvent].
+ * 有关语境的定义可查看 [isContextIdenticalWith].
  *
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
- * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
- *
+ * @param filter 过滤器. 过滤器函数返回 `true` 表示拦截并返回此 [MessageEvent]. 返回 `false` 表示忽略该事件并继续监听下一个事件.
+
  * @see syncFromEvent 实现原理
  */
 @JvmSynthetic
@@ -55,13 +51,16 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessage(
 ): MessageChain = nextMessage(timeoutMillis, priority, false, filter)
 
 /**
- * 挂起当前协程, 等待下一条 [MessageEvent.sender] 和 [MessageEvent.subject] 与 [this] 相同且通过 [筛选][filter] 的 [MessageEvent] 并拦截该事件
+ * 挂起当前协程, 等待下一条语境与 [this] 相同且通过 [筛选][filter] 的 [MessageEvent], 并且[拦截][Event.intercept]该事件.
+ * 有关语境的定义可查看 [isContextIdenticalWith].
+ * 有关拦截的说明可查看 [Event.intercept].
  *
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ * @param priority 事件优先级. 查看 [EventChannel.subscribe] 以获得更多帮助.
  * @param intercept 是否拦截, 传入 `true` 时表示拦截此事件不让接下来的监听器处理, 传入 `false` 时表示让接下来的监听器处理
- * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
+ * @param filter 过滤器. 过滤器函数返回 `true` 表示拦截并返回此 [MessageEvent]. 返回 `false` 表示忽略该事件并继续监听下一个事件.
  *
  * @see syncFromEvent 实现原理
  * @see MessageEvent.intercept 拦截事件
@@ -92,7 +91,7 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessage(
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒.
- * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
+ * @param filter 过滤器. 过滤器函数返回 `true` 表示拦截并返回此 [MessageEvent]. 返回 `false` 表示忽略该事件并继续监听下一个事件.
  * @return 消息链. 超时时返回 `null`
  *
  * @see syncFromEvent
@@ -117,17 +116,11 @@ public suspend inline fun <reified P : MessageEvent> P.nextMessageOrNull(
 }
 
 /**
- * @since 2.10
- */
-@PublishedApi // inline, safe to remove in the future
-internal inline fun <reified P : MessageEvent> P.createMapper(crossinline filter: suspend P.(P) -> Boolean): suspend (P) -> P? =
-    mapper@{ event ->
-        if (!event.isContextIdenticalWith(this)) return@mapper null
-        if (!filter(event, event)) return@mapper null
-        event
-    }
-
-/**
+ * [nextMessage] 的异步版本.
+ *
+ * 此方法总是会在 [bot] 的[协程作用域][CoroutineScope]之下[创建任务][CoroutineScope.async],
+ * 不利于管理异常, 也不利于结构化并发, 建议使用自行创建协程并调用 [nextMessageOrNull].
+ *
  * @see nextMessage
  */
 @JvmSynthetic
@@ -143,7 +136,10 @@ public inline fun <reified P : MessageEvent> P.nextMessageAsync(
 }
 
 /**
- * [nextMessageOrNull] 的异步版本
+ * [nextMessageOrNull] 的异步版本.
+ *
+ * 此方法总是会在 [bot] 的[协程作用域][CoroutineScope]之下[创建任务][CoroutineScope.async],
+ * 不利于管理异常, 也不利于结构化并发, 建议使用自行创建协程并调用 [nextMessageOrNull].
  *
  * @see nextMessageOrNull
  */
@@ -159,3 +155,17 @@ public inline fun <reified P : MessageEvent> P.nextMessageOrNullAsync(
         nextMessageOrNull(timeoutMillis, priority, filter)
     }
 }
+
+
+/// internals
+
+/**
+ * @since 2.10
+ */
+@PublishedApi // inline, safe to remove in the future
+internal inline fun <reified P : MessageEvent> P.createMapper(crossinline filter: suspend P.(P) -> Boolean): suspend (P) -> P? =
+    mapper@{ event ->
+        if (!event.isContextIdenticalWith(this)) return@mapper null
+        if (!filter(event, event)) return@mapper null
+        event
+    }

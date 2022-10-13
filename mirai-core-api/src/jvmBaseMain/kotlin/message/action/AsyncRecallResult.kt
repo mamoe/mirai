@@ -19,19 +19,48 @@ import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
 import java.util.concurrent.CompletableFuture
 
+
 /**
- * [MessageSource.recallIn] 的结果.
+ * 异步撤回结果.
+ *
+ * 可由 [MessageSource.recallIn] 返回得到.
+ *
+ * ## Kotlin 用法示例
+ *
+ * ### 获取撤回失败时的异常
+ *
+ * ```
+ * val exception = result.exception.await() // 挂起协程并等待撤回的结果.
+ * if (exception == null) {
+ *   // 撤回成功
+ * } else {
+ *   // 撤回失败
+ * }
+ * ```
+ *
+ * 若仅需要了解撤回是否成功而不需要获取详细异常实例, 可使用 [isSuccess]
+ *
+ * ## Java 用法示例
+ *
+ * ```java
+ * Throwable exception = result.exceptionFuture.get(); // 阻塞线程并等待撤回的结果.
+ * if (exception == null) {
+ *   // 撤回成功
+ * } else {
+ *   // 撤回失败
+ * }
+ * ```
  *
  * @see MessageSource.recallIn
  */
 public actual class AsyncRecallResult internal actual constructor(
     /**
-     * 撤回时产生的异常. Kotlin [Deferred] API.
+     * 撤回时产生的异常, 当撤回成功时为 `null`. Kotlin [Deferred] API.
      */
     public actual val exception: Deferred<Throwable?>,
 ) {
     /**
-     * 撤回时产生的异常. Java [CompletableFuture] API.
+     * 撤回时产生的异常, 当撤回成功时为 `null`. Java [CompletableFuture] API.
      */
     public val exceptionFuture: CompletableFuture<Throwable?> by lazy { exception.asCompletableFuture() }
 
@@ -52,14 +81,14 @@ public actual class AsyncRecallResult internal actual constructor(
     public val isSuccessFuture: CompletableFuture<Boolean> by lazy { isSuccess.asCompletableFuture() }
 
     /**
-     * 等待撤回完成, 返回撤回时产生的异常.
+     * 挂起协程 (在 Java 为阻塞线程) 直到撤回完成, 返回撤回时产生的异常. 当撤回成功时返回 `null`.
      */
     public actual suspend fun awaitException(): Throwable? {
         return exception.await()
     }
 
     /**
-     * 等待撤回完成, 返回撤回的结果.
+     * 挂起协程 (在 Java 为阻塞线程) 直到撤回完成, 返回撤回的结果.
      */
     public actual suspend fun awaitIsSuccess(): Boolean {
         return isSuccess.await()
