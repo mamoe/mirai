@@ -15,13 +15,17 @@ import net.mamoe.mirai.message.data.visitor.accept
 import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
- * One after one, hierarchically.
+ * 树状消息链的一个节点. [element] 为当前元素, [tail] 为下一个元素.
+ *
+ * **注意:** 这是内部 API. 不要在任何情况下使用它.
+ * [Message.plus] 等连接消息链的 API 已经有性能优化, 会在合适的时机创建 [CombinedMessage], 不需要自行考虑创建 [CombinedMessage].
+ *
  * @since 2.12
  */
 @MiraiInternalApi
 @Suppress("EXPOSED_SUPER_CLASS")
 public class CombinedMessage @MessageChainConstructor constructor(
-    @MiraiInternalApi public val element: Message,
+    @MiraiInternalApi public val element: Message, // element 和 tail 必须提前处理 constrain single. 见 Message.followedBy
     @MiraiInternalApi public val tail: Message,
     @MiraiInternalApi public override val hasConstrainSingle: Boolean
 ) : AbstractMessageChain(), List<SingleMessage> {
@@ -169,6 +173,9 @@ public class CombinedMessage @MessageChainConstructor constructor(
     // slow operations
     ///////////////////////////////////////////////////////////////////////////
 
+    /**
+     * 仅在必要时初始化来优化性能. 基于 [ConstrainSingle] 的情况, 它可能会有立方级别的时间复杂度.
+     */
     internal val slowList: Lazy<MessageChain> = lazy {
         sequenceOf(element, tail).toMessageChain()
     }

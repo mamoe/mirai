@@ -14,6 +14,9 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 
 /**
+ * 消息的访问器.
+ * 优先考虑使用此 visitor API 而不是 [MessageChain] 的 [List] API, 例如 [MessageChain.iterator]. 使用 [MessageVisitor] 将会提升性能, 对于巨大的通过 `plus` 方式连接的消息链有重大区别.
+ *
  * @suppress 这是内部 API, 请不要调用
  * @since 2.12
  */

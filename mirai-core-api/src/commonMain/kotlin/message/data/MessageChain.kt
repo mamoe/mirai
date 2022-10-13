@@ -193,6 +193,10 @@ import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_AB
 public sealed interface MessageChain :
     Message, List<SingleMessage>, RandomAccess, CodableMessage {
 
+    // 写给 mirai 内部实现者: 优先考虑使用 visitor API 而不是 List 的 API. 这将会提升性能, 对于巨大的通过 `plus` 方式连接的消息链有重大区别.
+    // 即使 [MessageChain] 实现 [RandomAccess], 使用基于 index 的 API 也可能会产生重大性能下降. (不过这本来就是没法避免的, 避免使用 index 属于一种性能优化).
+    // 若你感兴趣原理, 阅读 [Message.followedBy] 和 [CombinedMessage]
+
     /**
      * 获取第一个类型为 [key] 的 [Message] 实例. 若不存在此实例, 返回 `null`.
      *
