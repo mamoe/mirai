@@ -9,7 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
-@file:Suppress("NOTHING_TO_INLINE", "unused", "INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR", "UnUsedImport")
+@file:Suppress("unused", "INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR", "UnUsedImport")
 
 package net.mamoe.mirai.message.data
 
@@ -252,7 +252,19 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
          */
         @JvmStatic
         @JvmBlockingBridge
-        public suspend fun MessageChain.recall(): Unit = this.source.recall()
+        public suspend fun MessageChain.recall() {
+            this[MessageSource]?.let {
+                it.recall()
+                return
+            }
+            throw NoSuchElementException(tipsForNoMessageSource)
+        }
+
+        private const val tipsForNoMessageSource = "No MessageSource found from input MessageChain. Tips: " +
+                "You can't recall a MessageChain which is built by you, " +
+                "as it lacks ids of the message on the server. " +
+                "If you want to recall a message after sending it, " +
+                "you can call `recallIn` method on the `MessageReceipt` returned by `sendMessage`."
 
         /**
          * 在一段时间后撤回这条消息.
@@ -260,8 +272,12 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
          * @see IMirai.recallMessage
          */
         @JvmStatic
-        @Suppress("DeferredIsResult")
-        public fun MessageChain.recallIn(millis: Long): AsyncRecallResult = this.source.recallIn(millis)
+        public fun MessageChain.recallIn(millis: Long): AsyncRecallResult {
+            this[MessageSource]?.let {
+                return it.recallIn(millis)
+            }
+            throw NoSuchElementException(tipsForNoMessageSource)
+        }
 
         /**
          * 在一段时间后撤回这条消息.
@@ -270,7 +286,6 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
          * @see IMirai.recallMessage
          */
         @JvmStatic
-        @Suppress("DeferredIsResult")
         public fun MessageSource.recallIn(millis: Long): AsyncRecallResult {
             return AsyncRecallResult(bot.async {
                 try {
