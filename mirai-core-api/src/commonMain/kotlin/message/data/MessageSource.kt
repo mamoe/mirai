@@ -191,7 +191,10 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     public abstract val targetId: Long // groupCode / friendUin / memberUin
 
     /**
-     * 该 source 指代的原消息内容.
+     * 该消息源指向的原消息的内容.
+     *
+     * ## 内容不一定完整
+     * 如果消息源是来自一条引用回复, 即 [QuoteReply.source], 那么原消息内容不一定完整.
      *
      * 此属性是惰性初始化的: 它只会在第一次调用时初始化, 因为需要反序列化服务器发来的整个包, 相当于接收了一条新消息.
      */

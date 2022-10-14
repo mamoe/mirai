@@ -4309,6 +4309,7 @@ public abstract interface class net/mamoe/mirai/message/data/MessageChain : java
 	public fun contains (Lnet/mamoe/mirai/message/data/MessageKey;)Z
 	public static fun deserializeFromJsonString (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static fun deserializeFromJsonString (Ljava/lang/String;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/message/data/MessageChain;
+	public static fun deserializeFromMiraiCode (Ljava/lang/String;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static fun deserializeFromMiraiCode (Lnet/mamoe/mirai/message/data/MessageChain;Ljava/lang/String;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static synthetic fun deserializeJsonToMessageChain (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static synthetic fun deserializeJsonToMessageChain (Ljava/lang/String;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/message/data/MessageChain;
@@ -4322,7 +4323,9 @@ public final class net/mamoe/mirai/message/data/MessageChain$Companion {
 	public final fun deserializeFromJsonString (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public final fun deserializeFromJsonString (Ljava/lang/String;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static synthetic fun deserializeFromJsonString$default (Lnet/mamoe/mirai/message/data/MessageChain$Companion;Ljava/lang/String;Lkotlinx/serialization/json/Json;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/MessageChain;
+	public final fun deserializeFromMiraiCode (Ljava/lang/String;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public final fun deserializeFromMiraiCode (Lnet/mamoe/mirai/message/data/MessageChain;Ljava/lang/String;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/MessageChain;
+	public static synthetic fun deserializeFromMiraiCode$default (Lnet/mamoe/mirai/message/data/MessageChain$Companion;Ljava/lang/String;Lnet/mamoe/mirai/contact/Contact;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static synthetic fun deserializeFromMiraiCode$default (Lnet/mamoe/mirai/message/data/MessageChain$Companion;Lnet/mamoe/mirai/message/data/MessageChain;Ljava/lang/String;Lnet/mamoe/mirai/contact/Contact;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public final synthetic fun deserializeJsonToMessageChain (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public final synthetic fun deserializeJsonToMessageChain (Ljava/lang/String;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/message/data/MessageChain;

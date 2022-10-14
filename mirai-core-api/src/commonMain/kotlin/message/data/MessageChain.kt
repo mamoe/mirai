@@ -341,11 +341,30 @@ public sealed interface MessageChain :
 
         /**
          * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.serializeToMiraiCode] 返回的内容.
+         * @param contact 解析语境
          * @see MiraiCode.deserializeMiraiCode
+         * @since 2.13
          */
         @JvmStatic
-        public fun MessageChain.deserializeFromMiraiCode(miraiCode: String, contact: Contact? = null): MessageChain =
+        public fun deserializeFromMiraiCode(miraiCode: String, contact: Contact? = null): MessageChain =
             miraiCode.deserializeMiraiCode(contact)
+
+
+        /**
+         * 解析形如 "[mirai:]" 的 mirai 码, 即 [CodableMessage.serializeToMiraiCode] 返回的内容.
+         * @see MiraiCode.deserializeMiraiCode
+         */
+        @Deprecated(
+            "Parameter MessageChain is redundant, use the overload instead.",
+            ReplaceWith(
+                "MessageChain.deserializeFromMiraiCode(miraiCode, contact)",
+                "net.mamoe.mirai.message.data.MessageChain"
+            )
+        )
+        @Suppress("UnusedReceiverParameter")
+        @JvmStatic
+        public fun MessageChain.deserializeFromMiraiCode(miraiCode: String, contact: Contact? = null): MessageChain =
+            MessageChain.deserializeFromMiraiCode(miraiCode, contact)
     }
 }
 
