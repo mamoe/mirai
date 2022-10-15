@@ -314,6 +314,16 @@ internal class SsoProcessorImpl(
                             if (msg.contains("当前登录存在安全风险")) { // Error(title=禁止登录, message=当前上网环境异常，请更换网络环境或在常用设备上登录或稍后再试。, errorInfo=)
                                 append(", mirai 提示: 这可能是尝试登录次数过多导致的, 请等待一段时间后再试")
                             }
+                            if (!sliderSupported) {
+                                append(", extra={ sliderSupported=false, login-solver=").append(bot.configuration.loginSolver)
+                                append(" <").append(
+                                    bot.configuration.loginSolver?.let { it::class }
+                                )
+                                append("> }")
+                                if (msg.contains("版本过低")) {
+                                    append(", mirai 提示: 提供给 mirai 的验证码处理器不支持滑块验证, 请报告至此验证器的作者")
+                                }
+                            }
                         }))
                     }
 
