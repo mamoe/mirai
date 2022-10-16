@@ -11,54 +11,23 @@
 
 package net.mamoe.mirai.internal.contact.roaming
 
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.take
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.roaming.RoamingMessage
-import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.internal.contact.AbstractContact
 import net.mamoe.mirai.internal.contact.FriendImpl
-import net.mamoe.mirai.internal.message.toMessageChainOnline
+import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetRoamMsgReq
-import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.utils.check
 import net.mamoe.mirai.utils.mapToIntArray
 import net.mamoe.mirai.utils.toLongUnsigned
 
 internal abstract class CommonRoamingMessagesImpl : RoamingMessages {
     abstract val contact: AbstractContact
-
-    override suspend fun getMessagesIn(
-        timeStart: Long,
-        timeEnd: Long,
-        filter: RoamingMessageFilter?
-    ): Flow<MessageChain> {
-        return flow {
-            var lastMessageTime = timeEnd.coerceAtLeast(timeStart).coerceAtLeast(1)
-            var random = 0L
-            while (currentCoroutineContext().isActive) {
-                val resp = requestRoamMsg(timeStart, lastMessageTime, random)
-                val messages = resp.messages ?: break
-                if (filter == null || filter === RoamingMessageFilter.ANY) {
-                    // fast path
-                    messages.forEach { emit(it.toMessageChainOnline(contact.bot)) }
-                } else {
-                    for (message in messages) {
-                        if (filter.invoke(createRoamingMessage(message, messages))) {
-                            emit(message.toMessageChainOnline(contact.bot))
-                        }
-                    }
-                }
-
-                lastMessageTime = resp.lastMessageTime
-                random = resp.random
-            }
-        }
-    }
 
     protected fun createRoamingMessage(
         message: MsgComm.Msg,
@@ -74,21 +43,14 @@ internal abstract class CommonRoamingMessagesImpl : RoamingMessages {
             messages.mapToIntArray { it.msgBody.richText.attr?.random ?: 0 } // other client 消息的这个是0
         }
     }
-
-    abstract suspend fun requestRoamMsg(
-        timeStart: Long,
-        lastMessageTime: Long,
-        random: Long
-    ): MessageSvcPbGetRoamMsgReq.Response
 }
 
-
-internal expect sealed class RoamingMessagesImpl() : CommonRoamingMessagesImpl
+internal expect sealed class RoamingTimeBasedMessagesImpl() : CommonTimeBasedMessageImpl
 
 internal class RoamingMessagesImplFriend(
     override val contact: FriendImpl
-) : RoamingMessagesImpl() {
-    override suspend fun requestRoamMsg(
+) : RoamingTimeBasedMessagesImpl() {
+    override suspend fun requestRoamMsgTime(
         timeStart: Long,
         lastMessageTime: Long,
         random: Long
@@ -106,4 +68,13 @@ internal class RoamingMessagesImplFriend(
             )
         ).value.check()
     }
+}
+
+internal class RoamingMessagesImplGroup(
+    override val contact: GroupImpl
+) : CommonSeqBasedMessageImpl() {
+    override fun getResp(seq: Int, count: Int): MsgSvc.PbGetGroupMsgResp {
+
+    }
+
 }

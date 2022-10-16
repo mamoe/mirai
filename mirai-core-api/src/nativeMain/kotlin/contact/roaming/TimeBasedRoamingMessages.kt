@@ -10,25 +10,13 @@
 package net.mamoe.mirai.contact.roaming
 
 import kotlinx.coroutines.flow.Flow
-import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 
-
-/**
- * 漫游消息记录管理器. 可通过 [RoamingSupported.roamingMessages] 获得. 目前仅 [Friend] 实现 [RoamingSupported].
- *
- * @since 2.8
- * @see RoamingSupported
- */
-public actual interface RoamingMessages {
-    ///////////////////////////////////////////////////////////////////////////
-    // Get list
-    ///////////////////////////////////////////////////////////////////////////
-
+public actual interface TimeBasedRoamingMessages : RoamingMessages {
 
     /**
-     * 查询所有漫游消息记录.
+     * 查询指定时间段内的漫游消息记录.
      *
      * 返回查询到的漫游消息记录, 顺序为由新到旧. 这些 [MessageChain] 与从事件中收到的消息链相似, 属于在线消息.
      * 可从 [MessageChain] 获取 [MessageSource] 来确定发送人等相关信息, 也可以进行引用回复或撤回.
@@ -41,9 +29,18 @@ public actual interface RoamingMessages {
      *
      * 性能提示: 请在 [filter] 执行筛选, 若 [filter] 返回 `false` 则不会解析消息链, 这对本函数的处理速度有决定性影响.
      *
+     * @param timeStart 起始时间, UTC+8 时间戳, 单位为秒. 可以为 `0`, 即表示从可以获取的最早的消息起. 负数将会被看是 `0`.
+     * @param timeEnd 结束时间, UTC+8 时间戳, 单位为秒. 可以为 [Long.MAX_VALUE], 即表示到可以获取的最晚的消息为止. 低于 [timeStart] 的值将会被看作是 [timeStart] 的值.
      * @param filter 过滤器.
      */
-    public actual suspend fun getAllMessages(
+    public actual suspend fun getMessagesIn(
+        timeStart: Long,
+        timeEnd: Long,
         filter: RoamingMessageFilter?
-    ): Flow<MessageChain> = TODO()
+    ): Flow<MessageChain> {
+        TODO()
+    }
+
+    override suspend fun getAllMessages(filter: RoamingMessageFilter?): Flow<MessageChain> =
+        getMessagesIn(0, Long.MAX_VALUE, filter)
 }

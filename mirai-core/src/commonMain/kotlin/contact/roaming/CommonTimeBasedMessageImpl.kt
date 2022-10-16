@@ -9,36 +9,36 @@
 
 package net.mamoe.mirai.internal.contact.roaming
 
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
+import net.mamoe.mirai.contact.roaming.TimeBasedRoamingMessages
 import net.mamoe.mirai.internal.message.toMessageChainOnline
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetRoamMsgReq
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.utils.JavaFriendlyAPI
-import net.mamoe.mirai.utils.stream
-import java.util.stream.Stream
 
-internal actual sealed class RoamingMessagesImpl : CommonRoamingMessagesImpl() {
-    @JavaFriendlyAPI
-    override suspend fun getMessagesStream(
+internal abstract class CommonTimeBasedMessageImpl : CommonRoamingMessagesImpl(), TimeBasedRoamingMessages {
+
+    override suspend fun getMessagesIn(
         timeStart: Long,
         timeEnd: Long,
-        filter: RoamingMessageFilter?,
-    ): Stream<MessageChain> {
-        return stream {
-            var lastMessageTime = timeEnd
+        filter: RoamingMessageFilter?
+    ): Flow<MessageChain> {
+        return flow {
+            var lastMessageTime = timeEnd.coerceAtLeast(timeStart).coerceAtLeast(1)
             var random = 0L
-            while (true) {
-                val resp = runBlocking {
-                    requestRoamMsg(timeStart, lastMessageTime, random)
-                }
-
+            while (currentCoroutineContext().isActive) {
+                val resp = requestRoamMsgTime(timeStart, lastMessageTime, random)
                 val messages = resp.messages ?: break
                 if (filter == null || filter === RoamingMessageFilter.ANY) {
-                    messages.forEach { yield(runBlocking { it.toMessageChainOnline(contact.bot) }) }
+                    // fast path
+                    messages.forEach { emit(it.toMessageChainOnline(contact.bot)) }
                 } else {
                     for (message in messages) {
                         if (filter.invoke(createRoamingMessage(message, messages))) {
-                            yield(runBlocking { message.toMessageChainOnline(contact.bot) })
+                            emit(message.toMessageChainOnline(contact.bot))
                         }
                     }
                 }
@@ -48,4 +48,10 @@ internal actual sealed class RoamingMessagesImpl : CommonRoamingMessagesImpl() {
             }
         }
     }
+
+    abstract suspend fun requestRoamMsgTime(
+        timeStart: Long,
+        lastMessageTime: Long,
+        random: Long
+    ): MessageSvcPbGetRoamMsgReq.Response
 }
