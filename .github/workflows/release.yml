@@ -22,7 +22,8 @@ jobs:
           - macos-12
     env:
       enableLocalPublishingTest: 'false'
-      gradleArgs: --scan "-Dmirai.target=jvm;android;!other" "-Pkotlin.compiler.execution.strategy=in-process"
+      # All targets MUST be enabled. See #2270.
+      gradleArgs: --scan "-Dmirai.target=other" "-Pkotlin.compiler.execution.strategy=in-process"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
@@ -110,6 +111,7 @@ jobs:
 
   publish-core-native:
     name: "Native (${{ matrix.os }})"
+    needs: [ publish-others ] # Allow MPP metadata to be uploaded first.
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -117,7 +119,7 @@ jobs:
         os:
           - windows-2022
           - ubuntu-20.04
-          - macos-12
+        #          - macos-12 # macOS artifacts published in 'publish-others'
         include:
           - os: windows-2022
             targetName: mingwX64
