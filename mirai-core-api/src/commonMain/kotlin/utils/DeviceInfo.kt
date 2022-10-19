@@ -12,7 +12,6 @@ package net.mamoe.mirai.utils
 import io.ktor.utils.io.core.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
@@ -77,6 +76,8 @@ public expect class DeviceInfo(
     @MiraiInternalApi
     public val guid: ByteArray
 
+
+    // @Serializable: use DeviceInfoVersionSerializer in commonMain.
     public class Version(
         incremental: ByteArray = "5891938".toByteArray(),
         release: ByteArray = "10".toByteArray(),
@@ -288,8 +289,23 @@ internal object DeviceInfoManager {
         val data: T
     )
 
-    @Serializer(forClass = DeviceInfo.Version::class)
-    private object DeviceInfoVersionSerializer
+    private object DeviceInfoVersionSerializer : KSerializer<DeviceInfo.Version> by SerialData.serializer().map(
+        resultantDescriptor = SerialData.serializer().descriptor.copy("Version"),
+        deserialize = {
+            DeviceInfo.Version(incremental, release, codename, sdk)
+        },
+        serialize = {
+            SerialData(incremental, release, codename, sdk)
+        }
+    ) {
+        @Serializable
+        private class SerialData(
+            val incremental: ByteArray = "5891938".toByteArray(),
+            val release: ByteArray = "10".toByteArray(),
+            val codename: ByteArray = "REL".toByteArray(),
+            val sdk: Int = 29
+        )
+    }
 
     @Serializable
     class V1(
