@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.network.impl.netty
 
-import io.ktor.utils.io.core.*
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.channel.*
@@ -113,7 +112,9 @@ internal open class NettyNetworkHandler(
             }.onFailure {
                 eventLoopGroup.shutdownGracefully()
                 contextResult.cancel()
-            }.getOrThrow()
+            }.getOrElse { error ->
+                throw NettyChannelException(cause = error)
+            }
 
         contextResult.complete(future.channel())
 
