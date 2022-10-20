@@ -13,6 +13,7 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -23,9 +24,6 @@ import java.util.function.Consumer
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 import kotlin.coroutines.*
-import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
-import kotlin.coroutines.intrinsics.createCoroutineUnintercepted
-import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 import kotlin.streams.asStream
 
 @JvmSynthetic
@@ -65,17 +63,21 @@ public object JdkStreamSupport {
      */
     public fun <T> Flow<T>.toStream(
         context: CoroutineContext = EmptyCoroutineContext,
-        unintercepted: Boolean = context[ContinuationInterceptor] == null,
     ): Stream<T> {
         val spliterator = FlowSpliterator(
             flow = this,
             coroutineContext = context,
-            unintercepted = unintercepted,
         )
 
         return StreamSupport.stream(spliterator, false).onClose {
             spliterator.cancelled = true
-            spliterator.nextStep?.resumeWithException(CancellationException())
+            spliterator.nextStep?.let { nextStep ->
+                if (nextStep is CancellableContinuation<*>) {
+                    nextStep.cancel()
+                } else {
+                    nextStep.resumeWithException(CancellationException())
+                }
+            }
             spliterator.nextStep = null
         }
     }
@@ -83,7 +85,6 @@ public object JdkStreamSupport {
     private class FlowSpliterator<T>(
         private val flow: Flow<T>,
         private val coroutineContext: CoroutineContext,
-        unintercepted: Boolean
     ) : AbstractSpliterator<T>(
         Long.MAX_VALUE, Spliterator.ORDERED or Spliterator.IMMUTABLE
     ) {
@@ -106,26 +107,14 @@ public object JdkStreamSupport {
                 }
 
             }
-            if (unintercepted) {
-                return@run (suspend {
-                    flow.collect { item ->
-                        suspendCoroutineUninterceptedOrReturn<Unit> { cont ->
-                            nextStep = cont
-                            queue.put(boxValue(item))
-                            COROUTINE_SUSPENDED
-                        }
+            return@run (suspend {
+                flow.collect { item ->
+                    suspendCancellableCoroutine<Unit> { cont ->
+                        nextStep = cont
+                        queue.put(boxValue(item))
                     }
-                }).createCoroutineUnintercepted(completion)
-            } else {
-                return@run (suspend {
-                    flow.collect { item ->
-                        suspendCancellableCoroutine<Unit> { cont ->
-                            nextStep = cont
-                            queue.put(boxValue(item))
-                        }
-                    }
-                }).createCoroutine(completion)
-            }
+                }
+            }).createCoroutine(completion)
         }
 
         private inline fun boxValue(value: Any?): Any {
