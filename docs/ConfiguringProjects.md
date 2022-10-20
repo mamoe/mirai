@@ -50,7 +50,7 @@ dependencies {
 
 > 依赖配置完成，请选择：
 > - [分离 API 和实现（可选）](#分离-api-和实现可选)
-> - [回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)
+> - [回到 Mirai 文档索引](README.md#使用-mirai)
 
 ### Gradle Groovy DSL
 
@@ -68,7 +68,7 @@ dependencies {
 
 > 依赖配置完成，请选择：
 > - [分离 API 和实现（可选）](#分离-api-和实现可选)
-> - [回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)
+> - [回到 Mirai 文档索引](README.md#使用-mirai)
 
 ### 分离 API 和实现（可选）
 
@@ -131,7 +131,7 @@ dependencies {
 > 可以在 [Kotlin 官方文档](https://www.kotlincn.net/docs/reference/using-maven.html) 获取更多有关配置 Kotlin 的信息。
 
 
-> 依赖配置完成，[回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)
+> 依赖配置完成，[回到 Mirai 文档索引](README.md#使用-mirai)
 
 ## C. 下载 JAR 包
 
@@ -139,4 +139,4 @@ dependencies {
 
 在 [Maven Central](https://repo.maven.apache.org/maven2/net/mamoe/mirai-core-all/) 或 [阿里云代理仓库](https://maven.aliyun.com/repository/central/net/mamoe/mirai-core-all/) 下载指定版本的 `-all.jar` 文件，即包含 `mirai-core`，`mirai-core-api`，`mirai-core-utils` 和其他依赖。
 
-> [回到 Mirai 文档索引](README.md#jvm-平台-mirai-开发)
+> [回到 Mirai 文档索引](README.md#使用-mirai)

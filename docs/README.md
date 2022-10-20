@@ -203,6 +203,16 @@ Mirai 原生支持 Java、Kotlin 等 JVM 平台编程语言。
 4. [阅读 mirai-console 文档](../mirai-console/docs/README.md)
    mirai-console 文档可让你了解 mirai-console 的一些系统。
 
+### 多平台 mirai-core 开发
+
+[Kotlin 多平台]: https://kotlinlang.org/docs/multiplatform.html
+
+本节介绍使用 Kotlin 使用 mirai-core 开发 [Kotlin 多平台] 应用程序。
+
+1. [JVM 环境和开发准备工作](Preparations.md#mirai---preparations)
+2. [配置 mirai-core 多平台项目依赖](ConfiguringMultiplatformProjects.md)
+3. [阅读 mirai-core 文档](CoreAPI.md)
+
 ## 发布项目
 
 欢迎各类基于 mirai 开发的开源项目在论坛发布。
@@ -211,14 +221,18 @@ Mirai 原生支持 Java、Kotlin 等 JVM 平台编程语言。
 
 ## 文档
 
+mirai 在 GitHub 托管的文档可让你简要了解各个系统。
+
+mirai 的源码内注释十分详细，包含各种实践示例。
+
 ### mirai-core 文档
 
 请在 [CoreAPI.md](CoreAPI.md) 阅读 JVM 平台的 mirai-core 开发文档。
 
 ### mirai-core API KDoc
 
-可在 <https://kdoc.mirai.mamoe.net/> 查看 KDoc（类似 JavaDoc）。但更建议使用 IntelliJ
-IDEA 等 IDE 在开发时查询源码内文档。
+可在 <https://kdoc.mirai.mamoe.net/> 查看基于源码内注释生成的 KDoc（类似 JavaDoc）。
+但更建议使用 IntelliJ IDEA 等 IDE 在开发时查询源码内注释。
 
 ### mirai-console 文档
 

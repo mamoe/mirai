@@ -172,6 +172,8 @@ projects.mirai-logging.enabled=false
 **注意**，在关闭一个目标后，将无法编辑该目标的相关源集的源码。关闭 native 目标后也可能会影响 native 目标平台原生接口的数据类型。
 因此若非主机性能太差或在 CI 机器运行，**不建议**关闭 native 目标。
 
+[//]: # (备注: 如果要发版, 必须开启全部目标, 否则会导致 metadata 中的平台不全)
+
 - `xxx`：显式启用 `xxx` 目标
 - `!xxx`：显式禁用 `xxx` 目标
 - `native`：显式启用所有 native 目标
