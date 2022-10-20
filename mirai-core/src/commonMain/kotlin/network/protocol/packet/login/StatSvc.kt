@@ -168,8 +168,16 @@ internal class StatSvc {
         ) = impl("online", client, 1L or 2 or 4, client.onlineStatus, regPushReason) {
             if (client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
                 client.bot.components[ServerList].run {
-                    uOldSSOIp = lastDisconnectedIP.toIpV4Long()
-                    uNewSSOIp = lastConnectedIP.toIpV4Long()
+                    kotlin.runCatching {
+                        uOldSSOIp = lastDisconnectedIP.toIpV4Long()
+                        uNewSSOIp = lastConnectedIP.toIpV4Long()
+                    }.onFailure { err ->
+                        client.bot.network.logger.warning({
+                            "Exception when converting ipaddress to long: ld=${lastDisconnectedIP}, lc=${lastConnectedIP}"
+                        }, err)
+                        uNewSSOIp = 0
+                        uOldSSOIp = 0
+                    }
                 }
             } else {
                 uOldSSOIp = 0
