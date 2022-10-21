@@ -317,19 +317,19 @@ internal class MockGroupImpl(
         }
     }
 
-    override suspend fun broadcastMsgSyncEvent(message: MessageChain, time: Int) {
+    override suspend fun broadcastMsgSyncEvent(client: OtherClient, message: MessageChain, time: Int) {
         val src = newMsgSrc(true, message, time.toLong()) { ids, internalIds, time0 ->
             OnlineMsgSrcToGroup(ids, internalIds, time0, message, bot, bot, this)
         }
         val msg = src.withMessage(message)
-        GroupMessageSyncEvent(this, msg, botAsMember, bot.nick, time).broadcast()
+        GroupMessageSyncEvent(client, this, msg, botAsMember, bot.nick, time).broadcast()
     }
 
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
         return super<AbstractMockContact>.sendMessage(message).cast()
     }
 
-    @Suppress("OverridingDeprecatedMember", "DEPRECATION", "DEPRECATION_ERROR", "OVERRIDE_DEPRECATION")
+    @Suppress("OverridingDeprecatedMember", "DEPRECATION_ERROR", "OVERRIDE_DEPRECATION")
     override suspend fun uploadVoice(resource: ExternalResource): net.mamoe.mirai.message.data.Voice =
         resource.mockUploadVoice(bot)
 
