@@ -96,7 +96,7 @@ if (tasks.findByName("androidMainClasses") != null) {
 }
 
 configureMppPublishing()
-configureRelocationForCore()
+relocateKtorForCore(true)
 
 //mavenCentralPublish {
 //    artifactId = "mirai-core-utils"

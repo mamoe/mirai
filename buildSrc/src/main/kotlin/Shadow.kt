@@ -79,15 +79,17 @@ private fun KotlinTarget.configureRelocationForTarget(project: Project) = projec
                 from(project.configurations.getByName("${targetName}RuntimeClasspath")
                     .files
                     .filter { file ->
-                        relocationFilters.any { filter ->
+                        val matchingFilter = relocationFilters.find { filter ->
                             // file.absolutePath example: /Users/xxx/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.7.0-RC/7f9f07fc65e534c15a820f61d846b9ffdba8f162/kotlin-stdlib-jdk8-1.7.0-RC.jar
                             filter.matchesFile(file)
-                        }.also {
-                            fileFiltered = fileFiltered || it
-                            if (it) {
-                                println("Including file: ${file.absolutePath}")
-                            }
                         }
+
+                        if (matchingFilter != null) {
+                            fileFiltered = true
+                            println("Including file: ${file.absolutePath}")
+                        }
+
+                        matchingFilter?.includeInRuntime == true
                     }
                 )
                 check(fileFiltered) { "[Shadow Relocation] Expected at least one file filtered for target $targetName. Filters: $relocationFilters" }
@@ -224,7 +226,12 @@ data class RelocationFilter(
     val groupId: String,
     val artifactId: String? = null,
     val shadowFilter: String = groupId,
-    val filesFilter: String = groupId.replace(".", "/")
+    val filesFilter: String = groupId.replace(".", "/"),
+    /**
+     * Pack relocated dependency into the fat jar. If set to `false`, dependencies will be removed.
+     * This is to avoid duplicated classes. See #2291.
+     */ // #2291
+    val includeInRuntime: Boolean,
 ) {
 
     fun matchesFile(file: File): Boolean {
@@ -262,20 +269,20 @@ private fun ShadowJar.setRelocations() {
     }
 }
 
-fun Project.configureRelocationForCore() {
+fun Project.relocateKtorForCore(includeInRuntime: Boolean) {
     // WARNING: You must also consider relocating transitive dependencies.
     // Otherwise, user will get NoClassDefFound error when using mirai as a classpath dependency. See #2263.
 
-    relocateAllFromGroupId("io.ktor")
-    relocateAllFromGroupId("com.squareup.okhttp3")
-    relocateAllFromGroupId("com.squareup.okio")
+    relocateAllFromGroupId("io.ktor", includeInRuntime)
+    relocateAllFromGroupId("com.squareup.okhttp3", includeInRuntime)
+    relocateAllFromGroupId("com.squareup.okio", includeInRuntime)
 }
 
-fun Project.relocateAllFromGroupId(groupId: String) {
-    relocationFilters.add(RelocationFilter(groupId))
+fun Project.relocateAllFromGroupId(groupId: String, includeInRuntime: Boolean) {
+    relocationFilters.add(RelocationFilter(groupId, includeInRuntime = includeInRuntime))
 }
 
 // This does not include transitive dependencies
-fun Project.relocateExactArtifact(groupId: String, artifactId: String) {
-    relocationFilters.add(RelocationFilter(groupId, artifactId))
+fun Project.relocateExactArtifact(groupId: String, artifactId: String, includeInRuntime: Boolean) {
+    relocationFilters.add(RelocationFilter(groupId, artifactId, includeInRuntime = includeInRuntime))
 }

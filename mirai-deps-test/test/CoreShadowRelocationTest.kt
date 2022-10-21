@@ -45,4 +45,86 @@ class CoreShadowRelocationTest : AbstractTest() {
         )
         runGradle("check")
     }
+
+
+    // https://github.com/mamoe/mirai/issues/2291
+    @Test
+    @EnabledIf("isMiraiLocalAvailable", disabledReason = REASON_LOCAL_ARTIFACT_NOT_AVAILABLE)
+    fun `no duplicated class when dependency shared across modules`() {
+        testDir.resolve("test.kt").writeText(
+            """
+            package test
+            import org.junit.jupiter.api.*
+            class MyTest {
+              @Test
+              fun `test base dependency`() {
+                assertThrows<ClassNotFoundException> {
+                  Class.forName("net.mamoe.mirai.internal.deps.io.ktor.utils.io.ByteBufferChannel") // should only present in mirai-core-utils
+                }
+              }
+            }
+        """.trimIndent()
+        )
+        buildFile.appendText(
+            """
+            dependencies {
+                implementation("net.mamoe:mirai-core:$miraiLocalVersion") {
+                    exclude("net.mamoe", "mirai-core-api")
+                    exclude("net.mamoe", "mirai-core-utils")
+                }
+            }
+        """.trimIndent()
+        )
+        runGradle("check")
+    }
+
+    @Test
+    @EnabledIf("isMiraiLocalAvailable", disabledReason = REASON_LOCAL_ARTIFACT_NOT_AVAILABLE)
+    fun `relocated ktor presents in mirai-core-utils`() {
+        testDir.resolve("test.kt").writeText(
+            """
+            package test
+            import org.junit.jupiter.api.*
+            class MyTest {
+              @Test
+              fun `test base dependency`() {
+                Class.forName("net.mamoe.mirai.internal.deps.io.ktor.utils.io.ByteBufferChannel")
+              }
+            }
+        """.trimIndent()
+        )
+        buildFile.appendText(
+            """
+            dependencies {
+                implementation("net.mamoe:mirai-core-utils:$miraiLocalVersion")
+            }
+        """.trimIndent()
+        )
+        runGradle("check")
+    }
+
+    @Test
+    @EnabledIf("isMiraiLocalAvailable", disabledReason = REASON_LOCAL_ARTIFACT_NOT_AVAILABLE)
+    fun `relocated ktor presents transitively in mirai-core`() {
+        testDir.resolve("test.kt").writeText(
+            """
+            package test
+            import org.junit.jupiter.api.*
+            class MyTest {
+              @Test
+              fun `test base dependency`() {
+                Class.forName("net.mamoe.mirai.internal.deps.io.ktor.utils.io.ByteBufferChannel")
+              }
+            }
+        """.trimIndent()
+        )
+        buildFile.appendText(
+            """
+            dependencies {
+                implementation("net.mamoe:mirai-core:$miraiLocalVersion")
+            }
+        """.trimIndent()
+        )
+        runGradle("check")
+    }
 }
