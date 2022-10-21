@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.mock.contact
 
+import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.mock.MockBotDSL
 
@@ -17,5 +18,5 @@ public interface MockMsgSyncSupport : MockContact {
      * 广播消息同步事件
      */
     @MockBotDSL
-    public suspend fun broadcastMsgSyncEvent(message: MessageChain, time: Int)
+    public suspend fun broadcastMsgSyncEvent(client: OtherClient, message: MessageChain, time: Int)
 }

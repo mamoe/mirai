@@ -14,6 +14,7 @@ package net.mamoe.mirai.mock.internal.contact
 import kotlinx.coroutines.cancel
 import net.mamoe.mirai.contact.AvatarSpec
 import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.contact.friendgroup.FriendGroup
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.event.broadcast
@@ -130,12 +131,12 @@ internal class MockFriendImpl(
         return msg
     }
 
-    override suspend fun broadcastMsgSyncEvent(message: MessageChain, time: Int) {
+    override suspend fun broadcastMsgSyncEvent(client: OtherClient, message: MessageChain, time: Int) {
         val src = newMsgSrc(true, message, time.toLong()) { ids, internalIds, time0 ->
             OnlineMsgSrcToFriend(ids, internalIds, time0, message, bot, bot, this)
         }
         val msg = src.withMessage(message)
-        FriendMessageSyncEvent(this, msg, time).broadcast()
+        FriendMessageSyncEvent(client, this, msg, time).broadcast()
     }
 
     override fun toString(): String {
