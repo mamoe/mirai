@@ -109,7 +109,6 @@ internal class KotlinFlowToJdkStreamTest {
             throw myError
         }.toStream(
             context = Dispatchers.IO,
-            unintercepted = false,
         ).use { stream ->
             assertFailsWith<RuntimeException>(msg) { stream.findFirst() }.let { err ->
                 assertSame(myError, err.cause)
