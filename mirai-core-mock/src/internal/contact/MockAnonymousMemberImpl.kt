@@ -62,6 +62,7 @@ internal class MockAnonymousMemberImpl(
     override suspend fun uploadImage(resource: ExternalResource): Image =
         super<AbstractMockContact>.uploadImage(resource)
 
+    @Suppress("UNUSED_PARAMETER")
     override var permission: MemberPermission
         get() = MemberPermission.MEMBER
         set(value) {

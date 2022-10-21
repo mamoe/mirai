@@ -18,7 +18,6 @@ import net.mamoe.mirai.contact.announcement.Announcement
 import net.mamoe.mirai.contact.announcement.AnnouncementImage
 import net.mamoe.mirai.contact.announcement.OnlineAnnouncement
 import net.mamoe.mirai.contact.isOperator
-import net.mamoe.mirai.event.events.GroupEntranceAnnouncementChangeEvent
 import net.mamoe.mirai.mock.contact.announcement.MockAnnouncements
 import net.mamoe.mirai.mock.contact.announcement.MockOnlineAnnouncement
 import net.mamoe.mirai.mock.contact.announcement.copy
@@ -45,21 +44,21 @@ internal class MockAnnouncementsImpl(
 
     @Suppress("MemberVisibilityCanBePrivate")
     internal fun putDirect(announcement: MockOnlineAnnouncement) {
-        val annoc = if (announcement.fid.isEmpty()) {
+        val ann = if (announcement.fid.isEmpty()) {
             announcement.copy(fid = UUID.randomUUID().toString())
         } else announcement
-        if (annoc.parameters.sendToNewMember) {
+        if (ann.parameters.sendToNewMember) {
             announcements.entries.removeIf { (_, v) -> v.parameters.sendToNewMember }
         }
-        announcements[annoc.fid] = annoc
-        annoc.group = group
+        announcements[ann.fid] = ann
+        ann.group = group
     }
 
     override fun mockPublish(announcement: Announcement, actor: NormalMember, events: Boolean): OnlineAnnouncement {
         val old = if (announcement.parameters.sendToNewMember)
             announcements.elements().toList().firstOrNull { oa -> oa.parameters.sendToNewMember }
         else null
-        val onac = MockOnlineAnnouncement(
+        val ann = MockOnlineAnnouncement(
             content = announcement.content,
             parameters = announcement.parameters,
             senderId = actor.id,
@@ -68,19 +67,19 @@ internal class MockAnnouncementsImpl(
             confirmedMembersCount = 0,
             publicationTime = currentTimeSeconds()
         )
-        putDirect(onac)
-        if (!events) return onac
+        putDirect(ann)
+        if (!events) return ann
 
         @Suppress("DEPRECATION")
-        GroupEntranceAnnouncementChangeEvent(
+        net.mamoe.mirai.event.events.GroupEntranceAnnouncementChangeEvent(
             origin = old?.content.orEmpty(),
-            new = onac.content,
+            new = ann.content,
             group = group,
             operator = actor.takeUnless { it.id == group.bot.id }
         ).broadcastBlocking()
 
         // TODO: mirai-core no other events about announcements
-        return onac
+        return ann
     }
 
     override suspend fun publish(announcement: Announcement): OnlineAnnouncement {

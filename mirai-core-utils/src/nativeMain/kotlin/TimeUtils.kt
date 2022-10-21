@@ -19,12 +19,13 @@ import platform.posix.*
 /**
  * 时间戳
  */
+@OptIn(UnsafeNumber::class)
 public actual fun currentTimeMillis(): Long {
     // Do not use getTimeMillis from stdlib, it doesn't support iosSimulatorArm64
     memScoped {
         val spec = alloc<timespec>()
         clock_gettime(CLOCK_REALTIME.convert(), spec.ptr)
-        return (spec.tv_sec * 1000 + spec.tv_nsec / 1e6).toLong()
+        return (spec.tv_sec * 1000 + spec.tv_nsec.convert<Long>() / 1e6).toLong()
     }
 }
 

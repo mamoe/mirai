@@ -101,7 +101,8 @@ internal class MockGroupTest : MockBotTestBase() {
             )
         }.let { events ->
             assertEquals(2, events.size)
-            assertIsInstance<GroupEntranceAnnouncementChangeEvent>(events[0])
+            @Suppress("RemoveRedundantQualifierName", "DEPRECATION")
+            assertIsInstance<net.mamoe.mirai.event.events.GroupEntranceAnnouncementChangeEvent>(events[0])
         }
         val anc = group.announcements.asFlow().toList()
         assertEquals(1, anc.size)

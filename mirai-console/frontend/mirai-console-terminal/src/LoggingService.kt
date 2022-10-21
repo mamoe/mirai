@@ -9,9 +9,7 @@
 
 package net.mamoe.mirai.console.terminal
 
-import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.utils.TestOnly
-import java.io.File
 
 // Used by https://github.com/iTXTech/soyuz, change with care.
 internal sealed class LoggingService {
@@ -31,14 +29,3 @@ internal class LoggingServiceNoop : LoggingService() {
     }
 }
 
-internal class LoggingServiceI(
-    scope: CoroutineScope,
-) : LoggingService() {
-    fun startup(logDir: File) {
-    }
-
-
-    override fun pushLine(line: String) {
-    }
-
-}

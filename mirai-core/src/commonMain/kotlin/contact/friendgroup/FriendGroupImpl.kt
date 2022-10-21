@@ -20,7 +20,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 @OptIn(ExperimentalContracts::class)
-internal inline fun FriendGroup.impl(): FriendGroupImpl {
+internal fun FriendGroup.impl(): FriendGroupImpl {
     contract {
         returns() implies (this@impl is FriendGroupImpl)
     }
