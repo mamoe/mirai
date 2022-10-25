@@ -356,7 +356,6 @@ ___  ____           _   _____                       _
                     }
                     if (id == 123456L) continue
                     fun BotConfiguration.configBot() {
-                        mainLogger.info { "Auto-login ${account.account}" }
 
                         account.configuration[ConfigurationKey.protocol]?.let { protocol ->
                             this.protocol = runCatching {
@@ -381,6 +380,8 @@ ___  ____           _   _____                       _
                         account.configuration[ConfigurationKey.device]?.let { device ->
                             fileBasedDeviceInfo(device.toString())
                         }
+
+                        mainLogger.info { "Auto-login ${account.account}, protocol: ${this.protocol}, heartbeatStrategy: ${this.heartbeatStrategy}" }
                     }
 
                     val bot = when (account.password.kind) {
