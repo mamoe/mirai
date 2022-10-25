@@ -1,0 +1,1004 @@
+public final class net/mamoe/mirai/clikt/core/BadParameterValue : net/mamoe/mirai/clikt/core/UsageError {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/parameters/options/Option;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/parameters/options/Option;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public abstract class net/mamoe/mirai/clikt/core/CliktCommand : net/mamoe/mirai/clikt/core/ParameterHolder {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Map;ZZ)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Map;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun aliases ()Ljava/util/Map;
+	public fun getCommandHelp ()Ljava/lang/String;
+	public fun getCommandHelpEpilog ()Ljava/lang/String;
+	public final fun getCommandName ()Ljava/lang/String;
+	public final fun getCurrentContext ()Lnet/mamoe/mirai/clikt/core/Context;
+	public fun getFormattedHelp ()Ljava/lang/String;
+	public fun getFormattedUsage ()Ljava/lang/String;
+	public final fun getHelpTags ()Ljava/util/Map;
+	public final fun getInvokeWithoutSubcommand ()Z
+	public final fun getMessages ()Ljava/util/List;
+	public final fun getPrintHelpOnEmptyArgs ()Z
+	public final fun issueMessage (Ljava/lang/String;)V
+	public final fun main (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun main (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun main ([Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun parse (Ljava/util/List;Lnet/mamoe/mirai/clikt/core/Context;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun parse ([Ljava/lang/String;Lnet/mamoe/mirai/clikt/core/Context;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun parse$default (Lnet/mamoe/mirai/clikt/core/CliktCommand;Ljava/util/List;Lnet/mamoe/mirai/clikt/core/Context;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun parse$default (Lnet/mamoe/mirai/clikt/core/CliktCommand;[Ljava/lang/String;Lnet/mamoe/mirai/clikt/core/Context;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun registerArgument (Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;)V
+	public fun registerOption (Lnet/mamoe/mirai/clikt/core/GroupableOption;)V
+	public final fun registerOption (Lnet/mamoe/mirai/clikt/parameters/options/Option;)V
+	public final fun registerOptionGroup (Lnet/mamoe/mirai/clikt/parameters/groups/ParameterGroup;)V
+	public final fun registeredArguments ()Ljava/util/List;
+	public final fun registeredOptions ()Ljava/util/List;
+	public final fun registeredParameterGroups ()Ljava/util/List;
+	public final fun registeredSubcommandNames ()Ljava/util/List;
+	public final fun registeredSubcommands ()Ljava/util/List;
+	public abstract fun run (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	protected final fun shortHelp ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/clikt/core/CliktCommandKt {
+	public static final fun context (Lnet/mamoe/mirai/clikt/core/CliktCommand;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/clikt/core/CliktCommand;
+	public static final fun subcommands (Lnet/mamoe/mirai/clikt/core/CliktCommand;Ljava/lang/Iterable;)Lnet/mamoe/mirai/clikt/core/CliktCommand;
+	public static final fun subcommands (Lnet/mamoe/mirai/clikt/core/CliktCommand;[Lnet/mamoe/mirai/clikt/core/CliktCommand;)Lnet/mamoe/mirai/clikt/core/CliktCommand;
+}
+
+public class net/mamoe/mirai/clikt/core/CliktError : java/lang/RuntimeException {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Exception;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Exception;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public abstract interface class net/mamoe/mirai/clikt/core/CommandResult {
+}
+
+public final class net/mamoe/mirai/clikt/core/CommandResult$Error : java/lang/IllegalStateException, net/mamoe/mirai/clikt/core/CommandResult {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Exception;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Exception;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getUserMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/clikt/core/CommandResult$Success : net/mamoe/mirai/clikt/core/CommandResult {
+	public static final field INSTANCE Lnet/mamoe/mirai/clikt/core/CommandResult$Success;
+}
+
+public final class net/mamoe/mirai/clikt/core/Context {
+	public static final field Companion Lnet/mamoe/mirai/clikt/core/Context$Companion;
+	public fun <init> (Lnet/mamoe/mirai/clikt/core/Context;Lnet/mamoe/mirai/clikt/core/CliktCommand;ZLjava/util/Set;Lnet/mamoe/mirai/clikt/output/HelpFormatter;Lkotlin/jvm/functions/Function2;ZZLnet/mamoe/mirai/clikt/sources/ValueSource;Lkotlin/jvm/functions/Function2;Lnet/mamoe/mirai/clikt/output/Localization;)V
+	public final fun ancestors ()Lkotlin/sequences/Sequence;
+	public final fun commandNameWithParents ()Ljava/util/List;
+	public final fun fail (Ljava/lang/String;)Ljava/lang/Void;
+	public static synthetic fun fail$default (Lnet/mamoe/mirai/clikt/core/Context;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/Void;
+	public final fun findRoot ()Lnet/mamoe/mirai/clikt/core/Context;
+	public final fun getAllowInterspersedArgs ()Z
+	public final fun getCommand ()Lnet/mamoe/mirai/clikt/core/CliktCommand;
+	public final fun getCorrectionSuggestor ()Lkotlin/jvm/functions/Function2;
+	public final fun getExpandArgumentFiles ()Z
+	public final fun getHelpFormatter ()Lnet/mamoe/mirai/clikt/output/HelpFormatter;
+	public final fun getHelpOptionNames ()Ljava/util/Set;
+	public final fun getInvokedSubcommand ()Lnet/mamoe/mirai/clikt/core/CliktCommand;
+	public final fun getLocalization ()Lnet/mamoe/mirai/clikt/output/Localization;
+	public final fun getObj ()Ljava/lang/Object;
+	public final fun getParent ()Lnet/mamoe/mirai/clikt/core/Context;
+	public final fun getReadEnvvarBeforeValueSource ()Z
+	public final fun getTokenTransformer ()Lkotlin/jvm/functions/Function2;
+	public final fun getValueSource ()Lnet/mamoe/mirai/clikt/sources/ValueSource;
+	public final fun parentNames ()Ljava/util/List;
+	public final fun setObj (Ljava/lang/Object;)V
+}
+
+public final class net/mamoe/mirai/clikt/core/Context$Builder {
+	public fun <init> ()V
+	public fun <init> (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getAllowInterspersedArgs ()Z
+	public final fun getCorrectionSuggestor ()Lkotlin/jvm/functions/Function2;
+	public final fun getExpandArgumentFiles ()Z
+	public final fun getHelpFormatter ()Lnet/mamoe/mirai/clikt/output/HelpFormatter;
+	public final fun getHelpOptionNames ()Ljava/util/Set;
+	public final fun getLocalization ()Lnet/mamoe/mirai/clikt/output/Localization;
+	public final fun getReadEnvvarBeforeValueSource ()Z
+	public final fun getTokenTransformer ()Lkotlin/jvm/functions/Function2;
+	public final fun getValueSource ()Lnet/mamoe/mirai/clikt/sources/ValueSource;
+	public final fun setAllowInterspersedArgs (Z)V
+	public final fun setCorrectionSuggestor (Lkotlin/jvm/functions/Function2;)V
+	public final fun setExpandArgumentFiles (Z)V
+	public final fun setHelpFormatter (Lnet/mamoe/mirai/clikt/output/HelpFormatter;)V
+	public final fun setHelpOptionNames (Ljava/util/Set;)V
+	public final fun setLocalization (Lnet/mamoe/mirai/clikt/output/Localization;)V
+	public final fun setReadEnvvarBeforeValueSource (Z)V
+	public final fun setTokenTransformer (Lkotlin/jvm/functions/Function2;)V
+	public final fun setValueSource (Lnet/mamoe/mirai/clikt/sources/ValueSource;)V
+	public final fun valueSources ([Lnet/mamoe/mirai/clikt/sources/ValueSource;)V
+}
+
+public final class net/mamoe/mirai/clikt/core/Context$Companion {
+}
+
+public final class net/mamoe/mirai/clikt/core/FileNotFound : net/mamoe/mirai/clikt/core/UsageError {
+	public fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public abstract interface class net/mamoe/mirai/clikt/core/GroupableOption : net/mamoe/mirai/clikt/core/StaticallyGroupedOption {
+	public abstract fun getGroupName ()Ljava/lang/String;
+	public abstract fun getParameterGroup ()Lnet/mamoe/mirai/clikt/parameters/groups/ParameterGroup;
+	public abstract fun setGroupName (Ljava/lang/String;)V
+	public abstract fun setParameterGroup (Lnet/mamoe/mirai/clikt/parameters/groups/ParameterGroup;)V
+}
+
+public final class net/mamoe/mirai/clikt/core/IncorrectArgumentValueCount : net/mamoe/mirai/clikt/core/UsageError {
+	public fun <init> (Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class net/mamoe/mirai/clikt/core/IncorrectOptionValueCount : net/mamoe/mirai/clikt/core/UsageError {
+	public fun <init> (Lnet/mamoe/mirai/clikt/parameters/options/Option;Ljava/lang/String;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/clikt/parameters/options/Option;Ljava/lang/String;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class net/mamoe/mirai/clikt/core/InvalidFileFormat : net/mamoe/mirai/clikt/core/UsageError {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class net/mamoe/mirai/clikt/core/JaroWinkerSimilarityKt {
+	public static final fun jaroWinklerSimilarity (Ljava/lang/String;Ljava/lang/String;)D
+}
+
+public final class net/mamoe/mirai/clikt/core/MissingArgument : net/mamoe/mirai/clikt/core/UsageError {
+	public fun <init> (Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class net/mamoe/mirai/clikt/core/MissingOption : net/mamoe/mirai/clikt/core/UsageError {
+	public fun <init> (Lnet/mamoe/mirai/clikt/parameters/options/Option;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/clikt/parameters/options/Option;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class net/mamoe/mirai/clikt/core/MutuallyExclusiveGroupException : net/mamoe/mirai/clikt/core/UsageError {
+	public fun <init> (Ljava/util/List;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Ljava/util/List;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public class net/mamoe/mirai/clikt/core/NoOpCliktCommand : net/mamoe/mirai/clikt/core/CliktCommand {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Map;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Map;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun run (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/clikt/core/NoSuchOption : net/mamoe/mirai/clikt/core/NoSuchParameter {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public class net/mamoe/mirai/clikt/core/NoSuchParameter : net/mamoe/mirai/clikt/core/UsageError {
+	protected fun <init> (Lnet/mamoe/mirai/clikt/core/Context;)V
+}
+
+public final class net/mamoe/mirai/clikt/core/NoSuchSubcommand : net/mamoe/mirai/clikt/core/NoSuchParameter {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Lnet/mamoe/mirai/clikt/core/Context;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public abstract interface class net/mamoe/mirai/clikt/core/ParameterHolder {
+	public abstract fun registerOption (Lnet/mamoe/mirai/clikt/core/GroupableOption;)V
+}
+
+public abstract interface annotation class net/mamoe/mirai/clikt/core/ParameterHolderDsl : java/lang/annotation/Annotation {
+}
+
+public final class net/mamoe/mirai/clikt/core/ParseStringToArgsKt {
+	public static final fun parseToArgs (Ljava/lang/String;)Ljava/util/List;
+}
+
+public final class net/mamoe/mirai/clikt/core/PrintHelpMessage : net/mamoe/mirai/clikt/core/CliktError {
+	public fun <init> (Lnet/mamoe/mirai/clikt/core/CliktCommand;Z)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/clikt/core/CliktCommand;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCommand ()Lnet/mamoe/mirai/clikt/core/CliktCommand;
+	public final fun getError ()Z
+}
+
+public class net/mamoe/mirai/clikt/core/PrintMessage : net/mamoe/mirai/clikt/core/CliktError {
+	public fun <init> (Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getError ()Z
+}
+
+public abstract interface class net/mamoe/mirai/clikt/core/StaticallyGroupedOption : net/mamoe/mirai/clikt/parameters/options/Option {
+	public abstract fun getGroupName ()Ljava/lang/String;
+}
+
+public class net/mamoe/mirai/clikt/core/UsageError : net/mamoe/mirai/clikt/core/CliktError {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/clikt/core/Context;I)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lnet/mamoe/mirai/clikt/core/Context;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;Lnet/mamoe/mirai/clikt/core/Context;I)V
+	public synthetic fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;Lnet/mamoe/mirai/clikt/core/Context;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/parameters/options/Option;Lnet/mamoe/mirai/clikt/core/Context;I)V
+	public synthetic fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/parameters/options/Option;Lnet/mamoe/mirai/clikt/core/Context;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun formatMessage ()Ljava/lang/String;
+	public final fun getArgument ()Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;
+	public final fun getContext ()Lnet/mamoe/mirai/clikt/core/Context;
+	protected final fun getLocalization ()Lnet/mamoe/mirai/clikt/output/Localization;
+	public fun getMessage ()Ljava/lang/String;
+	public final fun getOption ()Lnet/mamoe/mirai/clikt/parameters/options/Option;
+	public final fun getParamName ()Ljava/lang/String;
+	public final fun getStatusCode ()I
+	public final fun getText ()Ljava/lang/String;
+	public final fun helpMessage ()Ljava/lang/String;
+	protected final fun inferParamName ()Ljava/lang/String;
+	public final fun setArgument (Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;)V
+	public final fun setContext (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public final fun setOption (Lnet/mamoe/mirai/clikt/parameters/options/Option;)V
+	public final fun setParamName (Ljava/lang/String;)V
+}
+
+public final class net/mamoe/mirai/clikt/i18n/ChineseL10n : net/mamoe/mirai/clikt/output/Localization {
+	public fun <init> ()V
+	public fun argumentsTitle ()Ljava/lang/String;
+	public fun badParameter ()Ljava/lang/String;
+	public fun badParameterWithMessage (Ljava/lang/String;)Ljava/lang/String;
+	public fun badParameterWithMessageAndParam (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public fun badParameterWithParam (Ljava/lang/String;)Ljava/lang/String;
+	public fun boolConversionError (Ljava/lang/String;)Ljava/lang/String;
+	public fun commandMetavar ()Ljava/lang/String;
+	public fun commandsTitle ()Ljava/lang/String;
+	public fun extraArgumentMany (Ljava/lang/String;I)Ljava/lang/String;
+	public fun extraArgumentOne (Ljava/lang/String;)Ljava/lang/String;
+	public fun fileEndsWithSlash ()Ljava/lang/String;
+	public fun fileNotFound (Ljava/lang/String;)Ljava/lang/String;
+	public fun floatConversionError (Ljava/lang/String;)Ljava/lang/String;
+	public fun helpOptionMessage ()Ljava/lang/String;
+	public fun helpTagDefault ()Ljava/lang/String;
+	public fun helpTagRequired ()Ljava/lang/String;
+	public fun incorrectArgumentValueCount (Ljava/lang/String;I)Ljava/lang/String;
+	public fun incorrectOptionValueCount (Ljava/lang/String;I)Ljava/lang/String;
+	public fun intConversionError (Ljava/lang/String;)Ljava/lang/String;
+	public fun invalidChoice (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public fun invalidFileFormat (Ljava/lang/String;ILjava/lang/String;)Ljava/lang/String;
+	public fun invalidFileFormat (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public fun invalidFlagValueInFile (Ljava/lang/String;)Ljava/lang/String;
+	public fun invalidGroupChoice (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public fun missingArgument (Ljava/lang/String;)Ljava/lang/String;
+	public fun missingOption (Ljava/lang/String;)Ljava/lang/String;
+	public fun mutexGroupException (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public fun noSuchOption (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public fun noSuchSubcommand (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public fun optionsMetavar ()Ljava/lang/String;
+	public fun optionsTitle ()Ljava/lang/String;
+	public fun rangeExceededBoth (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public fun rangeExceededMax (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public fun rangeExceededMin (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public fun requiredMutexOption (Ljava/lang/String;)Ljava/lang/String;
+	public fun switchOptionEnvvar ()Ljava/lang/String;
+	public fun unclosedQuote ()Ljava/lang/String;
+	public fun usageError (Ljava/lang/String;)Ljava/lang/String;
+	public fun usageTitle ()Ljava/lang/String;
+}
+
+public class net/mamoe/mirai/clikt/output/CliktHelpFormatter : net/mamoe/mirai/clikt/output/HelpFormatter {
+	public fun <init> ()V
+	public fun <init> (Lnet/mamoe/mirai/clikt/output/Localization;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Integer;ILjava/lang/String;ZZ)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/clikt/output/Localization;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Integer;ILjava/lang/String;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun addArguments (Ljava/lang/StringBuilder;Ljava/util/List;)V
+	protected fun addCommands (Ljava/lang/StringBuilder;Ljava/util/List;)V
+	protected fun addEpilog (Ljava/lang/StringBuilder;Ljava/lang/String;)V
+	protected fun addOptionGroup (Ljava/lang/StringBuilder;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
+	protected fun addOptions (Ljava/lang/StringBuilder;Ljava/util/List;)V
+	protected fun addProlog (Ljava/lang/StringBuilder;Ljava/lang/String;)V
+	protected fun addUsage (Ljava/lang/StringBuilder;Ljava/util/List;Ljava/lang/String;)V
+	protected final fun appendDefinitionList (Ljava/lang/StringBuilder;Ljava/util/List;)V
+	public fun formatHelp (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;)Ljava/lang/String;
+	public fun formatUsage (Ljava/util/List;Ljava/lang/String;)Ljava/lang/String;
+	protected final fun getColSpacing ()I
+	protected final fun getGraphemeLength (Ljava/lang/String;)I
+	protected final fun getIndent ()Ljava/lang/String;
+	protected final fun getLocalization ()Lnet/mamoe/mirai/clikt/output/Localization;
+	protected final fun getMaxColWidth ()I
+	protected final fun getRequiredOptionMarker ()Ljava/lang/String;
+	protected final fun getShowDefaultValues ()Z
+	protected final fun getShowRequiredTag ()Z
+	protected final fun getWidth ()I
+	protected fun joinNamesForOption (Ljava/util/Set;)Ljava/lang/String;
+	protected fun optionMetavar (Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Option;)Ljava/lang/String;
+	protected fun renderArgumentName (Ljava/lang/String;)Ljava/lang/String;
+	protected fun renderHelpText (Ljava/lang/String;Ljava/util/Map;)Ljava/lang/String;
+	protected fun renderOptionName (Ljava/lang/String;)Ljava/lang/String;
+	protected fun renderSectionTitle (Ljava/lang/String;)Ljava/lang/String;
+	protected fun renderSubcommandName (Ljava/lang/String;)Ljava/lang/String;
+	protected fun renderTag (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	protected fun shouldShowTag (Ljava/lang/String;Ljava/lang/String;)Z
+}
+
+protected final class net/mamoe/mirai/clikt/output/CliktHelpFormatter$DefinitionRow {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/output/CliktHelpFormatter$DefinitionRow;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/output/CliktHelpFormatter$DefinitionRow;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/output/CliktHelpFormatter$DefinitionRow;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCol1 ()Ljava/lang/String;
+	public final fun getCol2 ()Ljava/lang/String;
+	public final fun getMarker ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class net/mamoe/mirai/clikt/output/HelpFormatter {
+	public abstract fun formatHelp (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;)Ljava/lang/String;
+	public static synthetic fun formatHelp$default (Lnet/mamoe/mirai/clikt/output/HelpFormatter;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
+	public abstract fun formatUsage (Ljava/util/List;Ljava/lang/String;)Ljava/lang/String;
+	public static synthetic fun formatUsage$default (Lnet/mamoe/mirai/clikt/output/HelpFormatter;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
+}
+
+public abstract class net/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp {
+}
+
+public final class net/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Argument : net/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Map;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Z
+	public final fun component4 ()Z
+	public final fun component5 ()Ljava/util/Map;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Map;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Argument;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Argument;Ljava/lang/String;Ljava/lang/String;ZZLjava/util/Map;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Argument;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHelp ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getRepeatable ()Z
+	public final fun getRequired ()Z
+	public final fun getTags ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Group : net/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Group;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Group;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Group;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHelp ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Option : net/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp {
+	public fun <init> (Ljava/util/Set;Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;ILjava/util/Map;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/util/Set;
+	public final fun component2 ()Ljava/util/Set;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()I
+	public final fun component6 ()Ljava/util/Map;
+	public final fun component7 ()Ljava/lang/String;
+	public final fun copy (Ljava/util/Set;Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;ILjava/util/Map;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Option;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Option;Ljava/util/Set;Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;ILjava/util/Map;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Option;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getGroupName ()Ljava/lang/String;
+	public final fun getHelp ()Ljava/lang/String;
+	public final fun getMetavar ()Ljava/lang/String;
+	public final fun getNames ()Ljava/util/Set;
+	public final fun getNvalues ()I
+	public final fun getSecondaryNames ()Ljava/util/Set;
+	public final fun getTags ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Subcommand : net/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/util/Map;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Subcommand;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Subcommand;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Subcommand;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHelp ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getTags ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/clikt/output/HelpFormatter$Tags {
+	public static final field DEFAULT Ljava/lang/String;
+	public static final field INSTANCE Lnet/mamoe/mirai/clikt/output/HelpFormatter$Tags;
+	public static final field REQUIRED Ljava/lang/String;
+}
+
+public abstract interface class net/mamoe/mirai/clikt/output/Localization {
+	public fun aborted ()Ljava/lang/String;
+	public fun argumentsTitle ()Ljava/lang/String;
+	public fun badParameter ()Ljava/lang/String;
+	public fun badParameterWithMessage (Ljava/lang/String;)Ljava/lang/String;
+	public fun badParameterWithMessageAndParam (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public fun badParameterWithParam (Ljava/lang/String;)Ljava/lang/String;
+	public fun boolConversionError (Ljava/lang/String;)Ljava/lang/String;
+	public fun commandMetavar ()Ljava/lang/String;
+	public fun commandsTitle ()Ljava/lang/String;
+	public fun defaultMetavar ()Ljava/lang/String;
+	public fun extraArgumentMany (Ljava/lang/String;I)Ljava/lang/String;
+	public fun extraArgumentOne (Ljava/lang/String;)Ljava/lang/String;
+	public fun fileEndsWithSlash ()Ljava/lang/String;
+	public fun fileMetavar ()Ljava/lang/String;
+	public fun fileNotFound (Ljava/lang/String;)Ljava/lang/String;
+	public fun floatConversionError (Ljava/lang/String;)Ljava/lang/String;
+	public fun floatMetavar ()Ljava/lang/String;
+	public fun helpOptionMessage ()Ljava/lang/String;
+	public fun helpTagDefault ()Ljava/lang/String;
+	public fun helpTagRequired ()Ljava/lang/String;
+	public fun incorrectArgumentValueCount (Ljava/lang/String;I)Ljava/lang/String;
+	public fun incorrectOptionValueCount (Ljava/lang/String;I)Ljava/lang/String;
+	public fun intConversionError (Ljava/lang/String;)Ljava/lang/String;
+	public fun intMetavar ()Ljava/lang/String;
+	public fun invalidChoice (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public fun invalidFileFormat (Ljava/lang/String;ILjava/lang/String;)Ljava/lang/String;
+	public fun invalidFileFormat (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public fun invalidFlagValueInFile (Ljava/lang/String;)Ljava/lang/String;
+	public fun invalidGroupChoice (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public fun missingArgument (Ljava/lang/String;)Ljava/lang/String;
+	public fun missingOption (Ljava/lang/String;)Ljava/lang/String;
+	public fun mutexGroupException (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public fun noSuchOption (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public fun noSuchSubcommand (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public fun optionsMetavar ()Ljava/lang/String;
+	public fun optionsTitle ()Ljava/lang/String;
+	public fun pathMetavar ()Ljava/lang/String;
+	public fun rangeExceededBoth (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public fun rangeExceededMax (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public fun rangeExceededMin (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public fun requiredMutexOption (Ljava/lang/String;)Ljava/lang/String;
+	public fun stringMetavar ()Ljava/lang/String;
+	public fun switchOptionEnvvar ()Ljava/lang/String;
+	public fun unclosedQuote ()Ljava/lang/String;
+	public fun usageError (Ljava/lang/String;)Ljava/lang/String;
+	public fun usageTitle ()Ljava/lang/String;
+}
+
+public abstract interface class net/mamoe/mirai/clikt/parameters/arguments/Argument {
+	public abstract fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/List;)V
+	public abstract fun getArgumentHelp ()Ljava/lang/String;
+	public abstract fun getHelpTags ()Ljava/util/Map;
+	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun getNvalues ()I
+	public abstract fun getRequired ()Z
+	public abstract fun parameterHelp (Lnet/mamoe/mirai/clikt/core/Context;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Argument;
+	public abstract fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+}
+
+public abstract interface class net/mamoe/mirai/clikt/parameters/arguments/ArgumentDelegate : kotlin/properties/ReadOnlyProperty, net/mamoe/mirai/clikt/parameters/arguments/Argument {
+	public abstract fun provideDelegate (Lnet/mamoe/mirai/clikt/core/CliktCommand;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/arguments/ArgumentKt {
+	public static final fun argument (Lnet/mamoe/mirai/clikt/core/CliktCommand;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static synthetic fun argument$default (Lnet/mamoe/mirai/clikt/core/CliktCommand;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun check (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/clikt/parameters/arguments/ArgumentDelegate;
+	public static final fun check (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/clikt/parameters/arguments/ArgumentDelegate;
+	public static synthetic fun check$default (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ArgumentDelegate;
+	public static final fun convert (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun default (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Ljava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ArgumentDelegate;
+	public static final fun defaultAllProcessor ()Lkotlin/jvm/functions/Function2;
+	public static final fun defaultLazy (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Lkotlin/jvm/functions/Function0;)Lnet/mamoe/mirai/clikt/parameters/arguments/ArgumentDelegate;
+	public static final fun defaultValidator ()Lkotlin/jvm/functions/Function2;
+	public static final fun help (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun multiple (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;ZLjava/util/List;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static synthetic fun multiple$default (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;ZLjava/util/List;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun nullableCheck (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/clikt/parameters/arguments/ArgumentDelegate;
+	public static final fun nullableLazyCheck (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/clikt/parameters/arguments/ArgumentDelegate;
+	public static synthetic fun nullableLazyCheck$default (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ArgumentDelegate;
+	public static final fun nullableValidate (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/arguments/ArgumentDelegate;
+	public static final fun optional (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun pair (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun transformAll (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Ljava/lang/Integer;Ljava/lang/Boolean;Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static synthetic fun transformAll$default (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Ljava/lang/Integer;Ljava/lang/Boolean;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun triple (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun unique (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun validate (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/arguments/ArgumentDelegate;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/arguments/ArgumentTransformContext : net/mamoe/mirai/clikt/parameters/arguments/Argument {
+	public fun <init> (Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public final fun fail (Ljava/lang/String;)Ljava/lang/Void;
+	public fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/List;)V
+	public final fun getArgument ()Lnet/mamoe/mirai/clikt/parameters/arguments/Argument;
+	public fun getArgumentHelp ()Ljava/lang/String;
+	public final fun getContext ()Lnet/mamoe/mirai/clikt/core/Context;
+	public fun getHelpTags ()Ljava/util/Map;
+	public fun getName ()Ljava/lang/String;
+	public fun getNvalues ()I
+	public fun getRequired ()Z
+	public final fun message (Ljava/lang/String;)V
+	public fun parameterHelp (Lnet/mamoe/mirai/clikt/core/Context;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Argument;
+	public fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public final fun require (ZLkotlin/jvm/functions/Function0;)V
+	public static synthetic fun require$default (Lnet/mamoe/mirai/clikt/parameters/arguments/ArgumentTransformContext;ZLkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+}
+
+public final class net/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument : net/mamoe/mirai/clikt/parameters/arguments/ArgumentDelegate {
+	public final fun copy (Lkotlin/jvm/functions/Function2;Ljava/lang/String;IZLjava/lang/String;Ljava/util/Map;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public final fun copy (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/lang/String;IZLjava/lang/String;Ljava/util/Map;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Lkotlin/jvm/functions/Function2;Ljava/lang/String;IZLjava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/lang/String;IZLjava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/List;)V
+	public fun getArgumentHelp ()Ljava/lang/String;
+	public fun getHelpTags ()Ljava/util/Map;
+	public fun getName ()Ljava/lang/String;
+	public fun getNvalues ()I
+	public fun getRequired ()Z
+	public final fun getTransformAll ()Lkotlin/jvm/functions/Function2;
+	public final fun getTransformValidator ()Lkotlin/jvm/functions/Function2;
+	public final fun getTransformValue ()Lkotlin/jvm/functions/Function2;
+	public synthetic fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun getValue (Lnet/mamoe/mirai/clikt/core/CliktCommand;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun parameterHelp (Lnet/mamoe/mirai/clikt/core/Context;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Argument;
+	public fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public fun provideDelegate (Lnet/mamoe/mirai/clikt/core/CliktCommand;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/groups/ChoiceGroup : net/mamoe/mirai/clikt/parameters/groups/ParameterGroupDelegate {
+	public fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/Map;)V
+	public fun getGroupHelp ()Ljava/lang/String;
+	public fun getGroupName ()Ljava/lang/String;
+	public synthetic fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun getValue (Lnet/mamoe/mirai/clikt/core/CliktCommand;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public fun provideDelegate (Lnet/mamoe/mirai/clikt/core/CliktCommand;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/groups/ChoiceGroupKt {
+	public static final fun defaultByName (Lnet/mamoe/mirai/clikt/parameters/groups/ChoiceGroup;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/groups/ChoiceGroup;
+	public static final fun groupChoice (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/util/Map;)Lnet/mamoe/mirai/clikt/parameters/groups/ChoiceGroup;
+	public static final fun groupChoice (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;[Lkotlin/Pair;)Lnet/mamoe/mirai/clikt/parameters/groups/ChoiceGroup;
+	public static final fun groupSwitch (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/util/Map;)Lnet/mamoe/mirai/clikt/parameters/groups/ChoiceGroup;
+	public static final fun groupSwitch (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;[Lkotlin/Pair;)Lnet/mamoe/mirai/clikt/parameters/groups/ChoiceGroup;
+	public static final fun required (Lnet/mamoe/mirai/clikt/parameters/groups/ChoiceGroup;)Lnet/mamoe/mirai/clikt/parameters/groups/ChoiceGroup;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/groups/CoOccurringOptionGroup : net/mamoe/mirai/clikt/parameters/groups/ParameterGroupDelegate {
+	public final fun copy (Lkotlin/jvm/functions/Function3;)Lnet/mamoe/mirai/clikt/parameters/groups/CoOccurringOptionGroup;
+	public fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/Map;)V
+	public fun getGroupHelp ()Ljava/lang/String;
+	public fun getGroupName ()Ljava/lang/String;
+	public synthetic fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun getValue (Lnet/mamoe/mirai/clikt/core/CliktCommand;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public fun provideDelegate (Lnet/mamoe/mirai/clikt/core/CliktCommand;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/groups/CoOccurringOptionGroupKt {
+	public static final fun cooccurring (Lnet/mamoe/mirai/clikt/parameters/groups/OptionGroup;)Lnet/mamoe/mirai/clikt/parameters/groups/CoOccurringOptionGroup;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptionKt {
+	public static final fun default (Lnet/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptions;Ljava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptions;
+	public static final fun help (Lnet/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptions;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptions;
+	public static final fun mutuallyExclusiveOptions (Lnet/mamoe/mirai/clikt/core/ParameterHolder;Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;[Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptions;
+	public static synthetic fun mutuallyExclusiveOptions$default (Lnet/mamoe/mirai/clikt/core/ParameterHolder;Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;[Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptions;
+	public static final fun required (Lnet/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptions;)Lnet/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptions;
+	public static final fun single (Lnet/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptions;)Lnet/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptions;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptionTransformContext {
+	public fun <init> (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public final fun getContext ()Lnet/mamoe/mirai/clikt/core/Context;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptions : net/mamoe/mirai/clikt/parameters/groups/ParameterGroupDelegate {
+	public final fun copy (Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/groups/MutuallyExclusiveOptions;
+	public fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/Map;)V
+	public fun getGroupHelp ()Ljava/lang/String;
+	public fun getGroupName ()Ljava/lang/String;
+	public synthetic fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun getValue (Lnet/mamoe/mirai/clikt/core/CliktCommand;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public fun provideDelegate (Lnet/mamoe/mirai/clikt/core/CliktCommand;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public class net/mamoe/mirai/clikt/parameters/groups/OptionGroup : net/mamoe/mirai/clikt/core/ParameterHolder, net/mamoe/mirai/clikt/parameters/groups/ParameterGroup {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/Map;)V
+	public fun getGroupHelp ()Ljava/lang/String;
+	public fun getGroupName ()Ljava/lang/String;
+	public fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public fun registerOption (Lnet/mamoe/mirai/clikt/core/GroupableOption;)V
+}
+
+public abstract interface class net/mamoe/mirai/clikt/parameters/groups/ParameterGroup {
+	public abstract fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/Map;)V
+	public abstract fun getGroupHelp ()Ljava/lang/String;
+	public abstract fun getGroupName ()Ljava/lang/String;
+	public fun parameterHelp (Lnet/mamoe/mirai/clikt/core/Context;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Group;
+	public abstract fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+}
+
+public abstract interface class net/mamoe/mirai/clikt/parameters/groups/ParameterGroupDelegate : kotlin/properties/ReadOnlyProperty, net/mamoe/mirai/clikt/parameters/groups/ParameterGroup {
+	public abstract fun provideDelegate (Lnet/mamoe/mirai/clikt/core/CliktCommand;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/groups/ParameterGroupKt {
+	public static final fun provideDelegate (Lnet/mamoe/mirai/clikt/parameters/groups/OptionGroup;Lnet/mamoe/mirai/clikt/core/CliktCommand;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/options/EagerOption : net/mamoe/mirai/clikt/core/StaticallyGroupedOption {
+	public fun <init> (Ljava/util/Set;ILjava/lang/String;ZLjava/util/Map;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public fun <init> ([Ljava/lang/String;ILjava/lang/String;ZLjava/util/Map;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> ([Ljava/lang/String;ILjava/lang/String;ZLjava/util/Map;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/List;)V
+	public fun getGroupName ()Ljava/lang/String;
+	public fun getHelpTags ()Ljava/util/Map;
+	public fun getHidden ()Z
+	public fun getNames ()Ljava/util/Set;
+	public fun getNvalues ()I
+	public fun getOptionHelp ()Ljava/lang/String;
+	public fun getParser ()Lnet/mamoe/mirai/clikt/parsers/OptionParser;
+	public fun getSecondaryNames ()Ljava/util/Set;
+	public fun getValueSourceKey ()Ljava/lang/String;
+	public fun metavar (Lnet/mamoe/mirai/clikt/core/Context;)Ljava/lang/String;
+	public fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+}
+
+public final class net/mamoe/mirai/clikt/parameters/options/EagerOptionKt {
+	public static final fun eagerOption (Lnet/mamoe/mirai/clikt/core/CliktCommand;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;ZLjava/util/Map;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/clikt/core/CliktCommand;
+	public static final fun eagerOption (Lnet/mamoe/mirai/clikt/core/CliktCommand;Ljava/util/Collection;Ljava/lang/String;ZLjava/util/Map;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/clikt/core/CliktCommand;
+	public static synthetic fun eagerOption$default (Lnet/mamoe/mirai/clikt/core/CliktCommand;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;ZLjava/util/Map;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/core/CliktCommand;
+	public static synthetic fun eagerOption$default (Lnet/mamoe/mirai/clikt/core/CliktCommand;Ljava/util/Collection;Ljava/lang/String;ZLjava/util/Map;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/core/CliktCommand;
+	public static final fun versionOption (Lnet/mamoe/mirai/clikt/core/CliktCommand;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/clikt/core/CliktCommand;
+	public static synthetic fun versionOption$default (Lnet/mamoe/mirai/clikt/core/CliktCommand;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/core/CliktCommand;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/options/FlagOption : net/mamoe/mirai/clikt/parameters/options/OptionDelegate {
+	public final fun copy (Lkotlin/jvm/functions/Function2;Ljava/util/Set;Ljava/util/Set;Ljava/lang/String;ZLjava/util/Map;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public final fun copy (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/util/Set;Ljava/util/Set;Ljava/lang/String;ZLjava/util/Map;Ljava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;Lkotlin/jvm/functions/Function2;Ljava/util/Set;Ljava/util/Set;Ljava/lang/String;ZLjava/util/Map;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/util/Set;Ljava/util/Set;Ljava/lang/String;ZLjava/util/Map;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/List;)V
+	public final fun getEnvvar ()Ljava/lang/String;
+	public fun getGroupName ()Ljava/lang/String;
+	public fun getHelpTags ()Ljava/util/Map;
+	public fun getHidden ()Z
+	public fun getNames ()Ljava/util/Set;
+	public fun getNvalues ()I
+	public fun getOptionHelp ()Ljava/lang/String;
+	public fun getParameterGroup ()Lnet/mamoe/mirai/clikt/parameters/groups/ParameterGroup;
+	public fun getParser ()Lnet/mamoe/mirai/clikt/parsers/FlagOptionParser;
+	public synthetic fun getParser ()Lnet/mamoe/mirai/clikt/parsers/OptionParser;
+	public fun getSecondaryNames ()Ljava/util/Set;
+	public final fun getTransformAll ()Lkotlin/jvm/functions/Function2;
+	public final fun getTransformEnvvar ()Lkotlin/jvm/functions/Function2;
+	public final fun getValidator ()Lkotlin/jvm/functions/Function2;
+	public fun getValue ()Ljava/lang/Object;
+	public fun getValueSourceKey ()Ljava/lang/String;
+	public fun metavar (Lnet/mamoe/mirai/clikt/core/Context;)Ljava/lang/String;
+	public fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public fun provideDelegate (Lnet/mamoe/mirai/clikt/core/ParameterHolder;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+	public fun setGroupName (Ljava/lang/String;)V
+	public fun setParameterGroup (Lnet/mamoe/mirai/clikt/parameters/groups/ParameterGroup;)V
+}
+
+public final class net/mamoe/mirai/clikt/parameters/options/FlagOptionKt {
+	public static final fun convert (Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static final fun counted (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static final fun default (Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;Ljava/lang/Object;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static synthetic fun default$default (Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static final fun defaultLazy (Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static synthetic fun defaultLazy$default (Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;Ljava/lang/String;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static final fun deprecated (Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+	public static synthetic fun deprecated$default (Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+	public static final fun flag (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;[Ljava/lang/String;ZLjava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static synthetic fun flag$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;[Ljava/lang/String;ZLjava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static final fun help (Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static final fun required (Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static final fun switch (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/util/Map;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static final fun switch (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;[Lkotlin/Pair;)Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;
+	public static final fun validate (Lnet/mamoe/mirai/clikt/parameters/options/FlagOption;Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+}
+
+public abstract interface class net/mamoe/mirai/clikt/parameters/options/Option {
+	public abstract fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/List;)V
+	public abstract fun getHelpTags ()Ljava/util/Map;
+	public abstract fun getHidden ()Z
+	public abstract fun getNames ()Ljava/util/Set;
+	public abstract fun getNvalues ()I
+	public abstract fun getOptionHelp ()Ljava/lang/String;
+	public abstract fun getParser ()Lnet/mamoe/mirai/clikt/parsers/OptionParser;
+	public abstract fun getSecondaryNames ()Ljava/util/Set;
+	public abstract fun getValueSourceKey ()Ljava/lang/String;
+	public abstract fun metavar (Lnet/mamoe/mirai/clikt/core/Context;)Ljava/lang/String;
+	public fun parameterHelp (Lnet/mamoe/mirai/clikt/core/Context;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Option;
+	public abstract fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+}
+
+public final class net/mamoe/mirai/clikt/parameters/options/OptionCallTransformContext : net/mamoe/mirai/clikt/parameters/options/Option {
+	public fun <init> (Ljava/lang/String;Lnet/mamoe/mirai/clikt/parameters/options/Option;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public final fun fail (Ljava/lang/String;)Ljava/lang/Void;
+	public fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/List;)V
+	public final fun getContext ()Lnet/mamoe/mirai/clikt/core/Context;
+	public fun getHelpTags ()Ljava/util/Map;
+	public fun getHidden ()Z
+	public final fun getName ()Ljava/lang/String;
+	public fun getNames ()Ljava/util/Set;
+	public fun getNvalues ()I
+	public final fun getOption ()Lnet/mamoe/mirai/clikt/parameters/options/Option;
+	public fun getOptionHelp ()Ljava/lang/String;
+	public fun getParser ()Lnet/mamoe/mirai/clikt/parsers/OptionParser;
+	public fun getSecondaryNames ()Ljava/util/Set;
+	public fun getValueSourceKey ()Ljava/lang/String;
+	public final fun message (Ljava/lang/String;)V
+	public fun metavar (Lnet/mamoe/mirai/clikt/core/Context;)Ljava/lang/String;
+	public fun parameterHelp (Lnet/mamoe/mirai/clikt/core/Context;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Option;
+	public fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public final fun require (ZLkotlin/jvm/functions/Function0;)V
+	public static synthetic fun require$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionCallTransformContext;ZLkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+}
+
+public abstract interface class net/mamoe/mirai/clikt/parameters/options/OptionDelegate : kotlin/properties/ReadOnlyProperty, net/mamoe/mirai/clikt/core/GroupableOption {
+	public abstract fun getValue ()Ljava/lang/Object;
+	public synthetic fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun getValue (Lnet/mamoe/mirai/clikt/core/ParameterHolder;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public abstract fun provideDelegate (Lnet/mamoe/mirai/clikt/core/ParameterHolder;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/options/OptionTransformContext : net/mamoe/mirai/clikt/parameters/options/Option {
+	public fun <init> (Lnet/mamoe/mirai/clikt/parameters/options/Option;Lnet/mamoe/mirai/clikt/core/Context;)V
+	public final fun fail (Ljava/lang/String;)Ljava/lang/Void;
+	public fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/List;)V
+	public final fun getContext ()Lnet/mamoe/mirai/clikt/core/Context;
+	public fun getHelpTags ()Ljava/util/Map;
+	public fun getHidden ()Z
+	public fun getNames ()Ljava/util/Set;
+	public fun getNvalues ()I
+	public final fun getOption ()Lnet/mamoe/mirai/clikt/parameters/options/Option;
+	public fun getOptionHelp ()Ljava/lang/String;
+	public fun getParser ()Lnet/mamoe/mirai/clikt/parsers/OptionParser;
+	public fun getSecondaryNames ()Ljava/util/Set;
+	public fun getValueSourceKey ()Ljava/lang/String;
+	public final fun message (Ljava/lang/String;)V
+	public fun metavar (Lnet/mamoe/mirai/clikt/core/Context;)Ljava/lang/String;
+	public fun parameterHelp (Lnet/mamoe/mirai/clikt/core/Context;)Lnet/mamoe/mirai/clikt/output/HelpFormatter$ParameterHelp$Option;
+	public fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public final fun require (ZLkotlin/jvm/functions/Function0;)V
+	public static synthetic fun require$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionTransformContext;ZLkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+}
+
+public final class net/mamoe/mirai/clikt/parameters/options/OptionWithValues : net/mamoe/mirai/clikt/core/GroupableOption, net/mamoe/mirai/clikt/parameters/options/OptionDelegate {
+	public final fun copy (Lkotlin/jvm/functions/Function2;Ljava/util/Set;Lnet/mamoe/mirai/clikt/parameters/options/ValueWithDefault;ILjava/lang/String;ZLjava/util/Map;Ljava/lang/String;Ljava/lang/String;Lkotlin/text/Regex;Lnet/mamoe/mirai/clikt/parsers/OptionWithValuesParser;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public final fun copy (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/util/Set;Lnet/mamoe/mirai/clikt/parameters/options/ValueWithDefault;ILjava/lang/String;ZLjava/util/Map;Ljava/lang/String;Ljava/lang/String;Lkotlin/text/Regex;Lnet/mamoe/mirai/clikt/parsers/OptionWithValuesParser;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/jvm/functions/Function2;Ljava/util/Set;Lnet/mamoe/mirai/clikt/parameters/options/ValueWithDefault;ILjava/lang/String;ZLjava/util/Map;Ljava/lang/String;Ljava/lang/String;Lkotlin/text/Regex;Lnet/mamoe/mirai/clikt/parsers/OptionWithValuesParser;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/util/Set;Lnet/mamoe/mirai/clikt/parameters/options/ValueWithDefault;ILjava/lang/String;ZLjava/util/Map;Ljava/lang/String;Ljava/lang/String;Lkotlin/text/Regex;Lnet/mamoe/mirai/clikt/parsers/OptionWithValuesParser;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public fun finalize (Lnet/mamoe/mirai/clikt/core/Context;Ljava/util/List;)V
+	public final fun getEnvvar ()Ljava/lang/String;
+	public fun getGroupName ()Ljava/lang/String;
+	public fun getHelpTags ()Ljava/util/Map;
+	public fun getHidden ()Z
+	public final fun getMetavarWithDefault ()Lnet/mamoe/mirai/clikt/parameters/options/ValueWithDefault;
+	public fun getNames ()Ljava/util/Set;
+	public fun getNvalues ()I
+	public fun getOptionHelp ()Ljava/lang/String;
+	public fun getParameterGroup ()Lnet/mamoe/mirai/clikt/parameters/groups/ParameterGroup;
+	public synthetic fun getParser ()Lnet/mamoe/mirai/clikt/parsers/OptionParser;
+	public fun getParser ()Lnet/mamoe/mirai/clikt/parsers/OptionWithValuesParser;
+	public fun getSecondaryNames ()Ljava/util/Set;
+	public final fun getTransformAll ()Lkotlin/jvm/functions/Function2;
+	public final fun getTransformEach ()Lkotlin/jvm/functions/Function2;
+	public final fun getTransformValidator ()Lkotlin/jvm/functions/Function2;
+	public final fun getTransformValue ()Lkotlin/jvm/functions/Function2;
+	public fun getValue ()Ljava/lang/Object;
+	public fun getValueSourceKey ()Ljava/lang/String;
+	public final fun getValueSplit ()Lkotlin/text/Regex;
+	public fun metavar (Lnet/mamoe/mirai/clikt/core/Context;)Ljava/lang/String;
+	public fun postValidate (Lnet/mamoe/mirai/clikt/core/Context;)V
+	public fun provideDelegate (Lnet/mamoe/mirai/clikt/core/ParameterHolder;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+	public fun setGroupName (Ljava/lang/String;)V
+	public fun setParameterGroup (Lnet/mamoe/mirai/clikt/parameters/groups/ParameterGroup;)V
+}
+
+public final class net/mamoe/mirai/clikt/parameters/options/OptionWithValuesKt {
+	public static final fun associate (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun associate$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun check (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+	public static final fun check (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+	public static synthetic fun check$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+	public static final fun convert (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun convert (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun convert$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/Object;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun default$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun defaultAllProcessor ()Lkotlin/jvm/functions/Function2;
+	public static final fun defaultEachProcessor ()Lkotlin/jvm/functions/Function2;
+	public static final fun defaultLazy (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun defaultLazy$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun defaultValidator ()Lkotlin/jvm/functions/Function2;
+	public static final fun deprecated (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+	public static synthetic fun deprecated$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+	public static final fun help (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun multiple (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/util/List;Z)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun multiple$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/util/List;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun nullableCheck (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+	public static final fun nullableLazyCheck (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+	public static synthetic fun nullableLazyCheck$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+	public static final fun nullableValidate (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+	public static final fun option (Lnet/mamoe/mirai/clikt/core/ParameterHolder;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/util/Map;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun option$default (Lnet/mamoe/mirai/clikt/core/ParameterHolder;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/util/Map;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun pair (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun required (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun split (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun split (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/text/Regex;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun splitPair (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun splitPair$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun toMap (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun transformAll (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;ZLkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun transformAll$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/String;ZLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun transformValues (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;ILkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun triple (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun unique (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun validate (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/jvm/functions/Function2;)Lnet/mamoe/mirai/clikt/parameters/options/OptionDelegate;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/options/ValueWithDefault {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Object;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Ljava/lang/Object;
+	public final fun copy (Ljava/lang/Object;Ljava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/ValueWithDefault;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/parameters/options/ValueWithDefault;Ljava/lang/Object;Ljava/lang/Object;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/ValueWithDefault;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDefault ()Ljava/lang/Object;
+	public final fun getExplicit ()Ljava/lang/Object;
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/options/ValueWithDefaultKt {
+	public static final fun withDefault (Lnet/mamoe/mirai/clikt/parameters/options/ValueWithDefault;Ljava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/ValueWithDefault;
+	public static final fun withExplicit (Lnet/mamoe/mirai/clikt/parameters/options/ValueWithDefault;Ljava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/ValueWithDefault;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/types/ChoiceKt {
+	public static final fun choice (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Ljava/util/Map;Z)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun choice (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;[Ljava/lang/String;Z)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun choice (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;[Lkotlin/Pair;Z)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun choice (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/util/Map;Ljava/lang/String;Z)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun choice (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;[Ljava/lang/String;Ljava/lang/String;Z)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun choice (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;[Lkotlin/Pair;Ljava/lang/String;Z)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun choice$default (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Ljava/util/Map;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static synthetic fun choice$default (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;[Ljava/lang/String;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static synthetic fun choice$default (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;[Lkotlin/Pair;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static synthetic fun choice$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/util/Map;Ljava/lang/String;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun choice$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;[Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun choice$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;[Lkotlin/Pair;Ljava/lang/String;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/types/DoubleKt {
+	public static final fun double (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun double (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/types/FloatKt {
+	public static final fun float (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun float (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/types/IntKt {
+	public static final fun int (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun int (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/types/LongKt {
+	public static final fun long (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun long (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+}
+
+public final class net/mamoe/mirai/clikt/parameters/types/RangeKt {
+	public static final fun restrictTo (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Ljava/lang/Comparable;Ljava/lang/Comparable;Z)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun restrictTo (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Lkotlin/ranges/ClosedRange;Z)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static final fun restrictTo (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/Comparable;Ljava/lang/Comparable;Z)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static final fun restrictTo (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/ranges/ClosedRange;Z)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun restrictTo$default (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Ljava/lang/Comparable;Ljava/lang/Comparable;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static synthetic fun restrictTo$default (Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;Lkotlin/ranges/ClosedRange;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/arguments/ProcessedArgument;
+	public static synthetic fun restrictTo$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Ljava/lang/Comparable;Ljava/lang/Comparable;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+	public static synthetic fun restrictTo$default (Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;Lkotlin/ranges/ClosedRange;ZILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parameters/options/OptionWithValues;
+}
+
+public final class net/mamoe/mirai/clikt/parsers/FlagOptionParser : net/mamoe/mirai/clikt/parsers/OptionParser {
+	public static final field INSTANCE Lnet/mamoe/mirai/clikt/parsers/FlagOptionParser;
+	public fun parseLongOpt (Lnet/mamoe/mirai/clikt/parameters/options/Option;Ljava/lang/String;Ljava/util/List;ILjava/lang/String;)Lnet/mamoe/mirai/clikt/parsers/OptionParser$ParseResult;
+	public fun parseShortOpt (Lnet/mamoe/mirai/clikt/parameters/options/Option;Ljava/lang/String;Ljava/util/List;II)Lnet/mamoe/mirai/clikt/parsers/OptionParser$ParseResult;
+}
+
+public abstract interface class net/mamoe/mirai/clikt/parsers/OptionParser {
+	public abstract fun parseLongOpt (Lnet/mamoe/mirai/clikt/parameters/options/Option;Ljava/lang/String;Ljava/util/List;ILjava/lang/String;)Lnet/mamoe/mirai/clikt/parsers/OptionParser$ParseResult;
+	public abstract fun parseShortOpt (Lnet/mamoe/mirai/clikt/parameters/options/Option;Ljava/lang/String;Ljava/util/List;II)Lnet/mamoe/mirai/clikt/parsers/OptionParser$ParseResult;
+}
+
+public final class net/mamoe/mirai/clikt/parsers/OptionParser$Invocation {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;)Lnet/mamoe/mirai/clikt/parsers/OptionParser$Invocation;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/parsers/OptionParser$Invocation;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parsers/OptionParser$Invocation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public final fun getValues ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/clikt/parsers/OptionParser$ParseResult {
+	public fun <init> (ILjava/lang/String;Ljava/util/List;)V
+	public fun <init> (ILnet/mamoe/mirai/clikt/parsers/OptionParser$Invocation;)V
+	public final fun component1 ()I
+	public final fun component2 ()Lnet/mamoe/mirai/clikt/parsers/OptionParser$Invocation;
+	public final fun copy (ILnet/mamoe/mirai/clikt/parsers/OptionParser$Invocation;)Lnet/mamoe/mirai/clikt/parsers/OptionParser$ParseResult;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/parsers/OptionParser$ParseResult;ILnet/mamoe/mirai/clikt/parsers/OptionParser$Invocation;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/parsers/OptionParser$ParseResult;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getConsumedCount ()I
+	public final fun getInvocation ()Lnet/mamoe/mirai/clikt/parsers/OptionParser$Invocation;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/clikt/parsers/OptionWithValuesParser : net/mamoe/mirai/clikt/parsers/OptionParser {
+	public static final field INSTANCE Lnet/mamoe/mirai/clikt/parsers/OptionWithValuesParser;
+	public fun parseLongOpt (Lnet/mamoe/mirai/clikt/parameters/options/Option;Ljava/lang/String;Ljava/util/List;ILjava/lang/String;)Lnet/mamoe/mirai/clikt/parsers/OptionParser$ParseResult;
+	public fun parseShortOpt (Lnet/mamoe/mirai/clikt/parameters/options/Option;Ljava/lang/String;Ljava/util/List;II)Lnet/mamoe/mirai/clikt/parsers/OptionParser$ParseResult;
+}
+
+public final class net/mamoe/mirai/clikt/sources/ChainedValueSource : net/mamoe/mirai/clikt/sources/ValueSource {
+	public fun <init> (Ljava/util/List;)V
+	public final fun getSources ()Ljava/util/List;
+	public fun getValues (Lnet/mamoe/mirai/clikt/core/Context;Lnet/mamoe/mirai/clikt/parameters/options/Option;)Ljava/util/List;
+}
+
+public final class net/mamoe/mirai/clikt/sources/MapValueSource : net/mamoe/mirai/clikt/sources/ValueSource {
+	public fun <init> (Ljava/util/Map;Lkotlin/jvm/functions/Function2;)V
+	public synthetic fun <init> (Ljava/util/Map;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getValues (Lnet/mamoe/mirai/clikt/core/Context;Lnet/mamoe/mirai/clikt/parameters/options/Option;)Ljava/util/List;
+}
+
+public abstract interface class net/mamoe/mirai/clikt/sources/ValueSource {
+	public static final field Companion Lnet/mamoe/mirai/clikt/sources/ValueSource$Companion;
+	public abstract fun getValues (Lnet/mamoe/mirai/clikt/core/Context;Lnet/mamoe/mirai/clikt/parameters/options/Option;)Ljava/util/List;
+}
+
+public final class net/mamoe/mirai/clikt/sources/ValueSource$Companion {
+	public final fun getKey (Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;)Lkotlin/jvm/functions/Function2;
+	public static synthetic fun getKey$default (Lnet/mamoe/mirai/clikt/sources/ValueSource$Companion;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;ILjava/lang/Object;)Lkotlin/jvm/functions/Function2;
+	public final fun name (Lnet/mamoe/mirai/clikt/parameters/options/Option;)Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/clikt/sources/ValueSource$Invocation {
+	public static final field Companion Lnet/mamoe/mirai/clikt/sources/ValueSource$Invocation$Companion;
+	public fun <init> (Ljava/util/List;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;)Lnet/mamoe/mirai/clikt/sources/ValueSource$Invocation;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/clikt/sources/ValueSource$Invocation;Ljava/util/List;ILjava/lang/Object;)Lnet/mamoe/mirai/clikt/sources/ValueSource$Invocation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValues ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/clikt/sources/ValueSource$Invocation$Companion {
+	public final fun just (Ljava/lang/Object;)Ljava/util/List;
+	public final fun value (Ljava/lang/Object;)Lnet/mamoe/mirai/clikt/sources/ValueSource$Invocation;
+}
+
