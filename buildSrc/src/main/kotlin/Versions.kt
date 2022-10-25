@@ -59,6 +59,7 @@ object Versions {
     const val mavenResolverProvider = "3.8.4"
 
     const val junit = "5.7.2"
+    const val kotest = "5.2.1"
 
     const val yamlkt = "0.12.0"
     const val intellijGradlePlugin = "1.7.0"
@@ -147,6 +148,7 @@ const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Vers
 const val `junit-jupiter-api` = "org.junit.jupiter:junit-jupiter-api:${Versions.junit}"
 const val `junit-jupiter-params` = "org.junit.jupiter:junit-jupiter-params:${Versions.junit}"
 const val `junit-jupiter-engine` = "org.junit.jupiter:junit-jupiter-engine:${Versions.junit}"
+const val `kotest` = "io.kotest:kotest-assertions-core:${Versions.kotest}"
 
 //const val `mirai-core-api` = "net.mamoe:mirai-core-api:${Versions.core}"
 //const val `mirai-core` = "net.mamoe:mirai-core:${Versions.core}"

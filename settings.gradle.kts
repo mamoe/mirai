@@ -65,6 +65,8 @@ includeProject(":mirai-bom")
 includeProject(":mirai-dokka")
 includeProject(":mirai-deps-test")
 
+includeProject(":mirai-clikt")
+
 if (getLocalProperty("projects.mirai-logging.enabled", true)) {
     includeProject(":mirai-logging-log4j2", "logging/mirai-logging-log4j2")
     includeProject(":mirai-logging-slf4j", "logging/mirai-logging-slf4j")
