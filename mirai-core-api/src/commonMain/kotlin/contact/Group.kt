@@ -17,6 +17,7 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
+import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -54,6 +55,9 @@ import kotlin.jvm.JvmSynthetic
  *
  * 可通过 [Group.announcements] 获取公告支持. 可在 [Announcements] 查看详细文档.
  *
+ * ## 群文件
+ *
+ * 使用 [Group.files] 获取群文件管理器后操作. 详见 [RemoteFiles].
  */
 @NotStableForInheritance
 public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported {
