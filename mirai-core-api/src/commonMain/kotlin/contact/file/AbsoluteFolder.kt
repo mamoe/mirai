@@ -131,7 +131,7 @@ public expect interface AbsoluteFolder : AbsoluteFileFolder {
      * - 也可以是 `sub/foo.txt` 表示该目录的子目录 "sub" 下的文件 "foo.txt".
      * - 或是绝对路径 `/sub/foo.txt` 表示根目录的 "sub" 目录下的文件 "foo.txt"
      *
-     * @param filepath 目标文件名
+     * @param filepath 目标文件名, 即上传到远程后的远程路径, 不是本地文件路径
      * @param content 文件内容
      * @param callback 下载进度回调, 传递的 `progression` 是已下载字节数.
      *
