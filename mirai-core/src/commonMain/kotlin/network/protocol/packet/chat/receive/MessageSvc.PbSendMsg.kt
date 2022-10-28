@@ -109,7 +109,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         lateinit var value: T
     }
 
-    internal inline fun buildOutgoingMessageCommon(
+    private inline fun buildOutgoingMessageCommon(
         client: QQAndroidClient,
         message: MessageChain,
         fragmentTranslator: (MessageChain) -> ImMsgBody.MsgBody,
@@ -185,8 +185,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
     /**
      * 发送陌生人消息
      */
-    @Suppress("FunctionName")
-    internal inline fun createToStrangerImpl(
+    internal fun createToStrangerImpl(
         client: QQAndroidClient,
         target: Stranger,
         message: MessageChain,
@@ -242,14 +241,13 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
     /**
      * 发送好友消息
      */
-    @Suppress("FunctionName")
-    internal inline fun createToFriendImpl(
+    internal fun createToFriendImpl(
         client: QQAndroidClient,
         targetFriend: Friend,
         message: MessageChain,
         originalMessage: MessageChain,
         fragmented: Boolean,
-        crossinline sourceCallback: (OnlineMessageSourceToFriendImpl) -> Unit,
+        sourceCallback: (OnlineMessageSourceToFriendImpl) -> Unit,
     ): List<OutgoingPacket> {
         contract {
             callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
@@ -373,14 +371,13 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
     /**
      * 发送群消息
      */
-    @Suppress("FunctionName")
-    internal inline fun createToGroupImpl(
+    internal fun createToGroupImpl(
         client: QQAndroidClient,
         targetGroup: Group,
         message: MessageChain,
         originalMessage: MessageChain,
         fragmented: Boolean,
-        crossinline sourceCallback: (OnlineMessageSourceToGroupImpl) -> Unit,
+        sourceCallback: (OnlineMessageSourceToGroupImpl) -> Unit,
     ): List<OutgoingPacket> {
         val sequenceIds = LateinitBox<IntArray>()
         val randIds = LateinitBox<IntArray>()
@@ -503,13 +500,13 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
 }
 
 @Suppress("UNUSED_PARAMETER")
-internal inline fun MessageSvcPbSendMsg.createToTemp(
+internal fun MessageSvcPbSendMsg.createToTemp(
     client: QQAndroidClient,
     member: Member,
     message: MessageChain,
     originalMessage: MessageChain,
     fragmented: Boolean,
-    crossinline sourceCallback: (Deferred<OnlineMessageSourceToTempImpl>) -> Unit,
+    sourceCallback: (Deferred<OnlineMessageSourceToTempImpl>) -> Unit,
 ): List<OutgoingPacket> {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
@@ -531,13 +528,13 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
     ).let { listOf(it) }
 }
 
-internal inline fun MessageSvcPbSendMsg.createToStranger(
+internal fun MessageSvcPbSendMsg.createToStranger(
     client: QQAndroidClient,
     stranger: Stranger,
     message: MessageChain, // to send
     originalMessage: MessageChain, // for Receipt
     fragmented: Boolean,
-    crossinline sourceCallback: (Deferred<OnlineMessageSourceToStrangerImpl>) -> Unit,
+    sourceCallback: (Deferred<OnlineMessageSourceToStrangerImpl>) -> Unit,
 ): List<OutgoingPacket> {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
@@ -551,13 +548,13 @@ internal inline fun MessageSvcPbSendMsg.createToStranger(
     ) { sourceCallback(CompletableDeferred(it)) }
 }
 
-internal inline fun MessageSvcPbSendMsg.createToFriend(
+internal fun MessageSvcPbSendMsg.createToFriend(
     client: QQAndroidClient,
     qq: Friend,
     message: MessageChain,
     originalMessage: MessageChain,
     fragmented: Boolean,
-    crossinline sourceCallback: (Deferred<OnlineMessageSourceToFriendImpl>) -> Unit,
+    sourceCallback: (Deferred<OnlineMessageSourceToFriendImpl>) -> Unit,
 ): List<OutgoingPacket> {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
@@ -572,13 +569,13 @@ internal inline fun MessageSvcPbSendMsg.createToFriend(
 }
 
 
-internal inline fun MessageSvcPbSendMsg.createToGroup(
+internal fun MessageSvcPbSendMsg.createToGroup(
     client: QQAndroidClient,
     group: Group,
     message: MessageChain,
     originalMessage: MessageChain,
     fragmented: Boolean,
-    crossinline sourceCallback: (Deferred<OnlineMessageSourceToGroupImpl>) -> Unit,
+    sourceCallback: (Deferred<OnlineMessageSourceToGroupImpl>) -> Unit,
 ): List<OutgoingPacket> {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
