@@ -523,7 +523,7 @@ internal class LengthDelimitedPacketReaderTest : AbstractTest() {
         )
     }
 
-    private inline fun buildLVPacket(block: BytePacketBuilder.() -> Unit): ByteReadPacket {
+    private inline fun buildLVPacket(crossinline block: BytePacketBuilder.() -> Unit): ByteReadPacket {
         contract {
             callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         }
