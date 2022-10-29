@@ -58,7 +58,7 @@ kotlin {
         findByName("jvmBaseMain")?.apply {
             dependencies {
                 implementation(`log4j-api`)
-                implementation(`netty-all`)
+                implementation(`netty-handler`)
                 implementation(`ktor-client-okhttp`)
                 api(`kotlinx-coroutines-jdk8`) // use -jvm modules for this magic target 'jvmBase'
             }
