@@ -19,6 +19,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.file.RemoteFiles
+import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
@@ -29,6 +30,7 @@ import net.mamoe.mirai.internal.contact.active.GroupActiveImpl
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
 import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
+import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplGroup
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
 import net.mamoe.mirai.internal.message.image.OfflineGroupImage
@@ -150,6 +152,7 @@ internal abstract class CommonGroupImpl constructor(
     final override val files: RemoteFiles by lazy { RemoteFilesImpl(this) }
 
     val lastTalkative = atomic(members.find { GroupHonorType.TALKATIVE in it.active.honors })
+    override val roamingMessages: RoamingMessages by lazy { RoamingMessagesImplGroup(this as GroupImpl) }
 
     final override val announcements: Announcements by lazy {
         AnnouncementsImpl(
@@ -241,6 +244,7 @@ internal abstract class CommonGroupImpl constructor(
                 if (response.message == "over file size max") throw OverFileSizeMaxException()
                 error("upload group image failed with reason ${response.message}")
             }
+
             is ImgStore.GroupPicUp.Response.FileExists -> {
                 val resourceId = resource.calculateResourceId()
                 return response.fileInfo.run {
@@ -258,6 +262,7 @@ internal abstract class CommonGroupImpl constructor(
                     .also { it.putIntoCache() }
                     .also { ImageUploadEvent.Succeed(this@CommonGroupImpl, resource, it).broadcast() }
             }
+
             is ImgStore.GroupPicUp.Response.RequireUpload -> {
                 // val servers = response.uploadIpList.zip(response.uploadPortList)
                 Highway.uploadResourceBdh(

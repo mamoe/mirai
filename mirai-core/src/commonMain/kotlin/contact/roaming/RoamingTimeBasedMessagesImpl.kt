@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.contact.FriendImpl
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetGroupMsgReq
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetRoamMsgReq
 import net.mamoe.mirai.utils.check
@@ -73,8 +74,15 @@ internal class RoamingMessagesImplFriend(
 internal class RoamingMessagesImplGroup(
     override val contact: GroupImpl
 ) : CommonSeqBasedMessageImpl() {
-    override fun getResp(seq: Int, count: Int): MsgSvc.PbGetGroupMsgResp {
-
+    override suspend fun getResp(seq: Long, count: Long): MsgSvc.PbGetGroupMsgResp {
+        return contact.bot.network.sendAndExpect(
+            MessageSvcPbGetGroupMsgReq.createForGroup(
+                client = contact.bot.client,
+                beginSeq = seq - count + 1,
+                endSeq = seq,
+                group = contact.id
+            )
+        ).value.check()
     }
 
 }

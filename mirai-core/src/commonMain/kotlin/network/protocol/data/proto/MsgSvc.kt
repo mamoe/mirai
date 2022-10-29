@@ -12,7 +12,10 @@ package net.mamoe.mirai.internal.network.protocol.data.proto
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.utils.CheckableResponseB
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import kotlin.jvm.JvmField

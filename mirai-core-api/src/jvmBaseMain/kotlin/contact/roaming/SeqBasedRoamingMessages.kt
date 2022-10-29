@@ -22,17 +22,17 @@ public actual interface SeqBasedRoamingMessages : RoamingMessages {
      */
     public actual suspend fun getMessagesIn(
         from: MessageSource,
-        count: Int,
+        count: Long,
         filter: RoamingMessageFilter?
-    ): Flow<MessageChain> = getMessagesIn(from.ids.first(), count, filter)
+    ): Flow<MessageChain> = getMessagesIn(from.ids.first().toLong(), count, filter)
 
     /**
      * Also see: [getMessagesIn]
      * 直接通过 seq 查找
      */
     public actual suspend fun getMessagesIn(
-        seq: Int,
-        count: Int,
+        seq: Long,
+        count: Long,
         filter: RoamingMessageFilter?
     ): Flow<MessageChain> {
         TODO("Not yet implemented")

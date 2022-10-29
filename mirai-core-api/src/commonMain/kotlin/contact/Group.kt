@@ -17,6 +17,7 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
+import net.mamoe.mirai.contact.roaming.RoamingSupported
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -56,7 +57,7 @@ import kotlin.jvm.JvmSynthetic
  *
  */
 @NotStableForInheritance
-public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported {
+public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported, RoamingSupported {
     /**
      * 群名称.
      *

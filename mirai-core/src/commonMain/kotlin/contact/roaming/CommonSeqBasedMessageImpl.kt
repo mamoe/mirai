@@ -20,7 +20,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.message.data.MessageChain
 
 internal abstract class CommonSeqBasedMessageImpl : CommonRoamingMessagesImpl(), SeqBasedRoamingMessages {
-    override suspend fun getMessagesIn(seq: Int, count: Int, filter: RoamingMessageFilter?): Flow<MessageChain> {
+    override suspend fun getMessagesIn(seq: Long, count: Long, filter: RoamingMessageFilter?): Flow<MessageChain> {
         return flow {
             val resp = getResp(seq, count)
             var i = 0;
@@ -30,5 +30,5 @@ internal abstract class CommonSeqBasedMessageImpl : CommonRoamingMessagesImpl(),
         }
     }
 
-    abstract fun getResp(seq: Int, count: Int): MsgSvc.PbGetGroupMsgResp
+    abstract suspend fun getResp(seq: Long, count: Long): MsgSvc.PbGetGroupMsgResp
 }

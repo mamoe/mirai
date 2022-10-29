@@ -23,7 +23,7 @@ public expect interface SeqBasedRoamingMessages:RoamingMessages {
      */
     public open suspend fun getMessagesIn(
         from: MessageSource,
-        count: Int = 10,
+        count: Long = 10,
         filter: RoamingMessageFilter? = null
     ): Flow<MessageChain>
 
@@ -32,8 +32,8 @@ public expect interface SeqBasedRoamingMessages:RoamingMessages {
      * 直接通过 seq 查找
      */
     public open suspend fun getMessagesIn(
-        seq: Int,
-        count: Int = 10,
+        seq: Long,
+        count: Long = 10,
         filter: RoamingMessageFilter? = null
     ): Flow<MessageChain>
 }
