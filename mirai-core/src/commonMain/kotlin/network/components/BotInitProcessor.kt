@@ -106,10 +106,10 @@ internal class BotInitProcessorImpl(
             }
 
             state.value = INITIALIZED
-            bot.components[SsoProcessor].firstLoginResult.compareAndSet(null, FirstLoginResult.PASSED)
+            bot.components[SsoProcessor].casFirstLoginResult(null, FirstLoginResult.PASSED)
         } catch (e: Throwable) {
             setLoginHalted()
-            bot.components[SsoProcessor].firstLoginResult.compareAndSet(null, FirstLoginResult.OTHER_FAILURE)
+            bot.components[SsoProcessor].casFirstLoginResult(null, FirstLoginResult.OTHER_FAILURE)
             throw e
         }
     }

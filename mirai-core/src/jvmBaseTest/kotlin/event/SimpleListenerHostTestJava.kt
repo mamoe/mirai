@@ -9,10 +9,10 @@
 
 package net.mamoe.mirai.internal.event
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.event.*
+import net.mamoe.mirai.utils.AtomicBoolean
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
@@ -23,10 +23,11 @@ import kotlin.test.Test
 internal class SimpleListenerHostTestJava : AbstractEventTest() {
     @Test
     fun testJavaSimpleListenerHostWork() {
-        val called = atomic(false)
+        val called = AtomicBoolean(false)
         val host: SimpleListenerHost = object : SimpleListenerHost() {
             @EventHandler
             @net.mamoe.mirai.utils.EventListenerLikeJava
+            @Suppress("unused")
             fun testListen(
                 event: AbstractEvent?
             ) {

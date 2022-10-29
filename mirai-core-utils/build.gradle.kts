@@ -35,7 +35,6 @@ kotlin {
                 api(`kotlinx-serialization-json`)
                 api(`kotlinx-coroutines-core`)
 
-                implementation(`kotlinx-atomicfu`)
                 implementation(`kotlinx-serialization-protobuf`)
                 implementation(`ktor-io`)
             }

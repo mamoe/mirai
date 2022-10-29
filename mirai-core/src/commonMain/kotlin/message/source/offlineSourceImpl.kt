@@ -10,7 +10,6 @@
 
 package net.mamoe.mirai.internal.message.source
 
-import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.atomic
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -60,9 +59,11 @@ internal class OfflineMessageSourceImplData(
     @Transient
     var jceData: ImMsgBody.SourceMsg? = null
 
+    private val _isRecalledOrPlanned = atomic(false)
+
     @Transient
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
+    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
 
     override fun toJceData(): ImMsgBody.SourceMsg {
         return jceData ?: ImMsgBody.SourceMsg(

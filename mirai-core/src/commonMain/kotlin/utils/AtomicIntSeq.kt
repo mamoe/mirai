@@ -16,23 +16,23 @@ import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.update
 import net.mamoe.mirai.utils.getRandomUnsignedInt
-import kotlin.jvm.JvmInline
 import kotlin.jvm.JvmStatic
 
 internal object AtomicIntSeq {
     @JvmStatic
-    inline fun forMessageSeq(): AtomicIntMaxSeq = AtomicIntMaxSeq(atomic(0))
+    fun forMessageSeq(): AtomicIntMaxSeq = AtomicIntMaxSeq(0)
 
     @JvmStatic
-    inline fun forPrivateSync(): AtomicInt65535Seq = AtomicInt65535Seq(atomic(getRandomUnsignedInt()))
+    fun forPrivateSync(): AtomicInt65535Seq = AtomicInt65535Seq(getRandomUnsignedInt())
 }
 
 // value classes to optimize space
 
-@JvmInline
-internal value class AtomicIntMaxSeq(
-    private val value: AtomicInt
+internal class AtomicIntMaxSeq(
+    value: Int
 ) {
+    private val value: AtomicInt = atomic(value)
+
     /**
      * Increment [value] within the range from `0` (inclusive) to [Int.MAX_VALUE] (exclusive).
      */
@@ -64,10 +64,11 @@ internal value class AtomicIntMaxSeq(
     }
 }
 
-@JvmInline
-internal value class AtomicInt65535Seq(
-    private val value: AtomicInt = atomic(0)
+internal class AtomicInt65535Seq(
+    value: Int
 ) {
+    private val value: AtomicInt = atomic(value)
+
     /**
      * Increment [value] within the range from `0` (inclusive) to `65535` (exclusive).
      */

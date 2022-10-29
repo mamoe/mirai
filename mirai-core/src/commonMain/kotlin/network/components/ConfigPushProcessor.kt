@@ -45,7 +45,7 @@ internal class ConfigPushProcessorImpl(
                 val e = IllegalStateException("Timeout waiting for ConfigPush.")
                 bdhSyncer.bdhSession.completeExceptionally(e)
                 logger.warning { "Missing ConfigPush. Switching server..." }
-                network.context[SsoProcessor].firstLoginResult.compareAndSet(null, FirstLoginResult.CHANGE_SERVER)
+                network.context[SsoProcessor].casFirstLoginResult(null, FirstLoginResult.CHANGE_SERVER)
                 network.context.bot.components[EventDispatcher].broadcastAsync(
                     BotOfflineEvent.RequireReconnect(
                         network.context.bot,

@@ -18,6 +18,7 @@ import net.mamoe.mirai.internal.network.framework.TestCommonNetworkHandler
 import net.mamoe.mirai.internal.network.handler.selector.MaxAttemptsReachedException
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.utils.AtomicInteger
 import kotlin.test.*
 
 /**
@@ -59,8 +60,8 @@ internal class StandaloneSelectorTests : AbstractCommonNHTest() {
     // Since #1963, any error during first login will close the bot. So we assume first login succeed to do our test.
     @BeforeTest
     private fun setFirstLoginPassed() {
-        assertEquals(null, bot.components[SsoProcessor].firstLoginResult.value)
-        bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
+        assertEquals(null, bot.components[SsoProcessor].firstLoginResult)
+        bot.components[SsoProcessor].setFirstLoginResult(FirstLoginResult.PASSED)
     }
 
     @Test
@@ -79,7 +80,7 @@ internal class StandaloneSelectorTests : AbstractCommonNHTest() {
     @Test
     fun `NetworkException does not cause retrying if recoverable=false`() = runBlockingUnit {
         // selector should not tolerant any exception during state initialization, or in the Jobs launched in states.
-        val times = atomic(0)
+        val times = AtomicInteger(0)
         val theException = object : NetworkException(false) {}
         throwExceptionOnConnecting = {
             times.incrementAndGet()

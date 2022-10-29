@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.message.source
 
-import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.internal.message.LightMessageRefiner.dropMiraiInternalFlags
@@ -37,7 +36,8 @@ internal interface MessageSourceInternal : MessageMetadata {
     val ids: IntArray
 
     @Transient
-    val isRecalledOrPlanned: AtomicBoolean
+    val isRecalledOrPlanned: Boolean
+    fun setRecalled(): Boolean // CAS
 
     fun toJceData(): ImMsgBody.SourceMsg
 

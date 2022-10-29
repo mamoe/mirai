@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.internal.message.source
 
-import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.atomic
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -50,7 +49,12 @@ internal class OnlineMessageSourceFromFriendImpl(
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromFriend")
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
-    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
+
+    private val _isRecalledOrPlanned = atomic(false)
+
+    @Transient
+    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
     override val ids: IntArray get() = sequenceIds // msg.msgBody.richText.attr!!.random
     override val internalIds: IntArray = msg.mapToIntArray {
         it.msgBody.richText.attr?.random ?: 0
@@ -83,7 +87,13 @@ internal class OnlineMessageSourceFromStrangerImpl(
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromStranger")
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
-    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
+
+    private val _isRecalledOrPlanned = atomic(false)
+
+    @Transient
+    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
+
     override val ids: IntArray get() = sequenceIds // msg.msgBody.richText.attr!!.random
     override val internalIds: IntArray = msg.mapToIntArray {
         it.msgBody.richText.attr?.random ?: 0
@@ -156,7 +166,13 @@ internal class OnlineMessageSourceFromTempImpl(
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
     override val internalIds: IntArray = msg.mapToIntArray { it.msgBody.richText.attr!!.random }
-    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
+
+    private val _isRecalledOrPlanned = atomic(false)
+
+    @Transient
+    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
+
     override val ids: IntArray get() = sequenceIds //
     override val time: Int = msg.first().msgHead.msgTime
     override var originalMessageLazy = lazy {
@@ -191,8 +207,12 @@ internal class OnlineMessageSourceFromGroupImpl(
 ) : OnlineMessageSource.Incoming.FromGroup(), IncomingMessageSourceInternal {
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromGroupImpl")
 
+
+    private val _isRecalledOrPlanned = atomic(false)
+
     @Transient
-    override var isRecalledOrPlanned: AtomicBoolean = atomic(false)
+    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
     override val internalIds: IntArray = msg.mapToIntArray { it.msgBody.richText.attr!!.random }
     override val ids: IntArray get() = sequenceIds

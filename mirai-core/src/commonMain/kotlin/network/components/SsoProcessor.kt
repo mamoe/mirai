@@ -44,8 +44,15 @@ internal interface SsoProcessor {
     val client: QQAndroidClient
     val ssoSession: SsoSession
 
-    val firstLoginResult: AtomicRef<FirstLoginResult?> // null means just initialized
-    val firstLoginSucceed: Boolean get() = firstLoginResult.value?.success ?: false
+    val firstLoginResult: FirstLoginResult? // null means just initialized
+    fun casFirstLoginResult(
+        expect: FirstLoginResult?,
+        update: FirstLoginResult?
+    ): Boolean // enable compiler optimization
+
+    fun setFirstLoginResult(value: FirstLoginResult?)
+
+    val firstLoginSucceed: Boolean get() = firstLoginResult?.success ?: false
     val registerResp: StatSvc.Register.Response?
 
     /**
@@ -114,7 +121,14 @@ internal class SsoProcessorImpl(
     // public
     ///////////////////////////////////////////////////////////////////////////
 
-    override val firstLoginResult: AtomicRef<FirstLoginResult?> = atomic(null)
+    private val _firstLoginResult: AtomicRef<FirstLoginResult?> = atomic(null)
+    override val firstLoginResult = _firstLoginResult.value
+    override fun casFirstLoginResult(expect: FirstLoginResult?, update: FirstLoginResult?): Boolean =
+        _firstLoginResult.compareAndSet(expect, update)
+
+    override fun setFirstLoginResult(value: FirstLoginResult?) {
+        _firstLoginResult.value = value
+    }
 
     @Volatile
     override var registerResp: StatSvc.Register.Response? = null

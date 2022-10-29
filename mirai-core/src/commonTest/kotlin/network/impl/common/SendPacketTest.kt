@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.network.impl.common
 
 import io.ktor.utils.io.core.*
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -19,6 +18,7 @@ import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTest
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.utils.AtomicBoolean
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -29,7 +29,7 @@ internal class SendPacketTest : AbstractCommonNHTest() {
 
     @Test
     fun `sendPacketImpl suspends until a valid state`() = runBlockingUnit(singleThreadDispatcher) {
-        val expectStop = atomic(false)
+        val expectStop = AtomicBoolean(false)
 
         // coroutine starts immediately and suspends at `net.mamoe.mirai.internal.network.impl.netty.NettyNetworkHandler.sendPacketImpl`
         launch(singleThreadDispatcher, start = CoroutineStart.UNDISPATCHED) {
@@ -48,7 +48,7 @@ internal class SendPacketTest : AbstractCommonNHTest() {
     @Test
     fun `sendPacketImpl does not suspend if state is valid`() = runBlockingUnit(singleThreadDispatcher) {
         network.setStateOK(conn) // then we can send packet.
-        val expectStop = atomic(false)
+        val expectStop = AtomicBoolean(false)
 
         val job = launch(singleThreadDispatcher, start = CoroutineStart.UNDISPATCHED) {
             assertNotNull(network.sendAndExpect(OutgoingPacket("name", "cmd", 1, ByteReadPacket.Empty)))

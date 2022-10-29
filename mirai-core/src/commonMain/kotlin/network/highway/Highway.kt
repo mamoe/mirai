@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.network.highway
 
 import io.ktor.utils.io.core.*
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -381,8 +380,6 @@ internal fun highwayPacketSession(
     ByteArrayPool.checkBufferSize(sizePerPacket)
     //   require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
 
-    val ticket = atomic(initialTicket)
-
     return ChunkedFlowSession(data.input(), ByteArray(sizePerPacket), callback) { buffer, size, offset ->
         val head = CSDataHighwayHead.ReqDataHighwayHead(
             msgBasehead = CSDataHighwayHead.DataHighwayHead(
@@ -401,7 +398,7 @@ internal fun highwayPacketSession(
                 datalength = size,
                 dataoffset = offset,
                 filesize = data.size,
-                serviceticket = ticket.value,
+                serviceticket = initialTicket,
                 md5 = buffer.md5(0, size),
                 fileMd5 = fileMd5,
                 flag = 0,

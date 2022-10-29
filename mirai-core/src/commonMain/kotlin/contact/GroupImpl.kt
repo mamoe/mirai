@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.internal.contact
 
+import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelApi
@@ -149,7 +150,18 @@ internal abstract class CommonGroupImpl constructor(
 
     final override val files: RemoteFiles by lazy { RemoteFilesImpl(this) }
 
-    val lastTalkative = atomic(members.find { GroupHonorType.TALKATIVE in it.active.honors })
+
+    private val _lastTalkative: AtomicRef<NormalMemberImpl?> = atomic(null)
+
+    init {
+        // Cannot move to argument of `atomic`, compiler error.
+        val value = members.find { GroupHonorType.TALKATIVE in it.active.honors }
+        _lastTalkative.value = value
+    }
+
+    val lastTalkative get() = _lastTalkative.value
+    fun casLastTalkative(expect: NormalMemberImpl?, update: NormalMemberImpl?): Boolean =
+        _lastTalkative.compareAndSet(expect, update)
 
     final override val announcements: Announcements by lazy {
         AnnouncementsImpl(

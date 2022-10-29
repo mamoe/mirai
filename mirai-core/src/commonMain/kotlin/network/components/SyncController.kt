@@ -23,7 +23,9 @@ import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.jvm.Volatile
 
 internal interface SyncController {
-    val firstNotify: AtomicBoolean
+    val firstNotify: Boolean
+    fun casFirstNotify(expect: Boolean, update: Boolean): Boolean
+
     var latestMsgNewGroupTime: Long
     var latestMsgNewFriendTime: Long
 
@@ -69,7 +71,9 @@ internal fun SyncController.syncOnlinePush(
 )
 
 internal class SyncControllerImpl : SyncController {
-    override val firstNotify: AtomicBoolean = atomic(true)
+    private val _firstNotify: AtomicBoolean = atomic(true)
+    override val firstNotify get() = _firstNotify.value
+    override fun casFirstNotify(expect: Boolean, update: Boolean): Boolean = _firstNotify.compareAndSet(expect, update)
 
     @Volatile
     override var latestMsgNewGroupTime: Long = currentTimeSeconds()

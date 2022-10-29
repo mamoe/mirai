@@ -30,7 +30,7 @@ internal class ChunkedFlowSession<T>(
         input.close()
     }
 
-    private var offset = atomic(0L)
+    private val offset = atomic(0L)
 
     internal suspend inline fun useAll(crossinline block: suspend (T) -> Unit) {
         contract { callsInPlace(block, InvocationKind.UNKNOWN) }

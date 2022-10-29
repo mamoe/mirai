@@ -50,7 +50,7 @@ internal class CommonNHEventTest : AbstractCommonNHTest() {
     fun `BotOnlineEvent after successful reconnection`() = runBlockingUnit {
         assertEquals(INITIALIZED, network.state)
         bot.login()
-        bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
+        bot.components[SsoProcessor].setFirstLoginResult(FirstLoginResult.PASSED)
         assertEquals(OK, network.state)
         eventDispatcher.joinBroadcast() // `login` launches a job which broadcasts the event
         assertEventBroadcasts<BotOnlineEvent>(1) {
@@ -65,7 +65,7 @@ internal class CommonNHEventTest : AbstractCommonNHTest() {
     fun `BotOfflineEvent after successful reconnection`() = runBlockingUnit {
         assertEquals(INITIALIZED, network.state)
         bot.login()
-        bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
+        bot.components[SsoProcessor].setFirstLoginResult(FirstLoginResult.PASSED)
         assertEquals(OK, network.state)
         eventDispatcher.joinBroadcast() // `login` launches a job which broadcasts the event
         assertEventBroadcasts<BotOfflineEvent>(1) {
@@ -95,24 +95,26 @@ internal class CommonNHEventTest : AbstractCommonNHTest() {
 
     @Test
     fun `from CONNECTING TO OK the second time`() = runBlockingUnit {
-        val ok = atomic(CompletableDeferred<Unit>())
+        val ok = object {
+            val v = atomic(CompletableDeferred<Unit>())
+        }
         setSsoProcessor {
-            ok.value.join()
+            ok.v.value.join()
         }
 
         assertState(INITIALIZED)
 
         network.setStateConnecting()
-        ok.value.complete(Unit)
+        ok.v.value.complete(Unit)
         network.resumeConnection()
         assertState(OK)
 
-        ok.value = CompletableDeferred()
+        ok.v.value = CompletableDeferred()
         network.setStateConnecting()
         eventDispatcher.joinBroadcast()
         println("Starting receiving events")
         assertEventBroadcasts<Event>(2) {
-            ok.value.complete(Unit)
+            ok.v.value.complete(Unit)
             network.resumeConnection()
             eventDispatcher.joinBroadcast()
         }.let { event ->
@@ -169,7 +171,7 @@ internal class CommonNHEventTest : AbstractCommonNHTest() {
             assertState(INITIALIZED)
             bot.login()
             assertState(OK)
-            bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
+            bot.components[SsoProcessor].setFirstLoginResult(FirstLoginResult.PASSED)
             network.setStateConnecting()
             network.resumeConnection()
             assertState(OK)

@@ -363,9 +363,9 @@ internal class GroupNotificationProcessor(
                 val now = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
                 val previous = grayTip.msgTemplParam["uin_last"]?.findMember()
 
-                val lastTalkative = group.lastTalkative.value
+                val lastTalkative = group.lastTalkative
                 if (lastTalkative == now) return // duplicate
-                if (!group.lastTalkative.compareAndSet(lastTalkative, now)) return
+                if (!group.casLastTalkative(lastTalkative, now)) return
 
                 if (previous == null) {
                     collect(MemberHonorChangeEvent.Achieve(now, GroupHonorType.TALKATIVE))

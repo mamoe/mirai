@@ -86,8 +86,6 @@ public data class NewFriendRequestEvent @MiraiInternalApi public constructor(
      */
     public val fromNick: String,
 ) : BotEvent, Packet, AbstractEvent(), FriendInfoChangeEvent {
-    internal val responded: AtomicBoolean = atomic(false)
-
     /**
      * @return 申请人来自的群. 当申请人来自其他途径申请时为 `null`
      */
