@@ -389,6 +389,19 @@ internal abstract class CommonGroupImpl constructor(
         return result.success
     }
 
+    override suspend fun removeEssenceMessage(source: MessageSource): Boolean {
+        checkBotPermission(MemberPermission.ADMINISTRATOR)
+        val result = bot.network.sendAndExpect(
+            TroopEssenceMsgManager.SetEssence(
+                bot.client,
+                this@CommonGroupImpl.uin,
+                source.internalIds.first(),
+                source.ids.first()
+            ), 5000, 2
+        )
+        return result.success
+    }
+
     override fun toString(): String = "Group($id)"
 }
 

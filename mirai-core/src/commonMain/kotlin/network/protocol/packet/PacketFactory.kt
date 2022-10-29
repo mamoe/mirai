@@ -162,6 +162,7 @@ internal object KnownPacketFactories {
         TroopManagement.Kick,
         TroopManagement.SwitchAnonymousChat,
         TroopEssenceMsgManager.SetEssence,
+        TroopEssenceMsgManager.RemoveEssence,
         NudgePacket,
         Heartbeat.Alive,
         PbMessageSvc.PbMsgWithDraw,

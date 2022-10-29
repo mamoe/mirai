@@ -228,6 +228,16 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported 
      */
     public suspend fun setEssenceMessage(source: MessageSource): Boolean
 
+    /**
+     * 取消一条群精华消息, 需要管理员或群主权限.
+     * 操作成功返回 `true`.
+     *
+     * @throws PermissionDeniedException 没有权限时抛出
+     *
+     * @since 2.14
+     */
+    public suspend fun removeEssenceMessage(source: MessageSource): Boolean
+
     public companion object {
         /**
          * 将一条消息设置为群精华消息, 需要管理员或群主权限.
