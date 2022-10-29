@@ -7,6 +7,9 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+// IDE doesn't show warnings but compiler do.
+@file:Suppress("NOTHING_TO_INLINE", "KotlinRedundantDiagnosticSuppress")
+
 package net.mamoe.mirai.internal.utils
 
 import kotlinx.atomicfu.AtomicInt
