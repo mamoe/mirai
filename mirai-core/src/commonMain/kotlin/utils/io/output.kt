@@ -49,9 +49,9 @@ internal inline fun BytePacketBuilder.writeShortLVByteArray(byteArray: ByteArray
 internal inline fun BytePacketBuilder.writeIntLVPacket(
     tag: UByte? = null,
     lengthOffset: ((Long) -> Long) = { it },
-    builder: BytePacketBuilder.() -> Unit,
+    crossinline builder: BytePacketBuilder.() -> Unit,
 ): Int =
-    BytePacketBuilder().apply(builder).build().use {
+    buildPacket(builder).use {
         if (tag != null) writeUByte(tag)
         val length = lengthOffset.invoke(it.remaining).coerceAtMostOrFail(0xFFFFFFFFL)
         writeInt(length.toInt())
@@ -62,15 +62,14 @@ internal inline fun BytePacketBuilder.writeIntLVPacket(
 internal inline fun BytePacketBuilder.writeShortLVPacket(
     tag: UByte? = null,
     lengthOffset: ((Long) -> Long) = { it },
-    builder: BytePacketBuilder.() -> Unit,
-): Int =
-    BytePacketBuilder().apply(builder).build().use {
-        if (tag != null) writeUByte(tag)
-        val length = lengthOffset.invoke(it.remaining).coerceAtMostOrFail(0xFFFFFFFFL)
-        writeUShort(length.toUShort())
-        writePacket(it)
-        return length.toInt()
-    }
+    crossinline builder: BytePacketBuilder.() -> Unit,
+): Int = buildPacket(builder).use {
+    if (tag != null) writeUByte(tag)
+    val length = lengthOffset.invoke(it.remaining).coerceAtMostOrFail(0xFFFFFFFFL)
+    writeUShort(length.toUShort())
+    writePacket(it)
+    return length.toInt()
+}
 
 internal inline fun BytePacketBuilder.writeShortLVString(str: String) = writeShortLVByteArray(str.toByteArray())
 
@@ -83,5 +82,7 @@ internal fun BytePacketBuilder.writeHex(uHex: String) {
 }
 
 
-internal inline fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) =
-    TEA.encrypt(BytePacketBuilder().apply(encoder).build(), key) { decrypted -> writeFully(decrypted) }
+internal inline fun BytePacketBuilder.encryptAndWrite(
+    key: ByteArray,
+    crossinline encoder: BytePacketBuilder.() -> Unit
+) = TEA.encrypt(buildPacket(encoder), key) { decrypted -> writeFully(decrypted) }
