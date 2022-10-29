@@ -25,7 +25,7 @@ import net.mamoe.mirai.utils.KEY_16_ZEROS
 import net.mamoe.mirai.utils.TestOnly
 import kotlin.random.Random
 
-@kotlin.Suppress("unused")
+@Suppress("unused")
 internal class OutgoingPacketWithRespType<R : Packet?> constructor(
     remark: String?,
     commandName: String,
@@ -83,7 +83,7 @@ internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildOutgoingUniPacke
     key: ByteArray = client.wLoginSigInfo.d2Key,
     extraData: ByteReadPacket = BRP_STUB,
     sequenceId: Int = client.nextSsoSequenceId(),
-    body: BytePacketBuilder.(sequenceId: Int) -> Unit
+    crossinline body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacketWithRespType<R> {
 
     return OutgoingPacketWithRespType(remark, commandName, sequenceId, buildPacket {
@@ -114,7 +114,7 @@ internal inline fun <R : Packet?> IncomingPacketFactory<R>.buildResponseUniPacke
     key: ByteArray = client.wLoginSigInfo.d2Key,
     extraData: ByteReadPacket = BRP_STUB,
     sequenceId: Int = client.nextSsoSequenceId(),
-    body: BytePacketBuilder.(sequenceId: Int) -> Unit = {}
+    crossinline body: BytePacketBuilder.(sequenceId: Int) -> Unit = {}
 ): OutgoingPacketWithRespType<R> {
     @Suppress("DuplicatedCode")
     return OutgoingPacketWithRespType(name, commandName, sequenceId, buildPacket {
@@ -141,7 +141,7 @@ private inline fun BytePacketBuilder.writeUniPacket(
     commandName: String,
     unknownData: ByteArray,
     extraData: ByteReadPacket = BRP_STUB,
-    body: BytePacketBuilder.() -> Unit
+    crossinline body: BytePacketBuilder.() -> Unit
 ) {
     writeIntLVPacket(lengthOffset = { it + 4 }) {
         commandName.let {
@@ -176,7 +176,7 @@ internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPac
     remark: String? = null,
     commandName: String = this.commandName,
     key: ByteArray = KEY_16_ZEROS,
-    body: BytePacketBuilder.(sequenceId: Int) -> Unit
+    crossinline body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacketWithRespType<R> {
     val sequenceId: Int = client.nextSsoSequenceId()
 
@@ -214,7 +214,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
     extraData: ByteReadPacket = BRP_STUB,
     unknownHex: String = "01 00 00 00 00 00 00 00 00 00 01 00",
     sequenceId: Int,
-    body: BytePacketBuilder.() -> Unit
+    crossinline body: BytePacketBuilder.() -> Unit
 ) {
 
     /* send

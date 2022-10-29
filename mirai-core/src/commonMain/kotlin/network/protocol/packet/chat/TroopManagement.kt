@@ -271,7 +271,7 @@ internal class TroopManagement {
         private inline fun impl(
             client: QQAndroidClient,
             groupCode: Long,
-            info: Oidb0x89a.Groupinfo.() -> Unit
+            crossinline info: Oidb0x89a.Groupinfo.() -> Unit
         ): OutgoingPacket {
             return buildOutgoingUniPacket(client) {
                 writeProtoBuf(

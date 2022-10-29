@@ -112,8 +112,8 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
     private inline fun buildOutgoingMessageCommon(
         client: QQAndroidClient,
         message: MessageChain,
-        fragmentTranslator: (MessageChain) -> ImMsgBody.MsgBody,
-        pbSendMsgReq: (
+        crossinline fragmentTranslator: (MessageChain) -> ImMsgBody.MsgBody,
+        crossinline pbSendMsgReq: (
             msgBody: ImMsgBody.MsgBody,
             msgSeq: Int,
             msgRand: Int,
