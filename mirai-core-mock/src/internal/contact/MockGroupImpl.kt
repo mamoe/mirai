@@ -16,6 +16,7 @@ import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.announcement.OfflineAnnouncement
 import net.mamoe.mirai.contact.announcement.buildAnnouncementParameters
+import net.mamoe.mirai.contact.essence.Essences
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.MemberInfo
@@ -30,7 +31,9 @@ import net.mamoe.mirai.mock.contact.MockGroup
 import net.mamoe.mirai.mock.contact.MockGroupControlPane
 import net.mamoe.mirai.mock.contact.MockNormalMember
 import net.mamoe.mirai.mock.contact.active.MockGroupActive
+import net.mamoe.mirai.mock.contact.essence.MockEssences
 import net.mamoe.mirai.mock.internal.contact.active.MockGroupActiveImpl
+import net.mamoe.mirai.mock.internal.contact.essence.MockEssencesImpl
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToGroup
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
 import net.mamoe.mirai.mock.utils.broadcastBlocking
@@ -334,8 +337,16 @@ internal class MockGroupImpl(
         resource.mockUploadVoice(bot)
 
     override suspend fun setEssenceMessage(source: MessageSource): Boolean {
+        essences.add(source)
         return true
     }
+
+    override suspend fun removeEssenceMessage(source: MessageSource): Boolean {
+        essences.remove(source)
+        return true
+    }
+
+    override val essences: MockEssences = MockEssencesImpl(this)
 
     @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"))
     @Suppress("OverridingDeprecatedMember", "DEPRECATION")

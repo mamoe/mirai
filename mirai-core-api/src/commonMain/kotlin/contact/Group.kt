@@ -17,6 +17,7 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
+import net.mamoe.mirai.contact.essence.Essences
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
@@ -237,6 +238,13 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported 
      * @since 2.14
      */
     public suspend fun removeEssenceMessage(source: MessageSource): Boolean
+
+    /**
+     * 群精华消息相关功能接口
+     *
+     * @since 2.14
+     */
+    public val essences: Essences
 
     public companion object {
         /**
