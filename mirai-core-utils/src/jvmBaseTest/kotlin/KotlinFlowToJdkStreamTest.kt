@@ -57,9 +57,9 @@ internal class KotlinFlowToJdkStreamTest {
     internal fun testSuspendInFlow() = runTest {
         flow<Any?> {
             emit("1")
-            delay(1000) // Suspended
+            yield() // Suspended
             emit("2")
-        }.toStream().collectList().let {
+        }.toStream(context = Dispatchers.IO).collectList().let {
             assertEquals(listOf("1", "2"), it)
         }
     }
