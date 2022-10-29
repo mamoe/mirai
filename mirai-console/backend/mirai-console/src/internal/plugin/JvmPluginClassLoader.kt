@@ -84,7 +84,7 @@ internal class DynLibClassLoader : URLClassLoader {
             if (name.startsWith("java.")) return Class.forName(name, false, JavaSystemPlatformClassLoader)
 
             // All mirai-core hard-linked should use same version to avoid errors (ClassCastException).
-            if (name.startsWith("io.netty") || name in AllDependenciesClassesHolder.allclasses) {
+            if (name in AllDependenciesClassesHolder.allclasses) {
                 return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
             }
             if (name.startsWith("net.mamoe.mirai.")) { // Avoid plugin classing cheating
