@@ -21,6 +21,7 @@ plugins {
     `maven-publish`
     id("me.him188.kotlin-jvm-blocking-bridge")
     id("me.him188.kotlin-dynamic-delegation")
+    id("kotlinx-atomicfu")
 }
 
 version = Versions.console
@@ -45,7 +46,6 @@ dependencies {
     compileAndTestRuntime(project(":mirai-core-utils"))
     compileAndTestRuntime(`kotlin-stdlib-jdk8`)
 
-    compileAndTestRuntime(`kotlinx-atomicfu`)
     compileAndTestRuntime(`kotlinx-coroutines-core`)
     compileAndTestRuntime(`kotlinx-serialization-core`)
     compileAndTestRuntime(`kotlinx-serialization-json`)
