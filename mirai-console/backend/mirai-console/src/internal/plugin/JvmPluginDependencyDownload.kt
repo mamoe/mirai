@@ -254,7 +254,7 @@ internal class JvmPluginDependencyDownloader(
         logger.debug { "Remote server: " + config.repoLoc }
     }
 
-    fun resolveDependencies(deps: Collection<String>, vararg filters: DependencyFilter): DependencyResult {
+    fun resolveDependencies(deps: Iterable<String>, vararg filters: DependencyFilter): DependencyResult {
 
         val dependencies: MutableList<Dependency> = ArrayList()
         for (library in deps) {
