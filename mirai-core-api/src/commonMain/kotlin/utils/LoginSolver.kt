@@ -67,7 +67,9 @@ public abstract class LoginSolver {
     public abstract suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String?
 
     /**
-     * 处理设备验证.
+     * 处理设备验证. 通常需要覆盖此函数. 此函数为 `open` 是为了兼容旧代码 (2.13 以前).
+     *
+     * 设备验证的类型可在 [DeviceVerificationRequests] 查看.
      *
      * ## 异常类型
      *
@@ -76,7 +78,7 @@ public abstract class LoginSolver {
      *
      * 抛出任意其他 [Throwable] 将视为验证码解决器的自身错误.
      *
-     * @since 验证结果, 可通过解决 [DeviceVerificationRequests] 获得.
+     * @return 验证结果, 可通过解决 [DeviceVerificationRequests] 获得.
      * @throws LoginFailedException
      * @since 2.13
      */
@@ -89,11 +91,11 @@ public abstract class LoginSolver {
             (onSolveUnsafeDeviceLoginVerify(bot, fallback.url))
             return fallback.solved()
         }
-        throw UnsupportedSmsLoginException("This login session requires SMS verification, but current LoginSolver($this) does not support it.")
+        throw UnsupportedSmsLoginException("This login session requires SMS verification, but current LoginSolver($this) does not support it. Please override `LoginSolver.onSolveDeviceVerification`.")
     }
 
     /**
-     * 处理不安全设备验证.
+     * 处理不安全设备验证. 此函数已弃用, 请实现 [onSolveDeviceVerification].
      *
      * 返回值保留给将来使用. 目前在处理完成后返回任意内容 (包含 `null`) 均视为处理成功.
      *
@@ -110,10 +112,12 @@ public abstract class LoginSolver {
     @Deprecated(
         "Please use onSolveDeviceVerification instead",
         level = DeprecationLevel.WARNING,
-        replaceWith = ReplaceWith("onSolveDeviceVerification(bot, url, null)")
     ) // softly
     @DeprecatedSinceMirai(warningSince = "2.13") // for hidden
-    public abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
+    public open suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
+        // This function was abstract, open since 2.13.0
+        throw UnsupportedSmsLoginException("This login session requires device verification, but current LoginSolver($this) does not support it. Please override `LoginSolver.onSolveDeviceVerification`.")
+    }
 
     public companion object {
         /**
@@ -146,6 +150,9 @@ internal expect object PlatformLoginSolverImplementations {
  * 属性 [sms] 为短信验证码验证方式, [fallback] 为其他验证方式.
  * 两个属性至少有一个不为 `null`, 在不为 `null` 时表示支持该验证方式. 可任意选用偏好的验证方式.
  *
+ * 在使用时应该考虑未来有更新的情况. 未来服务器可能会增加一种新验证方式, 也有可能强制使用该验证方式,
+ * 那么 [LoginSolver.onSolveDeviceVerification] 就应该抛出 [UnsupportedOperationException] 提示不支持该验证操作.
+ *
  * @since 2.13
  */
 @NotStableForInheritance
@@ -167,7 +174,7 @@ public interface DeviceVerificationRequests {
 
 
     /**
-     * 服务器要求短信验证时提供的账号绑定的手机信息. 使用 [requestSms] 来请求发送验证码
+     * 服务器要求短信验证时提供的账号绑定的手机信息. 使用 [requestSms] 来请求发送验证码.
      *
      * @since 2.13
      * @see LoginSolver.onSolveDeviceVerification

@@ -5792,7 +5792,7 @@ public abstract class net/mamoe/mirai/utils/LoginSolver {
 	public fun onSolveDeviceVerification (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/utils/DeviceVerificationRequests;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun onSolvePicCaptcha (Lnet/mamoe/mirai/Bot;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun onSolveSliderCaptcha (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun onSolveUnsafeDeviceLoginVerify (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun onSolveUnsafeDeviceLoginVerify (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/utils/LoginSolver$Companion {
