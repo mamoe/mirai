@@ -11,12 +11,15 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.announcement.Announcement
 import net.mamoe.mirai.contact.announcement.Announcements
+import net.mamoe.mirai.utils.JdkStreamSupport.toStream
 import java.util.stream.Stream
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * 表示一个可以创建数据流 [Flow] 和 [Stream] 的对象.
@@ -38,8 +41,19 @@ public actual interface Streamable<T> {
      * 创建一个能获取该群内所有 [T] 的 [Stream].
      *
      * 实现细节: 为了适合 Java 调用, 实现类似为阻塞式的 [asFlow], 因此不建议在 Kotlin 使用. 在 Kotlin 请使用 [asFlow].
+     *
+     * 注: 为了资源的正确释放, 使用 [Stream] 时需要使用 `try-with-resource`. 如
+     *
+     * ```java
+     * Streamable<String> tmp;
+     * try (var stream = tmp.asStream()) {
+     *     System.out.println(stream.findFirst());
+     * }
+     * ```
      */
-    public fun asStream(): Stream<T>
+    public fun asStream(): Stream<T> = asFlow().toStream(
+        context = if (this is CoroutineScope) this.coroutineContext else EmptyCoroutineContext,
+    )
 
     /**
      * 获取所有 [T] 列表, 将全部 [T] 都加载后再返回.

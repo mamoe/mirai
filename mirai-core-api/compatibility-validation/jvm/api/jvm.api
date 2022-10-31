@@ -6169,7 +6169,7 @@ public final class net/mamoe/mirai/utils/StandardCharImageLoginSolver$Companion 
 
 public abstract interface class net/mamoe/mirai/utils/Streamable {
 	public abstract fun asFlow ()Lkotlinx/coroutines/flow/Flow;
-	public abstract fun asStream ()Ljava/util/stream/Stream;
+	public fun asStream ()Ljava/util/stream/Stream;
 	public fun toList ()Ljava/util/List;
 	public fun toList (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun toList$suspendImpl (Lnet/mamoe/mirai/utils/Streamable;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
