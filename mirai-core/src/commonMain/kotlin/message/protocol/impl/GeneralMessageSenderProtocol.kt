@@ -145,6 +145,13 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
                         SendMessageFailedException.Reason.GROUP_CHAT_LIMITED,
                         originalMessage
                     )
+                    // #2127
+                    46 -> throw SendMessageFailedException(
+                        contact,
+                        SendMessageFailedException.Reason.LIMITED_MESSAGING,
+                        originalMessage,
+                        tips = "问题原因可能是账号被多次举报或被服务器认为不安全. 可尝试访问 https://accounts.qq.com/safe/message/unlock?lock_info=5_5 解冻."
+                    )
                 }
             }
             check(resp is MessageSvcPbSendMsg.Response.SUCCESS) {

@@ -563,6 +563,7 @@ public final class net/mamoe/mirai/contact/Platform$Companion {
 }
 
 public class net/mamoe/mirai/contact/SendMessageFailedException : java/lang/RuntimeException {
+	public synthetic fun <init> (Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;Lnet/mamoe/mirai/message/data/Message;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getOriginalMessage ()Lnet/mamoe/mirai/message/data/Message;
 	public final fun getReason ()Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public fun getTarget ()Lnet/mamoe/mirai/contact/Contact;
@@ -572,6 +573,7 @@ public final class net/mamoe/mirai/contact/SendMessageFailedException$Reason : j
 	public static final field AT_ALL_LIMITED Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static final field BOT_MUTED Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static final field GROUP_CHAT_LIMITED Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
+	public static final field LIMITED_MESSAGING Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static final field MESSAGE_TOO_LARGE Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static fun values ()[Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
