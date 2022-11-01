@@ -21,6 +21,7 @@ import org.jline.reader.impl.LineReaderImpl
 import org.jline.utils.AttributedStringBuilder
 import org.jline.utils.AttributedStyle
 import java.util.*
+import kotlin.concurrent.withLock
 
 internal object JLineInputDaemon : Runnable {
     lateinit var terminal0: MiraiConsoleImplementationTerminal
@@ -166,8 +167,7 @@ internal object JLineInputDaemon : Runnable {
     }
 
 
-    @Synchronized
-    internal fun suspendReader(canResumeByNewRequest: Boolean) {
+    internal fun suspendReader(canResumeByNewRequest: Boolean): Unit = terminalExecuteLock.withLock {
         if (!lineReader.isReading) return
 
         terminal.pause()
@@ -177,8 +177,7 @@ internal object JLineInputDaemon : Runnable {
         terminalDisplay.update(Collections.emptyList(), 0)
     }
 
-    @Synchronized
-    internal fun tryResumeReader(byNewReq: Boolean) {
+    internal fun tryResumeReader(byNewReq: Boolean): Unit = terminalExecuteLock.withLock {
         if (!pausedByDaemon) return
         if (byNewReq && !canResumeByNewRequest) return
 
