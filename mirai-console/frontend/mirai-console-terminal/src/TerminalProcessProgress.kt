@@ -242,9 +242,9 @@ internal fun updateTerminalDownloadingProgresses() {
 
     runCatching { downloadingProgressCoroutine?.resumeWith(Result.success(Unit)) }
 
-    JLineInputDaemon.suspendReader(false)
-
     terminalExecuteLock.withLock {
+        JLineInputDaemon.suspendReader(false)
+
         if (terminalDownloadingProgresses.isNotEmpty()) {
             val wid = terminal.width
             if (wid == 0) { // Run in idea
