@@ -43,7 +43,6 @@ kotlin {
                 implementation(project(":mirai-core-utils"))
                 implementation(`kotlinx-serialization-protobuf`)
                 implementation(`ktor-io`)
-                implementation(`ktor-client-core`)
             }
         }
 
@@ -59,7 +58,6 @@ kotlin {
             dependencies {
                 implementation(`log4j-api`)
                 implementation(`netty-handler`)
-                implementation(`ktor-client-okhttp`)
                 api(`kotlinx-coroutines-jdk8`) // use -jvm modules for this magic target 'jvmBase'
             }
         }
@@ -134,24 +132,6 @@ kotlin {
                     defFile = projectDir.resolve("src/mingwX64Main/cinterop/Socket.def")
                     packageName("sockets")
                 }
-        }
-
-        configure(WIN_TARGETS.map { getByName(it + "Main") }) {
-            dependencies {
-                implementation(`ktor-client-curl`)
-            }
-        }
-
-        configure(LINUX_TARGETS.map { getByName(it + "Main") }) {
-            dependencies {
-                implementation(`ktor-client-cio`)
-            }
-        }
-
-        findByName("darwinMain")?.apply {
-            dependencies {
-                implementation(`ktor-client-darwin`)
-            }
         }
 
         disableCrossCompile()

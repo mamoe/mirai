@@ -72,6 +72,13 @@ internal fun getMiraiImpl() = Mirai as MiraiImpl
 
 internal expect fun createDefaultHttpClient(): HttpClient
 
+// used by `net.mamoe.mirai.deps.test.CoreDependencyResolutionTest` in mirai-deps-test module. Do not change signature.
+@Suppress("unused")
+@TestOnly
+internal fun testHttpClient() {
+    createDefaultHttpClient().close()
+}
+
 @Suppress("FunctionName")
 internal expect fun _MiraiImpl_static_init()
 
