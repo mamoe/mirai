@@ -23,10 +23,34 @@ dependencies {
     api(project(":mirai-core"))
     api(project(":mirai-core-api"))
     api(project(":mirai-core-utils"))
+
+    relocateImplementation(project, `ktor-client-core_relocated`)
+    relocateImplementation(project, `ktor-client-okhttp_relocated`)
+    relocateImplementation(project, `ktor-io_relocated`)
 }
+
+val shadow = configureRelocatedShadowJarForJvmProject(kotlin)
 
 if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING")?.toBoolean() != true) {
-    configurePublishing("mirai-core-all")
+    // Do not publish -all jars to snapshot server since they are too large.
+
+    configurePublishing("mirai-core-all", addShadowJar = false)
+
+    publications {
+        getByName("mavenJava", MavenPublication::class) {
+            artifact(shadow)
+        }
+    }
+
+    tasks.getByName("publishMavenJavaPublicationToMavenLocal").dependsOn(shadow)
+    tasks.findByName("publishMavenJavaPublicationToMavenCentralRepository")?.dependsOn(shadow)
 }
 
-relocateKtorForCore(true)
+//
+//// WARNING: You must also consider relocating transitive dependencies.
+//// Otherwise, user will get NoClassDefFound error when using mirai as a classpath dependency. See #2263.
+//
+//val includeInRuntime = true
+//relocateAllFromGroupId("io.ktor", includeInRuntime, "io.ktor")
+//relocateAllFromGroupId("com.squareup.okhttp3", includeInRuntime, listOf("okhttp3"))
+//relocateAllFromGroupId("com.squareup.okio", includeInRuntime, listOf("okio"))

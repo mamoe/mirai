@@ -7,13 +7,16 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+import org.gradle.api.Action
 import org.gradle.api.DomainObjectCollection
-import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.ExternalModuleDependency
+import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.kotlin.dsl.accessors.runtime.addDependencyTo
 import org.gradle.kotlin.dsl.extra
+import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import java.io.File
 
 /**
@@ -34,7 +37,7 @@ import java.io.File
  *
  * Relocation 是模块范围的. 可以为 group id `io.ktor` 下的所有模块执行 relocation, 也可以仅为某一个精确的模块比如 `io.ktor:ktor-client-core` 执行.
  *
- * 要增加一条 relocation 规则, 使用 [relocateAllFromGroupId] 或者 [relocateExactArtifact]. 不要现在就过去用, 你必须先读完本文全部.
+ * 要增加一条 relocation 规则, 使用 [relocateAllFromGroupId] 或者 [addRelocationRuntime]. 不要现在就过去用, 你必须先读完本文全部.
  *
  * ## 间接依赖不会被处理
  *
@@ -82,61 +85,6 @@ import java.io.File
 object RelocationNotes
 
 /**
- * 配置 Ktor 依赖.
- * @see RelocationNotes
- * @see relocateKtorForCore
- */
-fun NamedDomainObjectContainer<KotlinSourceSet>.configureMultiplatformKtorDependencies(addDep: KotlinDependencyHandler.(Any) -> Dependency?) {
-    getByName("commonMain").apply {
-        dependencies {
-            addDep(`ktor-io`)
-            addDep(`ktor-client-core`)
-        }
-    }
-
-    findByName("jvmBaseMain")?.apply {
-        dependencies {
-            addDep(`ktor-client-okhttp`)
-        }
-    }
-
-    configure(WIN_TARGETS.map { getByName(it + "Main") }) {
-        dependencies {
-            addDep(`ktor-client-curl`)
-        }
-    }
-
-    configure(LINUX_TARGETS.map { getByName(it + "Main") }) {
-        dependencies {
-            addDep(`ktor-client-cio`)
-        }
-    }
-
-    findByName("darwinMain")?.apply {
-        dependencies {
-            addDep(`ktor-client-darwin`)
-        }
-    }
-}
-
-inline fun <T> configure(list: Iterable<T>, function: T.() -> Unit) {
-    list.forEach(function)
-}
-
-
-/**
- * 使用之前阅读 [RelocationNotes]
- */
-fun Project.relocateKtorForCore(includeInRuntime: Boolean) {
-    // WARNING: You must also consider relocating transitive dependencies.
-    // Otherwise, user will get NoClassDefFound error when using mirai as a classpath dependency. See #2263.
-
-    relocateAllFromGroupId("io.ktor", includeInRuntime)
-    relocateAllFromGroupId("com.squareup.okhttp3", includeInRuntime)
-    relocateAllFromGroupId("com.squareup.okio", includeInRuntime)
-}
-
-/**
  * relocate 一个 [groupId] 下的所有模块.
  *
  * 如果要 relocate 的依赖来自你依赖的另一个模块, 必须传 [includeInRuntime] 为 `false`, 否则会导致运行时类冲突.
@@ -148,23 +96,133 @@ fun Project.relocateKtorForCore(includeInRuntime: Boolean) {
  *
  * @param groupId 例如 `io.ktor`
  * @param includeInRuntime 将 relocate 后的依赖本体包含在运行时 classpath.
+ * @param packages 被 relocate 的模块的全部顶层包. 如 `com.squareup.okhttp3:okhttp` 的顶层包是 `okhttp3`
  */
-fun Project.relocateAllFromGroupId(groupId: String, includeInRuntime: Boolean) {
-    relocationFilters.add(RelocationFilter(groupId, includeInRuntime = includeInRuntime))
+fun Project.relocateAllFromGroupId(
+    groupId: String,
+    includeInRuntime: Boolean,
+    packages: List<String> = listOf(groupId),
+) {
+    relocationFilters.add(
+        RelocationFilter(
+            groupId,
+            packages = packages,
+            includeInRuntime = includeInRuntime
+        )
+    )
+}
+
+fun Project.relocateAllFromGroupId(
+    groupId: String,
+    includeInRuntime: Boolean,
+    vararg packages: String,
+) = relocateAllFromGroupId(groupId, includeInRuntime, packages.toList())
+
+
+fun KotlinDependencyHandler.relocateCompileOnly(
+    relocatedDependency: RelocatedDependency,
+    action: ExternalModuleDependency.() -> Unit = {}
+): ExternalModuleDependency {
+    val dependency = compileOnly(relocatedDependency.notation, action)
+    project.relocationFilters.add(
+        RelocationFilter(
+            dependency.group!!, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = false,
+        )
+    )
+    // Don't add to runtime
+    return dependency
+}
+
+fun DependencyHandler.relocateCompileOnly(
+    project: Project,
+    relocatedDependency: RelocatedDependency,
+    action: Action<ExternalModuleDependency> = Action {}
+): Dependency {
+    val dependency = addDependencyTo(this, "compileOnly", relocatedDependency.notation, action)
+    project.relocationFilters.add(
+        RelocationFilter(
+            dependency.group!!, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = false,
+        )
+    )
+    // Don't add to runtime
+    return dependency
 }
 
 /**
- * 精确地 relocate 一个依赖.
+ * 添加一个通常的 [implementation][KotlinDependencyHandler.implementation] 依赖, 并按 [relocatedDependency] 定义的配置 relocate.
+ *
+ * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用都会被 relocate 到 [RELOCATION_ROOT_PACKAGE].
+ * 运行时 (runtime) 将会包含被 relocate 的依赖及其所有间接依赖.
+ *
+ * @see configureRelocationForTarget
  */
-fun Project.relocateExactArtifact(groupId: String, artifactId: String, includeInRuntime: Boolean) {
-    relocationFilters.add(RelocationFilter(groupId, artifactId, includeInRuntime = includeInRuntime))
+fun KotlinDependencyHandler.relocateImplementation(
+    relocatedDependency: RelocatedDependency,
+    action: ExternalModuleDependency.() -> Unit = {}
+): ExternalModuleDependency {
+    val dependency = implementation(relocatedDependency.notation) {
+
+    }
+    project.relocationFilters.add(
+        RelocationFilter(
+            dependency.group!!, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = true,
+        )
+    )
+    project.configurations.maybeCreate(SHADOW_RELOCATION_CONFIGURATION_NAME)
+    addDependencyTo(
+        project.dependencies,
+        SHADOW_RELOCATION_CONFIGURATION_NAME,
+        relocatedDependency.notation,
+        Action<ExternalModuleDependency> {
+            relocatedDependency.exclusionAction(this)
+            exclude(ExcludeProperties.`everything from kotlin`)
+            exclude(ExcludeProperties.`everything from kotlinx`)
+            action()
+        }
+    )
+    return dependency
 }
+
+fun DependencyHandler.relocateImplementation(
+    project: Project,
+    relocatedDependency: RelocatedDependency,
+    action: Action<ExternalModuleDependency> = Action {}
+): ExternalModuleDependency {
+    val dependency =
+        addDependencyTo(this, "implementation", relocatedDependency.notation, Action<ExternalModuleDependency> {
+            relocatedDependency.exclusionAction(this)
+            exclude(ExcludeProperties.`everything from kotlin`)
+            exclude(ExcludeProperties.`everything from kotlinx`)
+            action.execute(this)
+        })
+    project.relocationFilters.add(
+        RelocationFilter(
+            dependency.group!!, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = true,
+        )
+    )
+    project.configurations.maybeCreate(SHADOW_RELOCATION_CONFIGURATION_NAME)
+    addDependencyTo(
+        project.dependencies,
+        SHADOW_RELOCATION_CONFIGURATION_NAME,
+        relocatedDependency.notation,
+        Action<ExternalModuleDependency> {
+            relocatedDependency.exclusionAction(this)
+            exclude(ExcludeProperties.`everything from kotlin`)
+            exclude(ExcludeProperties.`everything from kotlinx`)
+            action(this)
+        }
+    )
+    return dependency
+}
+
+
+const val SHADOW_RELOCATION_CONFIGURATION_NAME = "shadowRelocation"
 
 
 data class RelocationFilter(
     val groupId: String,
     val artifactId: String? = null,
-    val shadowFilter: String = groupId,
+    val packages: List<String> = listOf(groupId),
     val filesFilter: String = groupId.replace(".", "/"),
     /**
      * Pack relocated dependency into the fat jar. If set to `false`, dependencies will be removed.

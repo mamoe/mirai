@@ -23,7 +23,7 @@ abstract class AbstractTest {
         const val miraiLocalVersion = "2.99.0-deps-test" // do Search Everywhere before changing this
         const val REASON_LOCAL_ARTIFACT_NOT_AVAILABLE = "local artifacts not available"
 
-        private val mavenLocalDir: File by lazy {
+        val mavenLocalDir: File by lazy {
             org.gradle.api.internal.artifacts.mvnsettings.DefaultLocalMavenRepositoryLocator(
                 org.gradle.api.internal.artifacts.mvnsettings.DefaultMavenSettingsProvider(DefaultMavenFileLocations())
             ).localMavenRepository
@@ -165,9 +165,20 @@ abstract class AbstractTest {
         if (context.executionException.isPresent) {
             val inst = context.requiredTestInstance as AbstractTest
             println("====================== build.gradle ===========================")
-            println(inst.tempDir.resolve("build.gradle").readText())
+            println(inst.tempDir.resolveFirstExisting("build.gradle", "build.gradle.kts").readTextIfFound())
             println("==================== settings.gradle ==========================")
-            println(inst.tempDir.resolve("settings.gradle").readText())
+            println(inst.tempDir.resolveFirstExisting("settings.gradle", "settings.gradle.kts").readTextIfFound())
         }
     }
+
+    private fun File.resolveFirstExisting(vararg files: String): File? {
+        return files.asSequence().map { resolve(it) }.firstOrNull { it.exists() }
+    }
+
+    private fun File?.readTextIfFound(): String =
+        when {
+            this == null -> "(not found)"
+            exists() -> readText()
+            else -> "($name not found)"
+        }
 }

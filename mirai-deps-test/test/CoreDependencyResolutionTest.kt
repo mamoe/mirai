@@ -13,17 +13,20 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIf
 
 class CoreDependencyResolutionTest : AbstractTest() {
+    private val testCode = """
+                package test
+                @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXPERIMENTAL_API_USAGE")
+                fun main () {
+                    println(net.mamoe.mirai.BotFactory)
+                    println(net.mamoe.mirai.Mirai)
+                    println(net.mamoe.mirai.internal.testHttpClient())
+                }
+            """.trimIndent()
+
     @Test
     @EnabledIf("isMiraiLocalAvailable", disabledReason = REASON_LOCAL_ARTIFACT_NOT_AVAILABLE)
     fun `test resolve JVM root from Kotlin JVM`() {
-        mainSrcDir.resolve("main.kt").writeText(
-            """
-            package test
-            fun main () {
-                println(net.mamoe.mirai.BotFactory)
-            }
-        """.trimIndent()
-        )
+        mainSrcDir.resolve("main.kt").writeText(testCode)
         buildFile.writeText(
             """
             plugins {
@@ -36,6 +39,9 @@ class CoreDependencyResolutionTest : AbstractTest() {
             dependencies {
                 implementation("net.mamoe:mirai-core:$miraiLocalVersion")
             }
+            kotlin.sourceSets.all {
+                languageSettings.optIn("net.mamoe.mirai.utils.TestOnly")
+            }
         """.trimIndent()
         )
         runGradle("build")
@@ -44,14 +50,7 @@ class CoreDependencyResolutionTest : AbstractTest() {
     @Test
     @EnabledIf("isMiraiLocalAvailable", disabledReason = REASON_LOCAL_ARTIFACT_NOT_AVAILABLE)
     fun `test resolve JVM from Kotlin JVM`() {
-        mainSrcDir.resolve("main.kt").writeText(
-            """
-            package test
-            fun main () {
-                println(net.mamoe.mirai.BotFactory)
-            }
-        """.trimIndent()
-        )
+        mainSrcDir.resolve("main.kt").writeText(testCode)
         buildFile.writeText(
             """
             plugins {
@@ -64,6 +63,9 @@ class CoreDependencyResolutionTest : AbstractTest() {
             dependencies {
                 implementation("net.mamoe:mirai-core-jvm:$miraiLocalVersion")
             }
+            kotlin.sourceSets.all {
+                languageSettings.optIn("net.mamoe.mirai.utils.TestOnly")
+            }
         """.trimIndent()
         )
         runGradle("build")
@@ -72,14 +74,7 @@ class CoreDependencyResolutionTest : AbstractTest() {
     @Test
     @EnabledIf("isMiraiLocalAvailable", disabledReason = REASON_LOCAL_ARTIFACT_NOT_AVAILABLE)
     fun `test resolve JVM and Native from common`() {
-        commonMainSrcDir.resolve("main.kt").writeText(
-            """
-            package test
-            fun main () {
-                println(net.mamoe.mirai.BotFactory)
-            }
-        """.trimIndent()
-        )
+        commonMainSrcDir.resolve("main.kt").writeText(testCode)
         buildFile.writeText(
             """
             |import org.apache.tools.ant.taskdefs.condition.Os
@@ -111,6 +106,9 @@ class CoreDependencyResolutionTest : AbstractTest() {
             |        }
             |    }
             |}
+            |kotlin.sourceSets.all {
+            |    languageSettings.optIn("net.mamoe.mirai.utils.TestOnly")
+            |}
         """.trimMargin()
         )
 
@@ -120,14 +118,7 @@ class CoreDependencyResolutionTest : AbstractTest() {
     @Test
     @EnabledIf("isMiraiLocalAvailable", disabledReason = REASON_LOCAL_ARTIFACT_NOT_AVAILABLE)
     fun `test resolve Native from common`() {
-        nativeMainSrcDir.resolve("main.kt").writeText(
-            """
-            package test
-            fun main () {
-                println(net.mamoe.mirai.BotFactory)
-            }
-        """.trimIndent()
-        )
+        nativeMainSrcDir.resolve("main.kt").writeText(testCode)
         buildFile.writeText(
             """
             |import org.apache.tools.ant.taskdefs.condition.Os
@@ -158,6 +149,9 @@ class CoreDependencyResolutionTest : AbstractTest() {
             |            }
             |        }
             |    }
+            |}
+            |kotlin.sourceSets.all {
+            |    languageSettings.optIn("net.mamoe.mirai.utils.TestOnly")
             |}
         """.trimMargin()
         )
