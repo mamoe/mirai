@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinSingleTargetExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import org.jetbrains.kotlin.gradle.plugin.LanguageSettingsBuilder
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
@@ -38,6 +39,20 @@ private fun Project.jvmVersion(): JavaVersion {
         JavaVersion.VERSION_11
     } else {
         JavaVersion.VERSION_1_8
+    }
+}
+
+fun Project.optInForAllTargets(qualifiedClassname: String) {
+    tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinCompile::class) {
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=$qualifiedClassname"
+    }
+}
+
+fun Project.enableLanguageFeatureForAllSourceSets(qualifiedClassname: String) {
+    kotlinSourceSets!!.all {
+        languageSettings {
+            this.enableLanguageFeature(qualifiedClassname)
+        }
     }
 }
 

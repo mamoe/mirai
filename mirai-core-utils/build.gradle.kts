@@ -37,7 +37,10 @@ kotlin {
 
                 implementation(`kotlinx-atomicfu`)
                 implementation(`kotlinx-serialization-protobuf`)
-                implementation(`ktor-io`)
+                relocateImplementation(`ktor-io_relocated`) {
+                    exclude(ExcludeProperties.`kotlin-stdlib`)
+                    exclude(ExcludeProperties.`kotlinx-coroutines`)
+                }
             }
         }
 
@@ -55,7 +58,6 @@ kotlin {
         }
 
         findByName("androidMain")?.apply {
-            //
             dependencies {
                 compileOnly(`android-runtime`)
 //                    api1(`ktor-client-android`)
@@ -96,7 +98,6 @@ if (tasks.findByName("androidMainClasses") != null) {
 }
 
 configureMppPublishing()
-relocateKtorForCore(true)
 
 //mavenCentralPublish {
 //    artifactId = "mirai-core-utils"

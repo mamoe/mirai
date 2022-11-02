@@ -7,8 +7,12 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("ObjectPropertyName", "ObjectPropertyName", "unused", "MemberVisibilityCanBePrivate")
+@file:Suppress(
+    "ObjectPropertyName", "ObjectPropertyName", "unused", "MemberVisibilityCanBePrivate", "RemoveRedundantBackticks"
+)
 
+import org.gradle.api.artifacts.ExternalModuleDependency
+import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.attributes.Attribute
 import org.gradle.kotlin.dsl.exclude
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
@@ -40,6 +44,8 @@ object Versions {
      * 注意, 不要轻易升级 ktor 版本. 阅读 [RelocationNotes], 尤其是间接依赖部分.
      */
     const val ktor = "2.1.0"
+    const val okhttp = "4.9.3" // 需要跟 Ktor 依赖的相同, 用于 shadow 后携带到 runtime
+    const val okio = "3.2.0" // 需要跟 OkHttp 依赖的相同, 用于 shadow 后携带到 runtime
 
     const val binaryValidator = "0.4.0"
 
@@ -93,7 +99,17 @@ val `kotlinx-serialization-json` = kotlinx("serialization-json", Versions.serial
 val `kotlinx-serialization-protobuf` = kotlinx("serialization-protobuf", Versions.serialization)
 const val `kotlinx-atomicfu` = "org.jetbrains.kotlinx:atomicfu:${Versions.atomicFU}"
 
-val `ktor-io` = ktor("io", Versions.ktor)
+/**
+ * @see relocateImplementation
+ */
+class RelocatedDependency(
+    val notation: String,
+    vararg val packages: String,
+    /**
+     * Additional exclusions apart from everything from `org.jetbrains.kotlin` and `org.jetbrains.kotlinx`.
+     */
+    val exclusionAction: ExternalModuleDependency.() -> Unit = {},
+)
 
 fun KotlinDependencyHandler.implementationKotlinxIo(module: String) {
     implementation(module) {
@@ -111,14 +127,83 @@ fun KotlinDependencyHandler.implementationKotlinxIo(module: String) {
     }
 }
 
+class MultiplatformDependency private constructor(
+    private val groupId: String,
+    private val baseArtifactId: String,
+    vararg val targets: String,
+) {
+    fun notations(): Sequence<Map<String, String>> {
+        return sequenceOf(mapOf("group" to groupId, "module" to baseArtifactId))
+            .plus(targets.asSequence().map { mapOf("group" to groupId, "module" to "$baseArtifactId.$it") })
+    }
+
+    companion object {
+        fun jvm(groupId: String, baseArtifactId: String): MultiplatformDependency {
+            return MultiplatformDependency(groupId, baseArtifactId, "common", "metadata", "jvm", "jdk8", "jdk7")
+        }
+    }
+}
+
+fun ModuleDependency.exclude(multiplatformDependency: MultiplatformDependency) {
+    multiplatformDependency.notations().forEach {
+        exclude(it)
+    }
+}
+
+object ExcludeProperties {
+    val `everything from kotlin` = exclude(groupId = "org.jetbrains.kotlin", null)
+    val `everything from kotlinx` = exclude(groupId = "org.jetbrains.kotlinx", null)
+    val `kotlin-stdlib` = multiplatformJvm(groupId = "org.jetbrains.kotlin", "kotlin-stdlib")
+    val `kotlinx-coroutines` = multiplatformJvm(groupId = "org.jetbrains.kotlinx", "kotlinx-coroutines")
+    val `ktor-io` = multiplatformJvm(groupId = "io.ktor", "ktor-io")
+    val `everything from slf4j` = exclude(groupId = "org.slf4j", null)
+
+    /**
+     * @see org.gradle.kotlin.dsl.exclude
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun exclude(
+        groupId: String?, artifactId: String?
+    ): Map<String, String> = buildMap {
+        groupId?.let { put("group", groupId) }
+        artifactId?.let { put("module", artifactId) }
+    }
+
+    private fun multiplatformJvm(
+        groupId: String, baseArtifactId: String
+    ): MultiplatformDependency = MultiplatformDependency.jvm(groupId, baseArtifactId)
+}
+
+val `ktor-io` = ktor("io", Versions.ktor)
+val `ktor-io_relocated` = RelocatedDependency(`ktor-io`, "io.ktor.utils.io") {
+    exclude(ExcludeProperties.`everything from slf4j`)
+}
+
+val `ktor-http` = ktor("http", Versions.ktor)
+val `ktor-events` = ktor("events", Versions.ktor)
 val `ktor-serialization` = ktor("serialization", Versions.ktor)
+val `ktor-websocket-serialization` = ktor("websocket-serialization", Versions.ktor)
 
 val `ktor-client-core` = ktor("client-core", Versions.ktor)
+val `ktor-client-core_relocated` = RelocatedDependency(`ktor-client-core`, "io.ktor") {
+    exclude(ExcludeProperties.`ktor-io`)
+    exclude(ExcludeProperties.`everything from slf4j`)
+}
+
 val `ktor-client-cio` = ktor("client-cio", Versions.ktor)
 val `ktor-client-mock` = ktor("client-mock", Versions.ktor)
 val `ktor-client-curl` = ktor("client-curl", Versions.ktor)
 val `ktor-client-darwin` = ktor("client-darwin", Versions.ktor)
 val `ktor-client-okhttp` = ktor("client-okhttp", Versions.ktor)
+val `ktor-client-okhttp_relocated` =
+    RelocatedDependency(ktor("client-okhttp", Versions.ktor), "io.ktor", "okhttp", "okio") {
+        exclude(ExcludeProperties.`ktor-io`)
+        exclude(ExcludeProperties.`everything from slf4j`)
+    }
+
+const val `okhttp3` = "com.squareup.okhttp3:okhttp:${Versions.okhttp}"
+const val `okio` = "com.squareup.okio:okio-jvm:${Versions.okio}"
+
 val `ktor-client-android` = ktor("client-android", Versions.ktor)
 val `ktor-client-logging` = ktor("client-logging", Versions.ktor)
 val `ktor-network` = ktor("network-jvm", Versions.ktor)
@@ -144,6 +229,7 @@ val ATTRIBUTE_MIRAI_TARGET_PLATFORM: Attribute<String> = Attribute.of("mirai.tar
 const val `kotlin-compiler` = "org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompiler}"
 const val `kotlin-compiler_forIdea` = "org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompilerForIdeaPlugin}"
 
+const val `kotlin-stdlib` = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlinStdlib}"
 const val `kotlin-stdlib-jdk8` = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlinStdlib}"
 const val `kotlin-reflect` = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlinStdlib}"
 const val `kotlin-test` = "org.jetbrains.kotlin:kotlin-test:${Versions.kotlinStdlib}"
