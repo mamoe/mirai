@@ -35,6 +35,10 @@ object Versions {
     const val coroutines = "1.6.4"
     const val atomicFU = "0.18.3"
     const val serialization = "1.3.3"
+
+    /**
+     * 注意, 不要轻易升级 ktor 版本. 阅读 [RelocationNotes], 尤其是间接依赖部分.
+     */
     const val ktor = "2.1.0"
 
     const val binaryValidator = "0.4.0"
