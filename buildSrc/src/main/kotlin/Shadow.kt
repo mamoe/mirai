@@ -10,18 +10,18 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import org.gradle.api.DomainObjectCollection
 import org.gradle.api.Project
 import org.gradle.api.publish.tasks.GenerateModuleMetadata
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.creating
-import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
-import java.io.File
 
+/**
+ * @see RelocationNotes
+ */
 fun Project.configureMppShadow() {
     val kotlin = kotlinMpp ?: return
 
@@ -38,6 +38,7 @@ fun Project.configureMppShadow() {
 
 /**
  * Relocate some dependencies for `.jar`
+ * @see RelocationNotes
  */
 private fun KotlinTarget.configureRelocationForTarget(project: Project) = project.run {
     val relocateDependencies =
@@ -222,67 +223,10 @@ private fun Project.configureRegularShadowJar(kotlin: KotlinMultiplatformExtensi
     }
 }
 
-data class RelocationFilter(
-    val groupId: String,
-    val artifactId: String? = null,
-    val shadowFilter: String = groupId,
-    val filesFilter: String = groupId.replace(".", "/"),
-    /**
-     * Pack relocated dependency into the fat jar. If set to `false`, dependencies will be removed.
-     * This is to avoid duplicated classes. See #2291.
-     */ // #2291
-    val includeInRuntime: Boolean,
-) {
-
-    fun matchesFile(file: File): Boolean {
-        val path = file.absolutePath.replace("\\", "/")
-        return filesFilter in path
-                || groupId in path
-    }
-
-    fun matchesDependency(groupId: String?, artifactId: String?): Boolean {
-        if (this.groupId == groupId) return true
-        if (this.artifactId != null && this.artifactId == artifactId) return true
-
-        return false
-    }
-}
-
-val Project.relocationFilters: DomainObjectCollection<RelocationFilter>
-    get() {
-        if (project.extra.has("relocationFilters")) {
-            @Suppress("UNCHECKED_CAST")
-            return project.extra.get("relocationFilters") as DomainObjectCollection<RelocationFilter>
-
-        } else {
-            val container = project.objects.domainObjectSet(RelocationFilter::class.java)
-            project.extra.set("relocationFilters", container)
-            return container
-        }
-    }
-
 private const val relocationRootPackage = "net.mamoe.mirai.internal.deps"
 
 private fun ShadowJar.setRelocations() {
     project.relocationFilters.forEach { relocation ->
         relocate(relocation.shadowFilter, "$relocationRootPackage.${relocation.groupId}")
     }
-}
-
-fun Project.relocateKtorForCore(includeInRuntime: Boolean) {
-    // WARNING: You must also consider relocating transitive dependencies.
-    // Otherwise, user will get NoClassDefFound error when using mirai as a classpath dependency. See #2263.
-
-    relocateAllFromGroupId("io.ktor", includeInRuntime)
-    relocateAllFromGroupId("com.squareup.okhttp3", includeInRuntime)
-    relocateAllFromGroupId("com.squareup.okio", includeInRuntime)
-}
-
-fun Project.relocateAllFromGroupId(groupId: String, includeInRuntime: Boolean) {
-    relocationFilters.add(RelocationFilter(groupId, includeInRuntime = includeInRuntime))
-}
-
-// This does not include transitive dependencies
-fun Project.relocateExactArtifact(groupId: String, artifactId: String, includeInRuntime: Boolean) {
-    relocationFilters.add(RelocationFilter(groupId, artifactId, includeInRuntime = includeInRuntime))
 }
