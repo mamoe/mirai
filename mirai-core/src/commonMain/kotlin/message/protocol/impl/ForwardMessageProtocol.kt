@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.MessageTooLargeException
+import net.mamoe.mirai.internal.contact.AbstractContact
 import net.mamoe.mirai.internal.message.data.forwardMessage
 import net.mamoe.mirai.internal.message.flags.IgnoreLengthCheck
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
@@ -38,12 +39,7 @@ internal class ForwardMessageProtocol : MessageProtocol() {
 
             val contact = attributes[CONTACT]
             if (!currentMessageChain.contains(IgnoreLengthCheck)) {
-                check(forward.nodeList.size <= 200) {
-                    throw MessageTooLargeException(
-                        contact, forward, forward,
-                        "ForwardMessage allows up to 200 nodes, but found ${forward.nodeList.size}"
-                    )
-                }
+                checkLength(forward, contact)
                 sequence {
                     forward.nodeList.forEach { yieldAll(it.messageChain) }
                 }.asIterable().verifyLength(forward, contact)
@@ -61,6 +57,18 @@ internal class ForwardMessageProtocol : MessageProtocol() {
                 fileName = components[ClockHolder].local.currentTimeSeconds().toString(),
                 forwardMessage = forward,
             ).toMessageChain()
+        }
+
+        private fun checkLength(
+            forward: ForwardMessage,
+            contact: AbstractContact
+        ) {
+            check(forward.nodeList.size <= 200) {
+                throw MessageTooLargeException(
+                    contact, forward, forward,
+                    "ForwardMessage allows up to 200 nodes, but found ${forward.nodeList.size}"
+                )
+            }
         }
     }
 }

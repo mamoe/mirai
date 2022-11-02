@@ -107,7 +107,7 @@ New-Item -Path $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib\curl.lib -
 echo "$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 ```
 
-由于链接器只识别 `lib` 前缀的文件，上述 `New-Item` 创建一个前缀为 `lib` 的链接指向库文件。
+由于链接器只识别不包含 `lib` 前缀的文件（如 `ssl.lib` 而非 `libssl.lib`，vcpkg 编译产物为后者），上述 `New-Item` 创建一个无 `lib` 前缀的链接指向库文件。
 
 注意：
 

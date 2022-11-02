@@ -23,7 +23,9 @@ import net.mamoe.mirai.contact.friendgroup.FriendGroups
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.event.events.BotOnlineEvent
+import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.components.EventDispatcher
@@ -37,15 +39,16 @@ import net.mamoe.mirai.mock.database.MessageDatabase
 import net.mamoe.mirai.mock.internal.components.MockEventDispatcherImpl
 import net.mamoe.mirai.mock.internal.contact.*
 import net.mamoe.mirai.mock.internal.contact.friendfroup.MockFriendGroups
+import net.mamoe.mirai.mock.internal.contactbase.ContactDatabase
 import net.mamoe.mirai.mock.internal.serverfs.TmpResourceServerImpl
 import net.mamoe.mirai.mock.resserver.TmpResourceServer
 import net.mamoe.mirai.mock.userprofile.UserProfileService
 import net.mamoe.mirai.mock.utils.NameGenerator
-import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import net.mamoe.mirai.utils.*
 import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import net.mamoe.mirai.internal.utils.subLoggerImpl as subLog
 
@@ -58,22 +61,22 @@ internal class MockBotImpl(
     override val msgDatabase: MessageDatabase,
     override val userProfileService: UserProfileService,
 ) : MockBot, Bot, ContactOrBot {
+    @JvmField
+    internal val contactDatabase = ContactDatabase(this)
+    private val botccinfo = contactDatabase.acquireCI(id, nick)
+
     private val loginBefore = AtomicBoolean(false)
-    override var nickNoEvent: String = nick
+    override var nickNoEvent: String by botccinfo::nick
     override var nick: String
-        get() = nickNoEvent
+        get() = botccinfo.nick
         set(value) {
-            val ov = nickNoEvent
-            if (value == ov) return
-            nickNoEvent = value
-            BotNickChangedEvent(this, ov, value).broadcastBlocking()
+            botccinfo.changeNick(value)
         }
 
     override var avatarUrl: String
         get() = asFriend.avatarUrl
         set(value) {
-            asFriend.mockApi.avatarUrl = value
-            BotAvatarChangedEvent(this).broadcastBlocking()
+            asFriend.changeAvatarUrl(value)
         }
 
     override fun avatarUrl(spec: AvatarSpec): String {
@@ -186,4 +189,9 @@ internal class MockBotImpl(
     override fun toString(): String {
         return "MockBot($id)"
     }
+}
+
+internal fun MockBot.impl(): MockBotImpl {
+    contract { returns() implies (this@impl is MockBotImpl) }
+    return cast()
 }

@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
 import io.ktor.utils.io.core.*
-import kotlinx.atomicfu.loop
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushNotify
@@ -30,19 +29,23 @@ internal object MessageSvcPushNotify : IncomingPacketFactory<RequestPushNotify>(
     }
 
     override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket {
-        syncController.firstNotify.loop { firstNotify ->
-            network.run {
-                return MessageSvcPbGetMsg(
-                    client,
-                    MsgSvc.SyncFlag.START,
-                    if (firstNotify) {
-                        if (!syncController.firstNotify.compareAndSet(firstNotify, false)) {
-                            return@loop
-                        }
-                        null
-                    } else packet.vNotifyCookie,
-                )
+        while (true) {
+            val firstNotify = syncController.firstNotify
+
+            val cookie = if (firstNotify) {
+                if (!syncController.casFirstNotify(firstNotify, false)) {
+                    continue
+                }
+                null
+            } else {
+                packet.vNotifyCookie
             }
+
+            return MessageSvcPbGetMsg(
+                client,
+                MsgSvc.SyncFlag.START,
+                cookie,
+            )
         }
     }
 }

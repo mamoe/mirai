@@ -9,10 +9,10 @@
 
 package net.mamoe.mirai.internal.event
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import net.mamoe.mirai.event.*
+import net.mamoe.mirai.utils.AtomicInteger
 import net.mamoe.mirai.utils.childScope
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.AfterTest
@@ -61,7 +61,7 @@ internal class EventTests : AbstractEventTest() {
     fun `test concurrent listening`() {
         resetEventListeners()
         var listeners = 0
-        val counter = atomic(0)
+        val counter = AtomicInteger(0)
         val channel = scope.globalEventChannel()
         for (p in EventPriority.values()) {
             repeat(2333) {
@@ -85,8 +85,8 @@ internal class EventTests : AbstractEventTest() {
     fun `test concurrent listening 3`() {
         resetEventListeners()
         runBlocking {
-            val called = atomic(0)
-            val registered = atomic(0)
+            val called = AtomicInteger(0)
+            val registered = AtomicInteger(0)
             coroutineScope {
                 println("Step 0")
                 for (priority in EventPriority.values()) {
@@ -116,8 +116,8 @@ internal class EventTests : AbstractEventTest() {
     @Test
     fun `test concurrent listening 2`() = runTest {
         resetEventListeners()
-        val registered = atomic(0)
-        val called = atomic(0)
+        val registered = AtomicInteger(0)
+        val called = AtomicInteger(0)
 
         val supervisor = CoroutineScope(SupervisorJob())
 

@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 object Versions {
     val project = System.getenv("mirai.build.project.version")?.takeIf { it.isNotBlank() }
         ?: System.getProperty("mirai.build.project.version")?.takeIf { it.isNotBlank() }
-        ?: /*PROJECT_VERSION_START*/"2.13.0"/*PROJECT_VERSION_END*/
+        ?: /*PROJECT_VERSION_START*/"2.14.0"/*PROJECT_VERSION_END*/
 
     val core = project
     val console = project
@@ -161,6 +161,10 @@ const val `caller-finder` = "io.github.karlatemp:caller:1.1.1"
 
 const val `android-runtime` = "com.google.android:android:${Versions.android}"
 const val `netty-all` = "io.netty:netty-all:${Versions.netty}"
+const val `netty-handler` = "io.netty:netty-handler:${Versions.netty}"
+const val `netty-common` = "io.netty:netty-common:${Versions.netty}"
+const val `netty-transport` = "io.netty:netty-transport:${Versions.netty}"
+const val `netty-buffer` = "io.netty:netty-buffer:${Versions.netty}"
 const val `bouncycastle` = "org.bouncycastle:bcprov-jdk15on:${Versions.bouncycastle}"
 
 const val `maven-resolver-api` = "org.apache.maven.resolver:maven-resolver-api:${Versions.mavenArtifactResolver}"

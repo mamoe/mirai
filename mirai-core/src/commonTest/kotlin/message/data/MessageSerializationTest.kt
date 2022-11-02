@@ -20,8 +20,8 @@ import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.structureToString
 import net.mamoe.mirai.utils.mapToByteArray
+import net.mamoe.mirai.utils.structureToString
 import kotlin.test.*
 
 internal class MessageSerializationTest : AbstractTest() {
@@ -143,7 +143,6 @@ internal class MessageSerializationTest : AbstractTest() {
         assertEquals(element2["width"]?.jsonPrimitive?.int, image2.width)
         assertEquals(element2["height"]?.jsonPrimitive?.int, image2.height)
         val decoded: Image = string2.deserialize()
-        decoded as Image
         assertEquals(decoded.imageId, image2.imageId)
         assertEquals(decoded.imageType, image2.imageType)
         assertEquals(decoded.width, image2.width)
@@ -251,11 +250,6 @@ internal class MessageSerializationTest : AbstractTest() {
             actual = source
         )
     }
-
-    @Serializable
-    data class V(
-        val msg: Audio
-    )
 
     @Serializable
     data class AudioTestStandard(

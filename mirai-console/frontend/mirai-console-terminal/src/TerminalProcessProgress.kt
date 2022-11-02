@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.mamoe.mirai.console.fontend.ProcessProgress
 import net.mamoe.mirai.console.terminal.noconsole.NoConsole
+import net.mamoe.mirai.utils.ConcurrentLinkedQueue
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.currentTimeMillis
 import org.jline.reader.MaskingCallback
@@ -104,43 +105,45 @@ internal class TerminalProcessProgress(
 
         lastTerminalWidth = terminalWidth
         // endregion
+        synchronized(renderedTxt) {
 
-        val renderedTextWidth = when (terminalWidth) {
-            0 -> renderedTxt.length
-            else -> terminalWidth
-        }
+            val renderedTextWidth = when (terminalWidth) {
+                0 -> renderedTxt.length
+                else -> terminalWidth
+            }
 
-        val finalAnsiLineBuilder = AttributedStringBuilder()
+            val finalAnsiLineBuilder = AttributedStringBuilder()
 
-        if (failed) {
-            finalAnsiLineBuilder.style(
-                AttributedStyle.DEFAULT
-                    .background(AttributedStyle.RED)
-                    .foreground(AttributedStyle.BLACK)
-            )
-            finalAnsiLineBuilder.append(renderedTxt, 0, renderedTextWidth)
-        } else {
-            val downpcent = (renderedTextWidth * processed / totalSize).toInt()
-            if (downpcent > 0) {
+            if (failed) {
                 finalAnsiLineBuilder.style(
                     AttributedStyle.DEFAULT
-                        .background(AttributedStyle.GREEN)
+                        .background(AttributedStyle.RED)
                         .foreground(AttributedStyle.BLACK)
                 )
-                finalAnsiLineBuilder.append(renderedTxt, 0, downpcent)
+                finalAnsiLineBuilder.append(renderedTxt, 0, renderedTextWidth)
+            } else {
+                val downpcent = (renderedTextWidth * processed / totalSize).toInt()
+                if (downpcent > 0) {
+                    finalAnsiLineBuilder.style(
+                        AttributedStyle.DEFAULT
+                            .background(AttributedStyle.GREEN)
+                            .foreground(AttributedStyle.BLACK)
+                    )
+                    finalAnsiLineBuilder.append(renderedTxt, 0, downpcent)
+                }
+                if (downpcent < renderedTextWidth) {
+                    finalAnsiLineBuilder.style(
+                        AttributedStyle.DEFAULT
+                            .background(AttributedStyle.WHITE)
+                            .foreground(AttributedStyle.BLACK)
+                    )
+                    finalAnsiLineBuilder.append(renderedTxt, downpcent, renderedTextWidth)
+                }
             }
-            if (downpcent < renderedTextWidth) {
-                finalAnsiLineBuilder.style(
-                    AttributedStyle.DEFAULT
-                        .background(AttributedStyle.WHITE)
-                        .foreground(AttributedStyle.BLACK)
-                )
-                finalAnsiLineBuilder.append(renderedTxt, downpcent, renderedTextWidth)
-            }
+            ansiMsg = finalAnsiLineBuilder.toAttributedString()
+            needUpdateTxt = false
+            needRerender = false
         }
-        ansiMsg = finalAnsiLineBuilder.toAttributedString()
-        needUpdateTxt = false
-        needRerender = false
     }
 
     override fun rerender() {
@@ -221,7 +224,7 @@ private val terminalDownloadingProgressesNoticer = Object()
 internal var containDownloadingProgress: Boolean = false
     get() = field || terminalDownloadingProgresses.isNotEmpty()
 
-internal val terminalDownloadingProgresses = mutableListOf<TerminalProcessProgress>()
+internal val terminalDownloadingProgresses = ConcurrentLinkedQueue<TerminalProcessProgress>()
 
 
 internal var downloadingProgressCoroutine: Continuation<Unit>? = null
@@ -242,9 +245,9 @@ internal fun updateTerminalDownloadingProgresses() {
 
     runCatching { downloadingProgressCoroutine?.resumeWith(Result.success(Unit)) }
 
-    JLineInputDaemon.suspendReader(false)
-
     terminalExecuteLock.withLock {
+        JLineInputDaemon.suspendReader(false)
+
         if (terminalDownloadingProgresses.isNotEmpty()) {
             val wid = terminal.width
             if (wid == 0) { // Run in idea
@@ -254,9 +257,9 @@ internal fun updateTerminalDownloadingProgresses() {
                 }
                 terminalDisplay.update(listOf(AttributedString.EMPTY), 0, false)
                 // Error in idea when more than one bar displaying
-                terminalDisplay.update(listOf(terminalDownloadingProgresses[0].let {
+                terminalDisplay.update(listOf(terminalDownloadingProgresses.peek()?.let {
                     it.updateTxt(0); it.ansiMsg
-                }), 0)
+                } ?: AttributedString.EMPTY), 0)
             } else {
                 if (terminalDownloadingProgresses.size > 4) {
                     // to mush. delete some completed status

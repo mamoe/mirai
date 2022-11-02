@@ -28,6 +28,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import kotlin.test.assertEquals
 
+@Suppress("UNUSED_PARAMETER", "unused")
 internal class CommandValueArgumentContextTest : AbstractCommandTest() {
 
     inner class CustomBooleanParser : CommandValueArgumentParser<Boolean> {

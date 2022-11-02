@@ -344,14 +344,28 @@ internal class GroupNotificationProcessor(
                     subject = group,
                 )
             }
+            // 群签到/打卡
+            10036L, 10038L -> {
+                val user = grayTip.msgTemplParam["mqq_uin"]?.findMember() ?: group.botAsMember
+                val sign = grayTip.msgTemplParam["user_sign"].orEmpty()
+                val img = grayTip.msgTemplParam["rank_img"]
+                val rank = """今日第(\d+)个打卡""".toRegex().matchEntire(sign)?.groupValues?.get(1)?.toInt()
+
+                collected += SignEvent(
+                    user = user,
+                    sign = sign,
+                    hasRank = img != null,
+                    rank = rank
+                )
+            }
             // 龙王
             10093L, 10094L, 1053L, 1054L, 1103L -> {
                 val now = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
                 val previous = grayTip.msgTemplParam["uin_last"]?.findMember()
 
-                val lastTalkative = group.lastTalkative.value
+                val lastTalkative = group.lastTalkative
                 if (lastTalkative == now) return // duplicate
-                if (!group.lastTalkative.compareAndSet(lastTalkative, now)) return
+                if (!group.casLastTalkative(lastTalkative, now)) return
 
                 if (previous == null) {
                     collect(MemberHonorChangeEvent.Achieve(now, GroupHonorType.TALKATIVE))

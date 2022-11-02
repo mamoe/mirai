@@ -30,7 +30,7 @@ internal class ChunkedFlowSession<T>(
         input.close()
     }
 
-    private var offset = atomic(0L)
+    private val offset = atomic(0L)
 
     internal suspend inline fun useAll(crossinline block: suspend (T) -> Unit) {
         contract { callsInPlace(block, InvocationKind.UNKNOWN) }
@@ -44,5 +44,5 @@ internal class ChunkedFlowSession<T>(
         }
     }
 
-    internal suspend fun asFlow(): Flow<T> = flow { useAll { emit(it) } } // 'single thread' producer
+    internal fun asFlow(): Flow<T> = flow { useAll { emit(it) } } // 'single thread' producer
 }

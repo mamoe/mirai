@@ -48,9 +48,9 @@ internal open class LoginCommandImpl : SimpleCommand(
             val config = DataScope.get<AutoLoginConfig>()
             val account = config.accounts.firstOrNull { it.account == id.toString() }
             if (account != null) {
-                account.configuration[AutoLoginConfig.Account.ConfigurationKey.protocol]?.let { protocol ->
+                account.configuration[AutoLoginConfig.Account.ConfigurationKey.protocol]?.let { proto ->
                     try {
-                        this.protocol = BotConfiguration.MiraiProtocol.valueOf(protocol.toString())
+                        this.protocol = BotConfiguration.MiraiProtocol.valueOf(proto.toString())
                     } catch (_: Throwable) {
                         //
                     }

@@ -198,6 +198,26 @@ private fun initSignalHandler(): (String) -> Unit {
     val shutdownMonitorLock = AtomicBoolean(false)
     val lastSignalTimestamp = AtomicLong(0)
     return handler@{ signalName ->
+        if (signalName == "WINCH") {
+            // Windows CMD.exe resized
+            return@handler
+        }
+        runCatching {
+            MiraiConsole.mainLogger
+        }.onFailure { // mirai-console not yet initialized
+            System.err.println("[TERMINAL] [WARNING] Received signal $signalName")
+            System.err.println("[TERMINAL] [WARNING] This signal will be processed later because mirai-console not yet initialized.")
+
+            // Try later
+            if (signalName in shutdownSignals) {
+                @OptIn(DelicateCoroutinesApi::class)
+                GlobalScope.launch {
+                    delay(500L)
+                    signalHandler(signalName)
+                }
+            }
+            return@handler
+        }
         // JLine may process other signals
         MiraiConsole.mainLogger.verbose { "Received signal $signalName" }
         if (signalName !in shutdownSignals) return@handler

@@ -7,73 +7,95 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+// IDE doesn't show warnings but compiler do.
+@file:Suppress("NOTHING_TO_INLINE", "KotlinRedundantDiagnosticSuppress")
+
 package net.mamoe.mirai.internal.utils
 
+import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.update
 import net.mamoe.mirai.utils.getRandomUnsignedInt
-import net.mamoe.mirai.utils.toLongUnsigned
 import kotlin.jvm.JvmStatic
 
-// We probably can reduce duplicates by using value classes, but atomicFU compiler might not be able to compile it.
+internal object AtomicIntSeq {
+    @JvmStatic
+    fun forMessageSeq(): AtomicIntMaxSeq = AtomicIntMaxSeq(0)
 
-// TODO: 2021/6/27 tests
-internal class AtomicIntSeq private constructor(
-    initial: Int,
-    private val maxExclusive: Int,
+    @JvmStatic
+    fun forPrivateSync(): AtomicInt65535Seq = AtomicInt65535Seq(getRandomUnsignedInt())
+}
+
+// value classes to optimize space
+
+internal class AtomicIntMaxSeq(
+    value: Int
 ) {
-    private val value = atomic(initial)
+    private val value: AtomicInt = atomic(value)
 
     /**
-     * Increment [value] within the range from 0 (inclusive) to [maxExclusive] (exclusive).
+     * Increment [value] within the range from `0` (inclusive) to [Int.MAX_VALUE] (exclusive).
      */
-    fun next(): Int = value.incrementAndGet().mod(maxExclusive) // positive
+    inline fun next(): Int = value.incrementAndGet().mod(Int.MAX_VALUE)
 
     /**
      * Atomically update [value] if it is smaller than [new].
+     *
+     * @param new should be positive
      */
-    fun updateIfSmallerThan(new: Int): Boolean {
+    inline fun updateIfSmallerThan(new: Int): Boolean {
         value.update { instant ->
             if (instant < new) new else return false
         }
         return true
     }
 
-    fun updateIfDifferentWith(new: Int): Boolean {
+    /**
+     * Atomically update [value] if it different with [new].
+     *
+     * @param new should be positive
+     */
+    inline fun updateIfDifferentWith(new: Int): Boolean {
         value.update { instant ->
             if (instant == new) return false
             new
         }
         return true
     }
-
-    companion object {
-        @JvmStatic
-        fun forMessageSeq() = AtomicIntSeq(0, Int.MAX_VALUE)
-
-        @JvmStatic
-        fun forPrivateSync() = AtomicIntSeq(getRandomUnsignedInt(), 65535)
-    }
 }
 
-// TODO: 2021/6/27 tests
-internal class AtomicLongSeq(
-    initial: Long = getRandomUnsignedInt().toLongUnsigned(),
-    private val maxExclusive: Long = 65535,
+internal class AtomicInt65535Seq(
+    value: Int
 ) {
-    private val value = atomic(initial)
+    private val value: AtomicInt = atomic(value)
 
     /**
-     * Increment [value] within the range from 0 (inclusive) to [maxExclusive] (exclusive).
+     * Increment [value] within the range from `0` (inclusive) to `65535` (exclusive).
      */
-    fun next(): Long = value.incrementAndGet().mod(maxExclusive) // positive
+    inline fun next(): Int = value.incrementAndGet().mod(65535)
 
     /**
      * Atomically update [value] if it is smaller than [new].
+     *
+     * @param new should be positive
      */
-    fun updateIfSmallerThan(new: Long) {
+    inline fun updateIfSmallerThan(new: Int): Boolean {
         value.update { instant ->
-            if (instant < new) new else return
+            if (instant < new) new else return false
         }
+        return true
+    }
+
+    /**
+     * Atomically update [value] if it different with [new].
+     *
+     * @param new should be positive
+     */
+    inline fun updateIfDifferentWith(new: Int): Boolean {
+        value.update { instant ->
+            if (instant == new) return false
+            new
+        }
+        return true
     }
 }

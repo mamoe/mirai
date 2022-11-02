@@ -10,7 +10,7 @@
 package net.mamoe.mirai.internal.pipeline
 
 import net.mamoe.mirai.internal.message.contextualBugReportException
-import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext
+import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.network.components.NoticeProcessor
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmInline
@@ -21,6 +21,11 @@ internal interface Processor<C : ProcessorPipelineContext<D, *>, D> : PipelineCo
     suspend fun process(context: C, data: D)
 }
 
+/**
+ * # Processor Pipeline Architecture
+ *
+ *
+ */
 internal interface ProcessorPipeline<P : Processor<C, D>, C : ProcessorPipelineContext<D, R>, D, R> {
     val processors: MutableCollection<ProcessorBox<P>>
 
@@ -40,6 +45,9 @@ internal interface ProcessorPipeline<P : Processor<C, D>, C : ProcessorPipelineC
 
     /**
      * Process using the [context].
+     *
+     * **Note:** This function may or may not re-throw exception caught when calling the [processors].
+     * @see AbstractProcessorPipeline.handleExceptionInProcess
      */
     suspend fun process(
         data: D,
@@ -48,7 +56,10 @@ internal interface ProcessorPipeline<P : Processor<C, D>, C : ProcessorPipelineC
     ): ProcessResult<C, R>
 
     /**
-     * Process with a new context
+     * Process with a new [context][C]
+     *
+     * **Note:** This function may or may not re-throw exception caught when calling the [processors].
+     * @see AbstractProcessorPipeline.handleExceptionInProcess
      */
     suspend fun process(
         data: D,
@@ -71,21 +82,34 @@ internal inline fun <P : Processor<*, *>, Pip : ProcessorPipeline<P, *, *, *>> P
 }
 
 
+/**
+ * Boxes a mutable property.
+ */
+// data used for equality
 internal data class ProcessorBox<P : Processor<*, *>>(
     var value: P
 )
 
+/**
+ * Returned from entry point methods in [MessageProtocolFacade].
+ */
+// data used for destruction, don't change parameter ordering
 internal data class ProcessResult<C : ProcessorPipelineContext<*, R>, R>(
     val context: C,
     val collected: Collection<R>,
 )
 
+
+// Box the
 @JvmInline
 internal value class MutablePipelineResult<R>(
     val data: MutableCollection<R>
 )
 
 
+/**
+ * Marks a class that is allowed to call [ProcessorPipelineContext.markAsConsumed]
+ */
 internal interface PipelineConsumptionMarker
 
 internal interface ProcessorPipelineContext<D, R> {
@@ -117,9 +141,9 @@ internal interface ProcessorPipelineContext<D, R> {
     val isConsumed: Boolean
 
     /**
-     * Marks the input as consumed so that there will not be warnings like 'Unknown type xxx'. This will not stop the pipeline.
+     * Marks the input as consumed so that there will not be warnings like 'Unknown type xxx'.
      *
-     * If this is executed, make sure you provided all information important for debugging.
+     * **This may or may not stop the pipeline — it's implementation-specific. Check pipeline's [AbstractProcessorPipeline.configuration] ([PipelineConfiguration.stopWhenConsumed]).**
      *
      * You need to invoke [markAsConsumed] if your implementation includes some `else` branch which covers all situations,
      * and throws a [contextualBugReportException] or logs something.
@@ -137,7 +161,9 @@ internal interface ProcessorPipelineContext<D, R> {
     annotation class ConsumptionMarker // to give an explicit color.
 
     /**
-     * Fire the [data] into the processor pipeline, and collect the results to current [collected], updating *some mutable properties* in contexts, e.g. [OutgoingMessagePipelineContext.currentMessageChain]
+     * Fire the [data] into this processor pipeline, starting from the beginning, and collect the results to current [collected].
+     *
+     * **Please note different [ProcessorPipeline]s' [processAlso] may have different behavior. ALWAYS check implementation!**
      *
      * @param extraAttributes extra attributes
      * @return result collected from processors. This would also have been collected to this context (where you call [processAlso]).
@@ -186,6 +212,11 @@ internal class PipelineConfiguration(
     var stopWhenConsumed: Boolean
 )
 
+/**
+ * Basic implementation of [ProcessorPipeline].
+ * [configuration] used to control behaviors.
+ * [traceLogging] will always be called frequently, but you can pass a [SilentLogger] or disable the logging levels.
+ */
 internal abstract class AbstractProcessorPipeline<P : Processor<C, D>, C : ProcessorPipelineContext<D, R>, D, R>
 protected constructor(
     val configuration: PipelineConfiguration,

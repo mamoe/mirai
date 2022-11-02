@@ -93,31 +93,33 @@ internal class BotInitProcessorImpl(
             val registerResp =
                 context[SsoProcessor].registerResp ?: error("Internal error: registerResp is not yet available.")
 
-            // do them parallel.
             context[MessageSvcSyncer].startSync()
             context[BdhSessionSyncer].loadFromCache()
 
-
+            // do them parallel.
             coroutineScope {
-                launch { runWithCoverage { context[OtherClientUpdater].update() } }
-                launch { runWithCoverage { context[ContactUpdater].loadAll(registerResp.origin) } }
+                launch { runWithCoverage("loading OtherClients") { context[OtherClientUpdater].update() } }
+                launch { runWithCoverage("loading friends") { context[ContactUpdater].reloadFriendList(registerResp.origin) } }
+                launch { runWithCoverage("loading groups") { context[ContactUpdater].reloadGroupList() } }
+                launch { runWithCoverage("loading otherClients") { context[ContactUpdater].reloadStrangerList() } }
+                launch { runWithCoverage("loading friendGroups") { context[ContactUpdater].reloadFriendGroupList() } }
             }
 
             state.value = INITIALIZED
-            bot.components[SsoProcessor].firstLoginResult.compareAndSet(null, FirstLoginResult.PASSED)
+            bot.components[SsoProcessor].casFirstLoginResult(null, FirstLoginResult.PASSED)
         } catch (e: Throwable) {
             setLoginHalted()
-            bot.components[SsoProcessor].firstLoginResult.compareAndSet(null, FirstLoginResult.OTHER_FAILURE)
+            bot.components[SsoProcessor].casFirstLoginResult(null, FirstLoginResult.OTHER_FAILURE)
             throw e
         }
     }
 
-    private inline fun runWithCoverage(block: () -> Unit) {
+    private inline fun runWithCoverage(hint: String, block: () -> Unit) {
         try {
             block()
         } catch (e: NetworkException) {
             logger.warning(
-                "An NetworkException was thrown during initialization process of Bot ${bot.id}. " +
+                "An NetworkException was thrown during '$hint' of Bot ${bot.id}. " +
                         "This means your network is unstable at this moment, " +
                         "or the server has closed the connection due to some reason (you will see the cause if further trials are all failed). " +
                         "Halting the log-in process to wait for a while to reconnect..."
@@ -125,7 +127,7 @@ internal class BotInitProcessorImpl(
             throw e
         } catch (e: Throwable) {
             logger.warning(
-                "An exception was thrown during initialization process of Bot ${bot.id}. " +
+                "An exception was thrown during '$hint' of Bot ${bot.id}. " +
                         "Trying to ignore the error and continue logging in...",
                 e
             )

@@ -29,4 +29,4 @@ if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING")?.toBoolean() != true) {
     configurePublishing("mirai-core-all")
 }
 
-configureRelocationForCore()
+relocateKtorForCore(true)

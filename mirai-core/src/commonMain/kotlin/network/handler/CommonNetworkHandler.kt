@@ -253,7 +253,7 @@ internal abstract class CommonNetworkHandler<Conn>(
                     this@CommonNetworkHandler.launch { resumeConnection() } // go to next state.
                 } else {
                     // failed in SSO stage
-                    context[SsoProcessor].firstLoginResult.compareAndSet(null, FirstLoginResult.OTHER_FAILURE)
+                    context[SsoProcessor].casFirstLoginResult(null, FirstLoginResult.OTHER_FAILURE)
 
                     if (error is CancellationException) {
                         // CancellationException is either caused by parent cancellation or manual `connectResult.cancel`.

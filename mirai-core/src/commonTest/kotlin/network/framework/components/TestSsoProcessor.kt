@@ -36,7 +36,16 @@ internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcess
         )
     }
     override val ssoSession: SsoSession get() = bot.client
-    override val firstLoginResult: AtomicRef<FirstLoginResult?> = atomic(null)
+    private val _firstLoginResult: AtomicRef<FirstLoginResult?> = atomic(null)
+    override val firstLoginResult get() = _firstLoginResult.value
+    override fun casFirstLoginResult(expect: FirstLoginResult?, update: FirstLoginResult?): Boolean {
+        return _firstLoginResult.compareAndSet(expect, update)
+    }
+
+    override fun setFirstLoginResult(value: FirstLoginResult?) {
+        _firstLoginResult.value = value
+    }
+
     override var registerResp: StatSvc.Register.Response? = null
     override suspend fun login(handler: NetworkHandler) {
         bot.network.logger.debug { "SsoProcessor.login" }

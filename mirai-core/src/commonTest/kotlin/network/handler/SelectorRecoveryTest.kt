@@ -53,7 +53,7 @@ internal class SelectorRecoveryTest : AbstractCommonNHTestWithSelector() {
                 throwExceptionOnLogin?.invoke()
             }
         }.apply {
-            firstLoginResult.value = FirstLoginResult.PASSED
+            setFirstLoginResult(FirstLoginResult.PASSED)
         }
     }
 

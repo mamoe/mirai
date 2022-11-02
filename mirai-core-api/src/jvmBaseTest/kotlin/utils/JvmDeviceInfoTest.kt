@@ -11,9 +11,9 @@ package net.mamoe.mirai.utils
 
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.utils.DeviceInfo.Companion.loadAsDeviceInfo
-import kotlin.test.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class JvmDeviceInfoTest {
@@ -38,4 +38,14 @@ class JvmDeviceInfoTest {
         file.writeText(Json.encodeToString(DeviceInfo.serializer(), device))
         assertEquals(device, file.loadAsDeviceInfo())
     }
+
+
+    // TODO: 2022/10/19 move this to common test when Kotlin supports loading resources in commonMain
+    @Test
+    fun `can deserialize legacy versions before 2_9_0`() {
+        DeviceInfoManager.deserialize(
+            this::class.java.classLoader.getResourceAsStream("device/legacy-device-info-1.json")!!
+                .use { it.readBytes().decodeToString() })
+    }
+
 }

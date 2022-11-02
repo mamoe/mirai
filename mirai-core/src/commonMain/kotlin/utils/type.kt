@@ -11,10 +11,9 @@ package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.internal.message.data.ForwardMessageInternal
+import net.mamoe.mirai.internal.message.protocol.impl.ForwardMessageProtocol
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.chineseLength
-import net.mamoe.mirai.utils.toInt
-import net.mamoe.mirai.utils.toLongUnsigned
 
 
 internal fun Int.toIpV4AddressString(): String {
@@ -30,11 +29,15 @@ internal fun Int.toIpV4AddressString(): String {
         }
     }
 }
+
 internal fun Iterable<SingleMessage>.estimateLength(target: ContactOrBot, upTo: Int): Int =
     sumUpTo(upTo) { it, up ->
         it.estimateLength(target, up)
     }
 
+/**
+ * @see ForwardMessageProtocol.ForwardMessageUploader.checkLength
+ */
 internal fun SingleMessage.estimateLength(target: ContactOrBot, upTo: Int): Int {
     return when (this) {
         is QuoteReply -> 444 + this.source.originalMessage.estimateLength(target, upTo) // Magic number
@@ -42,7 +45,7 @@ internal fun SingleMessage.estimateLength(target: ContactOrBot, upTo: Int): Int 
         is PlainText -> content.chineseLength(upTo)
         is At -> 60 //Magic number
         is AtAll -> 60 //Magic number
-        is ForwardMessageInternal -> 0 // verified in SendMessageHandler<C>.transformSpecialMessages(message: Message)
+        is ForwardMessageInternal -> 0 // verified in ForwardMessageProtocol.ForwardMessageUploader.checkLength
         else -> this.toString().chineseLength(upTo)
     }
 }

@@ -11,10 +11,7 @@ package net.mamoe.mirai.internal.message.protocol.encode
 
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.pipeline.AbstractProcessorPipeline
-import net.mamoe.mirai.internal.pipeline.PipelineConfiguration
-import net.mamoe.mirai.internal.pipeline.ProcessorPipeline
-import net.mamoe.mirai.internal.pipeline.ProcessorPipelineContext
+import net.mamoe.mirai.internal.pipeline.*
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.utils.*
@@ -24,6 +21,9 @@ internal interface MessageEncoderPipeline :
     ProcessorPipeline<MessageEncoderProcessor<*>, MessageEncoderContext, SingleMessage, ImMsgBody.Elem> {
 }
 
+/**
+ * The context for a [MessageEncoder]. [RestrictsSuspension] ensures no real suspension may happen during [Processor.process].
+ */
 @RestrictsSuspension
 internal interface MessageEncoderContext : ProcessorPipelineContext<SingleMessage, ImMsgBody.Elem> {
 
@@ -58,6 +58,9 @@ internal interface MessageEncoderContext : ProcessorPipelineContext<SingleMessag
     }
 }
 
+/**
+ * This pipeline encodes [SingleMessage] into [ImMsgBody.Elem]s, in the context of [MessageEncoderContext]
+ */
 internal open class MessageEncoderPipelineImpl :
     AbstractProcessorPipeline<MessageEncoderProcessor<*>, MessageEncoderContext, SingleMessage, ImMsgBody.Elem>(
         PipelineConfiguration(stopWhenConsumed = true),

@@ -74,8 +74,12 @@ public open class SendMessageFailedException @MiraiInternalApi constructor(
     public open val target: Contact,
     public val reason: Reason,
     public val originalMessage: Message,
+    /**
+     * @since 2.14
+     */
+    tips: String? = null,
 ) : RuntimeException(
-    "Failed sending message to $target, reason=$reason"
+    "Failed sending message to $target, reason=$reason. Tips: $tips"
 ) {
     public enum class Reason {
         /**
@@ -98,5 +102,11 @@ public open class SendMessageFailedException @MiraiInternalApi constructor(
          * @since 2.11
          */
         AT_ALL_LIMITED,
+
+        /**
+         * 被服务器限制发送消息, 可能是由冻结引起.
+         * @since 2.14
+         */
+        LIMITED_MESSAGING,
     }
 }

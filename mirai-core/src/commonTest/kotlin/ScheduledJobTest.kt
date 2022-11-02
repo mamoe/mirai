@@ -15,6 +15,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.internal.test.AbstractTest
 import net.mamoe.mirai.internal.utils.ScheduledJob
+import net.mamoe.mirai.utils.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -25,7 +26,7 @@ internal class ScheduledJobTest : AbstractTest() {
             val scope = CoroutineScope(CoroutineExceptionHandler { _, throwable ->
                 throwable.printStackTrace()
             })
-            val invoked = atomic(0)
+            val invoked = AtomicInteger(0)
             val job = ScheduledJob(scope.coroutineContext, 1000) {
                 invoked.incrementAndGet()
             }

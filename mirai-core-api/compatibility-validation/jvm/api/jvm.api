@@ -563,6 +563,7 @@ public final class net/mamoe/mirai/contact/Platform$Companion {
 }
 
 public class net/mamoe/mirai/contact/SendMessageFailedException : java/lang/RuntimeException {
+	public synthetic fun <init> (Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;Lnet/mamoe/mirai/message/data/Message;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getOriginalMessage ()Lnet/mamoe/mirai/message/data/Message;
 	public final fun getReason ()Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public fun getTarget ()Lnet/mamoe/mirai/contact/Contact;
@@ -572,6 +573,7 @@ public final class net/mamoe/mirai/contact/SendMessageFailedException$Reason : j
 	public static final field AT_ALL_LIMITED Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static final field BOT_MUTED Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static final field GROUP_CHAT_LIMITED Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
+	public static final field LIMITED_MESSAGING Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static final field MESSAGE_TOO_LARGE Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
 	public static fun values ()[Lnet/mamoe/mirai/contact/SendMessageFailedException$Reason;
@@ -660,9 +662,7 @@ public final class net/mamoe/mirai/contact/active/ActiveRecord {
 	public final fun getPeriodDays ()I
 }
 
-public abstract interface class net/mamoe/mirai/contact/active/GroupActive {
-	public abstract fun asFlow ()Lkotlinx/coroutines/flow/Flow;
-	public abstract fun asStream ()Ljava/util/stream/Stream;
+public abstract interface class net/mamoe/mirai/contact/active/GroupActive : net/mamoe/mirai/utils/Streamable {
 	public abstract fun getRankTitles ()Ljava/util/Map;
 	public abstract fun getTemperatureTitles ()Ljava/util/Map;
 	public abstract fun isHonorVisible ()Z
@@ -837,10 +837,9 @@ public final class net/mamoe/mirai/contact/announcement/AnnouncementParametersBu
 	public static final fun buildAnnouncementParameters (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
 }
 
-public abstract interface class net/mamoe/mirai/contact/announcement/Announcements {
-	public fun asFlow ()Lkotlinx/coroutines/flow/Flow;
-	public abstract fun asFlow (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun asStream ()Ljava/util/stream/Stream;
+public abstract interface class net/mamoe/mirai/contact/announcement/Announcements : net/mamoe/mirai/utils/Streamable {
+	public synthetic fun asFlow (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun asFlow (Lnet/mamoe/mirai/contact/announcement/Announcements;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun delete (Ljava/lang/String;)Z
 	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun get (Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
@@ -851,9 +850,6 @@ public abstract interface class net/mamoe/mirai/contact/announcement/Announcemen
 	public abstract fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun remind (Ljava/lang/String;)V
 	public abstract fun remind (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun toList ()Ljava/util/List;
-	public fun toList (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun toList$suspendImpl (Lnet/mamoe/mirai/contact/announcement/Announcements;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
 	public abstract fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -894,12 +890,6 @@ public abstract interface class net/mamoe/mirai/contact/announcement/OnlineAnnou
 	public abstract fun getPublicationTime ()J
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
 	public abstract fun getSenderId ()J
-	public fun members (Z)Ljava/util/List;
-	public fun members (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun members$suspendImpl (Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun remind ()V
-	public fun remind (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun remind$suspendImpl (Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/announcement/OnlineAnnouncementKt {
@@ -2831,6 +2821,15 @@ public final class net/mamoe/mirai/event/events/OtherClientOnlineEvent : net/mam
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class net/mamoe/mirai/event/events/SignEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/internal/network/Packet {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public final fun getRank ()Ljava/lang/Integer;
+	public final fun getSign ()Ljava/lang/String;
+	public final fun getUser ()Lnet/mamoe/mirai/contact/UserOrBot;
+	public final fun hasRank ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class net/mamoe/mirai/event/events/StrangerAddEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/StrangerEvent, net/mamoe/mirai/internal/network/Packet {
 	public final fun component1 ()Lnet/mamoe/mirai/contact/Stranger;
 	public final fun copy (Lnet/mamoe/mirai/contact/Stranger;)Lnet/mamoe/mirai/event/events/StrangerAddEvent;
@@ -4325,6 +4324,7 @@ public abstract interface class net/mamoe/mirai/message/data/MessageChain : java
 	public fun contains (Lnet/mamoe/mirai/message/data/MessageKey;)Z
 	public static fun deserializeFromJsonString (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static fun deserializeFromJsonString (Ljava/lang/String;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/message/data/MessageChain;
+	public static fun deserializeFromMiraiCode (Ljava/lang/String;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static fun deserializeFromMiraiCode (Lnet/mamoe/mirai/message/data/MessageChain;Ljava/lang/String;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static synthetic fun deserializeJsonToMessageChain (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static synthetic fun deserializeJsonToMessageChain (Ljava/lang/String;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/message/data/MessageChain;
@@ -4338,7 +4338,9 @@ public final class net/mamoe/mirai/message/data/MessageChain$Companion {
 	public final fun deserializeFromJsonString (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public final fun deserializeFromJsonString (Ljava/lang/String;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static synthetic fun deserializeFromJsonString$default (Lnet/mamoe/mirai/message/data/MessageChain$Companion;Ljava/lang/String;Lkotlinx/serialization/json/Json;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/MessageChain;
+	public final fun deserializeFromMiraiCode (Ljava/lang/String;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public final fun deserializeFromMiraiCode (Lnet/mamoe/mirai/message/data/MessageChain;Ljava/lang/String;Lnet/mamoe/mirai/contact/Contact;)Lnet/mamoe/mirai/message/data/MessageChain;
+	public static synthetic fun deserializeFromMiraiCode$default (Lnet/mamoe/mirai/message/data/MessageChain$Companion;Ljava/lang/String;Lnet/mamoe/mirai/contact/Contact;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public static synthetic fun deserializeFromMiraiCode$default (Lnet/mamoe/mirai/message/data/MessageChain$Companion;Lnet/mamoe/mirai/message/data/MessageChain;Ljava/lang/String;Lnet/mamoe/mirai/contact/Contact;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public final synthetic fun deserializeJsonToMessageChain (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MessageChain;
 	public final synthetic fun deserializeJsonToMessageChain (Ljava/lang/String;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/message/data/MessageChain;
@@ -5796,7 +5798,7 @@ public abstract class net/mamoe/mirai/utils/LoginSolver {
 	public fun onSolveDeviceVerification (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/utils/DeviceVerificationRequests;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun onSolvePicCaptcha (Lnet/mamoe/mirai/Bot;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun onSolveSliderCaptcha (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun onSolveUnsafeDeviceLoginVerify (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun onSolveUnsafeDeviceLoginVerify (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/utils/LoginSolver$Companion {
@@ -6167,6 +6169,14 @@ public final class net/mamoe/mirai/utils/StandardCharImageLoginSolver : net/mamo
 public final class net/mamoe/mirai/utils/StandardCharImageLoginSolver$Companion {
 	public final fun createBlocking (Lkotlin/jvm/functions/Function0;)Lnet/mamoe/mirai/utils/StandardCharImageLoginSolver;
 	public final fun createBlocking (Lkotlin/jvm/functions/Function0;Lnet/mamoe/mirai/utils/MiraiLogger;)Lnet/mamoe/mirai/utils/StandardCharImageLoginSolver;
+}
+
+public abstract interface class net/mamoe/mirai/utils/Streamable {
+	public abstract fun asFlow ()Lkotlinx/coroutines/flow/Flow;
+	public fun asStream ()Ljava/util/stream/Stream;
+	public fun toList ()Ljava/util/List;
+	public fun toList (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun toList$suspendImpl (Lnet/mamoe/mirai/utils/Streamable;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/utils/Utils {

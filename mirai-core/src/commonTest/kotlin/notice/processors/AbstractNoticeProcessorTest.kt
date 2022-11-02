@@ -60,7 +60,7 @@ internal abstract class AbstractNoticeProcessorTest : AbstractCommonNHTest(), Gr
         pipeline: NoticeProcessorPipeline = bot.components.noticeProcessorPipeline,
         block: UseTestContext.() -> ProtocolStruct
     ): Collection<Packet> {
-        bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
+        bot.components[SsoProcessor].setFirstLoginResult(FirstLoginResult.PASSED)
         val handler = LoggingPacketHandlerAdapter(PacketLoggingStrategyImpl(bot), bot.logger)
         val context = UseTestContext(attributes.toMutableTypeSafeMap())
         return pipeline.process(block(context), context.attributes).collected.also { list ->

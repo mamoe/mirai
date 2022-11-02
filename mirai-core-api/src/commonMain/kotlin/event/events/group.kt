@@ -16,8 +16,6 @@
 
 package net.mamoe.mirai.event.events
 
-import kotlinx.atomicfu.AtomicBoolean
-import kotlinx.atomicfu.atomic
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
@@ -357,8 +355,6 @@ public data class BotInvitedJoinGroupRequestEvent @MiraiInternalApi constructor(
      */
     public val invitor: Friend? get() = this.bot.getFriend(invitorId)
 
-    internal val responded: AtomicBoolean = atomic(false)
-
     @JvmBlockingBridge
     public suspend fun accept(): Unit = Mirai.acceptInvitedJoinGroupRequest(this)
 
@@ -369,7 +365,6 @@ public data class BotInvitedJoinGroupRequestEvent @MiraiInternalApi constructor(
 /**
  * 一个账号请求加入群事件, [Bot] 在此群中是管理员或群主.
  */
-@Suppress("DEPRECATION")
 public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
     override val bot: Bot,
     /**
@@ -404,8 +399,6 @@ public data class MemberJoinRequestEvent @MiraiInternalApi constructor(
      * 邀请入群的成员. 若在事件发生时机器人或该成员退群, [invitor] 为 `null`.
      */
     public val invitor: NormalMember? by lazy { invitorId?.let { group?.get(it) } }
-
-    internal val responded: AtomicBoolean = atomic(false)
 
     /**
      * 同意这个请求

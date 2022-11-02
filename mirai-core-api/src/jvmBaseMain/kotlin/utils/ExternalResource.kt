@@ -52,7 +52,7 @@ import kotlin.io.use
  * ```
  * file.toExternalResource().use { resource -> // 安全地使用资源
  *     contact.uploadImage(resource) // 用来上传图片
- *     contact.files.uploadNewFile("/foo/test.txt", file) // 或者用来上传文件
+ *     contact.files.uploadNewFile("/foo/test.txt", resource) // 或者用来上传文件
  * }
  * ```
  *
@@ -62,7 +62,7 @@ import kotlin.io.use
  * inputStream.use { input -> // 安全地使用 InputStream
  *     input.toExternalResource().use { resource -> // 安全地使用资源
  *         contact.uploadImage(resource) // 用来上传图片
- *         contact.files.uploadNewFile("/foo/test.txt", file) // 或者用来上传文件
+ *         contact.files.uploadNewFile("/foo/test.txt", resource) // 或者用来上传文件
  *     }
  * }
  * ```
@@ -72,7 +72,7 @@ import kotlin.io.use
  * ```
  * try (ExternalResource resource = ExternalResource.create(file)) { // 使用文件 file
  *     contact.uploadImage(resource); // 用来上传图片
- *     contact.files.uploadNewFile("/foo/test.txt", file); // 或者用来上传文件
+ *     contact.files.uploadNewFile("/foo/test.txt", resource); // 或者用来上传文件
  * }
  * ```
  *
@@ -82,7 +82,7 @@ import kotlin.io.use
  * try (InputStream stream = ...) { // 安全地使用 InputStream
  *     try (ExternalResource resource = ExternalResource.create(stream)) { // 安全地使用资源
  *         contact.uploadImage(resource); // 用来上传图片
- *         contact.files.uploadNewFile("/foo/test.txt", file); // 或者用来上传文件
+ *         contact.files.uploadNewFile("/foo/test.txt", resource); // 或者用来上传文件
  *     }
  * }
  * ```

@@ -16,22 +16,34 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.message.isContextIdenticalWith
+import net.mamoe.mirai.message.nextMessage
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiInternalApi
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
-
 /**
  * 一个消息事件.
  *
- * @see isContextIdenticalWith 判断语境相同
+ * ## 实用扩展
+ *
+ * 在处理事件时, 以下可能有用 (Kotlin).
+ *
+ * ### 挂起协程直到监听下一条事件
+ *
+ * 通过 [MessageEvent.nextMessage] 可在[全局事件通道][GlobalEventChannel]中监听并获取下一条符合条件的消息事件.
+ * 这可能帮助实现向用户请求一条更详细的输入等功能.
+ *
+ * ### 判断语境相同
+ *
+ * 使用 [MessageEvent.isContextIdenticalWith] 可判断两个 [MessageEvent] 的语境是否相同. 有关"语境"的定义可查看 [MessageEvent.isContextIdenticalWith].
  */
 public sealed interface MessageEvent : Event, Packet, BotPassiveEvent {
     /**

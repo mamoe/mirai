@@ -151,7 +151,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
             override suspend fun init() {
                 nhEvents.add(NHEvent.Init)
                 networkLogger.debug { "BotInitProcessor.init" }
-                bot.components[SsoProcessor].firstLoginResult.value = FirstLoginResult.PASSED
+                bot.components[SsoProcessor].setFirstLoginResult(FirstLoginResult.PASSED)
             }
         })
         set(ServerList, ServerListImpl())
@@ -207,9 +207,9 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
 
     val eventDispatcher get() = bot.components[EventDispatcher]
     var firstLoginResult: FirstLoginResult?
-        get() = bot.components[SsoProcessor].firstLoginResult.value
+        get() = bot.components[SsoProcessor].firstLoginResult
         set(value) {
-            bot.components[SsoProcessor].firstLoginResult.value = value
+            bot.components[SsoProcessor].setFirstLoginResult(value)
         }
 }
 

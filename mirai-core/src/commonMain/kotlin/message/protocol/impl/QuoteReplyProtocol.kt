@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
@@ -39,7 +38,6 @@ internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
             currentMessageChain[QuoteReply]?.source?.ensureSequenceIdAvailable()
         })
 
-        val baseSourceSerializer = MessageSourceSerializerImpl(MessageSource.SERIAL_NAME)
         MessageSerializer.superclassesScope(MessageSource::class, MessageMetadata::class, SingleMessage::class) {
             add(
                 MessageSerializer(

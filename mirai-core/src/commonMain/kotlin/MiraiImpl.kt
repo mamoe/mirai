@@ -59,7 +59,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
-import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.crypto.TEA
@@ -94,15 +93,9 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override var FileCacheStrategy: FileCacheStrategy = net.mamoe.mirai.utils.FileCacheStrategy.PlatformDefault
 
-    @Suppress("PrivatePropertyName")
     private val httpClient: HttpClient = createDefaultHttpClient()
 
     override suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent) {
-        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(false, true)) {
-            "the request $this has already been responded"
-        }
-
         check(!event.bot.friends.contains(event.fromId)) {
             "the request $event is outdated: You had already responded it on another device."
         }
@@ -126,11 +119,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     override suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean) {
-        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(false, true)) {
-            "the request $event has already been responded"
-        }
-
         check(!event.bot.friends.contains(event.fromId)) {
             "the request $event is outdated: You had already responded it on another device."
         }
@@ -148,10 +136,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent) {
         @Suppress("DuplicatedCode")
         checkGroupPermission(event.bot, event.groupId) { event::class.simpleName ?: "<anonymous class>" }
-        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(false, true)) {
-            "the request $this has already been responded"
-        }
 
         if (event.group?.contains(event.fromId) == true) return
 
@@ -169,10 +153,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     @Suppress("DuplicatedCode")
     override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean, message: String) {
         checkGroupPermission(event.bot, event.groupId) { event::class.simpleName ?: "<anonymous class>" }
-        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(false, true)) {
-            "the request $this has already been responded"
-        }
 
         if (event.group?.contains(event.fromId) == true) return
 
@@ -223,10 +203,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
         checkGroupPermission(event.bot, event.groupId) { event::class.simpleName ?: "<anonymous class>" }
-        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(false, true)) {
-            "the request $this has already been responded"
-        }
 
         solveMemberJoinRequestEvent(
             bot = event.bot,
@@ -258,11 +234,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     private suspend fun solveInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent, accept: Boolean) {
-        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(false, true)) {
-            "the request $this has already been responded"
-        }
-
         check(!event.bot.groups.contains(event.groupId)) {
             "the request $this is outdated: Bot has been already in the group."
         }
@@ -392,14 +363,12 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return response is PbMessageSvc.PbMsgWithDraw.Response.Success
     }
 
-    @Suppress("RemoveExplicitTypeArguments") // false positive
     override suspend fun recallMessage(bot: Bot, source: MessageSource) = bot.asQQAndroidBot().run {
         check(source is MessageSourceInternal)
 
         source.ensureSequenceIdAvailable()
 
-        @Suppress("BooleanLiteralArgument", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER") // false positive
-        check(!source.isRecalledOrPlanned.value && source.isRecalledOrPlanned.compareAndSet(false, true)) {
+        check(!source.isRecalledOrPlanned && source.setRecalled()) {
             "$source had already been recalled."
         }
 
@@ -650,7 +619,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override fun createUnsupportedMessage(struct: ByteArray): UnsupportedMessage =
         UnsupportedMessageImpl(struct.loadAs(ImMsgBody.Elem.serializer()))
 
-    @Suppress("DEPRECATION", "OverridingDeprecatedMember")
+    @Suppress("OverridingDeprecatedMember")
     override suspend fun queryImageUrl(bot: Bot, image: Image): String = when (image) {
         is ConstOriginUrlAware -> image.originUrl
         is DeferredOriginUrlAware -> image.getUrl(bot)

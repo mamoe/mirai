@@ -7,16 +7,18 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("INAPPLICABLE_JVM_NAME")
-
 package net.mamoe.mirai.contact.announcement
 
 import kotlinx.coroutines.flow.Flow
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.PermissionDeniedException
+import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.NotStableForInheritance
+import net.mamoe.mirai.utils.Streamable
+import kotlin.jvm.JvmName
 
 
 /**
@@ -30,7 +32,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  *
  * ### 获取公告列表
  *
- * 通过 [asFlow] 或 [asStream] 可以获取到*惰性*流, 在从流中收集数据时才会请求服务器获取数据. 通常建议在 Kotlin 使用协程的 [asFlow], 在 Java 使用 [asStream].
+ * 通过 [asFlow] 或 `asStream` 可以获取到*惰性*流, 在从流中收集数据时才会请求服务器获取数据. 通常建议在 Kotlin 使用协程的 [asFlow], 在 Java 使用 `asStream`.
  *
  * 若要获取全部公告列表, 可使用 [toList].
  *
@@ -41,24 +43,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  * @since 2.7
  */
 @NotStableForInheritance
-public expect interface Announcements {
-    /**
-     * 创建一个能获取该群内所有群公告列表的 [Flow]. 在 [Flow] 被使用时才会分页下载 [OnlineAnnouncement].
-     *
-     * 异常不会抛出, 只会记录到网络日志. 当获取发生异常时将会终止获取, 不影响已经成功获取的 [OfflineAnnouncement] 和 [Flow] 的[收集][Flow.collect].
-     */
-    public suspend fun asFlow(): Flow<OnlineAnnouncement>
-
-    /**
-     * 获取所有群公告列表, 将全部 [OnlineAnnouncement] 都下载后再返回.
-     *
-     * 异常不会抛出, 只会记录到网络日志. 当获取发生异常时将会终止获取并返回已经成功获取到的 [OfflineAnnouncement] 列表.
-     *
-     * @return 此时刻的群公告只读列表.
-     */
-    public open suspend fun toList(): List<OnlineAnnouncement>
-
-
+public interface Announcements : Streamable<OnlineAnnouncement> {
     /**
      * 删除一条群公告. 需要管理员权限. 使用 [OnlineAnnouncement.delete] 与此方法效果相同.
      *
@@ -70,6 +55,7 @@ public expect interface Announcements {
      *
      * @see OnlineAnnouncement.delete
      */
+    @JvmBlockingBridge
     public suspend fun delete(fid: String): Boolean
 
     /**
@@ -78,6 +64,7 @@ public expect interface Announcements {
      * @return 返回 `null` 表示不存在该 [fid] 的群公告
      * @throws IllegalStateException 当协议异常时抛出
      */
+    @JvmBlockingBridge
     public suspend fun get(fid: String): OnlineAnnouncement?
 
     /**
@@ -86,6 +73,7 @@ public expect interface Announcements {
      * @throws IllegalStateException 当协议异常时抛出
      * @see Announcement.publishTo
      */
+    @JvmBlockingBridge
     public suspend fun publish(announcement: Announcement): OnlineAnnouncement
 
     /**
@@ -94,6 +82,7 @@ public expect interface Announcements {
      * **注意**: 需要由调用方[关闭][ExternalResource.close] [resource].
      * @throws IllegalStateException 当协议异常时抛出
      */
+    @JvmBlockingBridge
     public suspend fun uploadImage(resource: ExternalResource): AnnouncementImage
 
     /**
@@ -121,4 +110,14 @@ public expect interface Announcements {
      * @see OnlineAnnouncement.remind
      */
     public suspend fun remind(fid: String)
+
+    // no blocking bridge for this method
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("asFlow")
+    @Deprecated(
+        "Kept for binary compatibility. Use non-suspend overload instead.",
+        level = DeprecationLevel.HIDDEN
+    )
+    @DeprecatedSinceMirai(hiddenSince = "2.13")
+    public suspend fun asFlow0(): Flow<OnlineAnnouncement> = asFlow()
 }

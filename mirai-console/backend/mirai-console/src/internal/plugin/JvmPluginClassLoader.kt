@@ -41,6 +41,7 @@ Class resolving:
  */
 
 internal class JvmPluginsLoadingCtx(
+    val consoleClassLoader: ClassLoader, // plugin system -> mirai-console classloader WRAPPER
     val sharedLibrariesLoader: DynLibClassLoader,
     val pluginClassLoaders: MutableList<JvmPluginClassLoaderN>,
     val downloader: JvmPluginDependencyDownloader,
@@ -51,17 +52,18 @@ internal class JvmPluginsLoadingCtx(
     }
 }
 
-internal class DynLibClassLoader : URLClassLoader {
-    private val clName: String?
-    internal var dependencies: List<DynLibClassLoader> = emptyList()
-
-    private constructor(parent: ClassLoader?, clName: String?) : super(arrayOf(), parent) {
-        this.clName = clName
-    }
+internal open class DynamicClasspathClassLoader : URLClassLoader {
+    internal constructor(urls: Array<URL>, parent: ClassLoader?) : super(urls, parent)
 
     @Suppress("Since15")
-    private constructor(parent: ClassLoader?, clName: String?, vmName: String?) : super(vmName, arrayOf(), parent) {
-        this.clName = clName
+    internal constructor(urls: Array<URL>, parent: ClassLoader?, vmName: String?) : super(vmName, urls, parent)
+
+    internal fun addLib(url: URL) {
+        addURL(url)
+    }
+
+    internal fun addLib(file: File) {
+        addURL(file.toURI().toURL())
     }
 
 
@@ -72,7 +74,47 @@ internal class DynLibClassLoader : URLClassLoader {
             ClassLoader.registerAsParallelCapable()
             java9 = kotlin.runCatching { Class.forName("java.lang.Module") }.isSuccess
         }
+    }
+}
 
+internal class LegacyCompatibilityLayerClassLoader : DynamicClasspathClassLoader {
+    private constructor(parent: ClassLoader?) : super(arrayOf(), parent)
+    private constructor(parent: ClassLoader?, vmName: String?) : super(arrayOf(), parent, vmName)
+
+    override fun toString(): String {
+        return "LegacyCompatibilityLayerClassLoader@" + hashCode()
+    }
+
+    companion object {
+        init {
+            ClassLoader.registerAsParallelCapable()
+        }
+
+        fun newInstance(parent: ClassLoader?): LegacyCompatibilityLayerClassLoader {
+            return if (java9) {
+                LegacyCompatibilityLayerClassLoader(parent, "legacy-compatibility-layer")
+            } else {
+                LegacyCompatibilityLayerClassLoader(parent)
+            }
+        }
+    }
+}
+
+
+internal class DynLibClassLoader : DynamicClasspathClassLoader {
+    private val clName: String?
+    internal var dependencies: List<DynLibClassLoader> = emptyList()
+
+    private constructor(parent: ClassLoader?, clName: String?) : super(arrayOf(), parent) {
+        this.clName = clName
+    }
+
+    private constructor(parent: ClassLoader?, clName: String?, vmName: String?) : super(arrayOf(), parent, vmName) {
+        this.clName = clName
+    }
+
+
+    companion object {
         fun newInstance(parent: ClassLoader?, clName: String?, vmName: String?): DynLibClassLoader {
             return when {
                 java9 -> DynLibClassLoader(parent, clName, vmName)
@@ -84,10 +126,10 @@ internal class DynLibClassLoader : URLClassLoader {
             if (name.startsWith("java.")) return Class.forName(name, false, JavaSystemPlatformClassLoader)
 
             // All mirai-core hard-linked should use same version to avoid errors (ClassCastException).
-            if (name.startsWith("io.netty") || name in AllDependenciesClassesHolder.allclasses) {
+            if (name in AllDependenciesClassesHolder.allclasses) {
                 return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
             }
-            if (name.startsWith("net.mamoe.mirai.")) { // Avoid plugin classing cheating
+            if (name.startsWith("net.mamoe.mirai.") || name.startsWith("kotlin.") || name.startsWith("kotlinx.")) { // Avoid plugin classing cheating
                 try {
                     return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
                 } catch (ignored: ClassNotFoundException) {
@@ -110,14 +152,6 @@ internal class DynLibClassLoader : URLClassLoader {
             }
         }
         return null
-    }
-
-    internal fun addLib(url: URL) {
-        addURL(url)
-    }
-
-    internal fun addLib(file: File) {
-        addURL(file.toURI().toURL())
     }
 
     override fun toString(): String {
@@ -180,7 +214,6 @@ internal class DynLibClassLoader : URLClassLoader {
     }
 }
 
-@Suppress("JoinDeclarationAndAssignment")
 internal class JvmPluginClassLoaderN : URLClassLoader {
     val openaccess: JvmPluginClasspath = OpenAccess()
     val file: File
@@ -335,7 +368,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
 
         fun newLoader(file: File, ctx: JvmPluginsLoadingCtx): JvmPluginClassLoaderN {
             return when {
-                DynLibClassLoader.java9 -> JvmPluginClassLoaderN(file, ctx)
+                DynamicClasspathClassLoader.java9 -> JvmPluginClassLoaderN(file, ctx)
                 else -> JvmPluginClassLoaderN(file, ctx, Unit)
             }
         }
@@ -399,7 +432,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
                     }
                 }
             }
-            return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
+            return ctx.consoleClassLoader.loadClass(name)
         }
     }
 

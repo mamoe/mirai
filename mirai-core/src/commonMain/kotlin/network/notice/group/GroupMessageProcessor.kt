@@ -31,6 +31,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x8fc
+import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.*
@@ -102,6 +103,26 @@ internal class GroupMessageProcessor(
                 when {
                     elem.extraInfo != null -> extraInfo = elem.extraInfo
                     elem.anonGroupMsg != null -> anonymous = elem.anonGroupMsg
+                }
+            }
+
+            msg.msg.msgBody.richText.ptt?.let pttPatch@{ ptt ->
+                if (ptt.downPara.isNotEmpty()) return@pttPatch
+
+                kotlin.runCatching {
+                    val response = bot.network.sendAndExpect(
+                        PttStore.GroupPttDown(
+                            bot.client,
+                            group.groupCode,
+                            ptt,
+                            msg.msg
+                        ),
+                        5000,
+                        2
+                    )
+
+                    ptt.downPara =
+                        "http://${response.strDomain}${response.downPara.decodeToString()}".encodeToByteArray()
                 }
             }
         }

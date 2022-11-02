@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.console.fontend
 
-import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.utils.MiraiLogger
 
 /**
  * [ProcessProgress] 的简单实现, 前端应该自行实现 [ProcessProgress]
@@ -23,7 +23,12 @@ internal class DefaultLoggingProcessProgress : ProcessProgress {
     private var failed: Boolean = false
 
     private companion object {
-        private val logger by lazy { MiraiConsole.createLogger("ProcessProgress") }
+        private val logger by lazy {
+            MiraiLogger.Factory.create(
+                DefaultLoggingProcessProgress::class,
+                "ProcessProgress"
+            )
+        }
     }
 
     override fun updateText(txt: String) {

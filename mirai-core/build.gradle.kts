@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     kotlin("multiplatform")
-    // id("kotlinx-atomicfu")
+    id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
     id("me.him188.kotlin-jvm-blocking-bridge")
     id("me.him188.kotlin-dynamic-delegation")
@@ -42,7 +42,6 @@ kotlin {
 
                 implementation(project(":mirai-core-utils"))
                 implementation(`kotlinx-serialization-protobuf`)
-                implementation(`kotlinx-atomicfu`)
                 implementation(`ktor-io`)
                 implementation(`ktor-client-core`)
             }
@@ -59,7 +58,7 @@ kotlin {
         findByName("jvmBaseMain")?.apply {
             dependencies {
                 implementation(`log4j-api`)
-                implementation(`netty-all`)
+                implementation(`netty-handler`)
                 implementation(`ktor-client-okhttp`)
                 api(`kotlinx-coroutines-jdk8`) // use -jvm modules for this magic target 'jvmBase'
             }
@@ -203,7 +202,7 @@ if (tasks.findByName("androidMainClasses") != null) {
 
 configureMppPublishing()
 configureBinaryValidators(setOf("jvm", "android").filterTargets())
-configureRelocationForCore()
+relocateKtorForCore(false)
 
 //mavenCentralPublish {
 //    artifactId = "mirai-core"

@@ -61,8 +61,6 @@ internal class JvmPluginDependencyDownloader(
         val artGroup = node.artifact.groupId
         val artId = node.artifact.artifactId
 
-        // mirai used netty-all
-        if (artGroup == "io.netty") return@DependencyFilter false
 
         if (artGroup == "net.mamoe") {
             if (artId in listOf(
@@ -77,6 +75,7 @@ internal class JvmPluginDependencyDownloader(
                     "mirai-core-utils-android",
                     "mirai-console",
                     "mirai-console-terminal",
+                    "mirai-console-frontend-base",
                 )
             ) return@DependencyFilter false
         }
@@ -254,7 +253,7 @@ internal class JvmPluginDependencyDownloader(
         logger.debug { "Remote server: " + config.repoLoc }
     }
 
-    fun resolveDependencies(deps: Collection<String>, vararg filters: DependencyFilter): DependencyResult {
+    fun resolveDependencies(deps: Iterable<String>, vararg filters: DependencyFilter): DependencyResult {
 
         val dependencies: MutableList<Dependency> = ArrayList()
         for (library in deps) {

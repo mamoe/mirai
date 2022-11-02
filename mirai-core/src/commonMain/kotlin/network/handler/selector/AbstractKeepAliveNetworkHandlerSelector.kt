@@ -119,7 +119,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
             lastNetwork = current
 
             if (current != null) {
-                if (current.context[SsoProcessor].firstLoginResult.value?.canRecoverOnFirstLogin == false) {
+                if (current.context[SsoProcessor].firstLoginResult?.canRecoverOnFirstLogin == false) {
                     // == null 只表示
                     // == false 表示第一次登录失败, 且此失败没必要重试
                     logIfEnabled { "[FIRST LOGIN ERROR] current = $current" }
@@ -176,7 +176,7 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                         // This may return false, meaning the error causing the state to be CLOSED is recoverable.
                         // Otherwise, it throws, meaning it is unrecoverable.
 
-                        if (this@AbstractKeepAliveNetworkHandlerSelector.current.compareAndSet(current, null)) {
+                        if (compareAndSetCurrent(current, null)) {
                             logIfEnabled { "... Set current to null." }
                             // invalidate the instance and try again.
 
@@ -232,6 +232,9 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
             }
         }
     }
+
+    private fun compareAndSetCurrent(expect: H?, update: H?) =
+        current.compareAndSet(expect, update) // to enable compiler optimization
 
     private val lock = SynchronizedObject()
     protected open fun refreshInstance() {

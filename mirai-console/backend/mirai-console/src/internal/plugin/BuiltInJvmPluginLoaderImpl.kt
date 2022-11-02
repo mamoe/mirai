@@ -75,14 +75,40 @@ internal class BuiltInJvmPluginLoaderImpl(
 
 
     internal val jvmPluginLoadingCtx: JvmPluginsLoadingCtx by lazy {
+        val legacyCompatibilityLayerClassLoader = LegacyCompatibilityLayerClassLoader.newInstance(
+            BuiltInJvmPluginLoaderImpl::class.java.classLoader,
+        )
+
         val classLoader = DynLibClassLoader.newInstance(
-            BuiltInJvmPluginLoaderImpl::class.java.classLoader, "GlobalShared", "global-shared"
+            legacyCompatibilityLayerClassLoader, "GlobalShared", "global-shared"
         )
         val ctx = JvmPluginsLoadingCtx(
+            legacyCompatibilityLayerClassLoader,
             classLoader,
             mutableListOf(),
             JvmPluginDependencyDownloader(logger),
         )
+        logger.debug { "Downloading legacy compatibility modules....." }
+        ctx.downloader.resolveDependencies(
+            sequenceOf(
+                "client-core",
+                "client-core-jvm",
+                "client-okhttp",
+                "utils",
+                "utils-jvm",
+            ).map { "io.ktor:ktor-$it:1.6.8" }.asIterable()
+        ).let { rsp ->
+            rsp.artifactResults.forEach {
+                legacyCompatibilityLayerClassLoader.addLib(it.artifact.file)
+            }
+            if (logger.isVerboseEnabled) {
+                logger.verbose("Legacy compatibility modules:")
+                rsp.artifactResults.forEach { art ->
+                    logger.verbose(" `- ${art.artifact}  -> ${art.artifact.file}")
+                }
+            }
+        }
+
         logger.verbose { "Plugin shared libraries: " + PluginManager.pluginSharedLibrariesFolder }
         PluginManager.pluginSharedLibrariesFolder.listFiles()?.asSequence().orEmpty()
             .onEach { logger.debug { "Peek $it in shared libraries" } }
