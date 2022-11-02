@@ -98,7 +98,7 @@ internal class MockAnnouncementsImpl(
         if (!group.botPermission.isOperator()) {
             throw PermissionDeniedException("Only administrator have permission see announcement confirmed detail")
         }
-
+        // TODO: 设置用户可读状态，而不返回全部
         return group.members.toList()
     }
 
