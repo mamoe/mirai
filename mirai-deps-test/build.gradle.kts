@@ -95,6 +95,7 @@ tasks.register("publishMiraiLocalArtifacts", Exec::class) {
         "./gradlew",
         publishMiraiArtifactsToMavenLocal.name,
         "--no-daemon",
+        "--stacktrace",
         "-Pkotlin.compiler.execution.strategy=in-process"
     )
     standardOutput = System.out
