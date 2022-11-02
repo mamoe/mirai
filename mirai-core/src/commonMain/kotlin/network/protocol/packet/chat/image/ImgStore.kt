@@ -22,7 +22,7 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 
 internal fun getRandomString(length: Int): String =
-    getRandomString(length, *defaultRanges)
+    getRandomString(length, charRanges = defaultRanges)
 
 private val defaultRanges: Array<CharRange> = arrayOf('a'..'z', 'A'..'Z', '0'..'9')
 

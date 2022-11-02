@@ -55,4 +55,4 @@ public fun getRandomString(length: Int, vararg charRanges: CharRange, random: Ra
 
 
 public fun getRandomIntString(length: Int, random: Random = Random): String =
-    getRandomString(length, *intCharRanges, random = random)
+    getRandomString(length, charRanges = intCharRanges, random = random)
