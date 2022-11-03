@@ -12,6 +12,7 @@ package net.mamoe.mirai.contact.announcement
 import kotlinx.coroutines.flow.Flow
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.ExternalResource
@@ -84,6 +85,31 @@ public interface Announcements : Streamable<OnlineAnnouncement> {
     @JvmBlockingBridge
     public suspend fun uploadImage(resource: ExternalResource): AnnouncementImage
 
+    /**
+     * 获取 已确认/未确认 的群成员
+     *
+     * @param fid 公告的 [OnlineAnnouncement.fid]
+     * @param confirmed 是否确认
+     * @return 群成员列表
+     *
+     * @throws PermissionDeniedException 当没有权限时抛出
+     * @throws IllegalStateException 当协议异常时抛出
+     *
+     * @see OnlineAnnouncement.members
+     */
+    public suspend fun members(fid: String, confirmed: Boolean): List<NormalMember>
+
+    /**
+     * 提醒 未确认 的群成员
+     *
+     * @param fid 公告的 [OnlineAnnouncement.fid]
+     *
+     * @throws PermissionDeniedException 当没有权限时抛出
+     * @throws IllegalStateException 当协议异常时抛出
+     *
+     * @see OnlineAnnouncement.remind
+     */
+    public suspend fun remind(fid: String)
 
     // no blocking bridge for this method
     @Suppress("INAPPLICABLE_JVM_NAME")

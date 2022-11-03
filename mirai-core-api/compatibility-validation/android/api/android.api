@@ -844,8 +844,10 @@ public abstract interface class net/mamoe/mirai/contact/announcement/Announcemen
 	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun get (Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public abstract fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun members (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public abstract fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun remind (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
 	public abstract fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -886,6 +888,12 @@ public abstract interface class net/mamoe/mirai/contact/announcement/OnlineAnnou
 	public abstract fun getPublicationTime ()J
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
 	public abstract fun getSenderId ()J
+	public fun members (Z)Ljava/util/List;
+	public fun members (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun members$suspendImpl (Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun remind ()V
+	public fun remind (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun remind$suspendImpl (Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/announcement/OnlineAnnouncementKt {
