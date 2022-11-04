@@ -165,9 +165,20 @@ abstract class AbstractTest {
         if (context.executionException.isPresent) {
             val inst = context.requiredTestInstance as AbstractTest
             println("====================== build.gradle ===========================")
-            println(inst.tempDir.resolve("build.gradle").readText())
+            println(inst.tempDir.resolveFirstExisting("build.gradle", "build.gradle.kts").readTextIfFound())
             println("==================== settings.gradle ==========================")
-            println(inst.tempDir.resolve("settings.gradle").readText())
+            println(inst.tempDir.resolveFirstExisting("settings.gradle", "settings.gradle.kts").readTextIfFound())
         }
     }
+
+    private fun File.resolveFirstExisting(vararg files: String): File? {
+        return files.asSequence().map { resolve(it) }.firstOrNull { it.exists() }
+    }
+
+    private fun File?.readTextIfFound(): String =
+        when {
+            this == null -> "(not found)"
+            exists() -> readText()
+            else -> "($name not found)"
+        }
 }
