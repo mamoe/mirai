@@ -132,8 +132,8 @@ fun Project.relocateKtorForCore(includeInRuntime: Boolean) {
     // Otherwise, user will get NoClassDefFound error when using mirai as a classpath dependency. See #2263.
 
     relocateAllFromGroupId("io.ktor", includeInRuntime)
-    relocateAllFromGroupId("com.squareup.okhttp3", includeInRuntime)
-    relocateAllFromGroupId("com.squareup.okio", includeInRuntime)
+    relocateAllFromGroupId("com.squareup.okhttp3", includeInRuntime, listOf("okhttp3"))
+    relocateAllFromGroupId("com.squareup.okio", includeInRuntime, listOf("okio"))
 }
 
 /**
@@ -148,9 +148,20 @@ fun Project.relocateKtorForCore(includeInRuntime: Boolean) {
  *
  * @param groupId 例如 `io.ktor`
  * @param includeInRuntime 将 relocate 后的依赖本体包含在运行时 classpath.
+ * @param packages 被 relocate 的模块的全部顶层包. 如 `com.squareup.okhttp3:okhttp` 的顶层包是 `okhttp3`
  */
-fun Project.relocateAllFromGroupId(groupId: String, includeInRuntime: Boolean) {
-    relocationFilters.add(RelocationFilter(groupId, includeInRuntime = includeInRuntime))
+fun Project.relocateAllFromGroupId(
+    groupId: String,
+    includeInRuntime: Boolean,
+    packages: List<String> = listOf(groupId),
+) {
+    relocationFilters.add(
+        RelocationFilter(
+            groupId,
+            packages = packages,
+            includeInRuntime = includeInRuntime
+        )
+    )
 }
 
 /**
@@ -164,7 +175,7 @@ fun Project.relocateExactArtifact(groupId: String, artifactId: String, includeIn
 data class RelocationFilter(
     val groupId: String,
     val artifactId: String? = null,
-    val shadowFilter: String = groupId,
+    val packages: List<String> = listOf(groupId),
     val filesFilter: String = groupId.replace(".", "/"),
     /**
      * Pack relocated dependency into the fat jar. If set to `false`, dependencies will be removed.

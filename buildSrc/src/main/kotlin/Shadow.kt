@@ -227,6 +227,19 @@ private const val relocationRootPackage = "net.mamoe.mirai.internal.deps"
 
 private fun ShadowJar.setRelocations() {
     project.relocationFilters.forEach { relocation ->
-        relocate(relocation.shadowFilter, "$relocationRootPackage.${relocation.groupId}")
+        if (relocation.packages.size == 1) {
+            val srcPkg = relocation.packages.first()
+            val dst = if (relocation.groupId.endsWith(srcPkg)) {
+                relocation.groupId
+            } else {
+                "${relocation.groupId}.$srcPkg"
+            }
+
+            relocate(srcPkg, "$relocationRootPackage.$dst")
+        } else {
+            relocation.packages.forEach { aPackage ->
+                relocate(aPackage, "$relocationRootPackage.${relocation.groupId}.$aPackage")
+            }
+        }
     }
 }
