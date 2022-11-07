@@ -42,7 +42,8 @@ kotlin {
 
                 implementation(project(":mirai-core-utils"))
                 implementation(`kotlinx-serialization-protobuf`)
-                implementation(`ktor-io`)
+                relocateCompileOnly(`ktor-io`) // runtime from mirai-core-utils
+                relocateRuntime(`ktor-client-core`)
             }
         }
 
@@ -102,6 +103,8 @@ kotlin {
             dependencies {
             }
         }
+
+        configureKtorClientImplementationDependencies { relocateRuntime(it) }
 
         NATIVE_TARGETS.forEach { targetName ->
             val defFile = projectDir.resolve("src/nativeMain/cinterop/OpenSSL.def")
