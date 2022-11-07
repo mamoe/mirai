@@ -9,13 +9,21 @@
 
 package net.mamoe.mirai.deps.test
 
+import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.condition.EnabledIf
+import java.util.stream.Stream
+import kotlin.streams.asStream
 
 class CoreShadowRelocationTest : AbstractTest() {
-    @Test
+    @TestFactory
     @EnabledIf("isMiraiLocalAvailable", disabledReason = REASON_LOCAL_ARTIFACT_NOT_AVAILABLE)
-    fun `test OkHttp filtered out`() {
+    fun `test OkHttp filtered out`(): Stream<DynamicTest> = DynamicTest.stream(
+        sequenceOf("mirai-core-utils", "mirai-core-api", "mirai-core").asStream(),
+        { it }
+    ) { name ->
+        setup() // It is automatically done for every Test method but we use TestFactory here
         testDir.resolve("test.kt").writeText(
             """
             package test
@@ -39,13 +47,12 @@ class CoreShadowRelocationTest : AbstractTest() {
         buildFile.appendText(
             """
             dependencies {
-                implementation("net.mamoe:mirai-core:$miraiLocalVersion")
+                implementation("net.mamoe:$name:$miraiLocalVersion")
             }
         """.trimIndent()
         )
         runGradle("check")
     }
-
 
     // https://github.com/mamoe/mirai/issues/2291
     @Test

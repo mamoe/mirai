@@ -36,7 +36,7 @@ kotlin {
                 api(`kotlinx-coroutines-core`)
 
                 implementation(`kotlinx-serialization-protobuf`)
-                implementation(`ktor-io`)
+                relocateRuntime(`ktor-io`)
             }
         }
 
@@ -54,7 +54,6 @@ kotlin {
         }
 
         findByName("androidMain")?.apply {
-            //
             dependencies {
                 compileOnly(`android-runtime`)
 //                    api1(`ktor-client-android`)
@@ -76,8 +75,6 @@ kotlin {
 //                implementation("com.soywiz.korlibs.krypto:krypto:2.4.12") // ':mirai-core-utils:compileNativeMainKotlinMetadata' fails because compiler cannot find reference
             }
         }
-
-        configureMultiplatformKtorDependencies { api(it) }
     }
 }
 

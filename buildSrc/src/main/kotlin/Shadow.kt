@@ -143,7 +143,7 @@ private fun KotlinTarget.configureRelocationForTarget(project: Project) = projec
                             filter.matchesDependency(groupId = groupId, artifactId = artifactId)
                         }
                     ) {
-                        println("[Shadow Relocation] Filtering out $groupId:$artifactId from pom")
+                        logger.info("[Shadow Relocation] Filtering out '$groupId:$artifactId' from pom for project '${project.path}'")
                         check(node.remove(dep)) { "Failed to remove dependency node" }
                     }
                 }

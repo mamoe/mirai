@@ -86,14 +86,7 @@ object RelocationNotes
  * @see RelocationNotes
  * @see relocateKtorForCore
  */
-fun NamedDomainObjectContainer<KotlinSourceSet>.configureMultiplatformKtorDependencies(addDep: KotlinDependencyHandler.(Any) -> Dependency?) {
-    getByName("commonMain").apply {
-        dependencies {
-            addDep(`ktor-io`)
-            addDep(`ktor-client-core`)
-        }
-    }
-
+fun NamedDomainObjectContainer<KotlinSourceSet>.configureKtorClientImplementationDependencies(addDep: KotlinDependencyHandler.(String) -> Dependency?) {
     findByName("jvmBaseMain")?.apply {
         dependencies {
             addDep(`ktor-client-okhttp`)
@@ -117,6 +110,24 @@ fun NamedDomainObjectContainer<KotlinSourceSet>.configureMultiplatformKtorDepend
             addDep(`ktor-client-darwin`)
         }
     }
+}
+
+fun <T : Dependency> KotlinDependencyHandler.relocate(dependency: T?, includeInRuntime: Boolean): T {
+    dependency!!
+    project.relocateExactArtifact(
+        groupId = dependency.group ?: throw IllegalArgumentException("group must not be null"),
+        artifactId = dependency.name,
+        includeInRuntime = includeInRuntime
+    )
+    return dependency
+}
+
+fun KotlinDependencyHandler.relocateRuntime(dependencyNotation: String): Dependency {
+    return relocate(implementation(dependencyNotation), includeInRuntime = true)
+}
+
+fun KotlinDependencyHandler.relocateCompileOnly(dependencyNotation: String): Dependency {
+    return relocate(compileOnly(dependencyNotation), includeInRuntime = false)
 }
 
 inline fun <T> configure(list: Iterable<T>, function: T.() -> Unit) {
