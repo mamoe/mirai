@@ -15,45 +15,47 @@ import net.mamoe.mirai.utils.MiraiLoggerPlatformBase
 import net.mamoe.mirai.utils.SimpleLogger
 
 internal class MiraiConsoleLogger(
-    private val controller: LoggerController,
+    controller: LoggerController,
     val logger: MiraiLogger
 ) : MiraiLoggerPlatformBase() {
     override val identity: String? get() = logger.identity
     override val isEnabled: Boolean get() = logger.isEnabled
 
+    private val logState = controller.getLoggerControlState(identity)
+
     override val isInfoEnabled: Boolean
-        get() = controller.shouldLog(identity, SimpleLogger.LogPriority.INFO)
+        get() = logState.shouldLog(SimpleLogger.LogPriority.INFO)
     override val isWarningEnabled: Boolean
-        get() = controller.shouldLog(identity, SimpleLogger.LogPriority.WARNING)
+        get() = logState.shouldLog(SimpleLogger.LogPriority.WARNING)
     override val isDebugEnabled: Boolean
-        get() = controller.shouldLog(identity, SimpleLogger.LogPriority.DEBUG)
+        get() = logState.shouldLog(SimpleLogger.LogPriority.DEBUG)
     override val isErrorEnabled: Boolean
-        get() = controller.shouldLog(identity, SimpleLogger.LogPriority.ERROR)
+        get() = logState.shouldLog(SimpleLogger.LogPriority.ERROR)
     override val isVerboseEnabled: Boolean
-        get() = controller.shouldLog(identity, SimpleLogger.LogPriority.VERBOSE)
+        get() = logState.shouldLog(SimpleLogger.LogPriority.VERBOSE)
 
     override fun info0(message: String?, e: Throwable?) {
-        if (controller.shouldLog(identity, SimpleLogger.LogPriority.INFO))
+        if (logState.shouldLog(SimpleLogger.LogPriority.INFO))
             logger.info(message, e)
     }
 
     override fun warning0(message: String?, e: Throwable?) {
-        if (controller.shouldLog(identity, SimpleLogger.LogPriority.WARNING))
+        if (logState.shouldLog(SimpleLogger.LogPriority.WARNING))
             logger.warning(message, e)
     }
 
     override fun debug0(message: String?, e: Throwable?) {
-        if (controller.shouldLog(identity, SimpleLogger.LogPriority.DEBUG))
+        if (logState.shouldLog(SimpleLogger.LogPriority.DEBUG))
             logger.debug(message, e)
     }
 
     override fun error0(message: String?, e: Throwable?) {
-        if (controller.shouldLog(identity, SimpleLogger.LogPriority.ERROR))
+        if (logState.shouldLog(SimpleLogger.LogPriority.ERROR))
             logger.error(message, e)
     }
 
     override fun verbose0(message: String?, e: Throwable?) {
-        if (controller.shouldLog(identity, SimpleLogger.LogPriority.VERBOSE))
+        if (logState.shouldLog(SimpleLogger.LogPriority.VERBOSE))
             logger.verbose(message, e)
     }
 }
