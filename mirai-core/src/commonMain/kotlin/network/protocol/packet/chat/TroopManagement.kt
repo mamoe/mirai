@@ -464,4 +464,54 @@ internal class TroopManagement {
         }
 
     }
+
+    internal object GetGroupLastMsgSeq : OutgoingPacketFactory<GetGroupLastMsgSeq.Response>("OidbSvc.0x88d_0") {
+        sealed class Response(val groupUin: Long, val seq: Long) : Packet {
+            object Failed : Response(-1, -1) {
+                override fun toString(): String {
+                    return "TroopManagement.GetGroupLastMsgSeq.Failed"
+                }
+            }
+
+            class Success(groupUin: Long, seq: Long) : Response(groupUin, seq) {
+                override fun toString(): String {
+                    return "TroopManagement.GetGroupLastMsgSeq.Response(groupUin=${groupUin}, seq=${seq})"
+                }
+            }
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupUin: Long,
+        ) = buildOutgoingUniPacket(client) {
+            writeOidb(
+                2189,
+                0,
+                Oidb0x88d.ReqBody.serializer(),
+                Oidb0x88d.ReqBody(
+                    appid = client.subAppId.toInt(),
+                    stzreqgroupinfo = listOf(
+                        Oidb0x88d.ReqGroupInfo(
+                            groupCode = groupUin,
+                            stgroupinfo = Oidb0x88d.GroupInfo(groupCurMsgSeq = 0)
+                        )
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val resp = readOidbRespCommon(Oidb0x88d.RspBody.serializer()) { it.stzrspgroupinfo }
+                .toResult("OidbSvc.0x88d_0") { it == 0 }
+                .getOrNull() ?: return Response.Failed
+
+            check(resp.isNotEmpty()) { return Response.Failed }
+
+            val group = resp.first()
+            val info = group.stgroupinfo ?: return Response.Failed
+            val seq = info.groupCurMsgSeq ?: return Response.Failed
+
+            return Response.Success(group.groupCode, seq.toLong())
+        }
+    }
 }
