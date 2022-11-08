@@ -62,7 +62,7 @@ internal class OfflineMessageSourceImplData(
     private val _isRecalledOrPlanned = atomic(false)
 
     @Transient
-    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
 
     override fun toJceData(): ImMsgBody.SourceMsg {

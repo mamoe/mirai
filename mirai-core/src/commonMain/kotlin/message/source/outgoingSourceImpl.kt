@@ -102,7 +102,7 @@ internal class OnlineMessageSourceToFriendImpl(
     private val _isRecalledOrPlanned = atomic(false)
 
     @Transient
-    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
 
     private val jceData: ImMsgBody.SourceMsg by lazy { toJceDataImpl(subject) }
@@ -141,7 +141,7 @@ internal class OnlineMessageSourceToStrangerImpl(
     private val _isRecalledOrPlanned = atomic(false)
 
     @Transient
-    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
 
     private val jceData: ImMsgBody.SourceMsg by lazy { toJceDataImpl(subject) }
@@ -180,7 +180,7 @@ internal class OnlineMessageSourceToTempImpl(
     private val _isRecalledOrPlanned = atomic(false)
 
     @Transient
-    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
 
     private val jceData: ImMsgBody.SourceMsg by lazy { toJceDataImpl(subject) }
@@ -215,7 +215,7 @@ internal class OnlineMessageSourceToGroupImpl(
     private val _isRecalledOrPlanned = atomic(false)
 
     @Transient
-    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
 
 

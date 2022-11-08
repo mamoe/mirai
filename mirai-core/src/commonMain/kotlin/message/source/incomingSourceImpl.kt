@@ -53,7 +53,7 @@ internal class OnlineMessageSourceFromFriendImpl(
     private val _isRecalledOrPlanned = atomic(false)
 
     @Transient
-    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
     override val ids: IntArray get() = sequenceIds // msg.msgBody.richText.attr!!.random
     override val internalIds: IntArray = msg.mapToIntArray {
@@ -91,7 +91,7 @@ internal class OnlineMessageSourceFromStrangerImpl(
     private val _isRecalledOrPlanned = atomic(false)
 
     @Transient
-    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
 
     override val ids: IntArray get() = sequenceIds // msg.msgBody.richText.attr!!.random
@@ -170,7 +170,7 @@ internal class OnlineMessageSourceFromTempImpl(
     private val _isRecalledOrPlanned = atomic(false)
 
     @Transient
-    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
 
     override val ids: IntArray get() = sequenceIds //
@@ -211,7 +211,7 @@ internal class OnlineMessageSourceFromGroupImpl(
     private val _isRecalledOrPlanned = atomic(false)
 
     @Transient
-    override val isRecalledOrPlanned: Boolean = _isRecalledOrPlanned.value
+    override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
     override val internalIds: IntArray = msg.mapToIntArray { it.msgBody.richText.attr!!.random }

@@ -122,7 +122,7 @@ internal class SsoProcessorImpl(
     ///////////////////////////////////////////////////////////////////////////
 
     private val _firstLoginResult: AtomicRef<FirstLoginResult?> = atomic(null)
-    override val firstLoginResult = _firstLoginResult.value
+    override val firstLoginResult get() = _firstLoginResult.value
     override fun casFirstLoginResult(expect: FirstLoginResult?, update: FirstLoginResult?): Boolean =
         _firstLoginResult.compareAndSet(expect, update)
 
