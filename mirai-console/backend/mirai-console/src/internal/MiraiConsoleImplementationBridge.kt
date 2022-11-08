@@ -270,6 +270,9 @@ ___  ____           _   _____                       _
                 consoleDataScope.addAndReloadConfig(loggerController.loggerConfig)
             }
             consoleDataScope.reloadAll()
+            if (loggerController is LoggerControllerImpl) {
+                loggerController.onReload()
+            }
         }
 
         phase("initialize all plugins") {

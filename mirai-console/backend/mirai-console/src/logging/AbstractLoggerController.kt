@@ -36,6 +36,44 @@ public abstract class AbstractLoggerController : LoggerController {
     override fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean =
         shouldLog(LogPriority.by(priority), getPriority(identity))
 
+    // region LoggerControlState support
+    protected open val isLoggerControlStateSupported: Boolean get() = false
+
+    @Volatile
+    @Transient
+    @JvmField
+    protected var loggerConfigUpdateTime: Long = 0L
+
+    override fun getLoggerControlState(identity: String?): LoggerController.LoggerControlState {
+        if (isLoggerControlStateSupported) {
+            return object : LoggerController.LoggerControlState {
+                private val status = BitSet(SimpleLogger.LogPriority.values().size)
+
+                @Volatile
+                @Transient
+                private var lastUpdateTime = -1L
+
+                override fun shouldLog(priority: SimpleLogger.LogPriority): Boolean {
+                    if (lastUpdateTime != loggerConfigUpdateTime) {
+                        updateProperties()
+                    }
+                    return status[priority.ordinal]
+                }
+
+                @Synchronized
+                private fun updateProperties() {
+                    lastUpdateTime = loggerConfigUpdateTime
+                    SimpleLogger.LogPriority.values().forEach { prio ->
+                        status.set(prio.ordinal, shouldLog(identity, prio))
+                    }
+                }
+
+            }
+        }
+        return super.getLoggerControlState(identity)
+    }
+    // endregion
+
     /**
      * 便于进行配置存储的 [LogPriority],
      * 等级优先级与 [SimpleLogger.LogPriority] 对应

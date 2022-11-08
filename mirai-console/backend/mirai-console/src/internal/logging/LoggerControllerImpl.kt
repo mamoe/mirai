@@ -18,6 +18,11 @@ internal class LoggerControllerImpl : AbstractLoggerController.PathBased() {
     internal val loggerConfig: LoggerConfig by lazy {
         LoggerConfig()
     }
+    override val isLoggerControlStateSupported: Boolean get() = true
+
+    internal fun onReload() {
+        this.loggerConfigUpdateTime++
+    }
 
     override fun findPriority(identity: String?): LogPriority? {
         return if (identity == null) {
