@@ -12,11 +12,8 @@ package net.mamoe.mirai.mock.test.mock
 import kotlinx.coroutines.flow.toList
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
-import net.mamoe.mirai.message.data.OnlineMessageSource
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.messageChainOf
-import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.mock.MockActions.mockFireRecalled
 import net.mamoe.mirai.mock.test.MockBotTestBase
 import net.mamoe.mirai.mock.utils.broadcastMockEvents
@@ -147,6 +144,24 @@ internal class MessagingTest: MockBotTestBase() {
             assertEquals(messageChainOf(PlainText("Testing!")), messages[0])
             assertEquals(messageChainOf(PlainText("Test2!")), messages[1])
             assertEquals(messageChainOf(PlainText("Pong!")), messages[2])
+        }
+
+        val mockGroup = bot.addGroup(2, "2")
+        val mockGroupMember1 = mockGroup.addMember(123, "123")
+        val mockGroupMember2 = mockGroup.addMember(124, "124")
+        val mockGroupMember3 = mockGroup.addMember(125, "125")
+
+        broadcastMockEvents {
+            mockGroupMember1 says { append("msg1") }
+            mockGroupMember2 says { append("msg2") }
+            mockGroupMember3 says { append("msg3") }
+        }
+
+        with(mockGroup.roamingMessages.getAllMessages().toList()) {
+            assertEquals(3, size)
+            assertEquals(messageChainOf(PlainText("msg1")), get(0))
+            assertEquals(messageChainOf(PlainText("msg2")), get(1))
+            assertEquals(messageChainOf(PlainText("msg3")), get(2))
         }
     }
 

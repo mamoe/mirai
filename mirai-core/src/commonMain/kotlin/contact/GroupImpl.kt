@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.file.RemoteFiles
+import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
@@ -30,6 +31,7 @@ import net.mamoe.mirai.internal.contact.active.GroupActiveImpl
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
 import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
+import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplGroup
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
 import net.mamoe.mirai.internal.message.image.OfflineGroupImage
@@ -388,6 +390,8 @@ internal abstract class CommonGroupImpl constructor(
         )
         return result.success
     }
+
+    override val roamingMessages: RoamingMessages by lazy { RoamingMessagesImplGroup(this) }
 
     override fun toString(): String = "Group($id)"
 }

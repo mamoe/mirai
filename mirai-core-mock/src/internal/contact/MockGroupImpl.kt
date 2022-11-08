@@ -17,6 +17,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.announcement.OfflineAnnouncement
 import net.mamoe.mirai.contact.announcement.buildAnnouncementParameters
 import net.mamoe.mirai.contact.file.RemoteFiles
+import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
@@ -31,6 +32,7 @@ import net.mamoe.mirai.mock.contact.MockGroupControlPane
 import net.mamoe.mirai.mock.contact.MockNormalMember
 import net.mamoe.mirai.mock.contact.active.MockGroupActive
 import net.mamoe.mirai.mock.internal.contact.active.MockGroupActiveImpl
+import net.mamoe.mirai.mock.internal.contact.roaming.MockRoamingMessages
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToGroup
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
 import net.mamoe.mirai.mock.utils.broadcastBlocking
@@ -353,4 +355,6 @@ internal class MockGroupImpl(
     override fun toString(): String {
         return "Group($id)"
     }
+
+    override val roamingMessages: RoamingMessages = MockRoamingMessages(this)
 }
