@@ -72,8 +72,8 @@ public actual open class PlatformLogger constructor(  // same as StdoutLogger bu
         get() = when (this) {
             SimpleLogger.LogPriority.VERBOSE -> Color.RESET
             SimpleLogger.LogPriority.INFO -> Color.LIGHT_GREEN
-            SimpleLogger.LogPriority.WARNING -> Color.LIGHT_RED
-            SimpleLogger.LogPriority.ERROR -> Color.RED
+            SimpleLogger.LogPriority.WARNING -> Color.LIGHT_YELLOW
+            SimpleLogger.LogPriority.ERROR -> Color.LIGHT_RED
             SimpleLogger.LogPriority.DEBUG -> Color.LIGHT_CYAN
         }
 
