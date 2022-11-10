@@ -129,7 +129,12 @@ internal class DynLibClassLoader : DynamicClasspathClassLoader {
             if (name in AllDependenciesClassesHolder.allclasses) {
                 return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
             }
-            if (name.startsWith("net.mamoe.mirai.") || name.startsWith("kotlin.") || name.startsWith("kotlinx.")) { // Avoid plugin classing cheating
+            if (
+                name.startsWith("net.mamoe.mirai.")
+                || name.startsWith("kotlin.")
+                || name.startsWith("kotlinx.")
+                || name.startsWith("org.slf4j.")
+            ) { // Avoid plugin classing cheating
                 try {
                     return AllDependenciesClassesHolder.appClassLoader.loadClass(name)
                 } catch (ignored: ClassNotFoundException) {

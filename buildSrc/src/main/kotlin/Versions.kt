@@ -60,7 +60,7 @@ object Versions {
     const val shadow = "7.1.3-mirai-modified-SNAPSHOT"
 
     const val logback = "1.2.5"
-    const val slf4j = "1.7.32"
+    const val slf4j = "2.0.3"
     const val log4j = "2.17.2"
     const val asm = "9.4"
     const val difflib = "1.3.0"

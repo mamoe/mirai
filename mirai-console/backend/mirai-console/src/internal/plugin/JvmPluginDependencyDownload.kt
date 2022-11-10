@@ -80,6 +80,11 @@ internal class JvmPluginDependencyDownloader(
             ) return@DependencyFilter false
         }
 
+        // Re-download slf4j-api is unnecessary since slf4j-api was bound by console
+        if (artGroup == "org.slf4j" && artId == "slf4j-api") {
+            return@DependencyFilter false
+        }
+
         // Loaded by console system
         if ("$artGroup:$artId" in MiraiConsoleBuildDependencies.dependencies)
             return@DependencyFilter false

@@ -61,6 +61,7 @@ dependencies {
     smartImplementation(`maven-resolver-impl`)
     smartImplementation(`maven-resolver-connector-basic`)
     smartImplementation(`maven-resolver-transport-http`)
+    smartImplementation(`slf4j-api`)
     smartApi(`kotlinx-coroutines-jdk8`)
 
     testApi(project(":mirai-core"))
