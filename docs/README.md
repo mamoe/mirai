@@ -97,6 +97,7 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 [Novices666/mirai-epl]:https://github.com/Novices666/mirai-epl
 
 [easyMirai]:https://github.com/easyMirais/easyMirai
+[MiraiPR]:https://github.com/zmsv/MiraiPR
 
 ### 原生接口
 
@@ -142,6 +143,7 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 | `JavaScript` / TypeScript | [nepsyn/miraipie]                    |
 | `Julia`                   | [MiraiBots.jl]                       |
 | `PHP`                     | [nkxingxh/miraiez]                   |
+| `PHP`                     | [MiraiPR]                            |
 | `Python`                  | [AliceBot]                           |
 | `Python`                  | [Ariadne][GraiaProject/Ariadne]      |
 | `Python`                  | [Avilla][GraiaProject/Avilla]        |
