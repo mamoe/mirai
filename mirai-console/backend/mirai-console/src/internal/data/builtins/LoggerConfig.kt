@@ -38,11 +38,14 @@ public class LoggerConfig : ReadOnlyPluginConfig("Logger") {
             "example.logger" to AbstractLoggerController.LogPriority.NONE,
             "console.debug" to AbstractLoggerController.LogPriority.NONE,
             "Bot" to AbstractLoggerController.LogPriority.ALL,
+            "org.eclipse.aether.internal" to AbstractLoggerController.LogPriority.INFO,
+            "org.apache.http.wire" to AbstractLoggerController.LogPriority.INFO,
         )
     )
 
     @Serializable
     public class Binding @MiraiExperimentalApi public constructor(
+        public val slf4j: Boolean = true,
     )
 
     @ValueDescription(

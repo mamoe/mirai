@@ -42,6 +42,7 @@ import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorageImpl
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
+import net.mamoe.mirai.console.internal.logging.externalbind.slf4j.MiraiConsoleSLF4JAdapter
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.shutdown.ShutdownDaemon
@@ -276,6 +277,10 @@ ___  ____           _   _____                       _
             if (loggerController is LoggerControllerImpl) {
                 loggerController.onReload()
             }
+        }
+
+        phase("initialize logging bridges") {
+            MiraiConsoleSLF4JAdapter.doSlf4JInit()
         }
 
         phase("initialize all plugins") {
