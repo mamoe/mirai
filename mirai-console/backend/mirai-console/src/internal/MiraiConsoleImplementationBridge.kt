@@ -36,6 +36,7 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.Co
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
 import net.mamoe.mirai.console.internal.data.builtins.DataScope
+import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
 import net.mamoe.mirai.console.internal.data.builtins.PluginDependenciesConfig
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorageImpl
@@ -268,6 +269,8 @@ ___  ____           _   _____                       _
             val loggerController = loggerController
             if (loggerController is LoggerControllerImpl) {
                 consoleDataScope.addAndReloadConfig(loggerController.loggerConfig)
+            } else {
+                consoleDataScope.addAndReloadConfig(LoggerConfig())
             }
             consoleDataScope.reloadAll()
             if (loggerController is LoggerControllerImpl) {

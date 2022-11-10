@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.internal.data.builtins
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.data.ReadOnlyPluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
@@ -40,4 +41,14 @@ public class LoggerConfig : ReadOnlyPluginConfig("Logger") {
         )
     )
 
+    @Serializable
+    public class Binding @MiraiExperimentalApi public constructor(
+    )
+
+    @ValueDescription(
+        """
+            是否启动外部日志框架桥接
+        """
+    )
+    public val binding: Binding by value { Binding() }
 }
