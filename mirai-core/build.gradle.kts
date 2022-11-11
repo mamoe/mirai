@@ -42,7 +42,12 @@ kotlin {
 
                 implementation(project(":mirai-core-utils"))
                 implementation(`kotlinx-serialization-protobuf`)
+
                 relocateCompileOnly(`ktor-io_relocated`) // runtime from mirai-core-utils
+
+                relocateRuntime(`ktor-http_relocated`)
+                relocateRuntime(`ktor-serialization_relocated`)
+                relocateRuntime(`ktor-websocket-serialization_relocated`)
                 relocateRuntime(`ktor-client-core_relocated`)
             }
         }
