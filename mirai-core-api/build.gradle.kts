@@ -43,7 +43,7 @@ kotlin {
                 implementation(project(":mirai-core-utils"))
                 implementation(project(":mirai-console-compiler-annotations"))
                 implementation(`kotlinx-serialization-protobuf`)
-                relocateCompileOnly(`ktor-io`) // runtime from mirai-core-utils
+                relocateCompileOnly(`ktor-io_relocated`) // runtime from mirai-core-utils
             }
         }
 
@@ -103,7 +103,6 @@ if (tasks.findByName("androidMainClasses") != null) {
 
 configureMppPublishing()
 configureBinaryValidators(setOf("jvm", "android").filterTargets())
-relocateKtorForCore(false)
 
 //mavenCentralPublish {
 //    artifactId = "mirai-core-api"

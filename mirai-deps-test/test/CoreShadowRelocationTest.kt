@@ -67,6 +67,7 @@ class CoreShadowRelocationTest : AbstractTest() {
               fun `test base dependency`() {
                 assertThrows<ClassNotFoundException> {
                   Class.forName("net.mamoe.mirai.internal.deps.io.ktor.utils.io.ByteBufferChannel") // should only present in mirai-core-utils
+                  Class.forName("net.mamoe.mirai.internal.deps.okhttp3.OkHttpClient")
                 }
               }
             }
@@ -121,6 +122,33 @@ class CoreShadowRelocationTest : AbstractTest() {
               @Test
               fun `test base dependency`() {
                 Class.forName("net.mamoe.mirai.internal.deps.io.ktor.utils.io.ByteBufferChannel")
+                Class.forName("net.mamoe.mirai.internal.deps.okhttp3.OkHttpClient")
+              }
+            }
+        """.trimIndent()
+        )
+        buildFile.appendText(
+            """
+            dependencies {
+                implementation("net.mamoe:mirai-core:$miraiLocalVersion")
+            }
+        """.trimIndent()
+        )
+        runGradle("check")
+    }
+
+    @Test
+    @EnabledIf("isMiraiLocalAvailable", disabledReason = REASON_LOCAL_ARTIFACT_NOT_AVAILABLE)
+    fun `relocated ktor presents in mirai-core-all`() {
+        testDir.resolve("test.kt").writeText(
+            """
+            package test
+            import org.junit.jupiter.api.*
+            class MyTest {
+              @Test
+              fun `test base dependency`() {
+                Class.forName("net.mamoe.mirai.internal.deps.io.ktor.utils.io.ByteBufferChannel")
+                Class.forName("net.mamoe.mirai.internal.deps.okhttp3.OkHttpClient")
               }
             }
         """.trimIndent()

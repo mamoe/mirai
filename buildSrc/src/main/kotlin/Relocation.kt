@@ -86,48 +86,63 @@ object RelocationNotes
  * @see RelocationNotes
  * @see relocateKtorForCore
  */
-fun NamedDomainObjectContainer<KotlinSourceSet>.configureKtorClientImplementationDependencies(addDep: KotlinDependencyHandler.(String) -> Dependency?) {
+fun NamedDomainObjectContainer<KotlinSourceSet>.configureRelocatedKtorClientImplementationDependencies() {
     findByName("jvmBaseMain")?.apply {
         dependencies {
-            addDep(`ktor-client-okhttp`)
+            relocateRuntime(`ktor-client-okhttp_relocated`)
+            relocateRuntime(`okio-relocated`)
+            relocateRuntime(`okhttp3-relocated`)
         }
     }
 
     configure(WIN_TARGETS.map { getByName(it + "Main") }) {
         dependencies {
-            addDep(`ktor-client-curl`)
+            implementation(`ktor-client-curl`)
         }
     }
 
     configure(LINUX_TARGETS.map { getByName(it + "Main") }) {
         dependencies {
-            addDep(`ktor-client-cio`)
+            implementation(`ktor-client-cio`)
         }
     }
 
     findByName("darwinMain")?.apply {
         dependencies {
-            addDep(`ktor-client-darwin`)
+            implementation(`ktor-client-darwin`)
         }
     }
 }
 
-fun <T : Dependency> KotlinDependencyHandler.relocate(dependency: T?, includeInRuntime: Boolean): T {
+fun <T : Dependency> KotlinDependencyHandler.relocate(
+    dependency: T?,
+    includeInRuntime: Boolean,
+    vararg packages: String
+): T {
     dependency!!
     project.relocateExactArtifact(
         groupId = dependency.group ?: throw IllegalArgumentException("group must not be null"),
         artifactId = dependency.name,
-        includeInRuntime = includeInRuntime
+        includeInRuntime = includeInRuntime,
+        packages = packages,
     )
     return dependency
 }
 
-fun KotlinDependencyHandler.relocateRuntime(dependencyNotation: String): Dependency {
-    return relocate(implementation(dependencyNotation), includeInRuntime = true)
+fun KotlinDependencyHandler.relocateRuntime(dependencyNotation: String, vararg packages: String): Dependency {
+    return relocate(implementation(dependencyNotation), includeInRuntime = true, packages = packages)
 }
 
-fun KotlinDependencyHandler.relocateCompileOnly(dependencyNotation: String): Dependency {
-    return relocate(compileOnly(dependencyNotation), includeInRuntime = false)
+fun KotlinDependencyHandler.relocateRuntime(relocatedDependency: RelocatedDependency): Dependency {
+    return relocateRuntime(relocatedDependency.notation, packages = relocatedDependency.packages)
+}
+
+fun KotlinDependencyHandler.relocateCompileOnly(dependencyNotation: String, vararg packages: String): Dependency {
+    return relocate(compileOnly(dependencyNotation), includeInRuntime = false, packages = packages)
+}
+
+fun KotlinDependencyHandler.relocateCompileOnly(relocatedDependency: RelocatedDependency): Dependency {
+    return relocateCompileOnly(relocatedDependency.notation, packages = relocatedDependency.packages)
 }
 
 inline fun <T> configure(list: Iterable<T>, function: T.() -> Unit) {
@@ -142,7 +157,7 @@ fun Project.relocateKtorForCore(includeInRuntime: Boolean) {
     // WARNING: You must also consider relocating transitive dependencies.
     // Otherwise, user will get NoClassDefFound error when using mirai as a classpath dependency. See #2263.
 
-    relocateAllFromGroupId("io.ktor", includeInRuntime)
+    relocateAllFromGroupId("io.ktor", includeInRuntime, "io.ktor")
     relocateAllFromGroupId("com.squareup.okhttp3", includeInRuntime, listOf("okhttp3"))
     relocateAllFromGroupId("com.squareup.okio", includeInRuntime, listOf("okio"))
 }
@@ -175,11 +190,29 @@ fun Project.relocateAllFromGroupId(
     )
 }
 
+fun Project.relocateAllFromGroupId(
+    groupId: String,
+    includeInRuntime: Boolean,
+    vararg packages: String,
+) = relocateAllFromGroupId(groupId, includeInRuntime, packages.toList())
+
 /**
  * 精确地 relocate 一个依赖.
  */
-fun Project.relocateExactArtifact(groupId: String, artifactId: String, includeInRuntime: Boolean) {
-    relocationFilters.add(RelocationFilter(groupId, artifactId, includeInRuntime = includeInRuntime))
+fun Project.relocateExactArtifact(
+    groupId: String,
+    artifactId: String,
+    includeInRuntime: Boolean,
+    vararg packages: String,
+) {
+    relocationFilters.add(
+        RelocationFilter(
+            groupId,
+            artifactId,
+            includeInRuntime = includeInRuntime,
+            packages = packages.toList()
+        )
+    )
 }
 
 

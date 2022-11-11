@@ -42,8 +42,8 @@ kotlin {
 
                 implementation(project(":mirai-core-utils"))
                 implementation(`kotlinx-serialization-protobuf`)
-                relocateCompileOnly(`ktor-io`) // runtime from mirai-core-utils
-                relocateRuntime(`ktor-client-core`)
+                relocateCompileOnly(`ktor-io_relocated`) // runtime from mirai-core-utils
+                relocateRuntime(`ktor-client-core_relocated`)
             }
         }
 
@@ -104,7 +104,7 @@ kotlin {
             }
         }
 
-        configureKtorClientImplementationDependencies { relocateRuntime(it) }
+        configureRelocatedKtorClientImplementationDependencies()
 
         NATIVE_TARGETS.forEach { targetName ->
             val defFile = projectDir.resolve("src/nativeMain/cinterop/OpenSSL.def")
@@ -185,7 +185,6 @@ if (tasks.findByName("androidMainClasses") != null) {
 
 configureMppPublishing()
 configureBinaryValidators(setOf("jvm", "android").filterTargets())
-relocateKtorForCore(false)
 
 //mavenCentralPublish {
 //    artifactId = "mirai-core"
