@@ -26,7 +26,7 @@ dependencies {
     api(project(":mirai-core-api"))
     api(`log4j-api`)
     api(`log4j-core`)
-    api(`log4j-slf4j-impl`)
+    api(`log4j-slf4j2-impl`)
 
 
     testImplementation(`slf4j-api`)
