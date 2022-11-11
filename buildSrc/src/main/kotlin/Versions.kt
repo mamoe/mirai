@@ -61,7 +61,7 @@ object Versions {
 
     const val logback = "1.2.5"
     const val slf4j = "2.0.3"
-    const val log4j = "2.17.2"
+    const val log4j = "2.19.0"
     const val asm = "9.4"
     const val difflib = "1.3.0"
     const val netty = "4.1.63.Final"
@@ -230,7 +230,7 @@ const val `slf4j-simple` = "org.slf4j:slf4j-simple:" + Versions.slf4j
 
 const val `log4j-api` = "org.apache.logging.log4j:log4j-api:" + Versions.log4j
 const val `log4j-core` = "org.apache.logging.log4j:log4j-core:" + Versions.log4j
-const val `log4j-slf4j-impl` = "org.apache.logging.log4j:log4j-slf4j-impl:" + Versions.log4j
+const val `log4j-slf4j2-impl` = "org.apache.logging.log4j:log4j-slf4j2-impl:" + Versions.log4j
 const val `log4j-to-slf4j` = "org.apache.logging.log4j:log4j-to-slf4j:" + Versions.log4j
 
 val ATTRIBUTE_MIRAI_TARGET_PLATFORM: Attribute<String> = Attribute.of("mirai.target.platform", String::class.java)

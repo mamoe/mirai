@@ -25,7 +25,7 @@ kotlin {
 dependencies {
     api(project(":mirai-core-api"))
     implementation(project(":mirai-logging-log4j2")) {
-        exclude("org.apache.logging.log4j", "log4j-slf4j-impl")
+        exclude("org.apache.logging.log4j", "log4j-slf4j2-impl")
     } // mirai -> log4j2
     implementation(`log4j-to-slf4j`) // log4j2 -> slf4j
     api(`slf4j-api`)

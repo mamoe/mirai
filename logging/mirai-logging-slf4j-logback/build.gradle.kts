@@ -26,7 +26,7 @@ dependencies {
     api(project(":mirai-core-api"))
     api(project(":mirai-logging-slf4j")) // mirai -> slf4j
     implementation(project(":mirai-logging-log4j2")) {
-        exclude("org.apache.logging.log4j", "log4j-slf4j-impl")
+        exclude("org.apache.logging.log4j", "log4j-slf4j2-impl")
     } // mirai -> log4j2
     api(`slf4j-api`)
     api(`logback-classic`)
