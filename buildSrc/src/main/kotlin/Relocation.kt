@@ -129,6 +129,8 @@ fun <T : Dependency> KotlinDependencyHandler.relocate(
     return dependency
 }
 
+// TODO: 2022/11/11 Reimplement using Gradle Configuration API for better extensibility (e.g. resolving or excluding transitive dependencies)
+
 fun KotlinDependencyHandler.relocateRuntime(dependencyNotation: String, vararg packages: String): Dependency {
     return relocate(implementation(dependencyNotation), includeInRuntime = true, packages = packages)
 }

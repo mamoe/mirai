@@ -226,21 +226,22 @@ private fun ShadowJar.setRelocations(runtimeClasspathConfiguration: String) {
     val files = project.configurations.getByName(runtimeClasspathConfiguration).files
     from(
         files.filter { file ->
-            val matchingFilter = relocationFilters.find { filter ->
-                // file.absolutePath example: /Users/xxx/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.7.0-RC/7f9f07fc65e534c15a820f61d846b9ffdba8f162/kotlin-stdlib-jdk8-1.7.0-RC.jar
+            // file.absolutePath example: /Users/xxx/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.7.0-RC/7f9f07fc65e534c15a820f61d846b9ffdba8f162/kotlin-stdlib-jdk8-1.7.0-RC.jar
+
+            fileFiltered = fileFiltered || relocationFilters.any { filter ->
                 filter.matchesFile(file)
             }
 
-            if (matchingFilter != null) {
-                fileFiltered = true
-            }
 
-            if (matchingFilter?.includeInRuntime == true) {
-                println("[Shadow Relocation] Including file in runtime (${project.path}:${shadowJar.name}/$runtimeClasspathConfiguration): ${file.name}")
-                true
-            } else {
-                false
+            // There can be multiple filters, if any one's includeInRuntime is true, then do include that.
+            val includeInRuntime = relocationFilters.any { filter ->
+                // file.absolutePath example: /Users/xxx/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.7.0-RC/7f9f07fc65e534c15a820f61d846b9ffdba8f162/kotlin-stdlib-jdk8-1.7.0-RC.jar
+                filter.matchesFile(file) && filter?.includeInRuntime == true
             }
+            if (includeInRuntime) {
+                println("[Shadow Relocation] Including file in runtime (${project.path}:${shadowJar.name}/$runtimeClasspathConfiguration): ${file.name}")
+            }
+            includeInRuntime
         }
     )
     check(fileFiltered) {

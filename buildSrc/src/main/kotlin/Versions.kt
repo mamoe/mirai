@@ -121,7 +121,17 @@ fun KotlinDependencyHandler.implementationKotlinxIo(module: String) {
 val `ktor-io` = ktor("io", Versions.ktor)
 val `ktor-io_relocated` = RelocatedDependency(`ktor-io`, "io.ktor.utils.io")
 
+val `ktor-http` = ktor("http", Versions.ktor)
+val `ktor-http_relocated` = RelocatedDependency(`ktor-http`, "io.ktor.http")
+
+val `ktor-events` = ktor("events", Versions.ktor)
+val `ktor-events_relocated` = RelocatedDependency(`ktor-events`, "io.ktor.events")
+
 val `ktor-serialization` = ktor("serialization", Versions.ktor)
+val `ktor-serialization_relocated` = RelocatedDependency(`ktor-serialization`, "io.ktor.serialization")
+
+val `ktor-websocket-serialization` = ktor("websocket-serialization", Versions.ktor)
+val `ktor-websocket-serialization_relocated` = RelocatedDependency(`ktor-websocket-serialization`, "io.ktor.websocket.serialization")
 
 val `ktor-client-core` = ktor("client-core", Versions.ktor)
 val `ktor-client-core_relocated` = RelocatedDependency(`ktor-client-core`, "io.ktor.client")
