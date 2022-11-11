@@ -11,6 +11,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.publish.tasks.GenerateModuleMetadata
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.creating
@@ -18,6 +19,7 @@ import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import java.io.File
 
 /**
  * @see RelocationNotes
@@ -27,7 +29,7 @@ fun Project.configureMppShadow() {
 
     configure(kotlin.targets.filter {
         it.platformType == org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.jvm
-                && it.attributes.getAttribute(MIRAI_PLATFORM_ATTRIBUTE) == null
+                && (it.attributes.getAttribute(MIRAI_PLATFORM_INTERMEDIATE) != true)
     }) {
         configureRelocationForTarget(project)
     }
@@ -46,54 +48,13 @@ private fun KotlinTarget.configureRelocationForTarget(project: Project) = projec
         tasks.create("relocate${targetName.titlecase()}Dependencies", ShadowJar::class) {
             group = "mirai"
             description = "Relocate dependencies to internal package"
-            destinationDirectory.set(buildDir.resolve("libs"))
-//            archiveClassifier.set("")
-            archiveBaseName.set("${project.name}-${targetName.toLowerCase()}")
-
-            dependsOn(compilations["main"].compileKotlinTask) // compileKotlinJvm
-
-            // Run after all *Jar tasks from all projects, since Kotlin compiler may depend on the .jar file, concurrently modifying the jar will cause Kotlin compiler to fail.
-//            allprojects
-//                .asSequence()
-//                .flatMap { it.tasks }
-//                .filter { it.name.contains("compileKotlin") }
-//                .forEach { jar ->
-//                    mustRunAfter(jar)
-//                }
-
-            from(compilations["main"].output)
-
-//            // change name to
-//            doLast {
-//                outputs.files.singleFile.renameTo(
-//                    outputs.files.singleFile.parentFile.resolve(
-//                        "${project.name}-${targetName.toLowerCase()}-${project.version}.jar"
-//                    )
-//                )
-//            }
-            // Filter only those should be relocated
-
+            destinationDirectory.set(buildDir.resolve("libs")) // build/libs
+            archiveBaseName.set("${project.name}-${targetName.toLowerCase()}") // e.g. "mirai-core-api-jvm"
+            dependsOn(compilations["main"].compileKotlinTask) // e.g. compileKotlinJvm
+            from(compilations["main"].output) // Add compilation result of mirai sourcecode, not including dependencies
             afterEvaluate {
-                setRelocations()
-
-                var fileFiltered = relocationFilters.isEmpty()
-                from(project.configurations.getByName("${targetName}RuntimeClasspath")
-                    .files
-                    .filter { file ->
-                        val matchingFilter = relocationFilters.find { filter ->
-                            // file.absolutePath example: /Users/xxx/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.7.0-RC/7f9f07fc65e534c15a820f61d846b9ffdba8f162/kotlin-stdlib-jdk8-1.7.0-RC.jar
-                            filter.matchesFile(file)
-                        }
-
-                        if (matchingFilter != null) {
-                            fileFiltered = true
-                            println("Including file: ${file.absolutePath}")
-                        }
-
-                        matchingFilter?.includeInRuntime == true
-                    }
-                )
-                check(fileFiltered) { "[Shadow Relocation] Expected at least one file filtered for target $targetName. Filters: $relocationFilters" }
+                // Relocate dependencies and include it in result jar
+                setRelocations("${targetName}RuntimeClasspath")
             }
         }
 
@@ -202,9 +163,16 @@ private fun Project.configureRegularShadowJar(kotlin: KotlinMultiplatformExtensi
                 from(it.output)
             }
 
-            setRelocations()
+            // Include relocated dependencies
+            afterEvaluate {
+                setRelocations("jvmRuntimeClasspath")
 
-            from(project.configurations.findByName("jvmRuntimeClasspath"))
+                // Include dependencies except relocated ones
+                from(
+                    project.configurations.findByName("jvmRuntimeClasspath")
+                        ?.filesExcludeOriginalDependenciesForRelocation(project)
+                )
+            }
 
             this.exclude { file ->
                 file.name.endsWith(".sf", ignoreCase = true)
@@ -225,21 +193,59 @@ private fun Project.configureRegularShadowJar(kotlin: KotlinMultiplatformExtensi
 
 private const val relocationRootPackage = "net.mamoe.mirai.internal.deps"
 
-private fun ShadowJar.setRelocations() {
-    project.relocationFilters.forEach { relocation ->
-        if (relocation.packages.size == 1) {
-            val srcPkg = relocation.packages.first()
-            val dst = if (relocation.groupId.endsWith(srcPkg)) {
-                relocation.groupId
-            } else {
-                "${relocation.groupId}.$srcPkg"
+// For example, exclude io.ktor.*
+private fun Configuration.filesExcludeOriginalDependenciesForRelocation(project: Project): List<File> {
+    val relocationFilters = project.relocationFilters
+    return this.files.filter { file ->
+        val matchingFilter = relocationFilters.find { filter ->
+            // file.absolutePath example: /Users/xxx/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.7.0-RC/7f9f07fc65e534c15a820f61d846b9ffdba8f162/kotlin-stdlib-jdk8-1.7.0-RC.jar
+            filter.matchesFile(file)
+        }
+        matchingFilter == null
+    }
+
+//    var configuration = this.copyRecursive() // Original one cannot be changed after resolution
+//    val relocationFilters = project.relocationFilters
+//    relocationFilters.forEach { relocation ->
+//        configuration = configuration.exclude(relocation.groupId, relocation.artifactId)
+//    }
+//    return configuration
+}
+
+private fun ShadowJar.setRelocations(runtimeClasspathConfiguration: String) {
+    val shadowJar = this
+    val relocationFilters = project.relocationFilters
+    relocationFilters.forEach { relocation ->
+        relocation.packages.forEach { aPackage ->
+            relocate(aPackage, "$relocationRootPackage.$aPackage")
+        }
+    }
+
+
+    var fileFiltered = relocationFilters.isEmpty()
+    val files = project.configurations.getByName(runtimeClasspathConfiguration).files
+    from(
+        files.filter { file ->
+            val matchingFilter = relocationFilters.find { filter ->
+                // file.absolutePath example: /Users/xxx/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.7.0-RC/7f9f07fc65e534c15a820f61d846b9ffdba8f162/kotlin-stdlib-jdk8-1.7.0-RC.jar
+                filter.matchesFile(file)
             }
 
-            relocate(srcPkg, "$relocationRootPackage.$dst")
-        } else {
-            relocation.packages.forEach { aPackage ->
-                relocate(aPackage, "$relocationRootPackage.${relocation.groupId}.$aPackage")
+            if (matchingFilter != null) {
+                fileFiltered = true
+            }
+
+            if (matchingFilter?.includeInRuntime == true) {
+                println("[Shadow Relocation] Including file in runtime (${project.path}:${shadowJar.name}/$runtimeClasspathConfiguration): ${file.name}")
+                true
+            } else {
+                false
             }
         }
+    )
+    check(fileFiltered) {
+        "[Shadow Relocation] Expected at least one file filtered for configuration '$runtimeClasspathConfiguration' for project '${project.path}'. \n" +
+                "Filters: $relocationFilters\n" +
+                "Files: ${files.joinToString("\n")}"
     }
 }

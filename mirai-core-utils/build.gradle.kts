@@ -36,7 +36,7 @@ kotlin {
                 api(`kotlinx-coroutines-core`)
 
                 implementation(`kotlinx-serialization-protobuf`)
-                relocateRuntime(`ktor-io`)
+                relocateRuntime(`ktor-io_relocated`)
             }
         }
 
@@ -94,7 +94,6 @@ if (tasks.findByName("androidMainClasses") != null) {
 }
 
 configureMppPublishing()
-relocateKtorForCore(true)
 
 //mavenCentralPublish {
 //    artifactId = "mirai-core-utils"

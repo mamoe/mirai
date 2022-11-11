@@ -14,6 +14,7 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getting
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.kpm.external.project
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.TEST_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
@@ -27,6 +28,13 @@ import java.io.File
 
 val MIRAI_PLATFORM_ATTRIBUTE = Attribute.of(
     "net.mamoe.mirai.platform", String::class.java
+)
+
+/**
+ * Flags a target as an HMPP intermediate target
+ */
+val MIRAI_PLATFORM_INTERMEDIATE = Attribute.of(
+    "net.mamoe.mirai.platform.intermediate", Boolean::class.javaObjectType
 )
 
 val IDEA_ACTIVE = System.getProperty("idea.active") == "true" && System.getProperty("publication.test") != "true"
@@ -150,6 +158,7 @@ fun Project.configureJvmTargetsHierarchical() {
                 }
                 attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // magic
                 attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "jvmBase") // avoid resolution
+                attributes.attribute(MIRAI_PLATFORM_INTERMEDIATE, true)
             }
         }
 
