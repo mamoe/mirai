@@ -33,6 +33,7 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.loadService
 import net.mamoe.mirai.utils.toLongUnsigned
 
@@ -307,7 +308,17 @@ internal open class MessageSourceSequenceIdAwaiter {
     }
 
     companion object {
-        val instance =
+        @Suppress("ObjectPropertyName")
+        private val _instance = atomic(
             loadService(MessageSourceSequenceIdAwaiter::class) { MessageSourceSequenceIdAwaiter() }
+        )
+
+        val instance: MessageSourceSequenceIdAwaiter get() = _instance.value
+
+        // Used for reset test env
+        @TestOnly
+        internal fun setInstance(instance: MessageSourceSequenceIdAwaiter) {
+            _instance.value = instance
+        }
     }
 }
