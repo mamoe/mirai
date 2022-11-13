@@ -189,11 +189,21 @@ projects.mirai-logging.enabled=false
 - `jvm;android;!others` 指定启用 `jvm` 和 `android` 目标，禁用其他所有目标
 - `jvm;macosX64;!others` 指定启用 `jvm` 和 `macosX64` 目标，禁用其他所有目标
 
+
+### 直接启动 mirai-core 本地测试
+
+一般情况下, 只要 JVM 平台测试通过其他平台也能测试通过
+
+在 JVM 平台直接启动 mirai-core, 见 [mirai-core/jvmTest](/mirai-core/src/jvmTest/README.md)
+
+在 native 平台直接启动 mirai-core, 见 [mirai-core/nativeTest](/mirai-core/src/nativeTest/kotlin/local/README.md)
+
+
 ## 构建
 
 查看 [Building](Building.md)
 
-## 寻找带解决的问题
+## 寻找待解决的问题
 
 可以在 [issues](https://github.com/mamoe/mirai/issues) 查看 mirai
 遇到的所有问题，或在里程碑查看版本计划.
