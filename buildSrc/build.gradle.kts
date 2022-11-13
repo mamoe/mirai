@@ -23,6 +23,7 @@ kotlin {
     sourceSets.all {
         languageSettings.optIn("kotlin.Experimental")
         languageSettings.optIn("kotlin.RequiresOptIn")
+        languageSettings.optIn("kotlin.ExperimentalStdlibApi")
     }
 }
 

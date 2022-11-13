@@ -76,12 +76,13 @@ inline fun Project.configurePublishing(
     addProjectComponents: Boolean = true,
     setupGpg: Boolean = true,
     skipPublicationSetup: Boolean = false,
+    addShadowJar: Boolean = true
 ) {
     configureRemoteRepos()
 
     if (skipPublicationSetup) return
 
-    val shadowJar = if (!addProjectComponents) null else tasks.register<ShadowJar>("shadowJar") {
+    val shadowJar = if (!addProjectComponents || !addShadowJar) null else tasks.register<ShadowJar>("shadowJar") {
         archiveClassifier.set("all")
         manifest.inheritFrom(tasks.getByName<Jar>("jar").manifest)
         from(project.sourceSets["main"].output)

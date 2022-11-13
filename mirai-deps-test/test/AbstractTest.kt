@@ -23,7 +23,7 @@ abstract class AbstractTest {
         const val miraiLocalVersion = "2.99.0-deps-test" // do Search Everywhere before changing this
         const val REASON_LOCAL_ARTIFACT_NOT_AVAILABLE = "local artifacts not available"
 
-        private val mavenLocalDir: File by lazy {
+        val mavenLocalDir: File by lazy {
             org.gradle.api.internal.artifacts.mvnsettings.DefaultLocalMavenRepositoryLocator(
                 org.gradle.api.internal.artifacts.mvnsettings.DefaultMavenSettingsProvider(DefaultMavenFileLocations())
             ).localMavenRepository

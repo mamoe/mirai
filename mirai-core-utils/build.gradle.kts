@@ -36,7 +36,10 @@ kotlin {
                 api(`kotlinx-coroutines-core`)
 
                 implementation(`kotlinx-serialization-protobuf`)
-                relocateRuntime(`ktor-io_relocated`)
+                relocateImplementation(`ktor-io_relocated`) {
+                    exclude(ExcludeProperties.`kotlin-stdlib`)
+                    exclude(ExcludeProperties.`kotlinx-coroutines`)
+                }
             }
         }
 
