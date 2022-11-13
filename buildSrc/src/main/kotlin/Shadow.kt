@@ -14,10 +14,8 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.publish.tasks.GenerateModuleMetadata
 import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.creating
 import org.gradle.kotlin.dsl.get
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import java.io.File
 
@@ -32,10 +30,9 @@ fun Project.configureMppShadow() {
                 && (it.attributes.getAttribute(MIRAI_PLATFORM_INTERMEDIATE) != true)
     }) {
         configureRelocationForTarget(project)
-    }
 
-    // regular shadow file, with suffix `-all`
-    configureRegularShadowJar(kotlin)
+        registerRegularShadowTask(this, mapTaskNameForMultipleTargets = true)
+    }
 }
 
 /**
@@ -43,6 +40,7 @@ fun Project.configureMppShadow() {
  * @see RelocationNotes
  */
 private fun KotlinTarget.configureRelocationForTarget(project: Project) = project.run {
+    val configuration = project.configurations.findByName(SHADOW_RELOCATION_CONFIGURATION_NAME)
     val relocateDependencies =
         // e.g. relocateJvmDependencies
         tasks.create("relocate${targetName.titlecase()}Dependencies", ShadowJar::class) {
@@ -50,14 +48,27 @@ private fun KotlinTarget.configureRelocationForTarget(project: Project) = projec
             description = "Relocate dependencies to internal package"
             destinationDirectory.set(buildDir.resolve("libs")) // build/libs
             archiveBaseName.set("${project.name}-${targetName.toLowerCase()}") // e.g. "mirai-core-api-jvm"
+
             dependsOn(compilations["main"].compileKotlinTask) // e.g. compileKotlinJvm
+
             from(compilations["main"].output) // Add compilation result of mirai sourcecode, not including dependencies
+            configuration?.let {
+                from(it) // Include runtime dependencies
+            }
+
+            // Relocate packages
             afterEvaluate {
-                // Relocate dependencies and include it in result jar
-                setRelocations("${targetName}RuntimeClasspath")
+                val relocationFilters = project.relocationFilters
+                relocationFilters.forEach { relocation ->
+                    relocation.packages.forEach { aPackage ->
+                        relocate(aPackage, "$RELOCATION_ROOT_PACKAGE.$aPackage")
+                    }
+                }
             }
         }
 
+
+    // set publishing tasks depends on shadow
     val allTasks = rootProject.allprojects.asSequence().flatMap { it.tasks }
     allTasks
         .filter {
@@ -68,21 +79,23 @@ private fun KotlinTarget.configureRelocationForTarget(project: Project) = projec
             check(it > 0) { "[Shadow Relocation] Expected at least one publication matched for target $targetName." }
         }
 
+
     // Ensure all compilation has finished, otherwise Kotlin compiler will complain.
     allTasks
         .filter { it.name.endsWith("Jar") }
         .onEach { relocateDependencies.dependsOn(it) }
         .count().let {
-            check(it > 0) { "[Shadow Relocation] Expected at least one task matched for target $targetName." }
+            check(it > 0) { "[Shadow Relocation] Expected at least one Jar task matched for target $targetName." }
         }
 
     allTasks
         .filter { it.name.startsWith("compileKotlin") }
         .onEach { relocateDependencies.dependsOn(it) }
         .count().let {
-            check(it > 0) { "[Shadow Relocation] Expected at least one task matched for target $targetName." }
+            check(it > 0) { "[Shadow Relocation] Expected at least one compileKotlin task matched for target $targetName." }
         }
 
+    // We will modify metadata, so do generate metadata before relocation
     val metadataTask =
         tasks.getByName("generateMetadataFileFor${targetName.capitalize()}Publication") as GenerateModuleMetadata
     relocateDependencies.dependsOn(metadataTask)
@@ -148,105 +161,45 @@ private fun KotlinTarget.configureRelocationForTarget(project: Project) = projec
     }
 }
 
-private fun Project.configureRegularShadowJar(kotlin: KotlinMultiplatformExtension) {
-    if (project.configurations.findByName("jvmRuntimeClasspath") != null) {
-        val shadowJvmJar by tasks.creating(ShadowJar::class) sd@{
-            group = "mirai"
-            archiveClassifier.set("-all")
+private fun Project.registerRegularShadowTask(target: KotlinTarget, mapTaskNameForMultipleTargets: Boolean): ShadowJar {
+    return tasks.create(
+        if (mapTaskNameForMultipleTargets) "shadow${target.targetName}Jar" else "shadowJar",
+        ShadowJar::class
+    ) {
+        group = "mirai"
+        archiveClassifier.set("all")
 
-            val compilations =
-                kotlin.targets.filter { it.platformType == KotlinPlatformType.jvm }
-                    .map { it.compilations["main"] }
+        val compilation = target.compilations["main"]
+        dependsOn(compilation.compileKotlinTask)
+        from(compilation.output)
 
-            compilations.forEach {
-                dependsOn(it.compileKotlinTask)
-                from(it.output)
-            }
-
-            // Include relocated dependencies
-            afterEvaluate {
-                setRelocations("jvmRuntimeClasspath")
-
-                // Include dependencies except relocated ones
-                from(
-                    project.configurations.findByName("jvmRuntimeClasspath")
-                        ?.filesExcludeOriginalDependenciesForRelocation(project)
-                )
-            }
-
-            this.exclude { file ->
-                file.name.endsWith(".sf", ignoreCase = true)
-            }
-
-            /*
-        this.manifest {
-            this.attributes(
-                "Manifest-Version" to 1,
-                "Implementation-Vendor" to "Mamoe Technologies",
-                "Implementation-Title" to this.name.toString(),
-                "Implementation-Version" to this.version.toString()
+//        components.findByName("java")?.let { from(it) }
+        project.sourceSets.findByName("main")?.output?.let { from(it) } // for JVM projects
+        configurations =
+            listOfNotNull(
+                project.configurations.findByName("runtimeClasspath"),
+                project.configurations.findByName("${target.targetName}RuntimeClasspath"),
+                project.configurations.findByName("runtime")
             )
-        }*/
+
+        // Relocate packages
+        afterEvaluate {
+            val relocationFilters = project.relocationFilters
+            relocationFilters.forEach { relocation ->
+                relocation.packages.forEach { aPackage ->
+                    relocate(aPackage, "$RELOCATION_ROOT_PACKAGE.$aPackage")
+                }
+            }
+        }
+
+        exclude { file ->
+            file.name.endsWith(".sf", ignoreCase = true)
         }
     }
 }
 
-private const val relocationRootPackage = "net.mamoe.mirai.internal.deps"
-
-// For example, exclude io.ktor.*
-private fun Configuration.filesExcludeOriginalDependenciesForRelocation(project: Project): List<File> {
-    val relocationFilters = project.relocationFilters
-    return this.files.filter { file ->
-        val matchingFilter = relocationFilters.find { filter ->
-            // file.absolutePath example: /Users/xxx/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.7.0-RC/7f9f07fc65e534c15a820f61d846b9ffdba8f162/kotlin-stdlib-jdk8-1.7.0-RC.jar
-            filter.matchesFile(file)
-        }
-        matchingFilter == null
-    }
-
-//    var configuration = this.copyRecursive() // Original one cannot be changed after resolution
-//    val relocationFilters = project.relocationFilters
-//    relocationFilters.forEach { relocation ->
-//        configuration = configuration.exclude(relocation.groupId, relocation.artifactId)
-//    }
-//    return configuration
+fun Project.configureRelocatedShadowJarForJvmProject(kotlin: KotlinJvmProjectExtension): ShadowJar {
+    return registerRegularShadowTask(kotlin.target, mapTaskNameForMultipleTargets = false)
 }
 
-private fun ShadowJar.setRelocations(runtimeClasspathConfiguration: String) {
-    val shadowJar = this
-    val relocationFilters = project.relocationFilters
-    relocationFilters.forEach { relocation ->
-        relocation.packages.forEach { aPackage ->
-            relocate(aPackage, "$relocationRootPackage.$aPackage")
-        }
-    }
-
-
-    var fileFiltered = relocationFilters.isEmpty()
-    val files = project.configurations.getByName(runtimeClasspathConfiguration).files
-    from(
-        files.filter { file ->
-            // file.absolutePath example: /Users/xxx/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.7.0-RC/7f9f07fc65e534c15a820f61d846b9ffdba8f162/kotlin-stdlib-jdk8-1.7.0-RC.jar
-
-            fileFiltered = fileFiltered || relocationFilters.any { filter ->
-                filter.matchesFile(file)
-            }
-
-
-            // There can be multiple filters, if any one's includeInRuntime is true, then do include that.
-            val includeInRuntime = relocationFilters.any { filter ->
-                // file.absolutePath example: /Users/xxx/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.7.0-RC/7f9f07fc65e534c15a820f61d846b9ffdba8f162/kotlin-stdlib-jdk8-1.7.0-RC.jar
-                filter.matchesFile(file) && filter?.includeInRuntime == true
-            }
-            if (includeInRuntime) {
-                println("[Shadow Relocation] Including file in runtime (${project.path}:${shadowJar.name}/$runtimeClasspathConfiguration): ${file.name}")
-            }
-            includeInRuntime
-        }
-    )
-    check(fileFiltered) {
-        "[Shadow Relocation] Expected at least one file filtered for configuration '$runtimeClasspathConfiguration' for project '${project.path}'. \n" +
-                "Filters: $relocationFilters\n" +
-                "Files: ${files.joinToString("\n")}"
-    }
-}
+const val RELOCATION_ROOT_PACKAGE = "net.mamoe.mirai.internal.deps"

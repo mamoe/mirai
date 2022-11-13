@@ -43,12 +43,9 @@ kotlin {
                 implementation(project(":mirai-core-utils"))
                 implementation(`kotlinx-serialization-protobuf`)
 
-                relocateCompileOnly(`ktor-io_relocated`) // runtime from mirai-core-utils
-
-                relocateRuntime(`ktor-http_relocated`)
-                relocateRuntime(`ktor-serialization_relocated`)
-                relocateRuntime(`ktor-websocket-serialization_relocated`)
-                relocateRuntime(`ktor-client-core_relocated`)
+//                relocateImplementation(`ktor-http_relocated`)
+//                relocateImplementation(`ktor-serialization_relocated`)
+//                relocateImplementation(`ktor-websocket-serialization_relocated`)
             }
         }
 
@@ -109,8 +106,38 @@ kotlin {
             }
         }
 
-        configureRelocatedKtorClientImplementationDependencies()
 
+        // Ktor
+
+        findByName("commonMain")?.apply {
+            dependencies {
+                relocateCompileOnly(`ktor-io_relocated`) // runtime from mirai-core-utils
+                relocateImplementation(`ktor-client-core_relocated`)
+            }
+        }
+        findByName("jvmBaseMain")?.apply {
+            dependencies {
+                relocateImplementation(`ktor-client-okhttp_relocated`)
+            }
+        }
+        configure(WIN_TARGETS.map { getByName(it + "Main") }) {
+            dependencies {
+                implementation(`ktor-client-curl`)
+            }
+        }
+        configure(LINUX_TARGETS.map { getByName(it + "Main") }) {
+            dependencies {
+                implementation(`ktor-client-cio`)
+            }
+        }
+        findByName("darwinMain")?.apply {
+            dependencies {
+                implementation(`ktor-client-darwin`)
+            }
+        }
+
+
+        // Linkage
         NATIVE_TARGETS.forEach { targetName ->
             val defFile = projectDir.resolve("src/nativeMain/cinterop/OpenSSL.def")
             val target = targets.getByName(targetName) as KotlinNativeTarget
