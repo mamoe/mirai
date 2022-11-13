@@ -14,8 +14,8 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.kotlin.dsl.accessors.runtime.addDependencyTo
-import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.extra
+import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 import java.io.File
 
@@ -161,17 +161,25 @@ fun KotlinDependencyHandler.relocateImplementation(
     action: ExternalModuleDependency.() -> Unit = {}
 ): ExternalModuleDependency {
     val dependency = implementation(relocatedDependency.notation) {
-        relocatedDependency.exclusionAction(this)
-        exclude(ExcludeProperties.`everything from kotlin`)
-        exclude(ExcludeProperties.`everything from kotlinx`)
-        action()
+
     }
     project.relocationFilters.add(
         RelocationFilter(
             dependency.group!!, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = true,
         )
     )
-    project.addRelocationRuntime(dependency)
+    project.configurations.maybeCreate(SHADOW_RELOCATION_CONFIGURATION_NAME)
+    addDependencyTo(
+        project.dependencies,
+        SHADOW_RELOCATION_CONFIGURATION_NAME,
+        relocatedDependency.notation,
+        Action<ExternalModuleDependency> {
+            relocatedDependency.exclusionAction(this)
+            exclude(ExcludeProperties.`everything from kotlin`)
+            exclude(ExcludeProperties.`everything from kotlinx`)
+            action()
+        }
+    )
     return dependency
 }
 
@@ -192,21 +200,23 @@ fun DependencyHandler.relocateImplementation(
             dependency.group!!, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = true,
         )
     )
-    project.addRelocationRuntime(dependency)
+    project.configurations.maybeCreate(SHADOW_RELOCATION_CONFIGURATION_NAME)
+    addDependencyTo(
+        project.dependencies,
+        SHADOW_RELOCATION_CONFIGURATION_NAME,
+        relocatedDependency.notation,
+        Action<ExternalModuleDependency> {
+            relocatedDependency.exclusionAction(this)
+            exclude(ExcludeProperties.`everything from kotlin`)
+            exclude(ExcludeProperties.`everything from kotlinx`)
+            action(this)
+        }
+    )
     return dependency
 }
 
 
 const val SHADOW_RELOCATION_CONFIGURATION_NAME = "shadowRelocation"
-
-private fun Project.addRelocationRuntime(
-    dependency: Dependency,
-) {
-    val relocate = configurations.maybeCreate(SHADOW_RELOCATION_CONFIGURATION_NAME)
-    dependencies {
-        relocate(dependency)
-    }
-}
 
 
 data class RelocationFilter(
