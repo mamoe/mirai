@@ -43,7 +43,7 @@ if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING")?.toBoolean() != true) {
     }
 
     tasks.getByName("publishMavenJavaPublicationToMavenLocal").dependsOn(shadow)
-    tasks.getByName("publishMavenJavaPublicationToMavenCentralRepository").dependsOn(shadow)
+    tasks.findByName("publishMavenJavaPublicationToMavenCentralRepository")?.dependsOn(shadow)
 }
 
 //
