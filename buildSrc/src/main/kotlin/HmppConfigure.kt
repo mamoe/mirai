@@ -104,6 +104,7 @@ fun isTargetEnabled(name: String): Boolean {
         "!native" in ENABLED_TARGETS && isNative -> false // native targets explicitly disabled
 
         "!other" in ENABLED_TARGETS -> false // others disabled
+        "!others" in ENABLED_TARGETS -> false // others disabled
         else -> true
     }
 }
