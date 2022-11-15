@@ -227,6 +227,13 @@ internal class SsoProcessorImpl(
                         append(ssoContext.protocol)
                         append(" 强制要求滑块验证, 请更换协议后重试.")
                     }
+                    append(", extra={ login-solver=")
+                    bot.configuration.loginSolver.let { ls ->
+                        append(ls)
+                        append(" <")
+                        append(ls?.let { it::class })
+                        append(">")
+                    }
                     append(" 另请参阅: https://github.com/project-mirai/mirai-login-solver-selenium")
                 }
             )
