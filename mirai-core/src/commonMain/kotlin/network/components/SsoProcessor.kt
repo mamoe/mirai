@@ -289,7 +289,10 @@ internal class SsoProcessorImpl(
                             // retry once
                             if (!allowSlider) collectThrow(createUnsupportedSliderCaptchaException(allowSlider))
                             allowSlider = false
-                            response = WtLogin9(client, allowSlider).sendAndExpect()
+                            // TODO Reconnect without slider request
+                            //      Need to create new connection NOT send it in current connection
+                            // response = WtLogin9(client, allowSlider).sendAndExpect()
+                            collectThrow(createUnsupportedSliderCaptchaException(false))
                         }
                     }
 
