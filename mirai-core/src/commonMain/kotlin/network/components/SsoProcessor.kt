@@ -277,15 +277,7 @@ internal class SsoProcessorImpl(
                             // use solver
                             val ticket = try {
                                 loginSolverNotNull().onSolveSliderCaptcha(bot, response.url)?.takeIf { it.isNotEmpty() }
-                            } catch (e: LoginFailedException) {
-                                collectThrow(e)
                             } catch (error: Throwable) {
-                                if (allowSlider) {
-                                    collectException(error)
-                                    allowSlider = false
-                                    response = WtLogin9(client, allowSlider).sendAndExpect()
-                                    continue@mainloop
-                                }
                                 collectThrow(error)
                             }
                             response = if (ticket == null) {
