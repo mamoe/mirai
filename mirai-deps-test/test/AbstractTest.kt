@@ -22,6 +22,7 @@ abstract class AbstractTest {
     companion object {
         const val miraiLocalVersion = "2.99.0-deps-test" // do Search Everywhere before changing this
         const val REASON_LOCAL_ARTIFACT_NOT_AVAILABLE = "local artifacts not available"
+        private const val MIRAI_DEPS_TEST_MUST_RUN = "mirai.deps.test.must.run" // used by GitHub Actions scripts
 
         val mavenLocalDir: File by lazy {
             org.gradle.api.internal.artifacts.mvnsettings.DefaultLocalMavenRepositoryLocator(
@@ -44,8 +45,7 @@ abstract class AbstractTest {
                 )
                 true
             } else {
-                System.err.println(
-                    """
+                val message = """
                 [mirai-deps-test] ERROR: Test is not run, because there are no local artifacts available for dependencies testing. 
                 Please build and publish local artifacts with version `$miraiLocalVersion` before running this test(:mirai-deps-test:test).
                 This could have be automated but it will take a huge amount of time for your routine testing.
@@ -60,8 +60,15 @@ abstract class AbstractTest {
                 You can run `./gradlew publishMiraiLocalArtifacts` to publish local artifacts. 
                 Then you can run this test again. (By your original way or ./gradlew :mirai-deps-test:test)
                 """.trimIndent()
+                System.err.println(
+                    message
                 )
-                false
+
+                if (System.getProperty(MIRAI_DEPS_TEST_MUST_RUN, "false").toBoolean()) {
+                    throw AssertionError("System property `mirai.deps.test.must.run` is `true`, which requires the deps test to be run. \n\n$message")
+                } else {
+                    false
+                }
             }
         }
     }
