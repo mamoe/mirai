@@ -194,7 +194,7 @@ internal class StatSvc {
         fun offline(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
-        ) = impl("offline", client, 1L or 2 or 4, OnlineStatus.OFFLINE, regPushReason)
+        ) = impl("offline", client, 0, OnlineStatus.OFFLINE, regPushReason)
 
         private fun impl(
             name: String,
