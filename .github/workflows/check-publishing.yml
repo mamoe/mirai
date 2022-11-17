@@ -1,19 +1,27 @@
-name: Release Publish
+# 当修改构建脚本 (包括修改依赖版本) 时检查配置是否能正常发版
+# 发版检查非常慢, 因此不在 build.yml 做
+
+name: Check Publishing
+
 
 on:
   push:
-    tags:
-      - 'v*' # 正式版本
+    paths:
+      - '**/**.gradle.kts'
+      - '**/gradle.properties'
+      - 'buildSrc/**'
+  pull_request:
     paths-ignore:
-      - 'docs/**'
-      - 'mirai-console/docs/**'
-      - '**/*.md'
+      - '**/**.gradle.kts'
+      - '**/gradle.properties'
+      - 'buildSrc/**'
 
+
+# 从 build.yml 复制的
 
 jobs:
-
-  publish-others:
-    name: "Others (${{ matrix.os }})"
+  jvm-and-macos:
+    name: "JVM+macOS"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -21,9 +29,8 @@ jobs:
         os:
           - macos-12
     env:
-      enableLocalPublishingTest: 'false'
-      # All targets MUST be enabled. See #2270.
-      gradleArgs: --scan "-Dmirai.target=other" "-Pkotlin.compiler.execution.strategy=in-process"
+      enableLocalPublishingTest: 'true'
+      gradleArgs: --scan
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
@@ -38,26 +45,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Keys setup
-        shell: bash
-        run: |
-          mkdir build-gpg-sign
-          echo "$GPG_PRIVATE" > build-gpg-sign/keys.gpg
-          echo "$GPG_PUBLIC_" > build-gpg-sign/keys.gpg.pub
-          mkdir build-secret-keys
-          echo "$SONATYPE_USER" > build-secret-keys/sonatype.key
-          echo "$SONATYPE_KEY" >> build-secret-keys/sonatype.key
-        env:
-          GPG_PRIVATE: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PUBLIC_: ${{ secrets.GPG_PUBLIC_KEY }}
-          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
-          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
-
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
       - name: Cache konan
-        uses: pat-s/always-upload-cache@v3
+        uses: pat-s/always-upload-cache@v3.0.11
         with:
           path: ~/.konan
           key: ${{ runner.os }}-gradle-${{ hashFiles('*.gradle.kts') }}
@@ -82,37 +74,19 @@ jobs:
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
-      - name: Check keys
-        run: ./gradlew ensureMavenCentralAvailable ${{ env.gradleArgs }}
 
-      - name: "Assemble"
-        run: ./gradlew assemble ${{ env.gradleArgs }}
 
-      - name: Publish Local Artifacts
+      - name: Build and Publish Local Artifacts
         if: ${{ env.enableLocalPublishingTest == 'true' }}
         run: ./gradlew :mirai-deps-test:publishMiraiArtifactsToMavenLocal ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test"
 
-      - name: "Check"
-        run: ./gradlew check ${{ env.gradleArgs }}
+      - name: Check Publication
+        if: ${{ env.enableLocalPublishingTest == 'true' }}
+        run: ./gradlew :mirai-deps-test:check ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test" "-Dmirai.deps.test.must.run=true"
 
-      - if: ${{ env.isMac == 'true' }}
-        name: Ensure KDoc valid
-        run: ./gradlew dokkaHtmlMultiModule ${{ env.gradleArgs }}
 
-      - name: Publish
-        if: ${{ env.isMac == 'true' }}
-        run: ./gradlew publish ${{ env.gradleArgs }}
-
-      - name: Publish Gradle plugin
-        continue-on-error: true
-        run: ./gradlew
-          :mirai-console-gradle:publishPlugins ${{ env.gradleArgs }}
-          -Dgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
-          -Dgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }} -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }}
-
-  publish-core-native:
+  native-platforms:
     name: "Native (${{ matrix.os }})"
-    needs: [ publish-others ] # Allow MPP metadata to be uploaded first.
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -120,18 +94,21 @@ jobs:
         os:
           - windows-2022
           - ubuntu-20.04
-        #          - macos-12 # macOS artifacts published in 'publish-others'
         include:
           - os: windows-2022
             targetName: mingwX64
           - os: ubuntu-20.04
             targetName: linuxX64
-          - os: macos-12
+          - os: ubuntu-18.04
+            targetName: linuxX64
+          # - os: macos-12
+          #   targetName: macosX64
+          - os: macos-11
             targetName: macosX64
     env:
       # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
       # > Declaration annotated with '@OptionalExpectation' can only be used in common module sources
-      enableLocalPublishingTest: 'false'
+      enableLocalPublishingTest: 'true'
       gradleArgs: --scan  "-Dmirai.target=jvm;${{ matrix.targetName }};!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
@@ -148,26 +125,11 @@ jobs:
           distribution: 'adopt-openj9'
           java-version: '17'
 
-      - name: Keys setup
-        shell: bash
-        run: |
-          mkdir build-gpg-sign
-          echo "$GPG_PRIVATE" > build-gpg-sign/keys.gpg
-          echo "$GPG_PUBLIC_" > build-gpg-sign/keys.gpg.pub
-          mkdir build-secret-keys
-          echo "$SONATYPE_USER" > build-secret-keys/sonatype.key
-          echo "$SONATYPE_KEY" >> build-secret-keys/sonatype.key
-        env:
-          GPG_PRIVATE: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PUBLIC_: ${{ secrets.GPG_PUBLIC_KEY }}
-          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
-          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
-
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
       - name: Cache konan
-        uses: pat-s/always-upload-cache@v3
+        uses: pat-s/always-upload-cache@v3.0.11
         with:
           path: ~/.konan
           key: ${{ runner.os }}-gradle-${{ hashFiles('*.gradle.kts') }}
@@ -180,7 +142,7 @@ jobs:
 
       - name: Cache vcpkg
         if: ${{ env.isWindows == 'true' }}
-        uses: pat-s/always-upload-cache@v3
+        uses: pat-s/always-upload-cache@v3.0.11
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
           key: ${{ runner.os }}-vcpkg-binary-cache-${{ github.job }}
@@ -228,50 +190,22 @@ jobs:
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
-      - name: Check keys
-        run: ./gradlew ensureMavenCentralAvailable ${{ env.gradleArgs }}
+      - run: >
+          ./gradlew updateSnapshotVersion ${{ env.gradleArgs }}
+        if: github.event.pusher
+        env:
+          MIRAI_IS_SNAPSHOTS_PUBLISHING: true
+          SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
+          SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
+          SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          CURRENT_BRANCH_NAME: dev # always use -dev for now
 
-      - name: Assemble
-        run: ./gradlew assemble ${{ env.gradleArgs }}
 
-      - name: Publish Local Artifacts
+
+      - name: Build and Publish Local Artifacts
         if: ${{ env.enableLocalPublishingTest == 'true' }}
         run: ./gradlew :mirai-deps-test:publishMiraiArtifactsToMavenLocal ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test"
 
-      - name: Check
-        run: ./gradlew check ${{ env.gradleArgs }}
-
-      # Publish native snapshots. Other artifacts are published in publish-mirai-all
-
-      - name: Publish MingwX64
-        if: ${{ env.isWindows == 'true' }}
-        run: ./gradlew publishMingwX64PublicationToMavenCentralRepository ${{ env.gradleArgs }}
-
-      - name: Publish LinuxX64
-        if: ${{ env.isUbuntu == 'true' }}
-        run: ./gradlew publishLinuxX64PublicationToMavenCentralRepository ${{ env.gradleArgs }}
-
-      - name: Publish macOSX64
-        if: ${{ env.isMac == 'true' }}
-        run: ./gradlew publishMacosX64PublicationToMavenCentralRepository ${{ env.gradleArgs }}
-
-  close-repository:
-    runs-on: macos-12
-    needs:
-      - publish-others
-      - publish-core-native
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
-
-      - uses: actions/setup-java@v2
-        with:
-          distribution: 'adopt-openj9'
-          java-version: '17'
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-
-      - name: Close repository
-        run: ./gradlew :ci-release-helper:closeRepository --scan
+      - name: Check Publication
+        if: ${{ env.enableLocalPublishingTest == 'true' }}
+        run: ./gradlew :mirai-deps-test:check ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test" "-Dmirai.deps.test.must.run=true"
