@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login
 
+import net.mamoe.mirai.utils.mapToByteArray
 import net.mamoe.mirai.utils.toInt
 import net.mamoe.mirai.utils.toLongUnsigned
 import java.net.Inet4Address
@@ -19,7 +20,12 @@ internal actual fun String.toIpV4Long(): Long {
         0
     } else {
         try {
-            Inet4Address.getByName(this).address.toInt().toLongUnsigned()
+            val split = split('.')
+            return if (split.size == 4 && split.any { it.toUByteOrNull() != null }) {
+                split.reversed().mapToByteArray {
+                    it.toUByte().toByte()
+                }.toInt().toLongUnsigned()
+            } else Inet4Address.getByName(this).address.toInt().toLongUnsigned()
         } catch (e: UnknownHostException) {
             -2
         }

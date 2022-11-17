@@ -10,8 +10,17 @@
 package net.mamoe.mirai.internal.network.protocol.packet.login
 
 import kotlinx.cinterop.cstr
+import net.mamoe.mirai.utils.mapToByteArray
+import net.mamoe.mirai.utils.toInt
+import net.mamoe.mirai.utils.toLongUnsigned
 import sockets.get_ulong_ip_by_name
 
 internal actual fun String.toIpV4Long(): Long {
-    return get_ulong_ip_by_name(this.cstr).toLong();
+    if (isEmpty()) return 0
+    val split = split('.')
+    return if (split.size == 4 && split.any { it.toUByteOrNull() != null }) {
+        split.reversed().mapToByteArray {
+            it.toUByte().toByte()
+        }.toInt().toLongUnsigned()
+    } else get_ulong_ip_by_name(this.cstr).toLong();
 }

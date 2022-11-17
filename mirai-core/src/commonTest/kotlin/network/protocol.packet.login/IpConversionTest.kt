@@ -20,6 +20,7 @@ class IpConversionTest {
         assertEquals(-2, "some^ting%bad".toIpV4Long())
         assertEquals(-2, "another_bad".toIpV4Long())
         assertEquals(-2, " ".toIpV4Long())
+        assertEquals(-2, "w.a.c.d".toIpV4Long())
         assertEquals(-2, "the..anotherbad......".toIpV4Long())
         assertEquals(-2, "错误的IP地址".toIpV4Long())
     }
@@ -39,9 +40,9 @@ class IpConversionTest {
 
     @Test
     fun `test plain ipAddress`() = runBlockingUnit {
-        assertTrue("192.168.1.1".toIpV4Long() == 16885952L)
-        assertTrue("255.255.255.255".toIpV4Long() == 4294967295L)
-        assertTrue("0.0.0.0".toIpV4Long() == 0L)
-        assertTrue("111.111.111.111".toIpV4Long() == 1869573999L)
+        assertEquals(16885952L, "192.168.1.1".toIpV4Long())
+        assertEquals(4294967295L, "255.255.255.255".toIpV4Long())
+        assertEquals(0L, "0.0.0.0".toIpV4Long())
+        assertEquals(1869573999L, "111.111.111.111".toIpV4Long())
     }
 }
