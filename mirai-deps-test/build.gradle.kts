@@ -32,6 +32,7 @@ dependencies {
 
 tasks.getByName("test", Test::class) {
     environment("mirai.root.project.dir", rootProject.projectDir.absolutePath)
+    systemProperty("mirai.deps.test.must.run", System.getProperty("mirai.deps.test.must.run"))
 }
 
 val publishMiraiArtifactsToMavenLocal by tasks.registering {
