@@ -7,6 +7,23 @@ headers = winsock.h
 #include <mswsock.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windns.h>
+
+static unsigned long get_ulong_ip_by_name(char* host) {
+	DNS_RECORDA* dns_record;
+	if (strlen(host) == 0) {
+		return 0;
+	}
+	int dns_result = DnsQuery_A(host, DNS_TYPE_A, DNS_QUERY_STANDARD, NULL, &dns_record, NULL);
+	if (dns_result == DNS_RCODE_NOERROR && dns_record != NULL) {
+		unsigned long result = dns_record->Data.A.IpAddress;
+		DnsRecordListFree(dns_record, DnsFreeRecordList);
+		return result;
+	}
+	else {
+		return -2;
+	}
+}
 
 static SOCKET socket_create_connect(char *host, unsigned short port) {
     SOCKADDR_STORAGE local_addr = {0};
