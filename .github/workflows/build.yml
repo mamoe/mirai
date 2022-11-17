@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: # You must use macos-12
+        os: # You must use macos-12. Only macos-12 get 14GB memory while others have only 7GB.
           #          - windows-2022
           - macos-12
     env:
@@ -253,7 +253,7 @@ jobs:
         os:
           - windows-2022
           - ubuntu-20.04
-          - ubuntu-18.04
+          #          - ubuntu-18.04
           # - macos-12
           - macos-11
         include:
