@@ -46,7 +46,7 @@ internal object TEA {
         length: Int = receiver.remaining.toInt() - offset,
         consumer: (ByteArray) -> Unit,
     ) {
-        ByteArrayPool.useInstance {
+        ByteArrayPool.useInstance(length) {
             receiver.readFully(it, offset, length)
             consumer(encrypt(it, key, length = length))
         }
@@ -68,7 +68,7 @@ internal object TEA {
         length: Int = (receiver.remaining - offset).toInt(),
         consumer: (ByteArray) -> R,
     ): R {
-        return ByteArrayPool.useInstance {
+        return ByteArrayPool.useInstance(length) {
             receiver.readFully(it, offset, length)
             consumer(decrypt(it, key, length))
         }.also { receiver.close() }
