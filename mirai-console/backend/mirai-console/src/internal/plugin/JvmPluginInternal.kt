@@ -128,10 +128,10 @@ internal abstract class JvmPluginInternal(
 
         val except = try {
             javaClass.getDeclaredAnnotation(ConsoleJvmPluginFuncCallbackStatusExcept.OnEnable::class.java)
-        }catch(e: Throwable){
+        } catch (e: Throwable) {
             null
         }
-        
+
         kotlin.runCatching {
             onEnable()
         }.fold(
