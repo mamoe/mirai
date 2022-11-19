@@ -165,7 +165,7 @@ jobs:
         os:
           - macos-12
     env:
-      enableLocalPublishingTest: 'true'
+      enableLocalPublishingTest: 'false'
       gradleArgs: --scan
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
@@ -270,7 +270,7 @@ jobs:
     env:
       # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
       # > Declaration annotated with '@OptionalExpectation' can only be used in common module sources
-      enableLocalPublishingTest: 'true'
+      enableLocalPublishingTest: 'false'
       gradleArgs: --scan  "-Dmirai.target=jvm;${{ matrix.targetName }};!other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
