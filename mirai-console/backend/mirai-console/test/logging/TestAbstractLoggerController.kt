@@ -13,7 +13,7 @@ import net.mamoe.mirai.utils.SimpleLogger
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-internal class TestALC {
+internal class TestAbstractLoggerController {
     private class TestController(
         override val isLoggerControlStateSupported: Boolean,
     ) : AbstractLoggerController() {

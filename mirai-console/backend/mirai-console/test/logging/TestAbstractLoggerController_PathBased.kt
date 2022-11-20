@@ -12,7 +12,7 @@ package net.mamoe.mirai.console.logging
 import kotlin.test.Test
 
 @Suppress("ClassName")
-internal class TestALC_PathBased {
+internal class TestAbstractLoggerController_PathBased {
     @Test
     fun `test AbstractLoggerController$PathBased`() {
         val config = mapOf(
