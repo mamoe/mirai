@@ -86,19 +86,59 @@ fun generateBuildConfig() {
     }
 }
 
-tasks.register("publishMiraiLocalArtifacts", Exec::class) {
+// keep this property for Search Everywhere
+val publishMiraiLocalArtifacts = tasks.register("publishMiraiLocalArtifacts", Exec::class) {
     group = "mirai"
     description = "Starts a child process to publish v2.99.0-deps-test artifacts to MavenLocal"
 
     workingDir(rootProject.projectDir)
+
+    // The following code configures the new Gradle instance to inheriting configuration.
+    // This is important especially for "mirai.target" settings
+    // — On CI machines we didn't configure them to cross-compilation.
+    // Note that IntelliJ listener is also inherited, so you will see normal execution feedbacks in your IDE 'Run' view.
+    environment(System.getenv())
     environment("mirai.build.project.version", "2.99.0-deps-test")
+    environment("mirai.target", getMiraiTargetFromGradle())
+
+    val projectProperties =
+//        gradle.startParameter.projectProperties
+        mapOf<String, String>()
+            .toMutableMap().apply {
+                put("kotlin.compiler.execution.strategy", "in-process")
+            }
+            .map { "-P${it.key}=${it.value}" }
+            .toTypedArray()
+
+    val allowedProperties = arrayOf("org.gradle.parallel")
+    val systemProperties =
+//        gradle.startParameter.systemPropertiesArgs
+        gradle.startParameter.systemPropertiesArgs
+            .filter { it.key in allowedProperties }
+            .map { "-D${it.key}=${it.value}" }
+            .toTypedArray()
+
     commandLine(
         "./gradlew",
         publishMiraiArtifactsToMavenLocal.name,
         "--no-daemon",
         "--stacktrace",
-        "-Pkotlin.compiler.execution.strategy=in-process"
-    )
+        "--scan",
+        *projectProperties,
+        *systemProperties,
+    ) // ignore other Gradle args
+
+    doFirst {
+
+        // TODO: 2022/11/22 fix tips
+        logger.info(
+            "[publishMiraiLocalArtifacts] Starting a Gradle daemon to run requested publishing tasks. " +
+                    "Your system environment, JVM properties, and Gradle properties are inherited, " +
+                    "but note that any other Gradle arguments are IGNORED!"
+        )
+        logger.info("[publishMiraiLocalArtifacts] Oh, and don't worry, the daemon will be stopped after the task finishes so it won't waste your memory!")
+    }
+
     standardOutput = System.out
     errorOutput = System.err
 }
