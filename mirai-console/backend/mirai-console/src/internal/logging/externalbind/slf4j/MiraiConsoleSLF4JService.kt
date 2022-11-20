@@ -70,7 +70,7 @@ internal object MiraiConsoleSLF4JAdapter {
             }
             initialized = true
 
-            // region relay events
+            // region replay events
 
             substituteServiceFactory.postInitialization()
             substituteServiceFactory.loggers.forEach { slog ->
