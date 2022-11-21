@@ -13,6 +13,7 @@ import com.google.gson.GsonBuilder
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.publish.tasks.GenerateModuleMetadata
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
@@ -29,20 +30,68 @@ fun Project.configureMppShadow() {
         it.platformType == org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.jvm
                 && (it.attributes.getAttribute(MIRAI_PLATFORM_INTERMEDIATE) != true)
     }) {
-        configureRelocationForTarget(project)
+        configureRelocationForMppTarget(project)
 
         registerRegularShadowTask(this, mapTaskNameForMultipleTargets = true)
     }
 }
 
 /**
+ * 配置 `publish` 和 `shadow` 相关依赖. 对于在本次构建的请求的任务及其直接或间接依赖, 以以下顺序执行:
+ *
+ * 1. 执行全部 `jar` 任务
+ * 2. 执行全部 `relocate` 任务
+ * 3. 执行全部 `publish` 任务
+ *
+ * 这是必要的因为 relocate 任务会覆盖 jar 任务的输出, 而在多模块并行编译时, Kotlin 编译器会依赖 jar 任务的输出. 如果在编译同时修改 JAR 文件, 就会导致 `ZipException`.
+ *
+ * 这也会让 publish 集中执行, Maven Central 不容易出问题.
+ */
+fun Project.configureShadowDependenciesForPublishing() {
+    check(this.rootProject === this) {
+        "configureShadowDependenciesForPublishing can only be used on root project."
+    }
+
+    gradle.projectsEvaluated {
+        // Tasks requested to run in this build
+        val allTasks = rootProject.allprojects.asSequence().flatMap { it.tasks }
+
+        val publishTasks = allTasks.filter { it.name.contains("publish", ignoreCase = true) }
+        val relocateTasks = allTasks.filter { it.name.contains("relocate", ignoreCase = true) }
+        val jarTasks = allTasks.filter { it.name.contains("jar", ignoreCase = true) }
+        val compileKotlinTasks = allTasks.filter { it.name.contains("compileKotlin", ignoreCase = true) }
+        val compileTestKotlinTasks = allTasks.filter { it.name.contains("compileTestKotlin", ignoreCase = true) }
+
+        relocateTasks.dependsOn(compileKotlinTasks.toList())
+        relocateTasks.dependsOn(compileTestKotlinTasks.toList())
+        relocateTasks.dependsOn(jarTasks.toList())
+        publishTasks.dependsOn(relocateTasks.toList())
+    }
+}
+
+val TaskExecutionGraph.hierarchicalTasks: Sequence<Task>
+    get() = sequence {
+        suspend fun SequenceScope<Task>.addTask(task: Task) {
+            yield(task)
+            for (dependency in getDependencies(task)) {
+                addTask(dependency)
+            }
+        }
+
+        for (task in allTasks) {
+            addTask(task)
+        }
+    }
+
+/**
  * Relocate some dependencies for `.jar`
  * @see RelocationNotes
  */
-private fun KotlinTarget.configureRelocationForTarget(project: Project) = project.run {
+private fun KotlinTarget.configureRelocationForMppTarget(project: Project) = project.run {
     val configuration = project.configurations.findByName(SHADOW_RELOCATION_CONFIGURATION_NAME)
 
     // e.g. relocateJvmDependencies
+    // do not change task name. see `configureShadowDependenciesForPublishing`
     val relocateDependencies = tasks.create("relocate${targetName.titlecase()}Dependencies", ShadowJar::class) {
         group = "mirai"
         description = "Relocate dependencies to internal package"
@@ -67,15 +116,13 @@ private fun KotlinTarget.configureRelocationForTarget(project: Project) = projec
         }
     }
 
-    // Relocate before packing Jar. Projects that depends on this project actually (explicitly or implicitly) depends on the Jar.
-    tasks.getByName("${targetName}Jar").dependsOn(relocateDependencies)
-
     // We will modify Kotlin metadata, so do generate metadata before relocation
     val generateMetadataTask =
         tasks.getByName("generateMetadataFileFor${targetName.capitalize()}Publication") as GenerateModuleMetadata
 
     val patchMetadataTask = tasks.create("patchMetadataFileFor${targetName.capitalize()}RelocatedPublication") {
         dependsOn(generateMetadataTask)
+        dependsOn(relocateDependencies)
 
         // remove dependencies in Kotlin module metadata
         doLast {
@@ -157,23 +204,15 @@ private fun KotlinTarget.configureRelocationForTarget(project: Project) = projec
 }
 
 private fun Sequence<Task>.dependsOn(
-    relocateDependencies: ShadowJar,
-    kotlinTarget: KotlinTarget,
-): Int {
-    return onEach { relocateDependencies.dependsOn(it) }
-        .count().also {
-            check(it > 0) { "[Shadow Relocation] Expected at least one task task matched for target ${kotlinTarget.targetName}." }
-        }
+    task: Task,
+) {
+    return forEach { it.dependsOn(task) }
 }
 
-private fun Sequence<Task>.mustRunAfter(
-    relocateDependencies: ShadowJar,
-    kotlinTarget: KotlinTarget,
-): Int {
-    return onEach { relocateDependencies.mustRunAfter(it) }
-        .count().also {
-            check(it > 0) { "[Shadow Relocation] Expected at least one task task matched for target ${kotlinTarget.targetName}." }
-        }
+private fun Sequence<Task>.dependsOn(
+    tasks: Iterable<Task>,
+) {
+    return forEach { it.dependsOn(tasks) }
 }
 
 private fun Project.registerRegularShadowTask(target: KotlinTarget, mapTaskNameForMultipleTargets: Boolean): ShadowJar {

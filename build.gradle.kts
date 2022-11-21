@@ -87,6 +87,9 @@ allprojects {
         substituteDependenciesUsingExpectedVersion()
     }
 }
+afterEvaluate {
+    configureShadowDependenciesForPublishing()
+}
 
 subprojects {
     afterEvaluate {

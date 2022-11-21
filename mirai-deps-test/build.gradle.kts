@@ -97,6 +97,7 @@ tasks.register("publishMiraiLocalArtifacts", Exec::class) {
         publishMiraiArtifactsToMavenLocal.name,
         "--no-daemon",
         "--stacktrace",
+        "--scan",
         "-Pkotlin.compiler.execution.strategy=in-process"
     )
     standardOutput = System.out
