@@ -24,6 +24,7 @@ import net.mamoe.mirai.mock.contact.*
 import net.mamoe.mirai.mock.database.MessageDatabase
 import net.mamoe.mirai.mock.resserver.TmpResourceServer
 import net.mamoe.mirai.mock.userprofile.UserProfileService
+import net.mamoe.mirai.mock.utils.AvatarGenerator
 import net.mamoe.mirai.mock.utils.NameGenerator
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.cast
@@ -85,6 +86,9 @@ public interface MockBot : Bot, MockContactOrBot, MockUserOrBot {
     public val tmpResourceServer: TmpResourceServer
     public val msgDatabase: MessageDatabase
     public val userProfileService: UserProfileService
+
+    /** @since 2.14.0 */
+    public val avatarGenerator: AvatarGenerator
 
     /// Mock Contact API
 

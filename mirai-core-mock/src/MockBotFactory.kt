@@ -16,6 +16,7 @@ import net.mamoe.mirai.mock.internal.MockBotFactoryImpl
 import net.mamoe.mirai.mock.internal.MockMiraiImpl
 import net.mamoe.mirai.mock.resserver.TmpResourceServer
 import net.mamoe.mirai.mock.userprofile.UserProfileService
+import net.mamoe.mirai.mock.utils.AvatarGenerator
 import net.mamoe.mirai.mock.utils.NameGenerator
 import net.mamoe.mirai.utils.BotConfiguration
 
@@ -35,6 +36,8 @@ public interface MockBotFactory : BotFactory {
         public fun msgDatabase(db: MessageDatabase): BotBuilder
 
         public fun userProfileService(service: UserProfileService): BotBuilder
+
+        public fun avatarGenerator(avatarGenerator: AvatarGenerator): BotBuilder
 
         public fun create(): MockBot
 

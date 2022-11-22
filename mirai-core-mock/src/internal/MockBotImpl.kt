@@ -43,6 +43,7 @@ import net.mamoe.mirai.mock.internal.contactbase.ContactDatabase
 import net.mamoe.mirai.mock.internal.serverfs.TmpResourceServerImpl
 import net.mamoe.mirai.mock.resserver.TmpResourceServer
 import net.mamoe.mirai.mock.userprofile.UserProfileService
+import net.mamoe.mirai.mock.utils.AvatarGenerator
 import net.mamoe.mirai.mock.utils.NameGenerator
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import net.mamoe.mirai.utils.*
@@ -60,6 +61,7 @@ internal class MockBotImpl(
     override val tmpResourceServer: TmpResourceServer,
     override val msgDatabase: MessageDatabase,
     override val userProfileService: UserProfileService,
+    override val avatarGenerator: AvatarGenerator,
 ) : MockBot, Bot, ContactOrBot {
     @JvmField
     internal val contactDatabase = ContactDatabase(this)

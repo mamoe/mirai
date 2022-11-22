@@ -24,7 +24,6 @@ import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.contact.MockGroup
 import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.mock.utils.plusHttpSubpath
-import net.mamoe.mirai.mock.utils.randomImageContent
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.cast
@@ -110,7 +109,17 @@ internal class MockImage(
     companion object {
         // create a mockImage with random content
         internal suspend fun random(bot: MockBot): MockImage {
-            val text = Image.randomImageContent()
+            val text = bot.avatarGenerator.generateRandomAvatar()
+            return bot.uploadMockImage(text.toExternalResource().toAutoCloseable()).cast()
+        }
+
+        internal suspend fun randomForPerson(bot: MockBot, id: Long): MockImage {
+            val text = bot.avatarGenerator.generateAvatarForPerson(id)
+            return bot.uploadMockImage(text.toExternalResource().toAutoCloseable()).cast()
+        }
+
+        internal suspend fun randomForGroup(bot: MockBot, id: Long): MockImage {
+            val text = bot.avatarGenerator.generateAvatarForGroup(id)
             return bot.uploadMockImage(text.toExternalResource().toAutoCloseable()).cast()
         }
     }
