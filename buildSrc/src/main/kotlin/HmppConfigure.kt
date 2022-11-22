@@ -14,7 +14,6 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getting
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.kpm.external.project
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.TEST_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
@@ -332,18 +331,6 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
 //        }
 //    }
 
-    NATIVE_TARGETS.forEach { targetName ->
-        val target = targets.getByName(targetName) as KotlinNativeTarget
-        target.binaries {
-            sharedLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-                baseName = project.name.toLowerCase().replace("-", "")
-            }
-            staticLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-                baseName = project.name.toLowerCase().replace("-", "")
-            }
-        }
-    }
-
     // Register platform tasks, e.g. linkDebugSharedHost
     project.afterEvaluate {
         val targetName = HOST_KIND.targetName
@@ -376,6 +363,20 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
             }
         }
         project.disableCrossCompile() // improve speed
+    }
+}
+
+fun KotlinMultiplatformExtension.configureNativeTargetBinaries(project: Project) {
+    NATIVE_TARGETS.forEach { targetName ->
+        val target = targets.getByName(targetName) as KotlinNativeTarget
+        target.binaries {
+            sharedLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
+                baseName = project.name.toLowerCase().replace("-", "")
+            }
+            staticLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
+                baseName = project.name.toLowerCase().replace("-", "")
+            }
+        }
     }
 }
 
