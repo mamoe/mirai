@@ -30,6 +30,7 @@ kotlin {
 
     configureJvmTargetsHierarchical()
     configureNativeTargetsHierarchical(project)
+    configureNativeTargetBinaries(project) // register native binaries for mirai-core only
 
     sourceSets.apply {
 
