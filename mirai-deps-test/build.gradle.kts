@@ -99,17 +99,22 @@ val publishMiraiLocalArtifacts = tasks.register("publishMiraiLocalArtifacts", Ex
     // Note that IntelliJ listener is also inherited, so you will see normal execution feedbacks in your IDE 'Run' view.
     environment(System.getenv())
     environment("mirai.build.project.version", "2.99.0-deps-test")
+    environment("mirai.target", getMiraiTargetFromGradle())
 
     val projectProperties =
-        gradle.startParameter.projectProperties
+//        gradle.startParameter.projectProperties
+        mapOf<String, String>()
             .toMutableMap().apply {
                 put("kotlin.compiler.execution.strategy", "in-process")
             }
             .map { "-P${it.key}=${it.value}" }
             .toTypedArray()
 
+    val allowedProperties = arrayOf("org.gradle.parallel")
     val systemProperties =
+//        gradle.startParameter.systemPropertiesArgs
         gradle.startParameter.systemPropertiesArgs
+            .filter { it.key in allowedProperties }
             .map { "-D${it.key}=${it.value}" }
             .toTypedArray()
 
@@ -124,6 +129,8 @@ val publishMiraiLocalArtifacts = tasks.register("publishMiraiLocalArtifacts", Ex
     ) // ignore other Gradle args
 
     doFirst {
+
+        // TODO: 2022/11/22 fix tips
         logger.info(
             "[publishMiraiLocalArtifacts] Starting a Gradle daemon to run requested publishing tasks. " +
                     "Your system environment, JVM properties, and Gradle properties are inherited, " +

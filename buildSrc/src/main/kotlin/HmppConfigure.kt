@@ -85,13 +85,16 @@ enum class HostArch {
 /// eg. "a;b;!other" means to disable all targets but a or b
 val ENABLED_TARGETS by lazy {
 
-    val targets = System.getProperty(
-        "mirai.target"
-    ) ?: rootProject.getLocalProperty("projects.mirai-core.targets")
-    ?: "others" // enable all by default
+    val targets = getMiraiTargetFromGradle() // enable all by default
 
     targets.split(';').toSet()
 }
+
+fun getMiraiTargetFromGradle() =
+    System.getProperty("mirai.target")
+        ?: System.getenv("mirai.target")
+        ?: rootProject.getLocalProperty("projects.mirai-core.targets")
+        ?: "others"
 
 fun isTargetEnabled(name: String): Boolean {
     val isNative = name in POSSIBLE_NATIVE_TARGETS
