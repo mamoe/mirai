@@ -200,7 +200,12 @@ internal class JvmPluginDependencyDownloader(
         }
 
         fun findGradleDepCache(): File {
-            return File(userHome, ".gradle/caches/modules-2/files-2.1")
+            var gradleHome = File(userHome, ".gradle")
+            val gradleEnvHome = System.getenv("GRADLE_USER_HOME").orEmpty()
+            if (gradleEnvHome.isNotBlank()) {
+                gradleHome = File(gradleEnvHome)
+            }
+            return File(gradleHome, "caches/modules-2/files-2.1")
         }
 
         val mavenLocRepo = findMavenLocal()
