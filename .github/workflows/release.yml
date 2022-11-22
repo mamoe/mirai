@@ -124,10 +124,13 @@ jobs:
         include:
           - os: windows-2022
             targetName: mingwX64
+            parallelCompilation: false
           - os: ubuntu-20.04
             targetName: linuxX64
+            parallelCompilation: false
           - os: macos-12
             targetName: macosX64
+            parallelCompilation: true # macOS machine has 14G
     env:
       # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
       # > Declaration annotated with '@OptionalExpectation' can only be used in common module sources
@@ -231,8 +234,9 @@ jobs:
       - name: Check keys
         run: ./gradlew ensureMavenCentralAvailable ${{ env.gradleArgs }}
 
+      # Parallel compilation will exhaust machine memory causing OOM
       - name: Assemble
-        run: ./gradlew assemble ${{ env.gradleArgs }}
+        run: ./gradlew assemble ${{ env.gradleArgs }} "-Porg.gradle.parallel=${{ matrix.parallelCompilation }}"
 
       - name: Publish Local Artifacts
         if: ${{ env.enableLocalPublishingTest == 'true' }}
