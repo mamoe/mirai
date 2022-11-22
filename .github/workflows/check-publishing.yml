@@ -78,7 +78,7 @@ jobs:
 
       - name: Build and Publish Local Artifacts
         if: ${{ env.enableLocalPublishingTest == 'true' }}
-        run: ./gradlew :mirai-deps-test:publishMiraiLocalArtifacts ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test"
+        run: ./gradlew :mirai-deps-test:publishMiraiLocalArtifacts ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test"  "-Porg.gradle.parallel=${{ matrix.parallelCompilation }}"
 
       - name: Check Publication
         if: ${{ env.enableLocalPublishingTest == 'true' }}
@@ -97,14 +97,13 @@ jobs:
         include:
           - os: windows-2022
             targetName: mingwX64
+            parallelCompilation: false
           - os: ubuntu-20.04
             targetName: linuxX64
-          - os: ubuntu-18.04
-            targetName: linuxX64
-          # - os: macos-12
-          #   targetName: macosX64
-          - os: macos-11
+            parallelCompilation: false
+          - os: macos-12
             targetName: macosX64
+            parallelCompilation: true # macOS machine has 14G
     env:
       # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
       # > Declaration annotated with '@OptionalExpectation' can only be used in common module sources
@@ -204,7 +203,7 @@ jobs:
 
       - name: Build and Publish Local Artifacts
         if: ${{ env.enableLocalPublishingTest == 'true' }}
-        run: ./gradlew :mirai-deps-test:publishMiraiLocalArtifacts ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test"
+        run: ./gradlew :mirai-deps-test:publishMiraiLocalArtifacts ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test"  "-Porg.gradle.parallel=${{ matrix.parallelCompilation }}"
 
       - name: Check Publication
         if: ${{ env.enableLocalPublishingTest == 'true' }}
