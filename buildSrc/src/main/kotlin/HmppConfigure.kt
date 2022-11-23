@@ -101,12 +101,16 @@ fun isTargetEnabled(name: String): Boolean {
     return when {
         name in ENABLED_TARGETS -> true // explicitly enabled
         "!$name" in ENABLED_TARGETS -> false // explicitly disabled
+        "~$name" in ENABLED_TARGETS -> false // explicitly disabled
 
         "native" in ENABLED_TARGETS && isNative -> true // native targets explicitly enabled
         "!native" in ENABLED_TARGETS && isNative -> false // native targets explicitly disabled
+        "~native" in ENABLED_TARGETS && isNative -> false // native targets explicitly disabled
 
         "!other" in ENABLED_TARGETS -> false // others disabled
+        "~other" in ENABLED_TARGETS -> false // others disabled
         "!others" in ENABLED_TARGETS -> false // others disabled
+        "~others" in ENABLED_TARGETS -> false // others disabled
         else -> true
     }
 }
