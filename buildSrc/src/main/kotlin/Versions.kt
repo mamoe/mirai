@@ -24,11 +24,12 @@ object Versions {
     val project = System.getenv("mirai.build.project.version")?.takeIf { it.isNotBlank() }
         ?: System.getProperty("mirai.build.project.version")?.takeIf { it.isNotBlank() }
         ?: /*PROJECT_VERSION_START*/"2.13.1"/*PROJECT_VERSION_END*/
+    // DO NOT ADD SPACE BETWEEN!
 
-    val core = project
-    val console = project
-    val consoleIntellij = "221-$project-171-2" // idea-mirai-kotlin-patch
-    val consoleTerminal = project
+    val core get() = project
+    val console get() = project
+    val consoleIntellij get() = "221-$project-171-2" // idea-mirai-kotlin-patch
+    val consoleTerminal get() = project
 
     const val kotlinCompiler = "1.7.10"
     const val kotlinStdlib = kotlinCompiler
@@ -260,3 +261,20 @@ const val `maven-resolver-connector-basic` =
 const val `maven-resolver-transport-http` =
     "org.apache.maven.resolver:maven-resolver-transport-http:${Versions.mavenArtifactResolver}"
 const val `maven-resolver-provider` = "org.apache.maven:maven-resolver-provider:${Versions.mavenResolverProvider}"
+
+
+
+const val DEPS_TEST_VERSION = "2.99.0-deps-test"
+
+/**
+ * This does not work for this build! Changes apply only in future builds.
+ */
+fun setProjectVersionForFutureBuilds(newVersion: String) {
+    rootProject.file("buildSrc/src/main/kotlin/Versions.kt").run {
+        var text = readText()
+        val template = { version: Any? -> "/*PROJECT_VERSION_START*/\"${version}\"/*PROJECT_VERSION_END*/" }
+        check(text.indexOf(template(Versions.project)) != -1) { "Cannot find ${template(Versions.project)}" }
+        text = text.replace(template(Versions.project), template(newVersion))
+        writeText(text)
+    }
+}
