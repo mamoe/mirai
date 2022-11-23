@@ -248,7 +248,7 @@ internal class JvmPluginDependencyDownloader(
         repositories = repository.newResolutionRepositories(
             session,
             config.repoLoc.map { url ->
-                RemoteRepository.Builder(null, "default", url).build()
+                RemoteRepository.Builder(url, "default", url).build()
             }
         )
         logger.debug { "Remote server: " + config.repoLoc }
