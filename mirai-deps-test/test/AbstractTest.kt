@@ -100,10 +100,12 @@ abstract class AbstractTest {
             .forwardOutput()
             .withEnvironment(System.getenv())
             .withArguments(buildList {
-                addAll(arguments)
+                add("--no-daemon")
                 add("-Pkotlin.compiler.execution.strategy=in-process")
-                add("-Dorg.gradle.jvmargs=-Xmx512m -Dfile.encoding=UTF-8")
+                add("-Dorg.gradle.jvmargs=-Xmx512m")
+                add("-Dfile.encoding=UTF-8")
                 add("--stacktrace")
+                addAll(arguments)
             })
             .build()
     }

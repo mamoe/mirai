@@ -10,7 +10,6 @@
 package net.mamoe.mirai.console.gradle
 
 import org.gradle.testkit.runner.GradleRunner
-import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -39,9 +38,11 @@ abstract class AbstractTest {
             .forwardOutput()
             .withEnvironment(System.getenv())
             .withArguments(buildList {
-                addAll(arguments)
+                add("--no-daemon")
                 add("-Pkotlin.compiler.execution.strategy=in-process")
-                add("-Dorg.gradle.jvmargs=-Xmx256m -Dfile.encoding=UTF-8")
+                add("-Dorg.gradle.jvmargs=-Xmx256m")
+                add("-Dfile.encoding=UTF-8")
+                addAll(arguments)
             })
             .build()
     }
