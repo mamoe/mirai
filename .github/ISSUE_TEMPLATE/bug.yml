@@ -10,8 +10,10 @@ body:
         感谢你来到这里
 
         在反馈前, 请确认你已经做了下面这些事情
-        - 对照 [Releases](https://github.com/mamoe/mirai/releases)，相关问题未在近期更新中解决
-        - 搜索了已有的 [issues](https://github.com/mamoe/mirai/issues) 列表中有没相关的信息
+        - 阅读过 [「提问的智慧」](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)
+        - 阅读过 [「如何有效地报告 Bug」](https://www.chiark.greenend.org.uk/~sgtatham/bugs-cn.html)
+        - 对照过 [Releases](https://github.com/mamoe/mirai/releases)，相关问题未在近期更新中解决
+        - 搜索了已有的 [issues](https://github.com/mamoe/mirai/issues?q=is%3Aissue) 列表中有没相关的信息
         - 阅读了 [Mirai 的相关文档](https://github.com/mamoe/mirai/tree/dev/docs)
 
   - type: textarea
@@ -62,7 +64,9 @@ body:
     id: version-others
     attributes:
       label: 其他组件版本
-      description: 如果你正在通过 mirai-console 或其他间接使用 mirai-core 的中间件（如 mirai-native、mirai-api-http 或者其他第三方 SDK）, 请同样提供版本号
+      description: |
+        如果你正在通过 mirai-console 或其他间接使用 mirai-core 的中间件（如 mirai-native、mirai-api-http 或者其他第三方 SDK）, 请同样提供版本号
+        如果你正在使用 mirai-console, 请在此处粘贴 `/status` 命令的结果
       placeholder: |
         mirai-api-http: `2.3.3`
 
@@ -96,4 +100,15 @@ body:
     attributes:
       label: 补充信息
       description: 如有必要，你可以在下文继续添加其他信息
+
+  - type: markdown
+    attributes:
+      value: |
+        ----
+
+        在发出 issue 前, 请确认
+
+        - 全部信息已经填写完毕, 特别是 「其他组件版本」
+        - 报告中没有令人反感的语言
+        - 「复现」的描述是否足够详细准确
 
