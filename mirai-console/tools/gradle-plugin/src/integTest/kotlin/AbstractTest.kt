@@ -45,7 +45,6 @@ abstract class AbstractTest {
                 add("org.gradle.jvmargs=-Xmx256m")
                 add("-D")
                 add("file.encoding=UTF-8")
-                add("--no-daemon")
             })
             .build()
     }
