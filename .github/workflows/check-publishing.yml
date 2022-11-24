@@ -129,4 +129,4 @@ jobs:
         run: ./gradlew :mirai-deps-test:publishMiraiArtifactsToMavenLocal ${{ env.gradleArgs }} "-Porg.gradle.parallel=${{ matrix.parallelCompilation }}"
 
       - name: Check Publication
-        run: ./gradlew :mirai-deps-test:check ${{ env.gradleArgs }} "-Dmirai.deps.test.must.run=true"
+        run: ./gradlew :mirai-deps-test:check ${{ env.gradleArgs }} "-Dmirai.deps.test.must.run=true" "-Porg.gradle.parallel=${{ matrix.parallelCompilation }}"
