@@ -38,11 +38,13 @@ abstract class AbstractTest {
             .forwardOutput()
             .withEnvironment(System.getenv())
             .withArguments(buildList {
-                add("--no-daemon")
-                add("-Pkotlin.compiler.execution.strategy=in-process")
-                add("-Dorg.gradle.jvmargs=-Xmx256m")
-                add("-Dfile.encoding=UTF-8")
                 addAll(arguments)
+                add("-P")
+                add("kotlin.compiler.execution.strategy=in-process")
+                add("-D")
+                add("org.gradle.jvmargs=-Xmx512m")
+                add("-D")
+                add("file.encoding=UTF-8")
             })
             .build()
     }

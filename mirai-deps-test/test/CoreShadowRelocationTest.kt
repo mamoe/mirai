@@ -157,12 +157,13 @@ class CoreShadowRelocationTest : AbstractTest() {
         // mirai-core-all-2.99.0-deps-test-all.jar
         val miraiCoreAllJar =
             mavenLocalDir.resolve("net/mamoe/mirai-core-all/$miraiLocalVersion/mirai-core-all-$miraiLocalVersion-all.jar")
-        assertTrue("'${miraiCoreAllJar.absolutePath}' does not exist") { miraiCoreAllJar.exists() }
+        val path = miraiCoreAllJar.absolutePath.replace("\\", "/") // overcome string escape in source files.
+        assertTrue("'$path' does not exist") { miraiCoreAllJar.exists() }
 
         buildFile.appendText(
             """
             dependencies {
-                implementation(fileTree("${miraiCoreAllJar.absolutePath}"))
+                implementation(fileTree("$path"))
             }
         """.trimIndent()
         )

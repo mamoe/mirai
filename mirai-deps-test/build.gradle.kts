@@ -113,6 +113,7 @@ val publishMiraiLocalArtifacts = tasks.register("publishMiraiLocalArtifacts", Ex
         "--scan",
         "-Pkotlin.compiler.execution.strategy=in-process"
     )
+
     standardOutput = System.out
     errorOutput = System.err
 }
