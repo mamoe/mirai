@@ -11,6 +11,7 @@ package net.mamoe.mirai.deps.test
 
 import org.gradle.api.internal.artifacts.mvnsettings.DefaultMavenFileLocations
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.internal.DefaultGradleRunner
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -89,6 +90,7 @@ abstract class AbstractTest {
     lateinit var settingsFile: File
     lateinit var propertiesFile: File
 
+    private inline fun <reified T> Any?.cast(): T = this as T
 
     @OptIn(ExperimentalStdlibApi::class)
     fun runGradle(vararg arguments: String) {
@@ -99,13 +101,19 @@ abstract class AbstractTest {
             .withGradleVersion("7.2")
             .forwardOutput()
             .withEnvironment(System.getenv())
-            .withArguments(buildList {
-                add("--no-daemon")
-                add("-Pkotlin.compiler.execution.strategy=in-process")
-                add("-Dorg.gradle.jvmargs=-Xmx512m")
+            .cast<DefaultGradleRunner>().withJvmArguments(buildList {
+                add("-Xmx512m") // Kotlin MPP may need memory to build
                 add("-Dfile.encoding=UTF-8")
-                add("--stacktrace")
+            })
+            .withArguments(buildList {
                 addAll(arguments)
+                add("-P")
+                add("kotlin.compiler.execution.strategy=in-process")
+                add("-D")
+                add("org.gradle.jvmargs=-Xmx512m")
+                add("-D")
+                add("file.encoding=UTF-8")
+                add("--stacktrace")
             })
             .build()
     }
