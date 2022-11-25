@@ -11,6 +11,7 @@ package net.mamoe.mirai.deps.test
 
 import org.gradle.api.internal.artifacts.mvnsettings.DefaultMavenFileLocations
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.internal.DefaultGradleRunner
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -89,6 +90,7 @@ abstract class AbstractTest {
     lateinit var settingsFile: File
     lateinit var propertiesFile: File
 
+    private inline fun <reified T> Any?.cast(): T = this as T
 
     @OptIn(ExperimentalStdlibApi::class)
     fun runGradle(vararg arguments: String) {
@@ -99,6 +101,10 @@ abstract class AbstractTest {
             .withGradleVersion("7.2")
             .forwardOutput()
             .withEnvironment(System.getenv())
+            .cast<DefaultGradleRunner>().withJvmArguments(buildList {
+                add("-Xmx256m")
+                add("-Dfile.encoding=UTF-8")
+            })
             .withArguments(buildList {
                 addAll(arguments)
                 add("-P")
