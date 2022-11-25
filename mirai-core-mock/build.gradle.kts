@@ -33,5 +33,18 @@ dependencies {
 
 }
 
+tasks.register("buildRuntimeClasspath") { // this task is used for mirai-mock-framework (external)
+    dependsOn("assemble")
+    doLast {
+        val out = temporaryDir.also { it.mkdirs() }.resolve("classpath.txt")
+        out.bufferedWriter().use { writer ->
+            configurations["runtimeClasspath"].files.forEach { f ->
+                writer.write(f.absolutePath)
+                writer.write("\n")
+            }
+        }
+    }
+}
+
 configurePublishing("mirai-core-mock")
 tasks.named("shadowJar") { enabled = false }
