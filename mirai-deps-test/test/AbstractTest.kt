@@ -102,7 +102,7 @@ abstract class AbstractTest {
             .forwardOutput()
             .withEnvironment(System.getenv())
             .cast<DefaultGradleRunner>().withJvmArguments(buildList {
-                add("-Xmx256m")
+                add("-Xmx512m") // Kotlin MPP may need memory to build
                 add("-Dfile.encoding=UTF-8")
             })
             .withArguments(buildList {
@@ -110,7 +110,7 @@ abstract class AbstractTest {
                 add("-P")
                 add("kotlin.compiler.execution.strategy=in-process")
                 add("-D")
-                add("org.gradle.jvmargs=-Xmx256m")
+                add("org.gradle.jvmargs=-Xmx512m")
                 add("-D")
                 add("file.encoding=UTF-8")
                 add("--stacktrace")

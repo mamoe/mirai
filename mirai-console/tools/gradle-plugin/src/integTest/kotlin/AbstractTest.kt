@@ -42,7 +42,7 @@ abstract class AbstractTest {
                 add("-P")
                 add("kotlin.compiler.execution.strategy=in-process")
                 add("-D")
-                add("org.gradle.jvmargs=-Xmx256m")
+                add("org.gradle.jvmargs=-Xmx512m")
                 add("-D")
                 add("file.encoding=UTF-8")
             })
