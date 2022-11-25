@@ -19,10 +19,8 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.TEST_COMPI
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetPreset
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import java.io.File
 
 val MIRAI_PLATFORM_ATTRIBUTE = Attribute.of(
@@ -374,6 +372,14 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
 }
 
 fun KotlinMultiplatformExtension.configureNativeTargetBinaries(project: Project) {
+    if (!System.getProperty("mirai.native.link", "false").toBoolean()) {
+        // Must enable KotlinNativeLink by argument "mirai.native.link".
+
+        // :mirai-core:linkReleaseSharedMacosX64
+        return
+//        disableNativeLinkTasks(project)
+    }
+
     NATIVE_TARGETS.forEach { targetName ->
         val target = targets.getByName(targetName) as KotlinNativeTarget
         target.binaries {
@@ -385,6 +391,15 @@ fun KotlinMultiplatformExtension.configureNativeTargetBinaries(project: Project)
             }
         }
     }
+}
+
+private fun disableNativeLinkTasks(project: Project) {
+    project.tasks.withType<KotlinNativeLink>()
+        .filter { it.binary.outputKind != NativeOutputKind.TEST }
+        .forEach {
+            it.enabled = false
+            project.logger.warn("Disabling KotlinNativeLink: ${it.path}")
+        }
 }
 
 private fun KotlinNativeTarget.findOrCreateTest(buildType: NativeBuildType, configure: TestExecutable.() -> Unit) =
