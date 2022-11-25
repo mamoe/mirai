@@ -372,7 +372,7 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
 }
 
 fun KotlinMultiplatformExtension.configureNativeTargetBinaries(project: Project) {
-    if (!System.getProperty("mirai.native.link", "false").toBoolean()) {
+    if (!System.getProperty("mirai.native.binaries", "false").toBoolean()) {
         // Must enable KotlinNativeLink by argument "mirai.native.link".
 
         // :mirai-core:linkReleaseSharedMacosX64
