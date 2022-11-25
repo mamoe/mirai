@@ -255,7 +255,7 @@ jobs:
           - ubuntu-20.04
           #          - ubuntu-18.04
           # - macos-12
-          - macos-11
+#          - macos-11
         include:
           - os: windows-2022
             targetName: mingwX64
@@ -265,8 +265,8 @@ jobs:
             targetName: linuxX64
           # - os: macos-12
           #   targetName: macosX64
-          - os: macos-11
-            targetName: macosX64
+    #          - os: macos-11
+    #            targetName: macosX64
     env:
       # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
       # > Declaration annotated with '@OptionalExpectation' can only be used in common module sources
