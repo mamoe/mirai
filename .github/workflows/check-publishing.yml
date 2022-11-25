@@ -25,13 +25,13 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - windows-2022
+#          - windows-2022
           - ubuntu-20.04
           - macos-12
         include:
-          - os: windows-2022
-            targetName: mingwX64
-            parallelCompilation: false
+          #          - os: windows-2022
+          #            targetName: mingwX64
+          #            parallelCompilation: false
           - os: ubuntu-20.04
             targetName: linuxX64
             parallelCompilation: false
