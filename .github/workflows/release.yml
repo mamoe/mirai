@@ -21,9 +21,8 @@ jobs:
         os:
           - macos-12
     env:
-      enableLocalPublishingTest: 'false'
       # All targets MUST be enabled. See #2270.
-      gradleArgs: --scan "-Dmirai.target=other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m" "-Dfile.encoding=UTF-8"
+      gradleArgs: --scan "-Dmirai.target=other" "-Pkotlin.compiler.execution.strategy=in-process"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
@@ -124,17 +123,16 @@ jobs:
         include:
           - os: windows-2022
             targetName: mingwX64
-            parallelCompilation: false
+          #            parallelCompilation: false
           - os: ubuntu-20.04
             targetName: linuxX64
-            parallelCompilation: false
+          #            parallelCompilation: false
           - os: macos-12
             targetName: macosX64
-            parallelCompilation: true # macOS machine has 14G
+    #            parallelCompilation: true # macOS machine has 14G
     env:
       # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
       # > Declaration annotated with '@OptionalExpectation' can only be used in common module sources
-      enableLocalPublishingTest: 'false'
       gradleArgs: --scan  "-Dmirai.target=jvm;${{ matrix.targetName }};~other" "-Pkotlin.compiler.execution.strategy=in-process" "-Dorg.gradle.jvmargs=-Xmx4096m" "-Dfile.encoding=UTF-8"
       isMac: ${{ startsWith(matrix.os, 'macos') }}
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
@@ -234,18 +232,18 @@ jobs:
       - name: Check keys
         run: ./gradlew ensureMavenCentralAvailable ${{ env.gradleArgs }}
 
-      # Parallel compilation will exhaust machine memory causing OOM
-      - name: Assemble
-        run: ./gradlew assemble ${{ env.gradleArgs }} "-Porg.gradle.parallel=${{ matrix.parallelCompilation }}"
+      - name: "Test mirai-core-utils for ${{ matrix.os }}"
+        run: ./gradlew :mirai-core-utils:${{ matrix.targetName }}Test ${{ env.gradleArgs }}
 
-      - name: Publish Local Artifacts
-        if: ${{ env.enableLocalPublishingTest == 'true' }}
-        run: ./gradlew :mirai-deps-test:publishMiraiArtifactsToMavenLocal ${{ env.gradleArgs }} "-Dmirai.build.project.version=2.99.0-deps-test"
+      - name: "Test mirai-core-api for ${{ matrix.os }}"
+        run: ./gradlew :mirai-core-api:${{ matrix.targetName }}Test ${{ env.gradleArgs }}
 
-      - name: Check
-        run: ./gradlew check ${{ env.gradleArgs }}
+      - name: "Test mirai-core for ${{ matrix.os }}"
+        run: ./gradlew :mirai-core:${{ matrix.targetName }}Test ${{ env.gradleArgs }}
 
-      # Publish native snapshots. Other artifacts are published in publish-mirai-all
+      #      # Parallel compilation will exhaust machine memory causing OOM
+      #      - name: Assemble
+      #        run: ./gradlew assemble ${{ env.gradleArgs }} "-Porg.gradle.parallel=${{ matrix.parallelCompilation }}"
 
       - name: Publish MingwX64
         if: ${{ env.isWindows == 'true' }}
@@ -258,24 +256,24 @@ jobs:
       - name: Publish macOSX64
         if: ${{ env.isMac == 'true' }}
         run: ./gradlew publishMacosX64PublicationToMavenCentralRepository ${{ env.gradleArgs }}
-
-  close-repository:
-    runs-on: macos-12
-    needs:
-      - publish-others
-      - publish-core-native
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
-
-      - uses: actions/setup-java@v2
-        with:
-          distribution: 'adopt-openj9'
-          java-version: '17'
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-
-      - name: Close repository
-        run: ./gradlew :ci-release-helper:closeRepository --scan
+#
+#  close-repository:
+#    runs-on: macos-12
+#    needs:
+#      - publish-others
+#      - publish-core-native
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          submodules: 'recursive'
+#
+#      - uses: actions/setup-java@v2
+#        with:
+#          distribution: 'adopt-openj9'
+#          java-version: '17'
+#
+#      - name: Setup Gradle
+#        uses: gradle/gradle-build-action@v2
+#
+#      - name: Close repository
+#        run: ./gradlew :ci-release-helper:closeRepository --scan
