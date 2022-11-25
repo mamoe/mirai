@@ -46,7 +46,7 @@ Windows x86_64 目标；在 macOS aarch64 主机上只能编译 macOS aarch64 �
 若使用 Apple M1 Max 或同等级 CPU (AMD R7 5800X / Intel i7-12700K / Intel
 i9-12950HX)，单独执行 `./gradlew assemble` 编译并连接全部项目 (含动态链接库和静态链接库) 需时约 9
 分钟。单独执行 `./gradlew check` 需约 4 分钟。
-但在 GitHub 的 2 核心 CPU Actions 机器上执行 `assemble` 通常需要约 40 分钟。
+但在 GitHub 的 2 核心 CPU Actions 机器上执行 `assemble` 通常需要约 40 分钟，。
 
 ### 安装 OpenSSL
 
@@ -173,11 +173,19 @@ cURL，在其他平台使用 [Ktor CIO](https://ktor.io/docs/http-client-engines
 
 ### 链接并构建动态链接库
 
-注意，只有 mirai-core 可以构建可用的动态链接库。
+注意，只有 mirai-core 可以构建可用的动态链接库。所有动态链接库和静态链接库的构建都是默认关闭的，需要使用 `-Dmirai.native.binaries=true` 才能启用。
 
-执行 `:mirai-core:linkDebugSharedHost`
+在提供 `-Dmirai.native.binaries=true` 参数的情况下，执行 `:mirai-core:linkDebugSharedHost`
 或 `:mirai-core:linkReleaseSharedHost`。Debug 版本会保留调试符号，能显示完整错误堆栈；而
 Release 拥有更小体积（比 Debug 减小 50%）。
+
+示例：
+
+```shell
+./gradlew :mirai-core:linkDebugSharedHost "-Dmirai.native.binaries=true"
+
+./gradlew :mirai-core:linkReleaseSharedMacoxX64 "-Dmirai.native.binaries=true"
+```
 
 这也会同时生成一个头文件（`.h`
 ）供交互使用。详情查看 [Kotlin 官方文档](https://kotlinlang.org/docs/native-c-interop.html)
@@ -189,7 +197,7 @@ Release 拥有更小体积（比 Debug 减小 50%）。
 
 注意，只有 mirai-core 可以构建可用的静态链接库。
 
-执行 `:mirai-core:linkDebugStaticHost`
+与构建动态链接库类似，在提供 `-Dmirai.native.binaries=true` 参数的情况下，执行 `:mirai-core:linkDebugStaticHost`
 或 `:mirai-core:linkReleaseStaticHost`。Debug 版本会保留调试符号，能显示完整错误堆栈；而
 Release 拥有更小体积（比 Debug 减小 50%）。
 
