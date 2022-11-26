@@ -19,6 +19,7 @@ import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
+import net.mamoe.mirai.contact.essence.Essences
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.GroupInfo
@@ -28,6 +29,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.active.GroupActiveImpl
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
+import net.mamoe.mirai.internal.contact.essence.EssencesImpl
 import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.message.contextualBugReportException
@@ -400,6 +402,13 @@ internal abstract class CommonGroupImpl constructor(
             ), 5000, 2
         )
         return result.success
+    }
+
+    override val essences: Essences by lazy {
+        EssencesImpl(
+            this as GroupImpl,
+            bot.network.logger.subLogger("Group $id"),
+        )
     }
 
     override fun toString(): String = "Group($id)"

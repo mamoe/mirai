@@ -9,18 +9,10 @@
 
 package net.mamoe.mirai.internal.contact.essence
 
-import kotlinx.coroutines.flow.Flow
 import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiLogger
-import java.util.stream.Stream
 
 internal actual class EssencesImpl actual constructor(
     group: GroupImpl,
     logger: MiraiLogger,
-) : CommonEssencesImpl(group, logger) {
-
-    override fun asStream(): Stream<MessageSource> {
-        TODO("Not yet implemented")
-    }
-}
+) : CommonEssencesImpl(group, logger)
