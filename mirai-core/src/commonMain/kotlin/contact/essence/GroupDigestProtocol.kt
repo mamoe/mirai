@@ -91,7 +91,7 @@ private fun <T> DigestData.loadData(serializer: KSerializer<T>): T {
     return try {
         defaultJson.decodeFromJsonElement(serializer, this.data)
     } catch (cause: Exception) {
-        throw IllegalStateException(message = "parse digest data error, status: $errorCode - $errorMessage", cause)
+        throw IllegalStateException("parse digest data error, status: $errorCode - $errorMessage", cause)
     }
 }
 
@@ -136,7 +136,7 @@ internal suspend fun QQAndroidBot.cancelDigest(
 
     when (data.errorCode) {
         0, 11007, 11001 -> Unit
-        else -> throw IllegalStateException(message = "cancel digest error, status: ${data.errorCode} - ${data.errorMessage}, reason: ${data.reason}")
+        else -> throw IllegalStateException("cancel digest error, status: ${data.errorCode} - ${data.errorMessage}, reason: ${data.reason}")
     }
 }
 
