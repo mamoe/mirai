@@ -28,6 +28,7 @@ import net.mamoe.mirai.utils.loadAs
 @Serializable
 internal data class DigestData(
     @SerialName("data") val `data`: JsonElement = JsonNull,
+    @SerialName("wording") val reason: String = "",
     @SerialName("retmsg") override val errorMessage: String,
     @SerialName("retcode") override val errorCode: Int
 ) : CheckableResponseA(), JsonStruct
@@ -80,6 +81,12 @@ internal data class DigestMessageContent(
     val text: String = ""
 )
 
+@Serializable
+internal data class DigestShare(
+    @SerialName("share_key")
+    val shareKey: String = ""
+)
+
 private fun <T> DigestData.loadData(serializer: KSerializer<T>): T {
     return try {
         defaultJson.decodeFromJsonElement(serializer, this.data)
@@ -106,4 +113,51 @@ internal suspend fun QQAndroidBot.getDigestList(
             )
         }
     }.bodyAsText().loadAs(DigestData.serializer()).loadData(DigestList.serializer())
+}
+
+internal suspend fun QQAndroidBot.cancelDigest(
+    groupCode: Long, msgSeq: Int, msgRandom: Int
+) {
+    val data = components[HttpClientProvider].getHttpClient().get {
+        url("https://qun.qq.com/cgi-bin/group_digest/cancel_digest")
+        parameter("group_code", groupCode)
+        parameter("msg_seq", msgSeq)
+        parameter("msg_random", msgRandom)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+            )
+        }
+    }.bodyAsText().loadAs(DigestData.serializer())
+
+    when (data.errorCode) {
+        0, 11007, 11001 -> Unit
+        else -> throw IllegalStateException(message = "cancel digest error, status: ${data.errorCode} - ${data.errorMessage}, reason: ${data.reason}")
+    }
+}
+
+
+internal suspend fun QQAndroidBot.shareDigest(
+    groupCode: Long, msgSeq: Int, msgRandom: Int, targetGroupCode: Long
+): DigestShare {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://qun.qq.com/cgi-bin/group_digest/share_digest")
+        parameter("group_code", groupCode)
+        parameter("msg_seq", msgSeq)
+        parameter("msg_random", msgRandom)
+        parameter("target_group_code", targetGroupCode)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
+            )
+        }
+    }.bodyAsText().loadAs(DigestData.serializer()).loadData(DigestShare.serializer())
 }

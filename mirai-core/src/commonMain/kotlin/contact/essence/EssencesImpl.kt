@@ -47,7 +47,7 @@ internal abstract class CommonEssencesImpl(
                         Image("")
                     }
                     else -> {
-                        // XXX:
+                        // XXX: unknown message type
                         emptyMessageChain()
                     }
                 }
@@ -80,15 +80,25 @@ internal abstract class CommonEssencesImpl(
         return page.messages.map(this::record)
     }
 
-    override suspend fun add(source: MessageSource) {
-        TODO("Not yet implemented")
+    override suspend fun share(source: MessageSource) {
+        val share = group.bot.shareDigest(
+            groupCode = group.id,
+            msgSeq = source.ids.first(),
+            msgRandom = source.internalIds.first(),
+            targetGroupCode = 0
+        )
+        share.shareKey
     }
 
     override suspend fun remove(source: MessageSource) {
-        TODO("Not yet implemented")
+        group.bot.cancelDigest(
+            groupCode = group.id,
+            msgSeq = source.ids.first(),
+            msgRandom = source.internalIds.first()
+        )
     }
 
-    override fun asFlow(): Flow<MessageSource> {
+    override fun asFlow(): Flow<EssenceMessageRecord> {
         return flow {
             var offset = 0
             while (currentCoroutineContext().isActive) {
@@ -98,7 +108,7 @@ internal abstract class CommonEssencesImpl(
                     pageLimit = 30
                 )
                 for (message in page.messages) {
-                    emit(source(message))
+                    emit(record(message))
                 }
                 if (page.isEnd) break
                 if (page.messages.isEmpty()) break

@@ -12,10 +12,14 @@ package net.mamoe.mirai.contact.essence
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.Streamable
 
-public interface Essences : Streamable<MessageSource> {
+/**
+ *
+ * @since 2.14
+ */
+public interface Essences : Streamable<EssenceMessageRecord> {
     public suspend fun page(start: Int, limit: Int): List<EssenceMessageRecord>
 
-    public suspend fun add(source: MessageSource)
+    public suspend fun share(source: MessageSource)
 
     public suspend fun remove(source: MessageSource)
 }

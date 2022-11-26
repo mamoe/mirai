@@ -14,7 +14,6 @@ import net.mamoe.mirai.contact.essence.EssenceMessageRecord
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.mock.contact.essence.MockEssences
 import net.mamoe.mirai.mock.internal.contact.MockGroupImpl
-import java.util.stream.Stream
 
 internal class MockEssencesImpl(
     private val group: MockGroupImpl
@@ -24,7 +23,7 @@ internal class MockEssencesImpl(
         TODO("Not yet implemented")
     }
 
-    override suspend fun add(source: MessageSource) {
+    override suspend fun share(source: MessageSource) {
         TODO("Not yet implemented")
     }
 
@@ -32,11 +31,7 @@ internal class MockEssencesImpl(
         TODO("Not yet implemented")
     }
 
-    override fun asFlow(): Flow<MessageSource> {
-        TODO("Not yet implemented")
-    }
-
-    override fun asStream(): Stream<MessageSource> {
+    override fun asFlow(): Flow<EssenceMessageRecord> {
         TODO("Not yet implemented")
     }
 }

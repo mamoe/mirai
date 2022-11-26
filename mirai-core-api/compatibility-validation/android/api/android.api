@@ -379,6 +379,7 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public abstract fun getBotAsMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun getBotMuteRemaining ()I
 	public fun getBotPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
+	public abstract fun getEssences ()Lnet/mamoe/mirai/contact/essence/Essences;
 	public abstract fun getId ()J
 	public abstract fun getMembers ()Lnet/mamoe/mirai/contact/ContactList;
 	public abstract fun getName ()Ljava/lang/String;
@@ -387,6 +388,8 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public abstract fun getSettings ()Lnet/mamoe/mirai/contact/GroupSettings;
 	public fun quit ()Z
 	public abstract fun quit (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun removeEssenceMessage (Lnet/mamoe/mirai/message/data/MessageSource;)Z
+	public abstract fun removeEssenceMessage (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
 	public fun sendMessage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Lnet/mamoe/mirai/message/data/Message;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -898,6 +901,26 @@ public abstract interface class net/mamoe/mirai/contact/announcement/OnlineAnnou
 
 public final class net/mamoe/mirai/contact/announcement/OnlineAnnouncementKt {
 	public static final fun getBot (Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;)Lnet/mamoe/mirai/Bot;
+}
+
+public final class net/mamoe/mirai/contact/essence/EssenceMessageRecord {
+	public fun <init> (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/contact/NormalMember;JLjava/lang/String;ILnet/mamoe/mirai/contact/NormalMember;JLjava/lang/String;ILnet/mamoe/mirai/message/data/MessageSource;)V
+	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
+	public final fun getOperator ()Lnet/mamoe/mirai/contact/NormalMember;
+	public final fun getOperatorId ()J
+	public final fun getOperatorNick ()Ljava/lang/String;
+	public final fun getOperatorTime ()I
+	public final fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
+	public final fun getSenderId ()J
+	public final fun getSenderNick ()Ljava/lang/String;
+	public final fun getSenderTime ()I
+	public final fun getSource ()Lnet/mamoe/mirai/message/data/MessageSource;
+}
+
+public abstract interface class net/mamoe/mirai/contact/essence/Essences : net/mamoe/mirai/utils/Streamable {
+	public abstract fun page (IILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun remove (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun share (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFile : net/mamoe/mirai/contact/file/AbsoluteFileFolder {
