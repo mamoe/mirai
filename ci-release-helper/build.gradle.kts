@@ -18,6 +18,7 @@ plugins {
 tasks.register<JavaExec>("runcihelper") {
     this.classpath = sourceSets["main"].runtimeClasspath
     this.mainClass.set("cihelper.CiHelperKt")
+    this.workingDir = rootProject.projectDir
 
     fun Project.findPublishingExt(): PublishingExtension? {
         val exts = (this@findPublishingExt as ExtensionAware).extensions
@@ -62,6 +63,10 @@ nexusStaging {
     val keys = SecretKeys.getCache(project).loadKey("sonatype")
     username = keys.user
     password = keys.password
+}
+
+dependencies {
+    implementation(`kotlinx-serialization-json`)
 }
 
 tasks.register("updateSnapshotVersion") {

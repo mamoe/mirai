@@ -10,16 +10,50 @@
 
 package cihelper
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import java.io.File
+import java.io.OutputStream
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.charset.Charset
+import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.nio.file.attribute.PosixFilePermission
+import java.nio.file.attribute.PosixFilePermissions
+import java.security.MessageDigest
 import java.util.*
 import java.util.stream.Collectors
 import kotlin.io.path.*
+
+private val hexTemplate: CharArray = "0123456789abcdef".toCharArray()
+private const val useragent = "Gradle/7.3.1 (Windows 10;10.0;amd64) (Azul Systems, Inc.;18.0.2.1;18.0.2.1+1)"
+
+fun ByteArray.hexToString(): String {
+    val sb = StringBuilder(this.size * 2)
+    forEach { sbyte ->
+        sb.append(hexTemplate[sbyte.toInt().shr(4).and(0xF)])
+        sb.append(hexTemplate[sbyte.toInt().and(0xF)])
+    }
+    return sb.toString()
+}
+
+private fun getAuth(): String {
+
+    val cert_username =
+        System.getenv("CERT_USERNAME") ?: System.getProperty("cihelper.cert.username") ?: error("CERT_USERNAME")
+    val cert_password =
+        System.getenv("CERT_PASSWORD") ?: System.getProperty("cihelper.cert.password") ?: error("CERT_PASSWORD")
+
+    return "Basic " + Base64.getEncoder().encodeToString(
+        ("$cert_username:$cert_password").toByteArray()
+    )
+}
 
 @Suppress("Since15")
 fun main(args: Array<String>) {
@@ -73,41 +107,35 @@ fun main(args: Array<String>) {
             }
         }
 
-        "merge-repos" -> {
-            val repos = System.getProperties().asSequence()
-                .filter { it.key.toString().startsWith("cihelper.repo") }
-                .map { it.value.toString() }
-                .map { Paths.get(it) }
-                .toList()
-            println(repos)
-
-            repos.forEach { arepo ->
-                Files.walk(arepo)
-                    .filter { it.fileName.name == "maven-metadata.xml" }
-                    .map { it.parent }
-                    .filter { it.resolve(projVer).isDirectory() }
-                    .filter { Files.createDirectories(it.resolve(projVer)).iterator().hasNext() }
-                    .flatMap { Files.walk(it) }
-                    .filter { it.isRegularFile() }
-                    .forEach { spath ->
-                        val rel = arepo.relativize(spath)
-
-                        val target = repoLoc.resolve(rel)
-                        target.parent?.createDirectories()
-
-                        println("Copying $spath to $target")
-
-                        spath.copyTo(target, overwrite = true)
-                    }
+        "create-stage-repo" -> {
+            val rsp = httpc.send(
+                HttpRequest.newBuilder(
+                    URI.create(
+                        "https://oss.sonatype.org/service/local/staging/profiles/${
+                            System.getProperty(
+                                "cihelper.cert.profileid"
+                            )
+                        }/start"
+                    )
+                )
+                    .header("User-Agent", useragent)
+                    .header("Authorization", getAuth())
+                    .header("Content-Type", "application/json;charset=utf-8")
+                    .POST(HttpRequest.BodyPublishers.ofString("{\"data\":{\"description\": \"mamoe/mirai release $projVer\"}}"))
+                    .build(),
+                HttpResponse.BodyHandlers.ofString()
+            )
+            if (rsp.statusCode() != 201) {
+                error(rsp.toString())
             }
+            val rspx = Json.decodeFromString(JsonObject.serializer(), rsp.body())
+            val stagedRepositoryId = rspx["data"]!!.jsonObject["stagedRepositoryId"]!!.jsonPrimitive.content
+
+            File("ci-release-helper").also { it.mkdirs() }
+                .resolve("repoid").writeText(stagedRepositoryId)
         }
 
         "publish-to-maven-central" -> {
-            val cert_username =
-                System.getenv("CERT_USERNAME") ?: System.getProperty("cihelper.cert.username") ?: error("CERT_USERNAME")
-            val cert_password =
-                System.getenv("CERT_PASSWORD") ?: System.getProperty("cihelper.cert.password") ?: error("CERT_PASSWORD")
-
             // https://oss.sonatype.org/service/local/staging/deploy/maven2
             relatedRepoLoc.listDirectoryEntries().forEach { subdir ->
                 val verpath = subdir.resolve(projVer)
@@ -120,25 +148,139 @@ fun main(args: Array<String>) {
                     subdir.toFile().deleteRecursively()
                 }
             }
-            val pendingFiles = Files.walk(relatedRepoLoc).filter { it.isRegularFile() }.use { stream ->
-                stream.collect(Collectors.toList())
+            val pendingFiles = Files.walk(relatedRepoLoc)
+                .filter { it.isRegularFile() }
+                .filter { !it.name.endsWith(".md5") && !it.name.endsWith(".sha1") }
+                .filter { !it.name.endsWith(".asc") }
+                .use { stream -> stream.collect(Collectors.toList()) }
+
+            run `sign artifacts`@{
+                // build-gpg-sign/keys.gpg
+                // build-gpg-sign/keys.gpg.pub
+                val bgs = Paths.get("build-gpg-sign").toAbsolutePath()
+                if (!bgs.isDirectory()) return@`sign artifacts`
+                val gpgHomeDir = bgs.resolve("homedir")
+                val bgsFile = bgs.toFile()
+
+                fun execGpg(vararg cmd: String) {
+                    println("::group::${cmd.joinToString(" ")}")
+                    try {
+                        val exitcode = ProcessBuilder("gpg", "--homedir", "homedir", "--batch", "--no-tty", *cmd)
+                            .directory(bgsFile)
+                            .inheritIO()
+                            .start()
+                            .waitFor()
+                        if (exitcode != 0) {
+                            error("Exit code $exitcode != 0")
+                        }
+                    } finally {
+                        println("::endgroup::")
+                    }
+                }
+
+
+                if (!gpgHomeDir.resolve("pubring.kbx").exists()) {
+
+                    val keys = arrayOf("keys.gpg", "keys.gpg.pub")
+                    if (!keys.all { bgs.resolve(it).isRegularFile() }) return@`sign artifacts`
+
+                    val isPosix = FileSystems.getDefault().supportedFileAttributeViews().contains("posix")
+                    val dirPermissions = PosixFilePermissions.asFileAttribute(
+                        EnumSet.of(
+                            PosixFilePermission.OWNER_READ,
+                            PosixFilePermission.OWNER_WRITE,
+                            PosixFilePermission.OWNER_EXECUTE
+                        )
+                    )
+
+                    Files.createDirectories(
+                        gpgHomeDir,
+                        *if (isPosix) arrayOf(dirPermissions) else arrayOf(),
+                    )
+
+                    keys.forEach { execGpg("--import", it) }
+                }
+
+
+                println("::group::Signing artifacts")
+                pendingFiles.toList().asSequence().filterNot { it.name == "maven-metadata.xml" }
+                    .forEach { pendingFile ->
+                        val pt = pendingFile.absolutePathString()
+                        val ascFile = pendingFile.resolveSibling(pendingFile.name + ".asc")
+                        ascFile.deleteIfExists()
+                        execGpg("-a", "--detach-sig", "--sign", pt)
+
+                        pendingFiles.add(ascFile)
+                    }
+                println("::endgroup::")
             }
-            // TODO: Sign flies direct, calc md5, sha1 direct
+
+            run `calc msg digest`@{
+                pendingFiles.toList().forEach { pendingFile ->
+                    val sha1MD = MessageDigest.getInstance("SHA-1")
+                    val md5MD = MessageDigest.getInstance("MD5")
+
+                    pendingFile.inputStream().use { content ->
+                        content.copyTo(object : OutputStream() {
+                            override fun write(b: Int) {
+                                sha1MD.update(b.toByte())
+                                md5MD.update(b.toByte())
+                            }
+
+                            override fun write(b: ByteArray, off: Int, len: Int) {
+                                sha1MD.update(b, off, len)
+                                md5MD.update(b, off, len)
+                            }
+                        })
+                    }
+
+                    val sha1 = sha1MD.digest().hexToString()
+                    val mg5 = md5MD.digest().hexToString()
+
+                    val pfname = pendingFile.name
+                    val sha1File = pendingFile.resolveSibling("$pfname.sha1")
+                    val md5File = pendingFile.resolveSibling("$pfname.md5")
+
+                    sha1File.writeText(sha1)
+                    md5File.writeText(mg5)
+
+                    pendingFiles.add(sha1File)
+                    pendingFiles.add(md5File)
+                }
+            }
 
             pendingFiles.sort()
 
+            println("::group::Publishing to Maven Central")
 
-            val authorization = "Basic " + Base64.getEncoder().encodeToString(
-                ("$cert_username:$cert_password").toByteArray()
-            )
-            val useragent = "Gradle/7.3.1 (Windows 10;10.0;amd64) (Azul Systems, Inc.;18.0.2.1;18.0.2.1+1)"
+            val authorization = getAuth()
             val errors = mutableListOf<String>()
+
+            fun resolveSonatypeRepoLoc(): String {
+                val repoIdPath = Paths.get("ci-release-helper/repoid")
+
+                var repoId = ""
+                if (repoIdPath.isRegularFile()) {
+                    repoId = repoIdPath.readText().trim()
+                } else if (repoIdPath.isDirectory()) {
+                    val files = repoIdPath.listDirectoryEntries().filter { it.isRegularFile() }
+                    if (files.size == 1) {
+                        repoId = files.first().readText().trim()
+                    }
+                }
+                if (repoId.isNotBlank()) {
+                    return "https://oss.sonatype.org/service/local/staging/deployByRepositoryId/$repoId/"
+                }
+
+                return "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            }
+
+            val repoServerLocation = resolveSonatypeRepoLoc()
 
             pendingFiles.forEach { pending ->
                 val netpath = repoLoc.relativize(pending)
 
-                val uri = "https://oss.sonatype.org/service/local/staging/deploy/maven2/" + (netpath.toString()
-                    .replace("\\", "/"))
+                val uri = repoServerLocation + (netpath.toString().replace("\\", "/"))
 
                 println("Processing $uri")
 
@@ -157,6 +299,8 @@ fun main(args: Array<String>) {
                     println(errmsg)
                 }
             }
+
+            println("::endgroup::")
             if (errors.isNotEmpty()) {
                 error(errors.joinToString("\n\n", prefix = "\n"))
             }

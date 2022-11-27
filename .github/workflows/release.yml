@@ -11,6 +11,32 @@ on:
 
 
 jobs:
+  initialize-sonatype-stage:
+    name: "Initialize sonatype stage repository"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - run: chmod -R 777 *
+
+      - name: Publish to maven central
+        run: ./gradlew runcihelper --args create-stage-repo --scan "-Pcihelper.cert.username=${{ secrets.SONATYPE_USER }}" "-Pcihelper.cert.password=${{ secrets.SONATYPE_KEY }}" "-Pcihelper.cert.profileid=${{ secrets.SONATYPE_PROFILEID }}"
+
+      - name: Cache stage repo id
+        uses: actions/upload-artifact@v3
+        with:
+          name: publish-stage-id
+          path: ci-release-helper/repoid
 
   publish-others:
     name: "Others (${{ matrix.os }})"
@@ -32,25 +58,20 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - uses: actions/setup-java@v2
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
       - name: Keys setup
         shell: bash
         run: |
           mkdir build-gpg-sign
           echo "$GPG_PRIVATE" > build-gpg-sign/keys.gpg
           echo "$GPG_PUBLIC_" > build-gpg-sign/keys.gpg.pub
-          mkdir build-secret-keys
-          echo "$SONATYPE_USER" > build-secret-keys/sonatype.key
-          echo "$SONATYPE_KEY" >> build-secret-keys/sonatype.key
         env:
           GPG_PRIVATE: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PUBLIC_: ${{ secrets.GPG_PUBLIC_KEY }}
-          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
-          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
@@ -81,9 +102,6 @@ jobs:
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
-      - name: Check keys
-        run: ./gradlew ensureMavenCentralAvailable ${{ env.gradleArgs }}
-
       - name: "Assemble"
         run: ./gradlew assemble ${{ env.gradleArgs }}
 
@@ -105,11 +123,14 @@ jobs:
         if: ${{ env.isMac == 'true' }}
         run: ./gradlew publishAllPublicationsToMiraiStageRepoRepository ${{ env.gradleArgs }}
 
-      - name: Publish publish stage
-        uses: actions/upload-artifact@v3
+      - name: Restore stage repo id
+        uses: actions/download-artifact@v3
         with:
-          name: publish-stage-1
-          path: ci-release-helper/stage-repo
+          name: publish-stage-id
+          path: ci-release-helper/repoid
+
+      - name: Publish to maven central
+        run: ./gradlew runcihelper --args publish-to-maven-central --scan "-Pcihelper.cert.username=${{ secrets.SONATYPE_USER }}" "-Pcihelper.cert.password=${{ secrets.SONATYPE_KEY }}"
 
       - name: Publish Gradle plugin
         run: ./gradlew
@@ -164,14 +185,9 @@ jobs:
           mkdir build-gpg-sign
           echo "$GPG_PRIVATE" > build-gpg-sign/keys.gpg
           echo "$GPG_PUBLIC_" > build-gpg-sign/keys.gpg.pub
-          mkdir build-secret-keys
-          echo "$SONATYPE_USER" > build-secret-keys/sonatype.key
-          echo "$SONATYPE_KEY" >> build-secret-keys/sonatype.key
         env:
           GPG_PRIVATE: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PUBLIC_: ${{ secrets.GPG_PUBLIC_KEY }}
-          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
-          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
@@ -238,9 +254,6 @@ jobs:
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
-      - name: Check keys
-        run: ./gradlew ensureMavenCentralAvailable ${{ env.gradleArgs }}
-
       - name: "Test mirai-core-utils for ${{ matrix.os }}"
         run: ./gradlew :mirai-core-utils:${{ matrix.targetName }}Test ${{ env.gradleArgs }}
 
@@ -269,53 +282,14 @@ jobs:
         if: ${{ env.isMac == 'true' }}
         run: ./gradlew publishMacosX64PublicationToMiraiStageRepoRepository ${{ env.gradleArgs }}
 
-      - name: Publish publish stage
-        uses: actions/upload-artifact@v3
-        with:
-          name: publish-stage-2
-          path: ci-release-helper/stage-repo
-
-  publish-stage-to-maven-central:
-    name: "Publish stage to maven central"
-    needs:
-      - publish-others
-      - publish-core-native
-    runs-un: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
-
-      - uses: actions/setup-java@v2
-        with:
-          distribution: 'adopt-openj9'
-          java-version: '17'
-
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-
-      - name: Download publish stage 1
+      - name: Restore stage repo id
         uses: actions/download-artifact@v3
         with:
-          name: publish-stage-1
-          path: ci-release-helper/stage-1
-
-      - name: Download publish stage 2
-        uses: actions/download-artifact@v3
-        with:
-          name: publish-stage-1
-          path: ci-release-helper/stage-2
-
-      - name: Merge stages
-        run: >
-          ./gradlew runcihelper --args merge-repos --scan
-          -Pcihelper.repo1=ci-release-helper/stage-1
-          -Pcihelper.repo2=ci-release-helper/stage-2
+          name: publish-stage-id
+          path: ci-release-helper/repoid
 
       - name: Publish to maven central
-        run: ./gradlew runcihelper --args publish-to-maven-central --scan "-Dcihelper.cert.username=${{ secrets.SONATYPE_USER }}" "-Dcihelper.cert.password=${{ secrets.SONATYPE_KEY }}"
+        run: ./gradlew runcihelper --args publish-to-maven-central --scan "-Pcihelper.cert.username=${{ secrets.SONATYPE_USER }}" "-Pcihelper.cert.password=${{ secrets.SONATYPE_KEY }}"
 
 #
 #  close-repository:
