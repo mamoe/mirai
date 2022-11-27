@@ -131,7 +131,7 @@ public data class PokeMessage @MiraiInternalApi constructor(
 
         /** 敲门 (SVIP) */
         @JvmField
-        public val QiaoMen: PokeMessage = PokeMessage("敲门", 126, 2002)
+        public val QiaoMen: PokeMessage = PokeMessage("敲门", 126, 2000)
 
 
         /**
@@ -141,7 +141,8 @@ public data class PokeMessage @MiraiInternalApi constructor(
         public val values: Array<PokeMessage> = arrayOf(
             ChuoYiChuo, BiXin, DianZan, XinSui, LiuLiuLiu,
             FangDaZhao, BaoBeiQiu, Rose, ZhaoHuanShu, RangNiPi,
-            JieYin, ShouLei, GouYin, ZhuaYiXia, SuiPing
+            JieYin, ShouLei, GouYin, ZhuaYiXia, SuiPing,
+            QiaoMen
         )
     }
 }
