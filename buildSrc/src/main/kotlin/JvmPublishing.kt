@@ -20,6 +20,7 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByName
 import org.gradle.kotlin.dsl.register
+import java.io.File
 
 fun Project.configureRemoteRepos() {
     tasks.register("ensureMavenCentralAvailable") {
@@ -38,6 +39,17 @@ fun Project.configureRemoteRepos() {
         // sonatype
         val keys = SecretKeys.getCache(project)
         repositories {
+            maven {
+                name = "MiraiStageRepo"
+                var stageRepoLoc = getLocalProperty("publishing.stage-repo")?.let(::File)
+                if (stageRepoLoc?.exists() != true) {
+                    stageRepoLoc = rootProject.file("ci-release-helper/stage-repo")
+                }
+                stageRepoLoc as File
+
+                url = stageRepoLoc.also { it.mkdirs() }.toURI()
+            }
+
             if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING")?.toBoolean() == true) {
                 maven {
                     name = "MiraiRepo"
