@@ -7,10 +7,52 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 import keys.SecretKeys
+import kotlinx.validation.sourceSets
 import java.io.ByteArrayOutputStream
 
 plugins {
     id("io.codearte.nexus-staging") version "0.22.0"
+    kotlin("jvm")
+}
+
+tasks.register<JavaExec>("runcihelper") {
+    this.classpath = sourceSets["main"].runtimeClasspath
+    this.mainClass.set("cihelper.CiHelperKt")
+
+    fun Project.findPublishingExt(): PublishingExtension? {
+        val exts = (this@findPublishingExt as ExtensionAware).extensions
+        return exts.findByName("publishing") as PublishingExtension?
+    }
+
+
+    doFirst {
+        @Suppress("USELESS_CAST")
+        environment("PROJ_VERSION", (project.version as Any?).toString())
+        rootProject.allprojects.asSequence()
+            .mapNotNull { it.findPublishingExt() }
+            .flatMap { it.publications.asSequence() }
+            .mapNotNull { it as? MavenPublication }
+            .map { it.artifactId }
+            .joinToString("|")
+            .let { environment("PROJ_ARTIFACTS", it) }
+
+        rootProject.allprojects.asSequence()
+            .mapNotNull { it.findPublishingExt() }
+            .flatMap { it.repositories.asSequence() }
+            .mapNotNull { it as? MavenArtifactRepository }
+            .filter { it.name == "MiraiStageRepo" }
+            .first().url
+            .let { environment("PROJ_MiraiStageRepo", it.toString()) }
+
+        val additionProperties = rootProject.properties.asSequence()
+            .filter { (k, _) -> k.startsWith("cihelper.") }
+            .map { (k, v) -> "-D$k=$v" }
+            .toList()
+        if (additionProperties.isNotEmpty()) {
+            val currentJvmArgs = jvmArgs ?: emptyList()
+            jvmArgs = currentJvmArgs + additionProperties
+        }
+    }
 }
 
 description = "Mirai CI Methods for Releasing"
