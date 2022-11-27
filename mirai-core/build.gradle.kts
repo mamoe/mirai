@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     kotlin("multiplatform")
-    id("kotlinx-atomicfu")
+    // id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
     id("me.him188.kotlin-jvm-blocking-bridge")
     id("me.him188.kotlin-dynamic-delegation")
@@ -43,6 +43,7 @@ kotlin {
 
                 implementation(project(":mirai-core-utils"))
                 implementation(`kotlinx-serialization-protobuf`)
+                implementation(`kotlinx-atomicfu`)
 
 //                relocateImplementation(`ktor-http_relocated`)
 //                relocateImplementation(`ktor-serialization_relocated`)

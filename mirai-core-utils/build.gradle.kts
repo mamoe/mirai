@@ -35,6 +35,7 @@ kotlin {
                 api(`kotlinx-serialization-json`)
                 api(`kotlinx-coroutines-core`)
 
+                implementation(`kotlinx-atomicfu`)
                 implementation(`kotlinx-serialization-protobuf`)
                 relocateImplementation(`ktor-io_relocated`)
             }

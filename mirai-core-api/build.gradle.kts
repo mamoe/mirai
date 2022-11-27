@@ -14,7 +14,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
 
-    id("kotlinx-atomicfu")
+    //id("kotlinx-atomicfu")
     id("signing")
     id("me.him188.kotlin-jvm-blocking-bridge")
     id("me.him188.kotlin-dynamic-delegation")
@@ -43,6 +43,7 @@ kotlin {
                 implementation(project(":mirai-core-utils"))
                 implementation(project(":mirai-console-compiler-annotations"))
                 implementation(`kotlinx-serialization-protobuf`)
+                implementation(`kotlinx-atomicfu`)
                 compileOnly(`ktor-io`) // runtime from mirai-core-utils
             }
         }
