@@ -104,7 +104,13 @@ const val `kotlinx-atomicfu` = "org.jetbrains.kotlinx:atomicfu:${Versions.atomic
  * @see relocateImplementation
  */
 class RelocatedDependency(
+    /**
+     * Dependency notation, e.g. `io.ktor:ktor-io:2.1.0`
+     */
     val notation: String,
+    /**
+     * Kotlin packages. e.g. `io.ktor`
+     */
     vararg val packages: String,
     /**
      * Additional exclusions apart from everything from `org.jetbrains.kotlin` and `org.jetbrains.kotlinx`.
