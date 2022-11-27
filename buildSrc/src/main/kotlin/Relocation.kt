@@ -18,7 +18,6 @@ import org.gradle.kotlin.dsl.accessors.runtime.addDependencyTo
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
-import java.io.File
 
 /**
  * # 非常重要的提示 — 有关 relocation — 在看完全部本文前, 不要进行任何操作
@@ -97,9 +96,9 @@ object RelocationNotes
  */
 fun KotlinDependencyHandler.relocateCompileOnly(
     relocatedDependency: RelocatedDependency,
-    action: ExternalModuleDependency.() -> Unit = {}
 ): ExternalModuleDependency {
-    val dependency = compileOnly(relocatedDependency.notation, action)
+    val dependency = compileOnly(relocatedDependency.notation) {
+    }
     project.relocationFilters.add(
         RelocationFilter(
             dependency.group!!, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = false,
@@ -120,9 +119,10 @@ fun KotlinDependencyHandler.relocateCompileOnly(
 fun DependencyHandler.relocateCompileOnly(
     project: Project,
     relocatedDependency: RelocatedDependency,
-    action: Action<ExternalModuleDependency> = Action {}
 ): Dependency {
-    val dependency = addDependencyTo(this, "compileOnly", relocatedDependency.notation, action)
+    val dependency =
+        addDependencyTo(this, "compileOnly", relocatedDependency.notation, Action<ExternalModuleDependency> {
+        })
     project.relocationFilters.add(
         RelocationFilter(
             dependency.group!!, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = false,
@@ -159,8 +159,7 @@ fun KotlinDependencyHandler.relocateImplementation(
         relocatedDependency.notation,
         Action<ExternalModuleDependency> {
             relocatedDependency.exclusionAction(this)
-            exclude(ExcludeProperties.`everything from kotlin`)
-            exclude(ExcludeProperties.`everything from kotlinx`)
+            intrinsicExclusions()
             action()
         }
     )
@@ -182,10 +181,6 @@ fun DependencyHandler.relocateImplementation(
 ): ExternalModuleDependency {
     val dependency =
         addDependencyTo(this, "implementation", relocatedDependency.notation, Action<ExternalModuleDependency> {
-            relocatedDependency.exclusionAction(this)
-            exclude(ExcludeProperties.`everything from kotlin`)
-            exclude(ExcludeProperties.`everything from kotlinx`)
-            action.execute(this)
         })
     project.relocationFilters.add(
         RelocationFilter(
@@ -199,12 +194,16 @@ fun DependencyHandler.relocateImplementation(
         relocatedDependency.notation,
         Action<ExternalModuleDependency> {
             relocatedDependency.exclusionAction(this)
-            exclude(ExcludeProperties.`everything from kotlin`)
-            exclude(ExcludeProperties.`everything from kotlinx`)
+            intrinsicExclusions()
             action(this)
         }
     )
     return dependency
+}
+
+private fun ExternalModuleDependency.intrinsicExclusions() {
+    exclude(ExcludeProperties.`everything from kotlin`)
+    exclude(ExcludeProperties.`everything from kotlinx`)
 }
 
 

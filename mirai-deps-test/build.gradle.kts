@@ -98,7 +98,20 @@ fun generateBuildConfig() {
     }
 }
 
-// keep this property for Search Everywhere
+/**
+ * Kind note: To run this task you probably need a lot of host memory and luck.
+ *
+ * **If you see errors, don't panic, that's most probably not your fault.**
+ *
+ * Try:
+ *
+ * ```shell
+ * ./gradlew :mirai-deps-test:updateProjectVersionForLocalDepsTest
+ * ./gradlew clean :mirai-deps-test:publishMiraiArtifactsToMavenLocal "-Porg.gradle.parallel=false"
+ * ```
+ * Note this will change your project version in `buildSrc/src/main/kotlin/Versions.kt`. Be careful to change it back before committing!
+ * Note also this is **extremely slow**. If your computer isn't good enough it may take hours.
+ */
 val publishMiraiLocalArtifacts = tasks.register("publishMiraiLocalArtifacts", Exec::class) {
     group = "mirai"
     description = "Starts a child process to publish v$DEPS_TEST_VERSION artifacts to MavenLocal"
@@ -107,6 +120,7 @@ val publishMiraiLocalArtifacts = tasks.register("publishMiraiLocalArtifacts", Ex
     environment("mirai.build.project.version", DEPS_TEST_VERSION)
     commandLine(
         "./gradlew",
+        "clean",
         publishMiraiArtifactsToMavenLocal.name,
         "--no-daemon",
         "--stacktrace",
