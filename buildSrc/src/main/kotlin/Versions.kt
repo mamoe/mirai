@@ -78,6 +78,9 @@ object Versions {
     // Java In Memory File System
     const val jimfs = "1.2"
 
+    const val jline = "3.21.0"
+    const val jansi = "2.4.0"
+
 
     // don't update easily unless you want your disk space -= 1000 MB
     // (700 MB for IDEA, 150 MB for sources, 150 MB for JBR)
@@ -268,6 +271,9 @@ const val `maven-resolver-transport-http` =
     "org.apache.maven.resolver:maven-resolver-transport-http:${Versions.mavenArtifactResolver}"
 const val `maven-resolver-provider` = "org.apache.maven:maven-resolver-provider:${Versions.mavenResolverProvider}"
 
+
+const val jline = "org.jline:jline:${Versions.jline}"
+const val jansi = "org.fusesource.jansi:jansi:${Versions.jansi}"
 
 
 const val DEPS_TEST_VERSION = "2.99.0-deps-test"
