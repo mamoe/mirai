@@ -43,7 +43,7 @@ kotlin {
                 implementation(project(":mirai-core-utils"))
                 implementation(project(":mirai-console-compiler-annotations"))
                 implementation(`kotlinx-serialization-protobuf`)
-                relocateCompileOnly(`ktor-io_relocated`) // runtime from mirai-core-utils
+                compileOnly(`ktor-io`) // runtime from mirai-core-utils
             }
         }
 
@@ -63,7 +63,6 @@ kotlin {
         }
 
         findByName("androidMain")?.apply {
-            dependsOn(commonMain)
             dependencies {
                 compileOnly(`android-runtime`)
             }

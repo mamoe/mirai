@@ -73,7 +73,6 @@ kotlin {
         }
 
         findByName("androidMain")?.apply {
-            dependsOn(commonMain)
             dependencies {
                 compileOnly(`android-runtime`)
             }
