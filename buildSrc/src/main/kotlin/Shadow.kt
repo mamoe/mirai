@@ -217,7 +217,7 @@ private fun Sequence<Task>.dependsOn(
 
 private fun Project.registerRegularShadowTask(target: KotlinTarget, mapTaskNameForMultipleTargets: Boolean): ShadowJar {
     return tasks.create(
-        if (mapTaskNameForMultipleTargets) "shadow${target.targetName}Jar" else "shadowJar",
+        if (mapTaskNameForMultipleTargets) "shadow${target.targetName.capitalize()}Jar" else "shadowJar",
         ShadowJar::class
     ) {
         group = "mirai"
