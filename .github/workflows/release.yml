@@ -280,7 +280,7 @@ jobs:
     needs:
       - publish-others
       - publish-core-native
-    runs-un: ubuntu-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
