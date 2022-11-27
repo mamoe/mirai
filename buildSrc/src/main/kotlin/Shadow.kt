@@ -13,8 +13,11 @@ import com.google.gson.GsonBuilder
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.publish.tasks.GenerateModuleMetadata
+import org.gradle.api.tasks.bundling.Jar
+import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
@@ -215,7 +218,33 @@ private fun Sequence<Task>.dependsOn(
     return forEach { it.dependsOn(tasks) }
 }
 
-private fun Project.registerRegularShadowTask(target: KotlinTarget, mapTaskNameForMultipleTargets: Boolean): ShadowJar {
+/**
+ * 添加 `implementation` 和 `shadow`
+ */
+fun DependencyHandlerScope.shadowImplementation(dependencyNotation: Any) {
+    "implementation"(dependencyNotation)
+    "shadow"(dependencyNotation)
+}
+
+fun Project.registerRegularShadowTaskForJvmProject(
+    configurations: List<Configuration> = listOfNotNull(
+        project.configurations.findByName("runtimeClasspath"),
+        project.configurations.findByName("${kotlinJvm!!.target.name}RuntimeClasspath"),
+        project.configurations.findByName("runtime")
+    )
+): ShadowJar {
+    return project.registerRegularShadowTask(kotlinJvm!!.target, mapTaskNameForMultipleTargets = false, configurations)
+}
+
+fun Project.registerRegularShadowTask(
+    target: KotlinTarget,
+    mapTaskNameForMultipleTargets: Boolean,
+    configurations: List<Configuration> = listOfNotNull(
+        project.configurations.findByName("runtimeClasspath"),
+        project.configurations.findByName("${target.targetName}RuntimeClasspath"),
+        project.configurations.findByName("runtime")
+    ),
+): ShadowJar {
     return tasks.create(
         if (mapTaskNameForMultipleTargets) "shadow${target.targetName.capitalize()}Jar" else "shadowJar",
         ShadowJar::class
@@ -223,18 +252,17 @@ private fun Project.registerRegularShadowTask(target: KotlinTarget, mapTaskNameF
         group = "mirai"
         archiveClassifier.set("all")
 
+        (tasks.findByName("jar") as? Jar)?.let {
+            manifest.inheritFrom(it.manifest)
+        }
+
         val compilation = target.compilations["main"]
         dependsOn(compilation.compileKotlinTask)
         from(compilation.output)
 
 //        components.findByName("java")?.let { from(it) }
         project.sourceSets.findByName("main")?.output?.let { from(it) } // for JVM projects
-        configurations =
-            listOfNotNull(
-                project.configurations.findByName("runtimeClasspath"),
-                project.configurations.findByName("${target.targetName}RuntimeClasspath"),
-                project.configurations.findByName("runtime")
-            )
+        this.configurations = configurations
 
         // Relocate packages
         afterEvaluate {
@@ -249,6 +277,7 @@ private fun Project.registerRegularShadowTask(target: KotlinTarget, mapTaskNameF
         exclude { file ->
             file.name.endsWith(".sf", ignoreCase = true)
         }
+        exclude("META-INF/INDEX.LIST", "META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "module-info.class")
     }
 }
 

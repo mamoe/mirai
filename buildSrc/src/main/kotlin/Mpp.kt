@@ -14,6 +14,7 @@ import org.gradle.api.artifacts.DependencySubstitutions
 import org.gradle.api.artifacts.ResolutionStrategy
 import org.gradle.api.artifacts.component.ComponentSelector
 import org.gradle.api.plugins.ExtensionAware
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import java.util.*
 
@@ -115,5 +116,11 @@ fun ResolutionStrategy.substituteDependencies(action: ResolutionStrategyDsl.() -
 val Project.kotlinMpp
     get() = runCatching {
         (this as ExtensionAware).extensions.getByName("kotlin") as? KotlinMultiplatformExtension
+    }.getOrNull()
+
+
+val Project.kotlinJvm
+    get() = runCatching {
+        (this as ExtensionAware).extensions.getByName("kotlin") as? KotlinJvmProjectExtension
     }.getOrNull()
 
