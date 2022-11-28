@@ -80,7 +80,6 @@ fun Project.configureMppPublishing() {
                     }
                 }
             }
-            configGpgSign(this@configureMppPublishing)
         }
     }
 }

@@ -25,9 +25,6 @@ import java.io.File
 fun Project.configureRemoteRepos() {
     tasks.register("ensureMavenCentralAvailable") {
         doLast {
-            if (GpgSigner.signer == GpgSigner.NoopSigner) {
-                error("GPG Signer isn't available.")
-            }
             val keys = SecretKeys.getCache(project)
             if (!keys.loadKey("sonatype").isValid) {
                 error("Maven Central isn't available.")
@@ -86,7 +83,6 @@ inline fun Project.configurePublishing(
     artifactId: String,
     vcs: String = "https://github.com/mamoe/mirai",
     addProjectComponents: Boolean = true,
-    setupGpg: Boolean = true,
     skipPublicationSetup: Boolean = false,
     addShadowJar: Boolean = true
 ) {
@@ -131,9 +127,6 @@ inline fun Project.configurePublishing(
                 stubJavadoc?.get()?.let { artifact(it) }
                 shadowJar?.get()?.let { artifact(it) }
             }
-        }
-        if (setupGpg) {
-            configGpgSign(this@configurePublishing)
         }
     }
 }

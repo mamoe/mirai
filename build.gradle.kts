@@ -46,8 +46,6 @@ plugins {
 osDetector = osdetector
 BuildSrcRootProjectHolder.value = rootProject
 
-GpgSigner.setup(project)
-
 analyzes.CompiledCodeVerify.run { registerAllVerifyTasks() }
 
 allprojects {
