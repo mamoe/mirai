@@ -106,6 +106,9 @@ fun main(args: Array<String>) {
                         .toList()
                 }
             }
+            repos = repos.sortedBy { it.name }
+            println("Repos:")
+            repos.forEach { println(" |- $it") }
 
             repos.forEach { arepo ->
                 Files.walk(arepo)
