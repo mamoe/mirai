@@ -74,12 +74,22 @@ fun main(args: Array<String>) {
         }
 
         "merge-repos" -> {
-            val repos = System.getProperties().asSequence()
+            var repos = System.getProperties().asSequence()
                 .filter { it.key.toString().startsWith("cihelper.repo") }
                 .map { it.value.toString() }
                 .map { Paths.get(it) }
                 .toList()
             println(repos)
+            if (repos.size == 1) {
+                val fst = repos.first()
+                if (!fst.resolve("net/mamoe").isDirectory()) {
+                    repos = fst.listDirectoryEntries()
+                        .asSequence()
+                        .filter { it.isDirectory() }
+                        .filter { it.name.startsWith("publish-stage-") }
+                        .toList()
+                }
+            }
 
             repos.forEach { arepo ->
                 Files.walk(arepo)

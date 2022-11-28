@@ -272,7 +272,7 @@ jobs:
       - name: Publish publish stage
         uses: actions/upload-artifact@v3
         with:
-          name: publish-stage-2
+          name: publish-stage-${{ matrix.os }}
           path: ci-release-helper/stage-repo
 
   publish-stage-to-maven-central:
@@ -299,20 +299,13 @@ jobs:
       - name: Download publish stage 1
         uses: actions/download-artifact@v3
         with:
-          name: publish-stage-1
-          path: ci-release-helper/stage-1
+          path: ci-release-helper/stages
 
-      - name: Download publish stage 2
-        uses: actions/download-artifact@v3
-        with:
-          name: publish-stage-1
-          path: ci-release-helper/stage-2
 
       - name: Merge stages
         run: >
           ./gradlew runcihelper --args merge-repos --scan
-          -Pcihelper.repo1=ci-release-helper/stage-1
-          -Pcihelper.repo2=ci-release-helper/stage-2
+          -Pcihelper.repos=ci-release-helper/stages
 
       - name: Publish to maven central
         run: ./gradlew runcihelper --args publish-to-maven-central --scan "-Dcihelper.cert.username=${{ secrets.SONATYPE_USER }}" "-Dcihelper.cert.password=${{ secrets.SONATYPE_KEY }}"
