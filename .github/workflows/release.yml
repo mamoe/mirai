@@ -105,10 +105,13 @@ jobs:
         if: ${{ env.isMac == 'true' }}
         run: ./gradlew publishAllPublicationsToMiraiStageRepoRepository ${{ env.gradleArgs }}
 
+      - name: Generate stage id
+        run: node -e "console.log('STAGE_REPO_SUFFIX=' + (Date.now()) + '-' + Math.random())" >> $GITHUB_ENV
+
       - name: Publish publish stage
         uses: actions/upload-artifact@v3
         with:
-          name: publish-stage-1
+          name: publish-stage-${{ env.STAGE_REPO_SUFFIX }}
           path: ci-release-helper/stage-repo
 
       - name: Publish Gradle plugin
@@ -269,10 +272,13 @@ jobs:
         if: ${{ env.isMac == 'true' }}
         run: ./gradlew publishMacosX64PublicationToMiraiStageRepoRepository ${{ env.gradleArgs }}
 
+      - name: Generate stage id
+        run: node -e "console.log('STAGE_REPO_SUFFIX=' + (Date.now()) + '-' + Math.random())" >> $GITHUB_ENV
+
       - name: Publish publish stage
         uses: actions/upload-artifact@v3
         with:
-          name: publish-stage-${{ matrix.os }}
+          name: publish-stage-${{ env.STAGE_REPO_SUFFIX }}
           path: ci-release-helper/stage-repo
 
   publish-stage-to-maven-central:
