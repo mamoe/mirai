@@ -308,7 +308,7 @@ jobs:
           -Pcihelper.repos=ci-release-helper/stages
 
       - name: Publish to maven central
-        run: ./gradlew runcihelper --args publish-to-maven-central --scan "-Dcihelper.cert.username=${{ secrets.SONATYPE_USER }}" "-Dcihelper.cert.password=${{ secrets.SONATYPE_KEY }}"
+        run: ./gradlew runcihelper --args publish-to-maven-central --scan "-Pcihelper.cert.username=${{ secrets.SONATYPE_USER }}" "-Pcihelper.cert.password=${{ secrets.SONATYPE_KEY }}"
 
 #
 #  close-repository:
