@@ -26,7 +26,7 @@ import java.util.*
 import java.util.stream.Collectors
 import kotlin.io.path.*
 
-private val hexTemplate: CharArray = "01234567890abcdef".toCharArray()
+private val hexTemplate: CharArray = "0123456789abcdef".toCharArray()
 
 fun ByteArray.hexToString(): String {
     val sb = StringBuilder(this.size * 2)
