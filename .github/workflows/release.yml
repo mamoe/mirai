@@ -237,7 +237,7 @@ jobs:
         run: ./gradlew publishMacosX64PublicationToMiraiStageRepoRepository ${{ env.gradleArgs }}
 
       - name: Generate stage id
-        run: node -e "console.log('STAGE_REPO_SUFFIX=' + (Date.now()) + '-' + Math.random())" >> $GITHUB_ENV
+        run: node -e "require('fs').appendFileSync(process.env.GITHUB_ENV, 'STAGE_REPO_SUFFIX=' + (Date.now()) + '-' + Math.random() + require('os').EOL)"
 
       - name: Publish publish stage
         uses: actions/upload-artifact@v3
