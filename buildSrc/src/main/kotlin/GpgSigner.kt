@@ -42,30 +42,6 @@ open class GpgSigner(private val workdir: File) {
         private var initialized: Boolean = false
         var signer: GpgSigner = NoopSigner
         fun setup(project: Project) {
-            if (initialized) return
-            initialized = true
-            val rootProject = project.rootProject
-            val gpg = rootProject.projectDir.resolve("build-gpg-sign")
-            gpg.mkdirs()
-            val keyFile = gpg.resolve("keys.gpg")
-            val keyFilePub = gpg.resolve("keys.gpg.pub")
-            if (keyFile.isFile) {
-                val homedir = gpg.resolve("homedir")
-                signer = GpgSigner(homedir.absolutePath)
-                if (!homedir.resolve("pubring.kbx").isFile) {
-                    signer.importKey(keyFile)
-                    if (keyFilePub.isFile) {
-                        signer.importKey(keyFilePub)
-                    } else {
-                        println("[GPG SIGN] Missing public key storage")
-                        println("[GPG SIGN] GPG Sign 2nd verity may failed.")
-                    }
-                }
-            } else {
-                println("[GPG SIGN] GPG Key not found.")
-                println("[GPG SIGN] GPG Signer will not setup")
-                println("[GPG SIGN] Key file location: $keyFile")
-            }
         }
     }
 

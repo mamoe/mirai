@@ -10,16 +10,32 @@
 
 package cihelper
 
+import java.io.OutputStream
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.charset.Charset
+import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.nio.file.attribute.PosixFilePermission
+import java.nio.file.attribute.PosixFilePermissions
+import java.security.MessageDigest
 import java.util.*
 import java.util.stream.Collectors
 import kotlin.io.path.*
+
+private val hexTemplate: CharArray = "01234567890abcdef".toCharArray()
+
+fun ByteArray.hexToString(): String {
+    val sb = StringBuilder(this.size * 2)
+    forEach { sbyte ->
+        sb.append(hexTemplate[sbyte.toInt().shr(4).and(0xF)])
+        sb.append(hexTemplate[sbyte.toInt().and(0xF)])
+    }
+    return sb.toString()
+}
 
 @Suppress("Since15")
 fun main(args: Array<String>) {
@@ -130,13 +146,110 @@ fun main(args: Array<String>) {
                     subdir.toFile().deleteRecursively()
                 }
             }
-            val pendingFiles = Files.walk(relatedRepoLoc).filter { it.isRegularFile() }.use { stream ->
-                stream.collect(Collectors.toList())
+            val pendingFiles = Files.walk(relatedRepoLoc)
+                .filter { it.isRegularFile() }
+                .filter { !it.name.endsWith(".md5") && !it.name.endsWith(".sha1") }
+                .filter { !it.name.endsWith(".asc") }
+                .use { stream -> stream.collect(Collectors.toList()) }
+
+            run `sign artifacts`@{
+                // build-gpg-sign/keys.gpg
+                // build-gpg-sign/keys.gpg.pub
+                val bgs = Paths.get("build-gpg-sign").toAbsolutePath()
+                if (!bgs.isDirectory()) return@`sign artifacts`
+                val gpgHomeDir = bgs.resolve("homedir")
+                val bgsFile = bgs.toFile()
+
+                fun execGpg(vararg cmd: String) {
+                    println("::group::${cmd.joinToString(" ")}")
+                    try {
+                        val exitcode = ProcessBuilder("gpg", "--homedir", "homedir", "--batch", "--no-tty", *cmd)
+                            .directory(bgsFile)
+                            .inheritIO()
+                            .start()
+                            .waitFor()
+                        if (exitcode != 0) {
+                            error("Exit code $exitcode != 0")
+                        }
+                    } finally {
+                        println("::endgroup::")
+                    }
+                }
+
+
+                if (!gpgHomeDir.resolve("pubring.kbx").exists()) {
+
+                    val keys = arrayOf("keys.gpg", "keys.gpg.pub")
+                    if (!keys.all { bgs.resolve(it).isRegularFile() }) return@`sign artifacts`
+
+                    val isPosix = FileSystems.getDefault().supportedFileAttributeViews().contains("posix")
+                    val dirPermissions = PosixFilePermissions.asFileAttribute(
+                        EnumSet.of(
+                            PosixFilePermission.OWNER_READ,
+                            PosixFilePermission.OWNER_WRITE,
+                            PosixFilePermission.OWNER_EXECUTE
+                        )
+                    )
+
+                    Files.createDirectories(
+                        gpgHomeDir,
+                        *if (isPosix) arrayOf(dirPermissions) else arrayOf(),
+                    )
+
+                    keys.forEach { execGpg("--import", it) }
+                }
+
+
+                println("::group::Signing artifacts")
+                pendingFiles.toList().asSequence().filterNot { it.name == "maven-metadata.xml" }
+                    .forEach { pendingFile ->
+                        val pt = pendingFile.absolutePathString()
+                        val ascFile = pendingFile.resolveSibling(pendingFile.name + ".asc")
+                        ascFile.deleteIfExists()
+                        execGpg("-a", "--detach-sig", "--sign", pt)
+
+                        pendingFiles.add(ascFile)
+                    }
+                println("::endgroup::")
             }
-            // TODO: Sign flies direct, calc md5, sha1 direct
+
+            run `calc msg digest`@{
+                pendingFiles.toList().forEach { pendingFile ->
+                    val sha1MD = MessageDigest.getInstance("SHA-1")
+                    val md5MD = MessageDigest.getInstance("MD5")
+
+                    pendingFile.inputStream().use { content ->
+                        content.copyTo(object : OutputStream() {
+                            override fun write(b: Int) {
+                                sha1MD.update(b.toByte())
+                                md5MD.update(b.toByte())
+                            }
+
+                            override fun write(b: ByteArray, off: Int, len: Int) {
+                                sha1MD.update(b, off, len)
+                                md5MD.update(b, off, len)
+                            }
+                        })
+                    }
+
+                    val sha1 = sha1MD.digest().hexToString()
+                    val mg5 = md5MD.digest().hexToString()
+
+                    val pfname = pendingFile.name
+                    val sha1File = pendingFile.resolveSibling("$pfname.sha1")
+                    val md5File = pendingFile.resolveSibling("$pfname.md5")
+
+                    sha1File.writeText(sha1)
+                    md5File.writeText(mg5)
+
+                    pendingFiles.add(sha1File)
+                    pendingFiles.add(md5File)
+                }
+            }
 
             pendingFiles.sort()
 
+            println("::group::Publishing to Maven Central")
 
             val authorization = "Basic " + Base64.getEncoder().encodeToString(
                 ("$cert_username:$cert_password").toByteArray()
@@ -167,6 +280,8 @@ fun main(args: Array<String>) {
                     println(errmsg)
                 }
             }
+
+            println("::endgroup::")
             if (errors.isNotEmpty()) {
                 error(errors.joinToString("\n\n", prefix = "\n"))
             }

@@ -37,21 +37,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Keys setup
-        shell: bash
-        run: |
-          mkdir build-gpg-sign
-          echo "$GPG_PRIVATE" > build-gpg-sign/keys.gpg
-          echo "$GPG_PUBLIC_" > build-gpg-sign/keys.gpg.pub
-          mkdir build-secret-keys
-          echo "$SONATYPE_USER" > build-secret-keys/sonatype.key
-          echo "$SONATYPE_KEY" >> build-secret-keys/sonatype.key
-        env:
-          GPG_PRIVATE: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PUBLIC_: ${{ secrets.GPG_PUBLIC_KEY }}
-          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
-          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
-
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
@@ -160,21 +145,6 @@ jobs:
         with:
           distribution: 'adopt-openj9'
           java-version: '17'
-
-      - name: Keys setup
-        shell: bash
-        run: |
-          mkdir build-gpg-sign
-          echo "$GPG_PRIVATE" > build-gpg-sign/keys.gpg
-          echo "$GPG_PUBLIC_" > build-gpg-sign/keys.gpg.pub
-          mkdir build-secret-keys
-          echo "$SONATYPE_USER" > build-secret-keys/sonatype.key
-          echo "$SONATYPE_KEY" >> build-secret-keys/sonatype.key
-        env:
-          GPG_PRIVATE: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PUBLIC_: ${{ secrets.GPG_PUBLIC_KEY }}
-          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
-          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
@@ -298,6 +268,15 @@ jobs:
           distribution: 'adopt-openj9'
           java-version: '17'
 
+      - name: Keys setup
+        shell: bash
+        run: |
+          mkdir build-gpg-sign
+          echo "$GPG_PRIVATE" > build-gpg-sign/keys.gpg
+          echo "$GPG_PUBLIC_" > build-gpg-sign/keys.gpg.pub
+        env:
+          GPG_PRIVATE: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PUBLIC_: ${{ secrets.GPG_PUBLIC_KEY }}
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
