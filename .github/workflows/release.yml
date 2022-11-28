@@ -66,9 +66,6 @@ jobs:
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
 
-      - name: Check keys
-        run: ./gradlew ensureMavenCentralAvailable ${{ env.gradleArgs }}
-
       - name: "Assemble"
         run: ./gradlew assemble ${{ env.gradleArgs }}
 
@@ -210,9 +207,6 @@ jobs:
 
       - name: Clean and download dependencies
         run: ./gradlew clean ${{ env.gradleArgs }}
-
-      - name: Check keys
-        run: ./gradlew ensureMavenCentralAvailable ${{ env.gradleArgs }}
 
       - name: "Test mirai-core-utils for ${{ matrix.os }}"
         run: ./gradlew :mirai-core-utils:${{ matrix.targetName }}Test ${{ env.gradleArgs }}
