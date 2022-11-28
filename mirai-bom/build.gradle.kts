@@ -36,13 +36,8 @@ dependencies {
 configurePublishing(
     "mirai-bom",
     addProjectComponents = false,
-    setupGpg = false,
 )
 
 publishing.publications.getByName<MavenPublication>("mavenJava") {
     from(components["javaPlatform"])
-}
-
-publishing {
-    configGpgSign(project)
 }

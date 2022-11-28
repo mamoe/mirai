@@ -32,11 +32,10 @@ version = Versions.consoleTerminal
 
 description = "Console Terminal CLI frontend for mirai"
 
-configurePublishing("mirai-console-terminal", setupGpg = false, addShadowJar = false)
+configurePublishing("mirai-console-terminal", addShadowJar = false)
 val shadowJar = registerRegularShadowTaskForJvmProject(listOf(shadow))
 publishing {
     publications.getByName("mavenJava", MavenPublication::class) {
         artifacts.artifact(shadowJar)
     }
-    configGpgSign(project)
 }

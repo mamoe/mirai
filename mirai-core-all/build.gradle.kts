@@ -34,15 +34,12 @@ val shadow = configureRelocatedShadowJarForJvmProject(kotlin)
 if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING")?.toBoolean() != true) {
     // Do not publish -all jars to snapshot server since they are too large.
 
-    configurePublishing("mirai-core-all", addShadowJar = false, setupGpg = false)
+    configurePublishing("mirai-core-all", addShadowJar = false)
 
     publications {
         getByName("mavenJava", MavenPublication::class) {
             artifact(shadow)
         }
-    }
-    publishing {
-        configGpgSign(project)
     }
 
     tasks.getByName("publishMavenJavaPublicationToMavenLocal").dependsOn(shadow)
