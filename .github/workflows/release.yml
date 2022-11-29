@@ -267,6 +267,8 @@ jobs:
       - name: Initialize Publish Stage
         run: ./gradlew runcihelper --args sync-maven-metadata ${{ env.gradleArgs }}
 
+      - run: node ci-release-helper/scripts/kill-java.js
+
       #      # Parallel compilation will exhaust machine memory causing OOM
       #      - name: Assemble
       #        run: ./gradlew assemble ${{ env.gradleArgs }} "-Porg.gradle.parallel=${{ matrix.parallelCompilation }}"
@@ -288,6 +290,8 @@ jobs:
         with:
           name: publish-stage-id
           path: ci-release-helper/repoid
+
+      - run: node ci-release-helper/scripts/kill-java.js
 
       - name: Publish to maven central
         run: ./gradlew runcihelper --args publish-to-maven-central --scan "-Pcihelper.cert.username=${{ secrets.SONATYPE_USER }}" "-Pcihelper.cert.password=${{ secrets.SONATYPE_KEY }}"
