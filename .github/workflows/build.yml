@@ -261,8 +261,6 @@ jobs:
             targetName: mingwX64
           - os: ubuntu-20.04
             targetName: linuxX64
-          - os: ubuntu-18.04
-            targetName: linuxX64
           # - os: macos-12
           #   targetName: macosX64
     #          - os: macos-11
