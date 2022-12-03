@@ -155,7 +155,7 @@ public interface Message {
     /**
      * 转为接近官方格式的字符串, 即 "内容". 如 `At(member) + "test"` 将转为 `"@QQ test"`.
      *
-     * (对于 `At`，应使用 [At.getDisplay] 将其转为最接近官方格式的字符串 `"@群名片"`)
+     * (对于 [At]，应使用 [At.getDisplay] 将其转为最接近官方格式的字符串 `"@群名片"`)
      *
      * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用 [contentToString] 而不是 [toString].
      *
