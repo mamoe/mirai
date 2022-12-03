@@ -213,7 +213,17 @@ internal class NormalMemberImpl constructor(
         ) as TroopManagement.ModifyAdmin.Response
 
         check(resp.success) {
-            "Failed to modify admin, cause: ${resp.msg}"
+            buildString {
+                append("Failed to ")
+                append(if (operation) "grant" else "revoke")
+                append(" administrator privileges ")
+                append(if (operation) "to" else "from")
+                append(" member ")
+                append(id).append(" in group ").append(group.id)
+
+                append(": code=").append(resp.code)
+                append(", msg=").append(resp.msg)
+            }
         }
 
         this@NormalMemberImpl.permission = new
