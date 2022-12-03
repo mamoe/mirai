@@ -137,7 +137,6 @@ jobs:
         run: ./gradlew runcihelper --args publish-to-maven-central --scan "-Pcihelper.cert.username=${{ secrets.SONATYPE_USER }}" "-Pcihelper.cert.password=${{ secrets.SONATYPE_KEY }}"
 
       - name: Publish Gradle plugin
-        continue-on-error: true
         run: ./gradlew
           :mirai-console-gradle:publishPlugins ${{ env.gradleArgs }}
           -Dgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
