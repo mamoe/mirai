@@ -43,6 +43,7 @@ kotlin {
                 implementation(project(":mirai-core-utils"))
                 implementation(project(":mirai-console-compiler-annotations"))
                 implementation(`kotlinx-serialization-protobuf`)
+                implementation(`kotlinx-atomicfu`)
                 compileOnly(`ktor-io`) // runtime from mirai-core-utils
             }
         }
