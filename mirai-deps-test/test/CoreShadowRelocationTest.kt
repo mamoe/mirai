@@ -24,7 +24,7 @@ class CoreShadowRelocationTest : AbstractTest() {
         private const val OkHttp = "okhttp3.OkHttp"
         private const val OkIO = "okio.ByteString"
 
-        private fun relocated(string: String): String {
+        fun relocated(string: String): String {
             return "net.mamoe.mirai.internal.deps.$string"
         }
     }
@@ -59,6 +59,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             -both(`ktor-client-okhttp`)
             -both(`okhttp3-okhttp`)
             -both(okio)
+            +relocated(`ExternalResource-input`)
         }
         applyCodeFragment(fragment)
         buildFile.appendText(
@@ -80,6 +81,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             +relocated(`ktor-client-okhttp`)
             +relocated(`okhttp3-okhttp`)
             +relocated(okio)
+            +relocated(`ExternalResource-input`)
         }
         applyCodeFragment(fragment)
         buildFile.appendText(
@@ -128,6 +130,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             -both(`ktor-client-okhttp`)
             -both(`okhttp3-okhttp`)
             -both(okio)
+//            +relocated(`ExternalResource-input`) // Will fail with no class def found error because there is no runtime ktor-io
         }
         applyCodeFragment(fragment)
         buildFile.appendText(
@@ -151,6 +154,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             +relocated(`ktor-client-okhttp`)
             +relocated(`okhttp3-okhttp`)
             +relocated(okio)
+            +relocated(`ExternalResource-input`)
         }
         applyCodeFragment(fragment)
 
@@ -177,36 +181,110 @@ class CoreShadowRelocationTest : AbstractTest() {
             """
             package test
             import org.junit.jupiter.api.*
+            import java.lang.reflect.Method
+            import kotlin.reflect.jvm.kotlinFunction
+            import kotlin.test.assertTrue
+            import kotlin.test.assertFalse
+            
+            private val Method.signature: String
+                get() = buildString {
+                    append(kotlinFunction?.toString())
+                    return@buildString
+                    append(kotlinFunction?.visibility?.name?.lowercase())
+                    append(kotlinFunction?.visibility?.name?.lowercase())
+                    append(' ')
+                    append(returnType.canonicalName)
+                    append(' ')
+                    append(name)
+                    append('(')
+                    for (parameter in parameters) {
+                        append(parameter.type.canonicalName)
+                        append(' ')
+                        append(parameter.name)
+                        append(", ")
+                    }
+                    if (parameterCount != 0) {
+                        deleteAt(lastIndex)
+                        deleteAt(lastIndex)
+                    }
+                    append(')')
+                }
+
             class MyTest {
         """.trimIndent()
         ).append("\n").append("\n")
 
-        class TestCase(
+        class ClassTestCase(
             val name: String,
             val qualifiedClassName: String,
         )
 
-        val `ktor-io` = TestCase("ktor-io ByteBufferChannel", ByteBufferChannel)
-        val `ktor-client-core` = TestCase("ktor-client-core HttpClient", HttpClient)
-        val `ktor-client-okhttp` = TestCase("ktor-client-core OkHttp", KtorOkHttp)
-        val `okhttp3-okhttp` = TestCase("okhttp3 OkHttp", OkHttp)
-        val okio = TestCase("okio ByteString", OkIO)
-
-        class Relocated(
-            val testCase: TestCase
+        class FunctionTestCase(
+            val name: String,
+            val qualifiedClassName: String,
+            val signature: String,
+            val relocated: (FunctionTestCase.() -> FunctionTestCase)? = null,
         )
 
-        class Both(
-            val testCase: TestCase
+        val `ktor-io` = ClassTestCase("ktor-io ByteBufferChannel", ByteBufferChannel)
+        val `ktor-client-core` = ClassTestCase("ktor-client-core HttpClient", HttpClient)
+        val `ktor-client-okhttp` = ClassTestCase("ktor-client-core OkHttp", KtorOkHttp)
+        val `okhttp3-okhttp` = ClassTestCase("okhttp3 OkHttp", OkHttp)
+        val okio = ClassTestCase("okio ByteString", OkIO)
+        val `ExternalResource-input` =
+            FunctionTestCase(
+                "ExternalResource_input",
+                "net.mamoe.mirai.utils.ExternalResource",
+                "fun net.mamoe.mirai.utils.ExternalResource.input(): io.ktor.utils.io.core.Input"
+            ) original@{
+                FunctionTestCase(
+                    "relocated ExternalResource_input",
+                    "net.mamoe.mirai.utils.ExternalResource",
+                    "fun net.mamoe.mirai.utils.ExternalResource.input(): ${relocated("io.ktor.utils.io.core.Input")}"
+                ) {
+                    this@original
+                }
+            }
+
+        class RelocatedClassTestCase(
+            val testCase: ClassTestCase
+        )
+
+        class BothClassTestCase(
+            val testCase: ClassTestCase
         )
 
 
-        private fun appendHas(name: String, qualifiedClassName: String) {
+        private fun appendHasClass(name: String, qualifiedClassName: String) {
             result.append(
                 """
                       @Test
                       fun `has ${name}`() {
                         Class.forName("$qualifiedClassName")
+                      }
+                    """.trimIndent()
+            ).append("\n")
+        }
+
+        fun appendClassHasMethod(name: String, qualifiedClassName: String, methodSignature: String) {
+            result.append(
+                """
+                      @Test
+                      fun `has ${name}`() {
+                        val signatures = Class.forName("$qualifiedClassName").declaredMethods.map { it.signature }
+                        assertTrue("All signatures: " + signatures.joinToString("\n")) { signatures.any { it == "$methodSignature" } }
+                      }
+                    """.trimIndent()
+            ).append("\n")
+        }
+
+        fun appendClassMethodNotFound(name: String, qualifiedClassName: String, methodSignature: String) {
+            result.append(
+                """
+                      @Test
+                      fun `has ${name}`() {
+                        val signatures = Class.forName("$qualifiedClassName").declaredMethods.map { it.signature }
+                        assertFalse("All signatures: " + signatures.joinToString("\n")) { signatures.any { it == "$methodSignature" } }
                       }
                     """.trimIndent()
             ).append("\n")
@@ -227,15 +305,25 @@ class CoreShadowRelocationTest : AbstractTest() {
         /**
          * Asserts a class exists. Also asserts its relocated class does not exist.
          */
-        operator fun TestCase.unaryPlus() {
-            appendHas(name, qualifiedClassName)
+        operator fun FunctionTestCase.unaryPlus() {
+            appendClassHasMethod(name, qualifiedClassName, signature)
+            relocated?.invoke(this)?.let { inverted ->
+                appendClassMethodNotFound(inverted.name, inverted.qualifiedClassName, inverted.signature)
+            }
+        }
+
+        /**
+         * Asserts a class exists. Also asserts its relocated class does not exist.
+         */
+        operator fun ClassTestCase.unaryPlus() {
+            appendHasClass(name, qualifiedClassName)
             appendNotFound("relocated $name", Companion.relocated(qualifiedClassName))
         }
 
         /**
          * Asserts a class does not exist.
          */
-        operator fun TestCase.unaryMinus() {
+        operator fun ClassTestCase.unaryMinus() {
             appendNotFound(name, qualifiedClassName)
         }
 
@@ -243,9 +331,9 @@ class CoreShadowRelocationTest : AbstractTest() {
         /**
          * Asserts a relocated class exists. Also asserts the original class does not exist.
          */
-        operator fun Relocated.unaryPlus() {
+        operator fun RelocatedClassTestCase.unaryPlus() {
             this.testCase.run {
-                appendHas("relocated $name", Companion.relocated(qualifiedClassName))
+                appendHasClass("relocated $name", Companion.relocated(qualifiedClassName))
                 appendNotFound(name, qualifiedClassName)
             }
         }
@@ -253,7 +341,7 @@ class CoreShadowRelocationTest : AbstractTest() {
         /**
          * Asserts a relocated class does not exist.
          */
-        operator fun Relocated.unaryMinus() {
+        operator fun RelocatedClassTestCase.unaryMinus() {
             this.testCase.run {
                 appendNotFound("relocated $name", Companion.relocated(qualifiedClassName))
             }
@@ -262,13 +350,14 @@ class CoreShadowRelocationTest : AbstractTest() {
         /**
          * Asserts both the class and its relocated one do not exist.
          */
-        operator fun Both.unaryMinus() {
+        operator fun BothClassTestCase.unaryMinus() {
             -this.testCase
             -relocated(this.testCase)
         }
 
-        fun relocated(testCase: TestCase): Relocated = Relocated(testCase)
-        fun both(testCase: TestCase) = Both(testCase)
+        fun relocated(testCase: ClassTestCase): RelocatedClassTestCase = RelocatedClassTestCase(testCase)
+        fun relocated(testCase: FunctionTestCase): FunctionTestCase = testCase.relocated!!(testCase)
+        fun both(testCase: ClassTestCase) = BothClassTestCase(testCase)
 
         fun build(): String = result.append("\n}\n").toString()
     }
