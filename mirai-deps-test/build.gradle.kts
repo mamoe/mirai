@@ -17,6 +17,7 @@ plugins {
 dependencies {
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
+    implementation(`kotlin-reflect`)
     implementation(kotlin("gradle-plugin-api"))
     implementation(kotlin("gradle-plugin"))
     implementation(kotlin("stdlib"))

@@ -113,7 +113,8 @@ abstract class AbstractTest {
                 add("org.gradle.jvmargs=-Xmx512m")
                 add("-D")
                 add("file.encoding=UTF-8")
-                add("--stacktrace")
+//                add("--stacktrace")
+                add("--info")
             })
             .build()
     }
@@ -165,6 +166,10 @@ abstract class AbstractTest {
             }
             dependencies {
                 testImplementation(kotlin("test"))
+                implementation(kotlin("reflect"))
+                testImplementation(kotlin("test-junit5"))
+                testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
+                testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.2")
             }
             tasks.test {
                 useJUnitPlatform()
