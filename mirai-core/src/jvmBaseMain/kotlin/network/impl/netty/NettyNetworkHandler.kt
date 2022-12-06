@@ -24,9 +24,7 @@ import net.mamoe.mirai.internal.network.handler.CommonNetworkHandler
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.toInt
+import net.mamoe.mirai.utils.*
 import java.net.InetSocketAddress
 import java.net.SocketAddress
 import io.netty.channel.Channel as NettyChannel
@@ -135,8 +133,8 @@ internal open class NettyNetworkHandler(
 
     override fun io.netty.channel.Channel.getConnectedIP(): Long = this.remoteAddress().let { address ->
         {
-            if (this.isOpen && address is InetSocketAddress) {
-                address.address.address.copyOf().also { it.reverse() }.toInt().toLong()
+            if (this.isActive && address is InetSocketAddress) {
+                address.address?.address?.copyOf()?.also { it.reverse() }?.toInt()?.toLongUnsigned() ?: 2L
             } else {
                 0L
             }

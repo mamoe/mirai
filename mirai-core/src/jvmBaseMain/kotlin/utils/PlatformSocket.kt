@@ -16,6 +16,7 @@ import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.mamoe.mirai.internal.network.highway.HighwayProtocolChannel
 import net.mamoe.mirai.utils.toInt
+import net.mamoe.mirai.utils.toLongUnsigned
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.IOException
@@ -34,7 +35,7 @@ internal actual class PlatformSocket : Closeable, HighwayProtocolChannel {
             else false
     actual val connectedIp: Long
         get() = if (isOpen) {
-            socket.inetAddress.address.copyOf().also { it.reverse() }.toInt().toLong()
+            socket.inetAddress.address?.copyOf()?.also { it.reverse() }?.toInt()?.toLongUnsigned() ?: 2L
         } else {
             0L
         }

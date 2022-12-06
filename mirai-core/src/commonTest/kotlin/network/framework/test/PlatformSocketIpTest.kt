@@ -38,11 +38,6 @@ class IpConversionTest {
     }
 
     @Test
-    fun `test empty ipAddress`() = runBlockingUnit {
-        assertTrue("".toIpV4Long() == 0L)
-    }
-
-    @Test
     fun `test good ipAddress`() = runBlockingUnit {
         assertTrue("www.baidu.com".toIpV4Long() > 0)
         assertTrue("www.qq.com".toIpV4Long() > 0)

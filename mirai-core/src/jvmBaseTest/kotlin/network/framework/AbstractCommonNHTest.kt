@@ -12,8 +12,11 @@ package net.mamoe.mirai.internal.network.framework
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
 import net.mamoe.mirai.internal.network.handler.SocketAddress
+import net.mamoe.mirai.internal.network.handler.getHost
 import net.mamoe.mirai.utils.toInt
 import net.mamoe.mirai.utils.toLongUnsigned
+import java.net.InetAddress
+import java.net.UnknownHostException
 import kotlin.test.AfterTest
 
 /**
@@ -59,7 +62,11 @@ internal actual abstract class AbstractCommonNHTest actual constructor() :
 
 internal actual class PlatformConn actual constructor(actual val address: SocketAddress) : NettyNHTestChannel() {
     actual fun getConnectedIPPlatform(): Long {
-        return address.address.address.copyOf().also { it.reverse() }.toInt().toLongUnsigned()
+        return (address.address ?: try {
+            InetAddress.getByName(address.getHost())
+        } catch (e: UnknownHostException) {
+            null
+        })?.address?.copyOf()?.also { it.reverse() }?.toInt()?.toLongUnsigned() ?: 2L
     }
 }
 
