@@ -25,7 +25,7 @@ static unsigned long get_ulong_ip_by_name(char* host) {
 	}
 }
 
-static unsigned long socket_get_connected_ip(int sockfd) {
+static unsigned long socket_get_connected_ip(SOCKET sockfd) {
 	struct sockaddr_in peer_addr;
 	int peer_addr_size = sizeof(peer_addr);
 	if (!(sockfd > 0)) {

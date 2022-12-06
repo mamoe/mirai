@@ -111,7 +111,7 @@ internal actual class PlatformSocket(
             serverIp: String,
             serverPort: Int
         ): PlatformSocket {
-            val r = sockets.socket_create_connect(serverIp.cstr, serverPort.toUShort())
+            val r = sockets.socket_create_connect(serverIp.cstr, serverPort.toString().cstr)
             if (r == INVALID_SOCKET) error("Failed socket_create_connect: $r")
             return PlatformSocket(r)
         }
