@@ -26,6 +26,8 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandlerContext
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.toInt
+import java.net.InetSocketAddress
 import java.net.SocketAddress
 import io.netty.channel.Channel as NettyChannel
 
@@ -130,6 +132,16 @@ internal open class NettyNetworkHandler(
 
         return contextResult.await()
     }
+
+    override fun Channel.getConnectedIP(): Long = this.remoteAddress().let { address ->
+        {
+            if (this.isOpen && address is InetSocketAddress) {
+                address.address.address.copyOf().also { it.reverse() }.toInt().toLong()
+            } else {
+                0L
+            }
+        }
+    }.invoke()
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
     override fun io.netty.channel.Channel.close() {

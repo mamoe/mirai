@@ -11,6 +11,9 @@ package net.mamoe.mirai.internal.network.framework
 
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
+import net.mamoe.mirai.internal.network.handler.SocketAddress
+import net.mamoe.mirai.utils.toInt
+import net.mamoe.mirai.utils.toLongUnsigned
 import kotlin.test.AfterTest
 
 /**
@@ -51,7 +54,12 @@ internal actual abstract class AbstractCommonNHTest actual constructor() :
         }
     }
 
-    actual val conn: PlatformConn = NettyNHTestChannel()
+    actual val conn: PlatformConn get() = PlatformConn(address = createAddress())
 }
 
-internal actual typealias PlatformConn = NettyNHTestChannel
+internal actual class PlatformConn actual constructor(actual val address: SocketAddress) : NettyNHTestChannel() {
+    actual fun getConnectedIPPlatform(): Long {
+        return address.address.address.copyOf().also { it.reverse() }.toInt().toLongUnsigned()
+    }
+}
+

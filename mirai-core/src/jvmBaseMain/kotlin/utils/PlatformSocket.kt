@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.mamoe.mirai.internal.network.highway.HighwayProtocolChannel
+import net.mamoe.mirai.utils.toInt
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.IOException
@@ -31,6 +32,12 @@ internal actual class PlatformSocket : Closeable, HighwayProtocolChannel {
             if (::socket.isInitialized)
                 socket.isConnected
             else false
+    actual val connectedIp: Long
+        get() = if (isOpen) {
+            socket.inetAddress.address.copyOf().also { it.reverse() }.toInt().toLong()
+        } else {
+            0L
+        }
 
     actual override fun close() {
         if (::socket.isInitialized) {

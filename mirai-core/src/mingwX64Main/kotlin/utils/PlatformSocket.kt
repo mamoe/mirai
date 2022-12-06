@@ -43,6 +43,12 @@ internal actual class PlatformSocket(
 
     actual val isOpen: Boolean
         get() = send(socket, null, 0, 0).convert<Long>() != 0L
+    actual val connectedIp: Long
+        get() = if (isOpen) {
+            sockets.socket_get_connected_ip(socket)
+        } else {
+            0L
+        }
 
     actual override fun close() {
         closesocket(socket)

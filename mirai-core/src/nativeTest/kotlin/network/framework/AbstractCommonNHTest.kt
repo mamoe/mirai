@@ -9,7 +9,12 @@
 
 package net.mamoe.mirai.internal.network.framework
 
+import kotlinx.cinterop.cstr
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
+import net.mamoe.mirai.internal.network.handler.SocketAddress
+import net.mamoe.mirai.utils.mapToByteArray
+import net.mamoe.mirai.utils.toInt
+import net.mamoe.mirai.utils.toLongUnsigned
 
 /**
  * Without selector. When network is closed, it will not reconnect, so that you can check for its states.
@@ -32,8 +37,22 @@ internal actual abstract class AbstractCommonNHTest actual constructor() :
     protected actual fun removeOutgoingPacketEncoder() {
     }
 
-    actual val conn: PlatformConn = PlatformConn()
+    actual val conn: PlatformConn get() = PlatformConn(createAddress())
 
 }
 
-internal actual class PlatformConn
+internal actual class PlatformConn actual constructor(actual val address: SocketAddress) {
+    internal actual fun getConnectedIPPlatform(): Long {
+        address.host.run {
+            if (isEmpty()) return 0
+            val split = split('.')
+            return if (split.size == 4 && split.any { it.toUByteOrNull() != null }) {
+                split.reversed().mapToByteArray {
+                    it.toUByte().toByte()
+                }.toInt().toLongUnsigned()
+            } else sockets.get_ulong_ip_by_name(this.cstr).toLong();
+        }
+    }
+
+
+}

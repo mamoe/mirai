@@ -25,7 +25,11 @@ internal abstract class TestCommonNetworkHandler(
     address: SocketAddress,
 ) : CommonNetworkHandler<PlatformConn>(context, address), ITestNetworkHandler<PlatformConn> {
     override suspend fun createConnection(): PlatformConn {
-        return PlatformConn()
+        return PlatformConn(address)
+    }
+
+    override fun PlatformConn.getConnectedIP(): Long {
+        return getConnectedIPPlatform()
     }
 
     override fun PlatformConn.writeAndFlushOrCloseAsync(packet: OutgoingPacket) {
@@ -104,4 +108,8 @@ internal expect abstract class AbstractCommonNHTest() :
     protected fun removeOutgoingPacketEncoder()
 }
 
-internal expect class PlatformConn()
+internal expect class PlatformConn(address: SocketAddress) {
+    val address: SocketAddress
+    internal fun getConnectedIPPlatform(): Long
+
+}

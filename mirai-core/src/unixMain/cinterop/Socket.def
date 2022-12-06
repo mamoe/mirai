@@ -25,7 +25,18 @@ static unsigned long get_ulong_ip_by_name(char* host) {
 			}
 		}
 	}
-	return -2;
+	return 2;
+}
+
+static unsigned long socket_get_connected_ip(int sockfd) {
+	struct sockaddr_in peer_addr;
+	if (!(sockfd > 0)) {
+		return 1;
+	}
+	if (!getpeername(sockfd, (struct sockaddr*)&peer_addr, sizeof(peer_addr))) {
+		return peer_addr.sin_addr.s_addr;
+	}
+	return 2;
 }
 
 static int socket_create_connect(char *host, ushort port) {

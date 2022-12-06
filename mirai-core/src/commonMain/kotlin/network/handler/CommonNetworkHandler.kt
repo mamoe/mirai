@@ -95,6 +95,11 @@ internal abstract class CommonNetworkHandler<Conn>(
     protected abstract fun Conn.close()
 
     /**
+     * Get the connected ip in network order
+     */
+    protected abstract fun Conn.getConnectedIP(): Long
+
+    /**
      * *Single-thread* event-loop packet decoder.
      *
      * Call [PacketDecodePipeline.send] to submit a decoding job.
@@ -244,6 +249,7 @@ internal abstract class CommonNetworkHandler<Conn>(
                 connection.join()
                 try {
                     context[SsoProcessor].login(this@CommonNetworkHandler)
+                    context[ServerList].lastConnectedIP = connection.await().getConnectedIP()
                 } catch (e: LoginFailedException) {
                     throw LoginFailedExceptionAsNetworkException(e)
                 }

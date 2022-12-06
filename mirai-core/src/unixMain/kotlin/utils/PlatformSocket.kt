@@ -23,6 +23,7 @@ import platform.posix.close
 import platform.posix.errno
 import platform.posix.recv
 import platform.posix.write
+import sockets.socket_get_connected_ip
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -48,6 +49,12 @@ internal actual class PlatformSocket(
 
     actual val isOpen: Boolean
         get() = write(socket, null, 0).convert<Long>() != 0L
+    actual val connectedIp: Long
+        get() = if (isOpen) {
+            socket_get_connected_ip(socket)
+        } else {
+            0L
+        }
 
     actual override fun close() {
         close(socket)
