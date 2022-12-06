@@ -7,14 +7,26 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.protocol.packet.login
+package net.mamoe.mirai.internal.network.framework.test
 
+import net.mamoe.mirai.internal.network.framework.PlatformConn
+import net.mamoe.mirai.internal.network.handler.createSocketAddress
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class IpConversionTest {
+    private fun String.toIpV4Long(): Long {
+        PlatformConn(address = createSocketAddress(host = this, port = 80)).getConnectedIPPlatform().run {
+            return if (this in 1..2) {
+                -this
+            } else {
+                this
+            }
+        }
+    }
+
     @Test
     fun `test bad ipAddress`() = runBlockingUnit {
         assertEquals(-2, "some^ting%bad".toIpV4Long())
