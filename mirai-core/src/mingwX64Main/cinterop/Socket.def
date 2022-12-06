@@ -1,6 +1,6 @@
 headers = winsock.h
 
-linkerOpts =                 -lWS2_32\
+linkerOpts =                 -lWS2_32 \
                              -lDnsapi
 
 ---
