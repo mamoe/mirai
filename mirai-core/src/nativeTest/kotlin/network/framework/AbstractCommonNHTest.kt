@@ -46,7 +46,7 @@ internal actual class PlatformConn actual constructor(actual val address: Socket
         address.host.run {
             if (isEmpty()) return 0
             val split = split('.')
-            return if (split.size == 4 && split.any { it.toUByteOrNull() != null }) {
+            return if (split.size == 4 && split.all { it.toUByteOrNull() != null }) {
                 split.reversed().mapToByteArray {
                     it.toUByte().toByte()
                 }.toInt().toLongUnsigned()
