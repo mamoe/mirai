@@ -1,5 +1,7 @@
 headers = winsock.h
 
+linkerOpts = -LWS2_32
+
 ---
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
