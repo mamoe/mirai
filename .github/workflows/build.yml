@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: # You must use macos-12
+        os: # You must use macos-12. Only macos-12 get 14GB memory while others have only 7GB.
           #          - windows-2022
           - macos-12
     env:
@@ -185,7 +185,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Cache konan
-        uses: pat-s/always-upload-cache@v3
+        uses: pat-s/always-upload-cache@v3.0.11
         with:
           path: ~/.konan
           key: ${{ runner.os }}-gradle-${{ hashFiles('*.gradle.kts') }}
@@ -253,20 +253,18 @@ jobs:
         os:
           - windows-2022
           - ubuntu-20.04
-          - ubuntu-18.04
+          #          - ubuntu-18.04
           # - macos-12
-          - macos-11
+#          - macos-11
         include:
           - os: windows-2022
             targetName: mingwX64
           - os: ubuntu-20.04
             targetName: linuxX64
-          - os: ubuntu-18.04
-            targetName: linuxX64
           # - os: macos-12
           #   targetName: macosX64
-          - os: macos-11
-            targetName: macosX64
+    #          - os: macos-11
+    #            targetName: macosX64
     env:
       # FIXME there must be two or more targets, or we'll get error on `@OptionalExpectation`
       # > Declaration annotated with '@OptionalExpectation' can only be used in common module sources
@@ -291,7 +289,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Cache konan
-        uses: pat-s/always-upload-cache@v3
+        uses: pat-s/always-upload-cache@v3.0.11
         with:
           path: ~/.konan
           key: ${{ runner.os }}-gradle-${{ hashFiles('*.gradle.kts') }}
@@ -304,7 +302,7 @@ jobs:
 
       - name: Cache vcpkg
         if: ${{ env.isWindows == 'true' }}
-        uses: pat-s/always-upload-cache@v3
+        uses: pat-s/always-upload-cache@v3.0.11
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
           key: ${{ runner.os }}-vcpkg-binary-cache-${{ github.job }}

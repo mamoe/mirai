@@ -1,16 +1,59 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 import keys.SecretKeys
+import kotlinx.validation.sourceSets
 import java.io.ByteArrayOutputStream
 
 plugins {
     id("io.codearte.nexus-staging") version "0.22.0"
+    kotlin("jvm")
+}
+
+tasks.register<JavaExec>("runcihelper") {
+    this.classpath = sourceSets["main"].runtimeClasspath
+    this.mainClass.set("cihelper.CiHelperKt")
+    this.workingDir = rootProject.projectDir
+
+    fun Project.findPublishingExt(): PublishingExtension? {
+        val exts = (this@findPublishingExt as ExtensionAware).extensions
+        return exts.findByName("publishing") as PublishingExtension?
+    }
+
+
+    doFirst {
+        @Suppress("USELESS_CAST")
+        environment("PROJ_VERSION", (project.version as Any?).toString())
+        rootProject.allprojects.asSequence()
+            .mapNotNull { it.findPublishingExt() }
+            .flatMap { it.publications.asSequence() }
+            .mapNotNull { it as? MavenPublication }
+            .map { it.artifactId }
+            .joinToString("|")
+            .let { environment("PROJ_ARTIFACTS", it) }
+
+        rootProject.allprojects.asSequence()
+            .mapNotNull { it.findPublishingExt() }
+            .flatMap { it.repositories.asSequence() }
+            .mapNotNull { it as? MavenArtifactRepository }
+            .filter { it.name == "MiraiStageRepo" }
+            .first().url
+            .let { environment("PROJ_MiraiStageRepo", it.toString()) }
+
+        val additionProperties = rootProject.properties.asSequence()
+            .filter { (k, _) -> k.startsWith("cihelper.") }
+            .map { (k, v) -> "-D$k=$v" }
+            .toList()
+        if (additionProperties.isNotEmpty()) {
+            val currentJvmArgs = jvmArgs ?: emptyList()
+            jvmArgs = currentJvmArgs + additionProperties
+        }
+    }
 }
 
 description = "Mirai CI Methods for Releasing"
@@ -22,17 +65,15 @@ nexusStaging {
     password = keys.password
 }
 
+dependencies {
+    implementation(`kotlinx-serialization-json`)
+}
+
 tasks.register("updateSnapshotVersion") {
     group = "mirai"
 
     doLast {
-        rootProject.file("buildSrc/src/main/kotlin/Versions.kt").run {
-            var text = readText()
-            val template = { version: Any? -> "/*PROJECT_VERSION_START*/\"${version}\"/*PROJECT_VERSION_END*/" }
-            check(text.indexOf(template(project.version)) != -1) { "Cannot find ${template(project.version)}" }
-            text = text.replace(template(project.version), template(snapshotVersion))
-            writeText(text)
-        }
+        setProjectVersionForFutureBuilds(snapshotVersion)
     }
 }
 

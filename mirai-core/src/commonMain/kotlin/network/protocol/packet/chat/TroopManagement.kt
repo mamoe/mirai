@@ -418,9 +418,13 @@ internal class TroopManagement {
     }
 
     internal object ModifyAdmin : OutgoingPacketFactory<ModifyAdmin.Response>("OidbSvc.0x55c_1") {
-        data class Response(val success: Boolean, val msg: String) : Packet {
+        data class Response(
+            val code: Int,
+            val success: Boolean,
+            val msg: String,
+        ) : Packet {
             override fun toString(): String {
-                return "TroopManagement.ModifyAdmin.Response(success=${success}, msg=${msg})"
+                return "TroopManagement.ModifyAdmin.Response(code=${code}, success=${success}, msg=${msg})"
             }
         }
 
@@ -452,6 +456,7 @@ internal class TroopManagement {
             val stupidPacket = readProtoBuf(OidbSso.OIDBSSOPkg.serializer())
             return stupidPacket.run {
                 ModifyAdmin.Response(
+                    this.result,
                     this.result == 0,
                     this.errorMsg
                 )

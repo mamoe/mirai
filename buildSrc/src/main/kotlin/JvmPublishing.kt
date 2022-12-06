@@ -20,13 +20,11 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByName
 import org.gradle.kotlin.dsl.register
+import java.io.File
 
 fun Project.configureRemoteRepos() {
     tasks.register("ensureMavenCentralAvailable") {
         doLast {
-            if (GpgSigner.signer == GpgSigner.NoopSigner) {
-                error("GPG Signer isn't available.")
-            }
             val keys = SecretKeys.getCache(project)
             if (!keys.loadKey("sonatype").isValid) {
                 error("Maven Central isn't available.")
@@ -38,6 +36,17 @@ fun Project.configureRemoteRepos() {
         // sonatype
         val keys = SecretKeys.getCache(project)
         repositories {
+            maven {
+                name = "MiraiStageRepo"
+                var stageRepoLoc = getLocalProperty("publishing.stage-repo")?.let(::File)
+                if (stageRepoLoc?.exists() != true) {
+                    stageRepoLoc = rootProject.file("ci-release-helper/stage-repo")
+                }
+                stageRepoLoc as File
+
+                url = stageRepoLoc.also { it.mkdirs() }.toURI()
+            }
+
             if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING")?.toBoolean() == true) {
                 maven {
                     name = "MiraiRepo"
@@ -74,14 +83,14 @@ inline fun Project.configurePublishing(
     artifactId: String,
     vcs: String = "https://github.com/mamoe/mirai",
     addProjectComponents: Boolean = true,
-    setupGpg: Boolean = true,
     skipPublicationSetup: Boolean = false,
+    addShadowJar: Boolean = true
 ) {
     configureRemoteRepos()
 
     if (skipPublicationSetup) return
 
-    val shadowJar = if (!addProjectComponents) null else tasks.register<ShadowJar>("shadowJar") {
+    val shadowJar = if (!addProjectComponents || !addShadowJar) null else tasks.register<ShadowJar>("shadowJar") {
         archiveClassifier.set("all")
         manifest.inheritFrom(tasks.getByName<Jar>("jar").manifest)
         from(project.sourceSets["main"].output)
@@ -118,9 +127,6 @@ inline fun Project.configurePublishing(
                 stubJavadoc?.get()?.let { artifact(it) }
                 shadowJar?.get()?.let { artifact(it) }
             }
-        }
-        if (setupGpg) {
-            configGpgSign(this@configurePublishing)
         }
     }
 }

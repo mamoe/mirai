@@ -11,6 +11,7 @@ package net.mamoe.mirai.deps.test
 
 import org.gradle.api.internal.artifacts.mvnsettings.DefaultMavenFileLocations
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.internal.DefaultGradleRunner
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -22,8 +23,9 @@ abstract class AbstractTest {
     companion object {
         const val miraiLocalVersion = "2.99.0-deps-test" // do Search Everywhere before changing this
         const val REASON_LOCAL_ARTIFACT_NOT_AVAILABLE = "local artifacts not available"
+        private const val MIRAI_DEPS_TEST_MUST_RUN = "mirai.deps.test.must.run" // used by GitHub Actions scripts
 
-        private val mavenLocalDir: File by lazy {
+        val mavenLocalDir: File by lazy {
             org.gradle.api.internal.artifacts.mvnsettings.DefaultLocalMavenRepositoryLocator(
                 org.gradle.api.internal.artifacts.mvnsettings.DefaultMavenSettingsProvider(DefaultMavenFileLocations())
             ).localMavenRepository
@@ -44,8 +46,7 @@ abstract class AbstractTest {
                 )
                 true
             } else {
-                System.err.println(
-                    """
+                val message = """
                 [mirai-deps-test] ERROR: Test is not run, because there are no local artifacts available for dependencies testing. 
                 Please build and publish local artifacts with version `$miraiLocalVersion` before running this test(:mirai-deps-test:test).
                 This could have be automated but it will take a huge amount of time for your routine testing.
@@ -60,8 +61,15 @@ abstract class AbstractTest {
                 You can run `./gradlew publishMiraiLocalArtifacts` to publish local artifacts. 
                 Then you can run this test again. (By your original way or ./gradlew :mirai-deps-test:test)
                 """.trimIndent()
+                System.err.println(
+                    message
                 )
-                false
+
+                if (System.getProperty(MIRAI_DEPS_TEST_MUST_RUN, "false").toBoolean()) {
+                    throw AssertionError("System property `mirai.deps.test.must.run` is `true`, which requires the deps test to be run. \n\n$message")
+                } else {
+                    false
+                }
             }
         }
     }
@@ -82,6 +90,7 @@ abstract class AbstractTest {
     lateinit var settingsFile: File
     lateinit var propertiesFile: File
 
+    private inline fun <reified T> Any?.cast(): T = this as T
 
     @OptIn(ExperimentalStdlibApi::class)
     fun runGradle(vararg arguments: String) {
@@ -92,11 +101,20 @@ abstract class AbstractTest {
             .withGradleVersion("7.2")
             .forwardOutput()
             .withEnvironment(System.getenv())
+            .cast<DefaultGradleRunner>().withJvmArguments(buildList {
+                add("-Xmx512m") // Kotlin MPP may need memory to build
+                add("-Dfile.encoding=UTF-8")
+            })
             .withArguments(buildList {
                 addAll(arguments)
-                add("-Pkotlin.compiler.execution.strategy=in-process")
-                add("-Dorg.gradle.jvmargs=-Xmx512m -Dfile.encoding=UTF-8")
-                add("--stacktrace")
+                add("-P")
+                add("kotlin.compiler.execution.strategy=in-process")
+                add("-D")
+                add("org.gradle.jvmargs=-Xmx512m")
+                add("-D")
+                add("file.encoding=UTF-8")
+//                add("--stacktrace")
+                add("--info")
             })
             .build()
     }
@@ -148,6 +166,10 @@ abstract class AbstractTest {
             }
             dependencies {
                 testImplementation(kotlin("test"))
+                implementation(kotlin("reflect"))
+                testImplementation(kotlin("test-junit5"))
+                testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
+                testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.2")
             }
             tasks.test {
                 useJUnitPlatform()
@@ -165,9 +187,20 @@ abstract class AbstractTest {
         if (context.executionException.isPresent) {
             val inst = context.requiredTestInstance as AbstractTest
             println("====================== build.gradle ===========================")
-            println(inst.tempDir.resolve("build.gradle").readText())
+            println(inst.tempDir.resolveFirstExisting("build.gradle", "build.gradle.kts").readTextIfFound())
             println("==================== settings.gradle ==========================")
-            println(inst.tempDir.resolve("settings.gradle").readText())
+            println(inst.tempDir.resolveFirstExisting("settings.gradle", "settings.gradle.kts").readTextIfFound())
         }
     }
+
+    private fun File.resolveFirstExisting(vararg files: String): File? {
+        return files.asSequence().map { resolve(it) }.firstOrNull { it.exists() }
+    }
+
+    private fun File?.readTextIfFound(): String =
+        when {
+            this == null -> "(not found)"
+            exists() -> readText()
+            else -> "($name not found)"
+        }
 }

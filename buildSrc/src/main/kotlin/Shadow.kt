@@ -10,13 +10,17 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.publish.tasks.GenerateModuleMetadata
+import org.gradle.api.tasks.bundling.Jar
+import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.creating
 import org.gradle.kotlin.dsl.get
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
 /**
@@ -27,133 +31,106 @@ fun Project.configureMppShadow() {
 
     configure(kotlin.targets.filter {
         it.platformType == org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.jvm
-                && it.attributes.getAttribute(MIRAI_PLATFORM_ATTRIBUTE) == null
+                && (it.attributes.getAttribute(MIRAI_PLATFORM_INTERMEDIATE) != true)
     }) {
-        configureRelocationForTarget(project)
+        configureRelocationForMppTarget(project)
+
+        registerRegularShadowTask(this, mapTaskNameForMultipleTargets = true)
+    }
+}
+
+/**
+ * 配置 `publish` 和 `shadow` 相关依赖. 对于在本次构建的请求的任务及其直接或间接依赖, 以以下顺序执行:
+ *
+ * 1. 执行全部 `jar` 任务
+ * 2. 执行全部 `relocate` 任务
+ * 3. 执行全部 `publish` 任务
+ *
+ * 这是必要的因为 relocate 任务会覆盖 jar 任务的输出, 而在多模块并行编译时, Kotlin 编译器会依赖 jar 任务的输出. 如果在编译同时修改 JAR 文件, 就会导致 `ZipException`.
+ *
+ * 这也会让 publish 集中执行, Maven Central 不容易出问题.
+ */
+fun Project.configureShadowDependenciesForPublishing() {
+    check(this.rootProject === this) {
+        "configureShadowDependenciesForPublishing can only be used on root project."
     }
 
-    // regular shadow file, with suffix `-all`
-    configureRegularShadowJar(kotlin)
+    gradle.projectsEvaluated {
+        // Tasks requested to run in this build
+        val allTasks = rootProject.allprojects.asSequence().flatMap { it.tasks }
+
+        val publishTasks = allTasks.filter { it.name.contains("publish", ignoreCase = true) }
+        val relocateTasks = allTasks.filter { it.name.contains("relocate", ignoreCase = true) }
+        val jarTasks = allTasks.filter { it.name.contains("jar", ignoreCase = true) }
+        val compileKotlinTasks = allTasks.filter { it.name.contains("compileKotlin", ignoreCase = true) }
+        val compileTestKotlinTasks = allTasks.filter { it.name.contains("compileTestKotlin", ignoreCase = true) }
+
+        relocateTasks.dependsOn(compileKotlinTasks.toList())
+        relocateTasks.dependsOn(compileTestKotlinTasks.toList())
+        relocateTasks.dependsOn(jarTasks.toList())
+        publishTasks.dependsOn(relocateTasks.toList())
+    }
 }
+
+val TaskExecutionGraph.hierarchicalTasks: Sequence<Task>
+    get() = sequence {
+        suspend fun SequenceScope<Task>.addTask(task: Task) {
+            yield(task)
+            for (dependency in getDependencies(task)) {
+                addTask(dependency)
+            }
+        }
+
+        for (task in allTasks) {
+            addTask(task)
+        }
+    }
 
 /**
  * Relocate some dependencies for `.jar`
  * @see RelocationNotes
  */
-private fun KotlinTarget.configureRelocationForTarget(project: Project) = project.run {
-    val relocateDependencies =
-        // e.g. relocateJvmDependencies
-        tasks.create("relocate${targetName.titlecase()}Dependencies", ShadowJar::class) {
-            group = "mirai"
-            description = "Relocate dependencies to internal package"
-            destinationDirectory.set(buildDir.resolve("libs"))
-//            archiveClassifier.set("")
-            archiveBaseName.set("${project.name}-${targetName.toLowerCase()}")
+private fun KotlinTarget.configureRelocationForMppTarget(project: Project) = project.run {
+    val configuration = project.configurations.findByName(SHADOW_RELOCATION_CONFIGURATION_NAME)
 
-            dependsOn(compilations["main"].compileKotlinTask) // compileKotlinJvm
+    // e.g. relocateJvmDependencies
+    // do not change task name. see `configureShadowDependenciesForPublishing`
+    val relocateDependencies = tasks.create("relocate${targetName.titlecase()}Dependencies", ShadowJar::class) {
+        group = "mirai"
+        description = "Relocate dependencies to internal package"
+        destinationDirectory.set(buildDir.resolve("libs")) // build/libs
+        archiveBaseName.set("${project.name}-${targetName.toLowerCase()}") // e.g. "mirai-core-api-jvm"
 
-            // Run after all *Jar tasks from all projects, since Kotlin compiler may depend on the .jar file, concurrently modifying the jar will cause Kotlin compiler to fail.
-//            allprojects
-//                .asSequence()
-//                .flatMap { it.tasks }
-//                .filter { it.name.contains("compileKotlin") }
-//                .forEach { jar ->
-//                    mustRunAfter(jar)
-//                }
+        dependsOn(compilations["main"].compileKotlinTask) // e.g. compileKotlinJvm
 
-            from(compilations["main"].output)
-
-//            // change name to
-//            doLast {
-//                outputs.files.singleFile.renameTo(
-//                    outputs.files.singleFile.parentFile.resolve(
-//                        "${project.name}-${targetName.toLowerCase()}-${project.version}.jar"
-//                    )
-//                )
-//            }
-            // Filter only those should be relocated
-
-            afterEvaluate {
-                setRelocations()
-
-                var fileFiltered = relocationFilters.isEmpty()
-                from(project.configurations.getByName("${targetName}RuntimeClasspath")
-                    .files
-                    .filter { file ->
-                        val matchingFilter = relocationFilters.find { filter ->
-                            // file.absolutePath example: /Users/xxx/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.7.0-RC/7f9f07fc65e534c15a820f61d846b9ffdba8f162/kotlin-stdlib-jdk8-1.7.0-RC.jar
-                            filter.matchesFile(file)
-                        }
-
-                        if (matchingFilter != null) {
-                            fileFiltered = true
-                            println("Including file: ${file.absolutePath}")
-                        }
-
-                        matchingFilter?.includeInRuntime == true
-                    }
-                )
-                check(fileFiltered) { "[Shadow Relocation] Expected at least one file filtered for target $targetName. Filters: $relocationFilters" }
-            }
+        from(compilations["main"].output) // Add compilation result of mirai sourcecode, not including dependencies
+        configuration?.let {
+            from(it) // Include runtime dependencies
         }
 
-    val allTasks = rootProject.allprojects.asSequence().flatMap { it.tasks }
-    allTasks
-        .filter {
-            it.name.startsWith("publish${targetName.titlecase()}PublicationTo")
-        }
-        .onEach { it.dependsOn(relocateDependencies) }
-        .count().let {
-            check(it > 0) { "[Shadow Relocation] Expected at least one publication matched for target $targetName." }
-        }
-
-    // Ensure all compilation has finished, otherwise Kotlin compiler will complain.
-    allTasks
-        .filter { it.name.endsWith("Jar") }
-        .onEach { relocateDependencies.dependsOn(it) }
-        .count().let {
-            check(it > 0) { "[Shadow Relocation] Expected at least one task matched for target $targetName." }
-        }
-
-    allTasks
-        .filter { it.name.startsWith("compileKotlin") }
-        .onEach { relocateDependencies.dependsOn(it) }
-        .count().let {
-            check(it > 0) { "[Shadow Relocation] Expected at least one task matched for target $targetName." }
-        }
-
-    val metadataTask =
-        tasks.getByName("generateMetadataFileFor${targetName.capitalize()}Publication") as GenerateModuleMetadata
-    relocateDependencies.dependsOn(metadataTask)
-
-    afterEvaluate {
-        // remove dependencies in Maven pom
-        mavenPublication {
-            pom.withXml {
-                val node = this.asNode().getSingleChild("dependencies")
-                val dependencies = node.childrenNodes()
-                logger.trace("[Shadow Relocation] deps: $dependencies")
-                dependencies.forEach { dep ->
-                    val groupId = dep.getSingleChild("groupId").value().toString()
-                    val artifactId = dep.getSingleChild("artifactId").value().toString()
-                    logger.trace("[Shadow Relocation] Checking $groupId:$artifactId")
-
-                    if (
-                        relocationFilters.any { filter ->
-                            filter.matchesDependency(groupId = groupId, artifactId = artifactId)
-                        }
-                    ) {
-                        println("[Shadow Relocation] Filtering out $groupId:$artifactId from pom")
-                        check(node.remove(dep)) { "Failed to remove dependency node" }
-                    }
+        // Relocate packages
+        afterEvaluate {
+            val relocationFilters = project.relocationFilters
+            relocationFilters.forEach { relocation ->
+                relocation.packages.forEach { aPackage ->
+                    relocate(aPackage, "$RELOCATION_ROOT_PACKAGE.$aPackage")
                 }
             }
         }
+    }
+
+    // We will modify Kotlin metadata, so do generate metadata before relocation
+    val generateMetadataTask =
+        tasks.getByName("generateMetadataFileFor${targetName.capitalize()}Publication") as GenerateModuleMetadata
+
+    val patchMetadataTask = tasks.create("patchMetadataFileFor${targetName.capitalize()}RelocatedPublication") {
+        dependsOn(generateMetadataTask)
+        dependsOn(relocateDependencies)
 
         // remove dependencies in Kotlin module metadata
-        relocateDependencies.doLast {
+        doLast {
             // mirai-core-jvm-2.13.0.module
-            val file = metadataTask.outputFile.asFile.get()
+            val file = generateMetadataTask.outputFile.asFile.get()
             val metadata = Gson().fromJson(
                 file.readText(),
                 com.google.gson.JsonElement::class.java
@@ -185,48 +162,127 @@ private fun KotlinTarget.configureRelocationForTarget(project: Project) = projec
             file.writeText(GsonBuilder().setPrettyPrinting().create().toJson(metadata))
         }
     }
-}
 
-private fun Project.configureRegularShadowJar(kotlin: KotlinMultiplatformExtension) {
-    if (project.configurations.findByName("jvmRuntimeClasspath") != null) {
-        val shadowJvmJar by tasks.creating(ShadowJar::class) sd@{
-            group = "mirai"
-            archiveClassifier.set("-all")
-
-            val compilations =
-                kotlin.targets.filter { it.platformType == KotlinPlatformType.jvm }
-                    .map { it.compilations["main"] }
-
-            compilations.forEach {
-                dependsOn(it.compileKotlinTask)
-                from(it.output)
+    // Set "publishKotlinMultiplatformPublicationTo*" and "publish${targetName.capitalize()}PublicationTo*" dependsOn patchMetadataTask
+    if (project.kotlinMpp != null) {
+        tasks.filter { it.name.startsWith("publishKotlinMultiplatformPublicationTo") }.let { publishTasks ->
+            if (publishTasks.isEmpty()) {
+                throw GradleException("[Shadow Relocation] Cannot find publishKotlinMultiplatformPublicationTo for project '${project.path}'.")
             }
+            publishTasks.forEach { it.dependsOn(patchMetadataTask) }
+        }
 
-            setRelocations()
-
-            from(project.configurations.findByName("jvmRuntimeClasspath"))
-
-            this.exclude { file ->
-                file.name.endsWith(".sf", ignoreCase = true)
+        tasks.filter { it.name.startsWith("publish${targetName.capitalize()}PublicationTo") }.let { publishTasks ->
+            if (publishTasks.isEmpty()) {
+                throw GradleException("[Shadow Relocation] Cannot find publish${targetName.capitalize()}PublicationTo for project '${project.path}'.")
             }
+            publishTasks.forEach { it.dependsOn(patchMetadataTask) }
+        }
+    }
 
-            /*
-        this.manifest {
-            this.attributes(
-                "Manifest-Version" to 1,
-                "Implementation-Vendor" to "Mamoe Technologies",
-                "Implementation-Title" to this.name.toString(),
-                "Implementation-Version" to this.version.toString()
-            )
-        }*/
+    afterEvaluate {
+        // Remove relocated dependencies in Maven pom
+        mavenPublication {
+            pom.withXml {
+                val node = this.asNode().getSingleChild("dependencies")
+                val dependencies = node.childrenNodes()
+                logger.trace("[Shadow Relocation] deps: $dependencies")
+                dependencies.forEach { dep ->
+                    val groupId = dep.getSingleChild("groupId").value().toString()
+                    val artifactId = dep.getSingleChild("artifactId").value().toString()
+                    logger.trace("[Shadow Relocation] Checking $groupId:$artifactId")
+
+                    if (
+                        relocationFilters.any { filter ->
+                            filter.matchesDependency(groupId = groupId, artifactId = artifactId)
+                        }
+                    ) {
+                        logger.info("[Shadow Relocation] Filtering out '$groupId:$artifactId' from pom for project '${project.path}'")
+                        check(node.remove(dep)) { "Failed to remove dependency node" }
+                    }
+                }
+            }
         }
     }
 }
 
-private const val relocationRootPackage = "net.mamoe.mirai.internal.deps"
+private fun Sequence<Task>.dependsOn(
+    task: Task,
+) {
+    return forEach { it.dependsOn(task) }
+}
 
-private fun ShadowJar.setRelocations() {
-    project.relocationFilters.forEach { relocation ->
-        relocate(relocation.shadowFilter, "$relocationRootPackage.${relocation.groupId}")
+private fun Sequence<Task>.dependsOn(
+    tasks: Iterable<Task>,
+) {
+    return forEach { it.dependsOn(tasks) }
+}
+
+/**
+ * 添加 `implementation` 和 `shadow`
+ */
+fun DependencyHandlerScope.shadowImplementation(dependencyNotation: Any) {
+    "implementation"(dependencyNotation)
+    "shadow"(dependencyNotation)
+}
+
+fun Project.registerRegularShadowTaskForJvmProject(
+    configurations: List<Configuration> = listOfNotNull(
+        project.configurations.findByName("runtimeClasspath"),
+        project.configurations.findByName("${kotlinJvm!!.target.name}RuntimeClasspath"),
+        project.configurations.findByName("runtime")
+    )
+): ShadowJar {
+    return project.registerRegularShadowTask(kotlinJvm!!.target, mapTaskNameForMultipleTargets = false, configurations)
+}
+
+fun Project.registerRegularShadowTask(
+    target: KotlinTarget,
+    mapTaskNameForMultipleTargets: Boolean,
+    configurations: List<Configuration> = listOfNotNull(
+        project.configurations.findByName("runtimeClasspath"),
+        project.configurations.findByName("${target.targetName}RuntimeClasspath"),
+        project.configurations.findByName("runtime")
+    ),
+): ShadowJar {
+    return tasks.create(
+        if (mapTaskNameForMultipleTargets) "shadow${target.targetName.capitalize()}Jar" else "shadowJar",
+        ShadowJar::class
+    ) {
+        group = "mirai"
+        archiveClassifier.set("all")
+
+        (tasks.findByName("jar") as? Jar)?.let {
+            manifest.inheritFrom(it.manifest)
+        }
+
+        val compilation = target.compilations["main"]
+        dependsOn(compilation.compileKotlinTask)
+        from(compilation.output)
+
+//        components.findByName("java")?.let { from(it) }
+        project.sourceSets.findByName("main")?.output?.let { from(it) } // for JVM projects
+        this.configurations = configurations
+
+        // Relocate packages
+        afterEvaluate {
+            val relocationFilters = project.relocationFilters
+            relocationFilters.forEach { relocation ->
+                relocation.packages.forEach { aPackage ->
+                    relocate(aPackage, "$RELOCATION_ROOT_PACKAGE.$aPackage")
+                }
+            }
+        }
+
+        exclude { file ->
+            file.name.endsWith(".sf", ignoreCase = true)
+        }
+        exclude("META-INF/INDEX.LIST", "META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "module-info.class")
     }
 }
+
+fun Project.configureRelocatedShadowJarForJvmProject(kotlin: KotlinJvmProjectExtension): ShadowJar {
+    return registerRegularShadowTask(kotlin.target, mapTaskNameForMultipleTargets = false)
+}
+
+const val RELOCATION_ROOT_PACKAGE = "net.mamoe.mirai.internal.deps"

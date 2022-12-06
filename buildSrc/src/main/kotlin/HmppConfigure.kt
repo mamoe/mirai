@@ -19,14 +19,19 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.TEST_COMPI
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetPreset
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import java.io.File
 
 val MIRAI_PLATFORM_ATTRIBUTE = Attribute.of(
     "net.mamoe.mirai.platform", String::class.java
+)
+
+/**
+ * Flags a target as an HMPP intermediate target
+ */
+val MIRAI_PLATFORM_INTERMEDIATE = Attribute.of(
+    "net.mamoe.mirai.platform.intermediate", Boolean::class.javaObjectType
 )
 
 val IDEA_ACTIVE = System.getProperty("idea.active") == "true" && System.getProperty("publication.test") != "true"
@@ -78,24 +83,32 @@ enum class HostArch {
 /// eg. "a;b;!other" means to disable all targets but a or b
 val ENABLED_TARGETS by lazy {
 
-    val targets = System.getProperty(
-        "mirai.target"
-    ) ?: rootProject.getLocalProperty("projects.mirai-core.targets")
-    ?: "others" // enable all by default
+    val targets = getMiraiTargetFromGradle() // enable all by default
 
     targets.split(';').toSet()
 }
+
+fun getMiraiTargetFromGradle() =
+    System.getProperty("mirai.target")
+        ?: System.getenv("mirai.target")
+        ?: rootProject.getLocalProperty("projects.mirai-core.targets")
+        ?: "others"
 
 fun isTargetEnabled(name: String): Boolean {
     val isNative = name in POSSIBLE_NATIVE_TARGETS
     return when {
         name in ENABLED_TARGETS -> true // explicitly enabled
         "!$name" in ENABLED_TARGETS -> false // explicitly disabled
+        "~$name" in ENABLED_TARGETS -> false // explicitly disabled
 
         "native" in ENABLED_TARGETS && isNative -> true // native targets explicitly enabled
         "!native" in ENABLED_TARGETS && isNative -> false // native targets explicitly disabled
+        "~native" in ENABLED_TARGETS && isNative -> false // native targets explicitly disabled
 
         "!other" in ENABLED_TARGETS -> false // others disabled
+        "~other" in ENABLED_TARGETS -> false // others disabled
+        "!others" in ENABLED_TARGETS -> false // others disabled
+        "~others" in ENABLED_TARGETS -> false // others disabled
         else -> true
     }
 }
@@ -150,6 +163,7 @@ fun Project.configureJvmTargetsHierarchical() {
                 }
                 attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // magic
                 attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "jvmBase") // avoid resolution
+                attributes.attribute(MIRAI_PLATFORM_INTERMEDIATE, true)
             }
         }
 
@@ -322,18 +336,6 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
 //        }
 //    }
 
-    NATIVE_TARGETS.forEach { targetName ->
-        val target = targets.getByName(targetName) as KotlinNativeTarget
-        target.binaries {
-            sharedLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-                baseName = project.name.toLowerCase().replace("-", "")
-            }
-            staticLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-                baseName = project.name.toLowerCase().replace("-", "")
-            }
-        }
-    }
-
     // Register platform tasks, e.g. linkDebugSharedHost
     project.afterEvaluate {
         val targetName = HOST_KIND.targetName
@@ -367,6 +369,37 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
         }
         project.disableCrossCompile() // improve speed
     }
+}
+
+fun KotlinMultiplatformExtension.configureNativeTargetBinaries(project: Project) {
+    if (!System.getProperty("mirai.native.binaries", "false").toBoolean()) {
+        // Must enable KotlinNativeLink by argument "mirai.native.link".
+
+        // :mirai-core:linkReleaseSharedMacosX64
+        return
+//        disableNativeLinkTasks(project)
+    }
+
+    NATIVE_TARGETS.forEach { targetName ->
+        val target = targets.getByName(targetName) as KotlinNativeTarget
+        target.binaries {
+            sharedLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
+                baseName = project.name.toLowerCase().replace("-", "")
+            }
+            staticLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
+                baseName = project.name.toLowerCase().replace("-", "")
+            }
+        }
+    }
+}
+
+private fun disableNativeLinkTasks(project: Project) {
+    project.tasks.withType<KotlinNativeLink>()
+        .filter { it.binary.outputKind != NativeOutputKind.TEST }
+        .forEach {
+            it.enabled = false
+            project.logger.warn("Disabling KotlinNativeLink: ${it.path}")
+        }
 }
 
 private fun KotlinNativeTarget.findOrCreateTest(buildType: NativeBuildType, configure: TestExecutable.() -> Unit) =

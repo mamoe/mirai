@@ -14,7 +14,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
 
-    id("kotlinx-atomicfu")
+    //id("kotlinx-atomicfu")
     id("signing")
     id("me.him188.kotlin-jvm-blocking-bridge")
     id("me.him188.kotlin-dynamic-delegation")
@@ -43,7 +43,8 @@ kotlin {
                 implementation(project(":mirai-core-utils"))
                 implementation(project(":mirai-console-compiler-annotations"))
                 implementation(`kotlinx-serialization-protobuf`)
-                implementation(`ktor-io`)
+                implementation(`kotlinx-atomicfu`)
+                relocateCompileOnly(`ktor-io_relocated`) // runtime from mirai-core-utils
             }
         }
 
@@ -63,7 +64,6 @@ kotlin {
         }
 
         findByName("androidMain")?.apply {
-            dependsOn(commonMain)
             dependencies {
                 compileOnly(`android-runtime`)
             }
@@ -103,7 +103,6 @@ if (tasks.findByName("androidMainClasses") != null) {
 
 configureMppPublishing()
 configureBinaryValidators(setOf("jvm", "android").filterTargets())
-relocateKtorForCore(false)
 
 //mavenCentralPublish {
 //    artifactId = "mirai-core-api"

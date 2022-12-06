@@ -7,14 +7,17 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+import org.gradle.api.Action
 import org.gradle.api.DomainObjectCollection
-import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.ExternalModuleDependency
+import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.kotlin.dsl.accessors.runtime.addDependencyTo
 import org.gradle.kotlin.dsl.extra
+import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
-import java.io.File
 
 /**
  * # 非常重要的提示 — 有关 relocation — 在看完全部本文前, 不要进行任何操作
@@ -28,52 +31,54 @@ import java.io.File
  *
  * ## 哪些模块被 relocate 了?
  *
- * 在 2.13.0 mirai 只 relocate `io.ktor` 下的所有模块.
+ * 在 2.13.0 mirai 只 relocate `io.ktor`, `okhttp3`, `okio` 下的所有类.
  *
  * ## 如何配置 relocation?
  *
- * Relocation 是模块范围的. 可以为 group id `io.ktor` 下的所有模块执行 relocation, 也可以仅为某一个精确的模块比如 `io.ktor:ktor-client-core` 执行.
+ * Relocation 的范围是通过 [Configuration] 指定的.
  *
- * 要增加一条 relocation 规则, 使用 [relocateAllFromGroupId] 或者 [relocateExactArtifact]. 不要现在就过去用, 你必须先读完本文全部.
- *
- * ## 间接依赖不会被处理
- *
- * 被 relocate 的模块的间接依赖不会被处理. 所以 `io.ktor:ktor-client-okhttp` 依赖的 okhttp 不会被 relocate!
- * 因此你必须手动检查目标依赖的全部间接依赖并添加 relocation 配置. 不要轻易升级经过了 relocation 的依赖, 因为有可能他们的新版本会使用新的依赖!
- * 这个过程无法自动化, 因为你 relocate 的模块可能会依赖 kotlin-stlib 等你不会想要 relocation 的依赖. 为什么你不会想 relocate kotlin-stlib? 继续阅读
+ * 在通常的 `dependencies` 配置中, 使用 [relocateCompileOnly] 和 [relocateImplementation]
+ * 可分别创建 `compileOnly` 或 `implementation` 的依赖, 并为其配置 relocation.
  *
  * ## 不能 relocate 参与 mirai 公开 API/ABI 的库
  *
  * 有些库的部分定义参与组成 mirai 的公开 API/ABI. 例如 kotlin-stdlib 提供 `String` 等类型, kotlinx-coroutines 提供 `CoroutineScope`等.
- * mirai 已经发布了使用这些类型的 API, 为了保证 ABI 兼容, 不能 relocate 它们.
+ * mirai 已经发布了使用这些类型的 API, 为了保证 ABI 兼容, 不能 relocate 它们 (你就需要在 [Configuration] `exclude`).
  * 要知道哪些 API 参与了 ABI, 执行 `./gradlew :mirai-core:dependencies` (把 `mirai-core` 换成你想了解的模块), 查看 `runtimeDependencies` 之类的.
  *
- * ## 考虑在运行时包含被 relocate 的依赖
+ * ## 考虑是否在运行时包含你的依赖 — 选择 [relocateCompileOnly] 和 [relocateImplementation]
+ *
+ * 根据 [Configuration] 配置不同, 被 relocate 的模块的间接依赖可能会或不会被处理.
+ * 例如
+ *
+ * 所以 `io.ktor:ktor-client-okhttp` 依赖的 okhttp 不会被 relocate!
+ * 因此你必须手动检查目标依赖的全部间接依赖并添加 relocation 配置. 不要轻易升级经过了 relocation 的依赖, 因为有可能他们的新版本会使用新的依赖!
+ * 这个过程无法自动化, 因为你 relocate 的模块可能会依赖 kotlin-stlib 等你不会想要 relocation 的依赖. 为什么你不会想 relocate kotlin-stlib? 继续阅读
  *
  * relocate 依赖之后, 你的程序在运行时必须要有 relocate 之后的类, 比如 `net.mamoe.mirai.internal.deps.io.ktor.utils.io.core.ByteReadPacket`.
- * 在配置 relocation 的时候, 你可以选择在当前模块包含或不包含被 relocate 的依赖. 这在单模块下很简单, 只要一直包含就行了.
  *
- * 但在多模块下, 比如 mirai-core 依赖 mirai-core-api, 而它们都需要使用 Ktor, 就需要让_最早_依赖 Ktor 的 mirai-core-api 模块在运行时包含, 而 mirai-core 不包含.
- * 运行时 mirai-core 就会使用来自 mirai-core-api 的 `net.mamoe.mirai.internal.deps.io.ktor.utils.io.core.ByteReadPacket`.
+ * [relocateCompileOnly] 会为你添加通常的 `compileOnly`, 然后配置 relocate, 但不会在打包 JAR 时包含被 relocate 的库. 而 [relocateImplementation] 则会包含.
+ *
+ * 在独立模块下很简单, 你只要一直使用 [relocateImplementation] 就行了.
+ *
+ * 但在有依赖关系的模块, 比如 mirai-core-api 依赖 mirai-core-utils, 而它们都需要使用 ktor-io, 就需要让_最早_依赖 ktor-io 的 mirai-core-utils 模块在运行时包含 ([relocateImplementation]), 而 mirai-core-api 不包含 ([relocateCompileOnly]).
+ * 运行时 mirai-core-api 就会使用来自 mirai-core-utils 的 `net.mamoe.mirai.internal.deps.io.ktor.utils.io.core.ByteReadPacket`.
+ *
+ * 如果你都使用 [relocateImplementation], 就会导致在 Android 平台发生 'Duplicated Class' 问题. 如果你都使用 [relocateCompileOnly] 则会在 clinit 阶段遇到 [NoClassDefFoundError]
  *
  * ## relocation 发生的时机晚于编译
  *
- * mirai-core-utils relocate 了 Ktor, 然后 mirai-core 在 `build.gradle.kts` 使用了 `implementation(project(":mirai-core-utils"))`.
- * 在 mirai-core 编译时, 编译器仍然会使用 relocate 之前的 `io.ktor`. 要在 mirai-core 将对 `io.ktor` 的调用转为对 `net.mamoe.mirai.internal.deps.io.ktor` 的调用, 需要配置 relocation.
+ * mirai-core-utils relocate 了 ktor-io, 然后 mirai-core 在 `build.gradle.kts` 使用了 `implementation(project(":mirai-core-utils"))`.
+ * 在 mirai-core 编译时, 编译器仍然会使用 relocate 之前的 `io.ktor`. 为了在 mirai-core 将对 `io.ktor` 的调用转为对 `net.mamoe.mirai.internal.deps.io.ktor` 的调用, 需要配置 relocation.
  * 所以此时就不能让 mirai-core 也打包 relocation 后的 ktor 而在运行时携带, 否则因为用户依赖 mirai-core 时 Maven 会同时下载 mirai-core-utils, 用户 classpath 就会有两份被 relocate 的 Ktor, 导致冲突.
  *
- * 所以你需要为所有依赖了 mirai-core-utils 的模块都分别配置 relocation, 并避免它们在运行时携带.
+ * 所以你需要为所有依赖了 mirai-core-utils 的模块都分别配置 [relocateCompileOnly].
  *
  * ### "在运行时包含" 是如何实现的?
  *
- * 被 relocate 的类会被直接当做是当前模块的类打包进 jar.
+ * 被 relocate 的类会被直接当做是当前模块的类打包进 JAR.
  * 比如 ktor-io 的所有代码就会被变换包名后全部打包进 "mirai-core-utils.jar",
- * 而不是在 maven pom 中定义而以后从 Maven Central 等远程仓库下载.
- *
- * 目前 mirai-core-utils 和 mirai-core-all 会进行这个操作.
- * 可以查看它们的 `build.gradle.kts` 中的 [relocateKtorForCore] 调用, 你会发现 `includeInRuntime` 为 `true`.
- *
- * 阅读 [relocateAllFromGroupId] 可以获得更多信息.
+ * 而不是在 maven POM 中定义而以后从 Maven Central 等远程仓库下载.
  *
  * ----
  *
@@ -82,89 +87,133 @@ import java.io.File
 object RelocationNotes
 
 /**
- * 配置 Ktor 依赖.
+ * 添加一个通常的 [compileOnly][KotlinDependencyHandler.compileOnly] 依赖, 并按 [relocatedDependency] 定义的配置 relocate.
+ *
+ * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用**都不会**被 relocate 到 [RELOCATION_ROOT_PACKAGE].
+ * 运行时 (runtime) **不会**包含被 relocate 的依赖及其所有间接依赖.
+ *
  * @see RelocationNotes
- * @see relocateKtorForCore
  */
-fun NamedDomainObjectContainer<KotlinSourceSet>.configureMultiplatformKtorDependencies(addDep: KotlinDependencyHandler.(Any) -> Dependency?) {
-    getByName("commonMain").apply {
-        dependencies {
-            addDep(`ktor-io`)
-            addDep(`ktor-client-core`)
-        }
+fun KotlinDependencyHandler.relocateCompileOnly(
+    relocatedDependency: RelocatedDependency,
+): ExternalModuleDependency {
+    val dependency = compileOnly(relocatedDependency.notation) {
     }
-
-    findByName("jvmBaseMain")?.apply {
-        dependencies {
-            addDep(`ktor-client-okhttp`)
-        }
-    }
-
-    configure(WIN_TARGETS.map { getByName(it + "Main") }) {
-        dependencies {
-            addDep(`ktor-client-curl`)
-        }
-    }
-
-    configure(LINUX_TARGETS.map { getByName(it + "Main") }) {
-        dependencies {
-            addDep(`ktor-client-cio`)
-        }
-    }
-
-    findByName("darwinMain")?.apply {
-        dependencies {
-            addDep(`ktor-client-darwin`)
-        }
-    }
-}
-
-inline fun <T> configure(list: Iterable<T>, function: T.() -> Unit) {
-    list.forEach(function)
-}
-
-
-/**
- * 使用之前阅读 [RelocationNotes]
- */
-fun Project.relocateKtorForCore(includeInRuntime: Boolean) {
-    // WARNING: You must also consider relocating transitive dependencies.
-    // Otherwise, user will get NoClassDefFound error when using mirai as a classpath dependency. See #2263.
-
-    relocateAllFromGroupId("io.ktor", includeInRuntime)
-    relocateAllFromGroupId("com.squareup.okhttp3", includeInRuntime)
-    relocateAllFromGroupId("com.squareup.okio", includeInRuntime)
+    project.relocationFilters.add(
+        RelocationFilter(
+            dependency.group!!, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = false,
+        )
+    )
+    // Don't add to runtime
+    return dependency
 }
 
 /**
- * relocate 一个 [groupId] 下的所有模块.
+ * 添加一个通常的 [compileOnly][KotlinDependencyHandler.compileOnly] 依赖, 并按 [relocatedDependency] 定义的配置 relocate.
  *
- * 如果要 relocate 的依赖来自你依赖的另一个模块, 必须传 [includeInRuntime] 为 `false`, 否则会导致运行时类冲突.
- * 如果要 relocate 的依赖不是来自你依赖的另一个模块, 即是你自己新加的, 必须传 [includeInRuntime] 为 `true`, 否则会导致运行时类缺失.
- * 而在依赖你的模块中, 如果依赖方也要使用到你 relocate 的这个依赖, 依赖方也必须配置一样的 [relocateAllFromGroupId], 但是传 [includeInRuntime] 为 `false`, 以避免运行时冲突.
- * 如果你忘记为依赖方配置 relocation, 你可能会能正常编译和测试, 但在发布版本后遇到上述严重运行时问题.
+ * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用**都不会**被 relocate 到 [RELOCATION_ROOT_PACKAGE].
+ * 运行时 (runtime) **不会**包含被 relocate 的依赖及其所有间接依赖.
  *
- * 要了解 relocation, 阅读 [RelocationNotes]. **你必须阅读至少一遍**这个备注才能进行任何 relocation 修改.
- *
- * @param groupId 例如 `io.ktor`
- * @param includeInRuntime 将 relocate 后的依赖本体包含在运行时 classpath.
+ * @see RelocationNotes
  */
-fun Project.relocateAllFromGroupId(groupId: String, includeInRuntime: Boolean) {
-    relocationFilters.add(RelocationFilter(groupId, includeInRuntime = includeInRuntime))
+fun DependencyHandler.relocateCompileOnly(
+    project: Project,
+    relocatedDependency: RelocatedDependency,
+): Dependency {
+    val dependency =
+        addDependencyTo(this, "compileOnly", relocatedDependency.notation, Action<ExternalModuleDependency> {
+        })
+    project.relocationFilters.add(
+        RelocationFilter(
+            dependency.group!!, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = false,
+        )
+    )
+    // Don't add to runtime
+    return dependency
 }
 
 /**
- * 精确地 relocate 一个依赖.
+ * 添加一个通常的 [implementation][KotlinDependencyHandler.implementation] 依赖, 并按 [relocatedDependency] 定义的配置 relocate.
+ *
+ * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用**都会**被 relocate 到 [RELOCATION_ROOT_PACKAGE].
+ * 运行时 (runtime) 将**会**包含被 relocate 的依赖及其所有间接依赖.
+ *
+ * @see RelocationNotes
  */
-fun Project.relocateExactArtifact(groupId: String, artifactId: String, includeInRuntime: Boolean) {
-    relocationFilters.add(RelocationFilter(groupId, artifactId, includeInRuntime = includeInRuntime))
+fun KotlinDependencyHandler.relocateImplementation(
+    relocatedDependency: RelocatedDependency,
+    action: ExternalModuleDependency.() -> Unit = {}
+): ExternalModuleDependency {
+    val dependency = implementation(relocatedDependency.notation) {
+
+    }
+    project.relocationFilters.add(
+        RelocationFilter(
+            dependency.group!!, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = true,
+        )
+    )
+    project.configurations.maybeCreate(SHADOW_RELOCATION_CONFIGURATION_NAME)
+    addDependencyTo(
+        project.dependencies,
+        SHADOW_RELOCATION_CONFIGURATION_NAME,
+        relocatedDependency.notation,
+        Action<ExternalModuleDependency> {
+            relocatedDependency.exclusionAction(this)
+            intrinsicExclusions()
+            action()
+        }
+    )
+    return dependency
 }
+
+/**
+ * 添加一个通常的 [implementation][KotlinDependencyHandler.implementation] 依赖, 并按 [relocatedDependency] 定义的配置 relocate.
+ *
+ * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用都会被 relocate 到 [RELOCATION_ROOT_PACKAGE].
+ * 运行时 (runtime) 将会包含被 relocate 的依赖及其所有间接依赖.
+ *
+ * @see RelocationNotes
+ */
+fun DependencyHandler.relocateImplementation(
+    project: Project,
+    relocatedDependency: RelocatedDependency,
+    action: Action<ExternalModuleDependency> = Action {}
+): ExternalModuleDependency {
+    val dependency =
+        addDependencyTo(this, "implementation", relocatedDependency.notation, Action<ExternalModuleDependency> {
+        })
+    project.relocationFilters.add(
+        RelocationFilter(
+            dependency.group!!, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = true,
+        )
+    )
+    project.configurations.maybeCreate(SHADOW_RELOCATION_CONFIGURATION_NAME)
+    addDependencyTo(
+        project.dependencies,
+        SHADOW_RELOCATION_CONFIGURATION_NAME,
+        relocatedDependency.notation,
+        Action<ExternalModuleDependency> {
+            relocatedDependency.exclusionAction(this)
+            intrinsicExclusions()
+            action(this)
+        }
+    )
+    return dependency
+}
+
+private fun ExternalModuleDependency.intrinsicExclusions() {
+    exclude(ExcludeProperties.`everything from kotlin`)
+    exclude(ExcludeProperties.`everything from kotlinx`)
+}
+
+
+const val SHADOW_RELOCATION_CONFIGURATION_NAME = "shadowRelocation"
 
 
 data class RelocationFilter(
     val groupId: String,
     val artifactId: String? = null,
-    val shadowFilter: String = groupId,
+    val packages: List<String> = listOf(groupId),
     val filesFilter: String = groupId.replace(".", "/"),
     /**
      * Pack relocated dependency into the fat jar. If set to `false`, dependencies will be removed.
@@ -172,12 +221,6 @@ data class RelocationFilter(
      */ // #2291
     val includeInRuntime: Boolean,
 ) {
-
-    fun matchesFile(file: File): Boolean {
-        val path = file.absolutePath.replace("\\", "/")
-        return filesFilter in path
-                || groupId in path
-    }
 
     fun matchesDependency(groupId: String?, artifactId: String?): Boolean {
         if (this.groupId == groupId) return true

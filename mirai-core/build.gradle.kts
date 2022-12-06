@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     kotlin("multiplatform")
-    id("kotlinx-atomicfu")
+    // id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
     id("me.him188.kotlin-jvm-blocking-bridge")
     id("me.him188.kotlin-dynamic-delegation")
@@ -30,6 +30,7 @@ kotlin {
 
     configureJvmTargetsHierarchical()
     configureNativeTargetsHierarchical(project)
+    configureNativeTargetBinaries(project) // register native binaries for mirai-core only
 
     sourceSets.apply {
 
@@ -42,8 +43,11 @@ kotlin {
 
                 implementation(project(":mirai-core-utils"))
                 implementation(`kotlinx-serialization-protobuf`)
-                implementation(`ktor-io`)
-                implementation(`ktor-client-core`)
+                implementation(`kotlinx-atomicfu`)
+
+//                relocateImplementation(`ktor-http_relocated`)
+//                relocateImplementation(`ktor-serialization_relocated`)
+//                relocateImplementation(`ktor-websocket-serialization_relocated`)
             }
         }
 
@@ -59,7 +63,6 @@ kotlin {
             dependencies {
                 implementation(`log4j-api`)
                 implementation(`netty-handler`)
-                implementation(`ktor-client-okhttp`)
                 api(`kotlinx-coroutines-jdk8`) // use -jvm modules for this magic target 'jvmBase'
             }
         }
@@ -71,7 +74,6 @@ kotlin {
         }
 
         findByName("androidMain")?.apply {
-            dependsOn(commonMain)
             dependencies {
                 compileOnly(`android-runtime`)
             }
@@ -105,6 +107,38 @@ kotlin {
             }
         }
 
+
+        // Ktor
+
+        findByName("commonMain")?.apply {
+            dependencies {
+                relocateCompileOnly(`ktor-io_relocated`) // runtime from mirai-core-utils
+                relocateImplementation(`ktor-client-core_relocated`)
+            }
+        }
+        findByName("jvmBaseMain")?.apply {
+            dependencies {
+                relocateImplementation(`ktor-client-okhttp_relocated`)
+            }
+        }
+        configure(WIN_TARGETS.map { getByName(it + "Main") }) {
+            dependencies {
+                implementation(`ktor-client-curl`)
+            }
+        }
+        configure(LINUX_TARGETS.map { getByName(it + "Main") }) {
+            dependencies {
+                implementation(`ktor-client-cio`)
+            }
+        }
+        findByName("darwinMain")?.apply {
+            dependencies {
+                implementation(`ktor-client-darwin`)
+            }
+        }
+
+
+        // Linkage
         NATIVE_TARGETS.forEach { targetName ->
             val defFile = projectDir.resolve("src/nativeMain/cinterop/OpenSSL.def")
             val target = targets.getByName(targetName) as KotlinNativeTarget
@@ -134,24 +168,6 @@ kotlin {
                     defFile = projectDir.resolve("src/mingwX64Main/cinterop/Socket.def")
                     packageName("sockets")
                 }
-        }
-
-        configure(WIN_TARGETS.map { getByName(it + "Main") }) {
-            dependencies {
-                implementation(`ktor-client-curl`)
-            }
-        }
-
-        configure(LINUX_TARGETS.map { getByName(it + "Main") }) {
-            dependencies {
-                implementation(`ktor-client-cio`)
-            }
-        }
-
-        findByName("darwinMain")?.apply {
-            dependencies {
-                implementation(`ktor-client-darwin`)
-            }
         }
 
         disableCrossCompile()
@@ -202,7 +218,6 @@ if (tasks.findByName("androidMainClasses") != null) {
 
 configureMppPublishing()
 configureBinaryValidators(setOf("jvm", "android").filterTargets())
-relocateKtorForCore(false)
 
 //mavenCentralPublish {
 //    artifactId = "mirai-core"

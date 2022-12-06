@@ -126,7 +126,12 @@ internal abstract class JvmPluginInternal(
         parentPermission
         if (!firstRun) refreshCoroutineContext()
 
-        val except = javaClass.getDeclaredAnnotation(ConsoleJvmPluginFuncCallbackStatusExcept.OnEnable::class.java)
+        val except = try {
+            javaClass.getDeclaredAnnotation(ConsoleJvmPluginFuncCallbackStatusExcept.OnEnable::class.java)
+        } catch (e: Throwable) {
+            null
+        }
+
         kotlin.runCatching {
             onEnable()
         }.fold(

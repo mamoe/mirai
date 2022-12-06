@@ -9,7 +9,6 @@
 
 @file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE", "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
 import java.time.LocalDateTime
@@ -46,8 +45,6 @@ plugins {
 
 osDetector = osdetector
 BuildSrcRootProjectHolder.value = rootProject
-
-GpgSigner.setup(project)
 
 analyzes.CompiledCodeVerify.run { registerAllVerifyTasks() }
 
@@ -86,14 +83,10 @@ allprojects {
         }
         configureJarManifest()
         substituteDependenciesUsingExpectedVersion()
-
-        if (System.getenv("MIRAI_IS_SNAPSHOTS_PUBLISHING") != null) {
-            project.tasks.filterIsInstance<ShadowJar>().forEach { shadow ->
-                shadow.enabled = false // they are too big
-            }
-            logger.info("Disabled all shadow tasks.")
-        }
     }
+}
+afterEvaluate {
+    configureShadowDependenciesForPublishing()
 }
 
 subprojects {

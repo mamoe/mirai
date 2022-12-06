@@ -25,7 +25,7 @@ internal class ContactInfo(
     @JvmField var nick: String,
 ) {
     var avatarUrl: String by lateinitMutableProperty {
-        runBlocking { MockImage.random(declaredBot).getUrl(declaredBot) }
+        runBlocking { MockImage.randomForPerson(declaredBot, id).getUrl(declaredBot) }
     }
 
     fun changeAvatarUrl(newAvatar: String) {

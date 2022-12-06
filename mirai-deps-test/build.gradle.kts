@@ -17,6 +17,7 @@ plugins {
 dependencies {
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
+    implementation(`kotlin-reflect`)
     implementation(kotlin("gradle-plugin-api"))
     implementation(kotlin("gradle-plugin"))
     implementation(kotlin("stdlib"))
@@ -32,6 +33,7 @@ dependencies {
 
 tasks.getByName("test", Test::class) {
     environment("mirai.root.project.dir", rootProject.projectDir.absolutePath)
+    systemProperty("mirai.deps.test.must.run", System.getProperty("mirai.deps.test.must.run"))
 }
 
 val publishMiraiArtifactsToMavenLocal by tasks.registering {
@@ -42,6 +44,11 @@ val publishMiraiArtifactsToMavenLocal by tasks.registering {
     }
     dependsOn(publishTasks)
 
+    doFirst {
+        // Always print this very important message
+        logger.warn("[publishMiraiArtifactsToMavenLocal] Project version is '${project.version}'.")
+    }
+
     doLast {
         // delete shadowed Jars, since Kotlin can't compile modules that depend on them.
         rootProject.subprojects
@@ -50,6 +57,13 @@ val publishMiraiArtifactsToMavenLocal by tasks.registering {
             .flatMap { it.outputs.files }
             .filter { it.isFile && it.name.endsWith(".jar") }
             .forEach { it.delete() }
+    }
+}
+
+
+tasks.register("updateProjectVersionForLocalDepsTest") {
+    doLast {
+        setProjectVersionForFutureBuilds(DEPS_TEST_VERSION)
     }
 }
 
@@ -85,18 +99,36 @@ fun generateBuildConfig() {
     }
 }
 
-tasks.register("publishMiraiLocalArtifacts", Exec::class) {
+/**
+ * Kind note: To run this task you probably need a lot of host memory and luck.
+ *
+ * **If you see errors, don't panic, that's most probably not your fault.**
+ *
+ * Try:
+ *
+ * ```shell
+ * ./gradlew :mirai-deps-test:updateProjectVersionForLocalDepsTest
+ * ./gradlew clean :mirai-deps-test:publishMiraiArtifactsToMavenLocal "-Porg.gradle.parallel=false"
+ * ```
+ * Note this will change your project version in `buildSrc/src/main/kotlin/Versions.kt`. Be careful to change it back before committing!
+ * Note also this is **extremely slow**. If your computer isn't good enough it may take hours.
+ */
+val publishMiraiLocalArtifacts = tasks.register("publishMiraiLocalArtifacts", Exec::class) {
     group = "mirai"
-    description = "Starts a child process to publish v2.99.0-deps-test artifacts to MavenLocal"
+    description = "Starts a child process to publish v$DEPS_TEST_VERSION artifacts to MavenLocal"
 
     workingDir(rootProject.projectDir)
-    environment("mirai.build.project.version", "2.99.0-deps-test")
+    environment("mirai.build.project.version", DEPS_TEST_VERSION)
     commandLine(
         "./gradlew",
+        "clean",
         publishMiraiArtifactsToMavenLocal.name,
         "--no-daemon",
+        "--stacktrace",
+        "--scan",
         "-Pkotlin.compiler.execution.strategy=in-process"
     )
+
     standardOutput = System.out
     errorOutput = System.err
 }

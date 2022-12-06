@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.util
 
 import kotlinx.atomicfu.atomic
+import kotlinx.atomicfu.loop
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.utils.currentTimeMillis
@@ -37,8 +38,7 @@ internal class TimedTask(
 
     val job: Job = scope.launch(coroutineContext) {
         // `delay` always checks for cancellation
-        while (true) {
-            val last = lastChangedTime.value
+        lastChangedTime.loop { last ->
             val current = currentTimeMillis()
             if (last == UNCHANGED) {
                 runIgnoreException<CancellationException> {
@@ -46,7 +46,7 @@ internal class TimedTask(
                 } ?: return@launch
             } else {
                 if (current - last > intervalMillis) {
-                    if (!casLastChangedToUnchanged(last)) continue
+                    if (!lastChangedTime.compareAndSet(last, UNCHANGED)) return@loop
                     action()
                 }
                 runIgnoreException<CancellationException> {
@@ -55,8 +55,6 @@ internal class TimedTask(
             }
         }
     }
-
-    private fun casLastChangedToUnchanged(last: Long) = lastChangedTime.compareAndSet(last, UNCHANGED)
 }
 
 internal fun CoroutineScope.launchTimedTask(

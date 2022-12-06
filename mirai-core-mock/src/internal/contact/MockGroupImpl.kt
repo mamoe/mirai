@@ -229,7 +229,7 @@ internal class MockGroupImpl(
 
     override val mockApi: MockGroup.MockApi = object : MockGroup.MockApi {
         override var avatarUrl: String by lateinitMutableProperty {
-            runBlocking { MockImage.random(bot).getUrl(bot) }
+            runBlocking { MockImage.randomForGroup(bot, id).getUrl(bot) }
         }
     }
 

@@ -10,12 +10,15 @@
 package net.mamoe.mirai.mock.internal
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.MockBotFactory
 import net.mamoe.mirai.mock.database.MessageDatabase
 import net.mamoe.mirai.mock.resserver.TmpResourceServer
 import net.mamoe.mirai.mock.userprofile.UserProfileService
+import net.mamoe.mirai.mock.utils.AvatarGenerator
 import net.mamoe.mirai.mock.utils.NameGenerator
+import net.mamoe.mirai.mock.utils.randomImageContent
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.lateinitMutableProperty
 import kotlin.math.absoluteValue
@@ -38,6 +41,11 @@ internal class MockBotFactoryImpl : MockBotFactory {
             }
             var userProfileService: UserProfileService by lateinitMutableProperty {
                 UserProfileService.getInstance()
+            }
+            var avatarGenerator: AvatarGenerator by lateinitMutableProperty {
+                object : AvatarGenerator {
+                    override fun generateRandomAvatar(): ByteArray = Image.randomImageContent()
+                }
             }
 
             override fun id(value: Long): MockBotFactory.BotBuilder = apply {
@@ -68,6 +76,10 @@ internal class MockBotFactoryImpl : MockBotFactory {
                 userProfileService = service
             }
 
+            override fun avatarGenerator(avatarGenerator: AvatarGenerator): MockBotFactory.BotBuilder = apply {
+                this.avatarGenerator = avatarGenerator
+            }
+
             override fun createNoInstanceRegister(): MockBot {
                 return MockBotImpl(
                     configuration_,
@@ -77,6 +89,7 @@ internal class MockBotFactoryImpl : MockBotFactory {
                     tmpResourceServer_,
                     msgDb,
                     userProfileService,
+                    avatarGenerator,
                 )
             }
 
