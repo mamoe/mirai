@@ -133,7 +133,7 @@ internal open class NettyNetworkHandler(
         return contextResult.await()
     }
 
-    override fun Channel.getConnectedIP(): Long = this.remoteAddress().let { address ->
+    override fun io.netty.channel.Channel.getConnectedIP(): Long = this.remoteAddress().let { address ->
         {
             if (this.isOpen && address is InetSocketAddress) {
                 address.address.address.copyOf().also { it.reverse() }.toInt().toLong()
