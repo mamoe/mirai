@@ -21,6 +21,7 @@ import net.mamoe.mirai.utils.ByteArrayPool
 import net.mamoe.mirai.utils.DEFAULT_BUFFER_SIZE
 import net.mamoe.mirai.utils.toReadPacket
 import platform.posix.*
+import sockets.socket_get_connected_ip
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -45,7 +46,7 @@ internal actual class PlatformSocket(
         get() = send(socket, null, 0, 0).convert<Long>() != 0L
     actual val connectedIp: Long
         get() = if (isOpen) {
-            sockets.socket_get_connected_ip(socket)
+            sockets.socket_get_connected_ip(socket).toLong()
         } else {
             0L
         }

@@ -51,7 +51,7 @@ internal actual class PlatformSocket(
         get() = write(socket, null, 0).convert<Long>() != 0L
     actual val connectedIp: Long
         get() = if (isOpen) {
-            socket_get_connected_ip(socket)
+            socket_get_connected_ip(socket).toLong()
         } else {
             0L
         }
