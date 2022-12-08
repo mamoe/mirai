@@ -184,7 +184,7 @@ internal class NormalMemberImpl constructor(
         // Note: when member not found, result is still true.
 
         if (response.ret == 255) error("Operation too fast") // https://github.com/mamoe/mirai/issues/1503
-        check(response.success) { "kick failed: ${response.ret}" }
+        check(response.success) { "kick member $id of group ${group.id} failed: ${response.ret}" }
 
 
         group.members.delegate.removeAll { it.id == this@NormalMemberImpl.id }
@@ -235,7 +235,7 @@ internal class NormalMemberImpl constructor(
 internal fun Member.checkBotPermissionHighest(operationName: String) {
     check(group.botPermission == MemberPermission.OWNER) {
         throw PermissionDeniedException(
-            "`$operationName` operation requires the OWNER permission, while bot has ${group.botPermission}",
+            "`$operationName` operation for member $id requires the OWNER permission, while bot has ${group.botPermission} in group ${group.id}",
         )
     }
 }
@@ -243,7 +243,7 @@ internal fun Member.checkBotPermissionHighest(operationName: String) {
 internal fun Member.checkBotPermissionHigherThanThis(operationName: String) {
     check(group.botPermission > this.permission) {
         throw PermissionDeniedException(
-            "`$operationName` operation requires a higher permission, while " +
+            "`$operationName` operation for member $id of group ${group.id} requires a higher permission, while " +
                     "${group.botPermission} < ${this.permission}",
         )
     }

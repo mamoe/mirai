@@ -183,7 +183,9 @@ internal abstract class CommonGroupImpl constructor(
     private val messageProtocolStrategy: MessageProtocolStrategy<GroupImpl> = GroupMessageProtocolStrategy(this.cast())
 
     override suspend fun quit(): Boolean {
-        check(botPermission != MemberPermission.OWNER) { "An owner cannot quit from a owning group" }
+        check(botPermission != MemberPermission.OWNER) {
+            "Failed to quit $id because bot is the owner"
+        }
 
         if (!bot.groups.delegate.remove(this)) {
             return false
@@ -193,7 +195,7 @@ internal abstract class CommonGroupImpl constructor(
             ProfileService.GroupMngReq(bot.client, this@CommonGroupImpl.id), 5000, 2
         )
         check(response.errorCode == 0) {
-            "Group.quit failed: $response".also {
+            "Group($id).quit failed: $response".also {
                 bot.groups.delegate.add(this@CommonGroupImpl.castUp())
             }
         }
