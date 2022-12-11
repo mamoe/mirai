@@ -31,6 +31,23 @@ public fun String.decodeHtmlEscape(): String = replace(STR_TO_CHAR_PATTERN) { ma
     match.value
 }
 
+public fun String.encodeHtmlEscape(): String = buildString(length) {
+    this@encodeHtmlEscape.forEach { c ->
+        if (needDoHtmlEscape(c)) {
+            append("&#").append(c.code).append(';')
+        } else {
+            append(c)
+        }
+    }
+}
+
+private fun needDoHtmlEscape(c: Char): Boolean {
+    if (c.code < 32) return true // Ascii control codes
+
+    if (c in "#@!~$%^&*()<>/\\\"'") return true
+    return false
+}
+
 
 private val STR_TO_CHAR_MAPPINGS: Map<String, String> by lazy {
 //<editor-fold defaultstate="collapsed" desc="Generated Code">

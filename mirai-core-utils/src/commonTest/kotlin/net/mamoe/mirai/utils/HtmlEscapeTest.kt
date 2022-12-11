@@ -22,4 +22,16 @@ internal class HtmlEscapeTest {
             ALL.decodeHtmlEscape()
         )
     }
+
+    @Test
+    fun testEncode() {
+        val str = buildString {
+            for (i in 1 until 2048) {
+                append(i.toChar())
+            }
+        }
+        val escaped = str.encodeHtmlEscape()
+        // println(escaped)
+        assertEquals(escaped.decodeHtmlEscape(), str)
+    }
 }

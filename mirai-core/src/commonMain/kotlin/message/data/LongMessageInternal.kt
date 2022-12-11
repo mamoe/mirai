@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgTransmit
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.utils.encodeHtmlEscape
 import net.mamoe.mirai.utils.safeCast
 
 // internal runtime value, not serializable
@@ -152,9 +153,7 @@ internal data class ForwardMessageInternal(
     }
 }
 
-private fun String.xmlEnc(): String {
-    return this.replace("&", "&amp;")
-}
+private fun String.xmlEnc(): String = encodeHtmlEscape()
 
 internal fun RichMessage.Key.forwardMessage(
     resId: String,
