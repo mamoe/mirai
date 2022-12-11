@@ -72,7 +72,7 @@ private fun <T> T.toJceDataImpl(subject: ContactOrBot?): ImMsgBody.SourceMsg
             msgBody = ImMsgBody.MsgBody(
                 richText = ImMsgBody.RichText(
                     elems = elements.toMutableList().also {
-                        if (it.last().elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
+                        if (it.lastOrNull()?.elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
                     }
                 )
             )
@@ -266,7 +266,7 @@ internal class OnlineMessageSourceToGroupImpl(
                 msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
                         elems = elements.toMutableList().also {
-                            if (it.last().elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
+                            if (it.lastOrNull()?.elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
                         }
                     )
                 )
