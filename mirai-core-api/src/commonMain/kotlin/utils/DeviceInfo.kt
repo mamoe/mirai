@@ -118,6 +118,8 @@ public expect class DeviceInfo(
          */
         @JvmStatic
         public fun random(random: Random): DeviceInfo
+
+        public fun serializer(): KSerializer<DeviceInfo>
     }
 
     /**
