@@ -11,10 +11,8 @@ package net.mamoe.mirai.internal.message.data
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.internal.contact.groupCode
 import net.mamoe.mirai.internal.contact.impl
 import net.mamoe.mirai.internal.contact.uin
-import net.mamoe.mirai.internal.contact.userIdOrNull
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.source.MessageSourceInternal
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -248,15 +246,14 @@ internal open class MultiMsgUploader(
                 }
             }
         }
+
+        val isToGroup = contact is Group
         // Step6: Convert
         pendingMessages.forEach { pm ->
             val msg0 = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
                     fromUin = pm.msg.senderId,
                     fromNick = pm.msg.senderName,
-                    toUin = if (isLong) {
-                        contact.userIdOrNull ?: 0
-                    } else 0,
                     msgSeq = pm.seq,
                     msgTime = pm.msg.time,
                     msgUid = 0x01000000000000000L or pm.uid.toLongUnsigned(),
@@ -264,11 +261,16 @@ internal open class MultiMsgUploader(
                         status = 0,
                         msgId = 1,
                     ),
-                    msgType = 82, // troop,
-                    groupInfo = MsgComm.GroupInfo(
-                        groupCode = if (contact is Group) contact.groupCode else 0L,
+                    msgType = if (isToGroup) {
+                        82 // troop
+                    } else {
+                        9 // c2c
+                    },
+                    c2cCmd = if (isToGroup) 0 else 11,
+                    groupInfo = if (isToGroup) MsgComm.GroupInfo(
+                        groupCode = contact.id,
                         groupCard = pm.msg.senderName, // Cinnamon
-                    ),
+                    ) else null,
                     isSrcMsg = false,
                 ), msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
