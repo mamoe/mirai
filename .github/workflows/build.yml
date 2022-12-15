@@ -234,6 +234,9 @@ jobs:
         name: Ensure KDoc valid
         run: ./gradlew dokkaHtmlMultiModule ${{ env.gradleArgs }}
 
+      - name: Release RAM
+        run: node ci-release-helper/scripts/kill-java.js
+
       - name: Publish Snapshots
         if: ${{ github.event.pusher && env.isMac == 'true' }}
         run: ./gradlew publishAllPublicationsToMiraiRepoRepository ${{ env.gradleArgs }}
@@ -378,6 +381,9 @@ jobs:
         run: ./gradlew :mirai-deps-test:check ${{ env.gradleArgs }}
 
       # Publish native snapshots. Other artifacts are published in build-mirai-all
+
+      - name: Release RAM
+        run: node ci-release-helper/scripts/kill-java.js
 
       - name: Publish MingwX64 Snapshots
         if: ${{ github.event.pusher && env.isWindows == 'true' }}
