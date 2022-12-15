@@ -5112,6 +5112,32 @@ public final class net/mamoe/mirai/message/data/RichMessageOrigin$Key : net/mamo
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class net/mamoe/mirai/message/data/RockPaperScissors : java/lang/Enum, net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/MarketFace {
+	public static final field Key Lnet/mamoe/mirai/message/data/RockPaperScissors$Key;
+	public static final field PAPER Lnet/mamoe/mirai/message/data/RockPaperScissors;
+	public static final field ROCK Lnet/mamoe/mirai/message/data/RockPaperScissors;
+	public static final field SCISSORS Lnet/mamoe/mirai/message/data/RockPaperScissors;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public fun contentToString ()Ljava/lang/String;
+	public final fun eliminate (Lnet/mamoe/mirai/message/data/RockPaperScissors;)Ljava/lang/Boolean;
+	public final fun getContent ()Ljava/lang/String;
+	public fun getId ()I
+	public final fun getInternalId ()B
+	public synthetic fun getName ()Ljava/lang/String;
+	public static final fun random ()Lnet/mamoe/mirai/message/data/RockPaperScissors;
+	public static final fun random (Lkotlin/random/Random;)Lnet/mamoe/mirai/message/data/RockPaperScissors;
+	public fun toString ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/RockPaperScissors;
+	public static fun values ()[Lnet/mamoe/mirai/message/data/RockPaperScissors;
+}
+
+public final class net/mamoe/mirai/message/data/RockPaperScissors$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+	public final fun random ()Lnet/mamoe/mirai/message/data/RockPaperScissors;
+	public final fun random (Lkotlin/random/Random;)Lnet/mamoe/mirai/message/data/RockPaperScissors;
+	public static synthetic fun random$default (Lnet/mamoe/mirai/message/data/RockPaperScissors$Key;Lkotlin/random/Random;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/RockPaperScissors;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public abstract interface class net/mamoe/mirai/message/data/ServiceMessage : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/RichMessage {
 	public static final field Key Lnet/mamoe/mirai/message/data/ServiceMessage$Key;
 	public abstract fun getServiceId ()I

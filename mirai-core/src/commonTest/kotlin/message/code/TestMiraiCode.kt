@@ -82,5 +82,18 @@ internal class TestMiraiCode : AbstractTest() {
             brief = "",
         )
         assertEquals(musicShare.toMessageChain(), musicShare.serializeToMiraiCode().deserializeMiraiCode())
+
+        assertEquals(
+            messageChainOf(RockPaperScissors.ROCK),
+            "[mirai:rps:rock]".deserializeMiraiCode()
+        )
+        assertEquals(
+            messageChainOf(RockPaperScissors.SCISSORS),
+            "[mirai:rps:scissors]".deserializeMiraiCode()
+        )
+        assertEquals(
+            messageChainOf(RockPaperScissors.PAPER),
+            "[mirai:rps:paper]".deserializeMiraiCode()
+        )
     }
 }

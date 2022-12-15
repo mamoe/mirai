@@ -123,6 +123,9 @@ private object MiraiCodeParsers : AbstractMap<String, MiraiCodeParser>(), Map<St
     "dice" to MiraiCodeParser(Regex("""([1-6])""")) { (value) ->
         Dice(value.toInt())
     },
+    "rps" to MiraiCodeParser(Regex("""(\w+)""")) { (value) ->
+        RockPaperScissors.valueOf(value.uppercase())
+    },
     "musicshare" to MiraiCodeParser.DynamicParser(7) { args ->
         val (kind, title, summary, jumpUrl, pictureUrl) = args
         val musicUrl = args[5]
