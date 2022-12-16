@@ -30,6 +30,8 @@ import kotlin.random.Random
  * @property ROCK 石头 `[mirai:rps:rock]`
  * @property SCISSORS 剪刀 `[mirai:rps:scissors]`
  * @property PAPER 布（纸）`[mirai:rps:paper]`
+ *
+ * @since 2.14
  */
 @kotlin.Suppress("RemoveRedundantQualifierName")
 @Serializable(RockPaperScissors.Serializer::class)
