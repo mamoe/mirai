@@ -11,7 +11,7 @@ on:
       - '**/gradle.properties'
       - 'buildSrc/**'
   pull_request:
-    paths-ignore:
+    paths:
       - '**/**.gradle.kts'
       - '**/gradle.properties'
       - 'buildSrc/**'
