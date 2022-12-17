@@ -24,7 +24,7 @@ import kotlin.test.assertFails
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 
-internal class MessagingTest: MockBotTestBase() {
+internal class MessagingTest : MockBotTestBase() {
 
     @Test
     internal fun testMessageEventBroadcast() = runTest {
@@ -133,18 +133,33 @@ internal class MessagingTest: MockBotTestBase() {
     @Test
     internal fun testRoamingMessages() = runTest {
         val mockFriend = bot.addFriend(1, "1")
-        broadcastMockEvents {
-            mockFriend says { append("Testing!") }
-            mockFriend says { append("Test2!") }
+
+        val allSent = mutableListOf<MessageSource>()
+        fun MutableList<MessageSource>.add(msg: MessageChain) {
+            add(msg.source)
         }
-        mockFriend.sendMessage("Pong!")
+
+        fun MutableList<MessageSource>.convertToOffline() {
+            replaceAll { src ->
+                bot.buildMessageSource(src.kind) { allFrom(src) }
+            }
+        }
+
+        broadcastMockEvents {
+            allSent.add(mockFriend says { append("Testing!") })
+            allSent.add(mockFriend says { append("Test2!") })
+        }
+        allSent.add(mockFriend.sendMessage("Pong!").source)
+        allSent.convertToOffline()
 
         mockFriend.roamingMessages.getAllMessages().toList().let { messages ->
             assertEquals(3, messages.size)
-            assertEquals(messageChainOf(PlainText("Testing!")), messages[0])
-            assertEquals(messageChainOf(PlainText("Test2!")), messages[1])
-            assertEquals(messageChainOf(PlainText("Pong!")), messages[2])
+            assertEquals(messageChainOf(allSent[0] + PlainText("Testing!")), messages[0])
+            assertEquals(messageChainOf(allSent[1] + PlainText("Test2!")), messages[1])
+            assertEquals(messageChainOf(allSent[2] + PlainText("Pong!")), messages[2])
         }
+
+        allSent.clear()
 
         val mockGroup = bot.addGroup(2, "2")
         val mockGroupMember1 = mockGroup.addMember(123, "123")
@@ -152,16 +167,17 @@ internal class MessagingTest: MockBotTestBase() {
         val mockGroupMember3 = mockGroup.addMember(125, "125")
 
         broadcastMockEvents {
-            mockGroupMember1 says { append("msg1") }
-            mockGroupMember2 says { append("msg2") }
-            mockGroupMember3 says { append("msg3") }
+            allSent.add(mockGroupMember1 says { append("msg1") })
+            allSent.add(mockGroupMember2 says { append("msg2") })
+            allSent.add(mockGroupMember3 says { append("msg3") })
         }
+        allSent.convertToOffline()
 
         with(mockGroup.roamingMessages.getAllMessages().toList()) {
             assertEquals(3, size)
-            assertEquals(messageChainOf(PlainText("msg1")), get(0))
-            assertEquals(messageChainOf(PlainText("msg2")), get(1))
-            assertEquals(messageChainOf(PlainText("msg3")), get(2))
+            assertEquals(messageChainOf(allSent[0] + PlainText("msg1")), get(0))
+            assertEquals(messageChainOf(allSent[1] + PlainText("msg2")), get(1))
+            assertEquals(messageChainOf(allSent[2] + PlainText("msg3")), get(2))
         }
     }
 

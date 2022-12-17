@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.roaming.RoamingSupported
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.mock.internal.MockBotImpl
+import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.cast
 import java.util.stream.Stream
@@ -54,7 +55,7 @@ internal class MockRoamingMessages(
             timeStart,
             timeEnd,
             filter ?: RoamingMessageFilter.ANY
-        ).map { it.message }
+        ).map { it.buildSource(contact.bot.mock()) + it.message }
     }
 
     @JavaFriendlyAPI

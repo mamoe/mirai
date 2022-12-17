@@ -53,21 +53,26 @@ internal suspend fun List<MsgComm.Msg>.toMessageChainOnline(
     return toMessageChain(bot, groupIdOrZero, true, messageSourceKind, facade).refineDeep(bot, refineContext)
 }
 
+internal fun getMessageSourceKindFromC2cCmdOrNull(c2cCmd: Int): MessageSourceKind? {
+    return when (c2cCmd) {
+        11 -> MessageSourceKind.FRIEND // bot 给其他人发消息
+        4 -> MessageSourceKind.FRIEND // bot 给自己作为好友发消息 (非 other client)
+        1 -> MessageSourceKind.GROUP
+        else -> null
+    }
+}
+
+internal fun getMessageSourceKindFromC2cCmd(c2cCmd: Int): MessageSourceKind {
+    return getMessageSourceKindFromC2cCmdOrNull(c2cCmd) ?: error("Could not get source kind from c2cCmd: $c2cCmd")
+}
+
+
 internal suspend fun MsgComm.Msg.toMessageChainOnline(
     bot: Bot,
     refineContext: RefineContext = EmptyRefineContext,
     facade: MessageProtocolFacade = MessageProtocolFacade,
 ): MessageChain {
-    fun getSourceKind(c2cCmd: Int): MessageSourceKind {
-        return when (c2cCmd) {
-            11 -> MessageSourceKind.FRIEND // bot 给其他人发消息
-            4 -> MessageSourceKind.FRIEND // bot 给自己作为好友发消息 (非 other client)
-            1 -> MessageSourceKind.GROUP
-            else -> error("Could not get source kind from c2cCmd: $c2cCmd")
-        }
-    }
-
-    val kind = getSourceKind(msgHead.c2cCmd)
+    val kind = getMessageSourceKindFromC2cCmd(msgHead.c2cCmd)
     val groupId = when (kind) {
         MessageSourceKind.GROUP -> msgHead.groupInfo?.groupCode ?: 0
         else -> 0
@@ -141,6 +146,7 @@ internal object ReceiveMessageTransformer {
                     MessageSourceKind.STRANGER -> OnlineMessageSourceFromStrangerImpl(bot, messageList)
                 }
             }
+
             false -> {
                 OfflineMessageSourceImplData(bot, messageList, messageSourceKind)
             }

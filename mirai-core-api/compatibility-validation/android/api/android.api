@@ -366,7 +366,7 @@ public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/corouti
 	public abstract fun setRemark (Ljava/lang/String;)V
 }
 
-public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/Contact, net/mamoe/mirai/contact/FileSupported {
+public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/Contact, net/mamoe/mirai/contact/FileSupported, net/mamoe/mirai/contact/roaming/RoamingSupported {
 	public static final field Companion Lnet/mamoe/mirai/contact/Group$Companion;
 	public fun avatarUrl (Lnet/mamoe/mirai/contact/AvatarSpec;)Ljava/lang/String;
 	public abstract fun contains (J)Z

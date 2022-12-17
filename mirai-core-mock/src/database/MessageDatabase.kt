@@ -11,9 +11,7 @@ package net.mamoe.mirai.mock.database
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
-import net.mamoe.mirai.message.data.MessageSourceKind
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.internal.db.MsgDatabaseImpl
 import net.mamoe.mirai.utils.concatAsLong
@@ -80,6 +78,29 @@ public data class MessageInfo(
     public val time: Long, // seconds
     public val message: MessageChain,
 ) {
+    public fun buildSource(bot: MockBot): MessageSource {
+        return bot.buildMessageSource(kind = kind) {
+            val info = this@MessageInfo
+            sender(info.sender)
+            time(info.time.toInt())
+
+            if (kind == MessageSourceKind.GROUP) {
+                target(subject)
+            } else {
+                if (info.sender == info.subject) {
+                    target(bot.id)
+                } else {
+                    target(info.subject)
+                }
+            }
+
+            ids = intArrayOf(info.id)
+            internalIds = intArrayOf(info.internal)
+
+            messages(info.message as Iterable<Message>)
+        }
+    }
+
     // ids
     public val id: Int get() = (mixinedMsgId shr 32).toInt()
 

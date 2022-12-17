@@ -9,79 +9,84 @@
 
 package net.mamoe.mirai.internal.contact.roaming
 
+import kotlinx.coroutines.flow.*
+import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
 import net.mamoe.mirai.internal.contact.CommonGroupImpl
+import net.mamoe.mirai.internal.message.getMessageSourceKindFromC2cCmdOrNull
+import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetGroupMsg
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetRoamMsgReq
-import net.mamoe.mirai.internal.utils.indexFirstBE
+import net.mamoe.mirai.message.data.MessageChain
 
 internal class RoamingMessagesImplGroup(
     override val contact: CommonGroupImpl
-) : TimeBasedRoamingMessagesImpl() {
-    override suspend fun requestRoamMsg(
+) : AbstractRoamingMessages() {
+    private val bot get() = contact.bot
+
+    override suspend fun getMessagesIn(
         timeStart: Long,
-        lastMessageTime: Long,
-        random: Long // unused field
-    ): MessageSvcPbGetRoamMsgReq.Response {
-        val lastMsgSeq = contact.bot.network.sendAndExpect(
+        timeEnd: Long,
+        filter: RoamingMessageFilter?
+    ): Flow<MessageChain> {
+        var currentSeq: Int = getLastMsgSeq() ?: return emptyFlow()
+
+        return flow {
+            while (true) {
+                val resp = contact.bot.network.sendAndExpect(
+                    MessageSvcPbGetGroupMsg(
+                        client = contact.bot.client,
+                        groupUin = contact.uin,
+                        messageSequence = currentSeq.toLong(),
+                        count = 20 // maximum 20
+                    )
+                )
+
+                if (resp is MessageSvcPbGetGroupMsg.Failed) break
+                resp as MessageSvcPbGetGroupMsg.Success // stupid smart cast
+                if (resp.msgElem.isEmpty()) break
+
+                // the message may be sorted increasing by message time,
+                // if so, additional sortBy will not take cost.
+                val messageTimeSequence = resp.msgElem.asSequence().map { it.time }
+
+                val maxTime = messageTimeSequence.max()
+
+                if (maxTime < timeStart) break // we have fetched all messages
+
+                emitAll(
+                    resp.msgElem.asSequence()
+                        .filter { getMessageSourceKindFromC2cCmdOrNull(it.msgHead.c2cCmd) != null } // ignore unsupported messages
+                        .filter { it.time in timeStart..timeEnd }
+                        .sortedByDescending { it.time } // Ensure caller receiver newer messages first
+                        .filter { filter.apply(it) } // Call filter after sort
+                        .asFlow()
+                        .map { it.toMessageChainOnline(bot) }
+                )
+
+                currentSeq = resp.msgElem.minBy { it.time }.msgHead.msgSeq
+            }
+        }
+    }
+
+    private val MsgComm.Msg.time get() = msgHead.msgTime
+
+    private fun RoamingMessageFilter?.apply(
+        it: MsgComm.Msg
+    ) = this?.invoke(createRoamingMessage(it, listOf())) != false
+
+    private suspend fun getLastMsgSeq(): Int? {
+        // Iterate from the newest message to find messages within [timeStart] and [timeEnd]
+        val lastMsgSeqResp = bot.network.sendAndExpect(
             TroopManagement.GetGroupLastMsgSeq(
-                client = contact.bot.client,
+                client = bot.client,
                 groupUin = contact.uin
             )
         )
-        return when (lastMsgSeq) {
-            is TroopManagement.GetGroupLastMsgSeq.Response.Success -> {
-                val results = mutableListOf<MsgComm.Msg>()
-                var currentSeq = lastMsgSeq.seq
 
-                while (true) {
-                    if (currentSeq <= 0) break
-
-                    val resp = contact.bot.network.sendAndExpect(
-                        MessageSvcPbGetGroupMsg(
-                            client = contact.bot.client,
-                            groupUin = contact.uin,
-                            messageSequence = currentSeq,
-                            20 // maximum 20
-                        )
-                    )
-                    if (resp is MessageSvcPbGetGroupMsg.Failed) break
-                    if ((resp as MessageSvcPbGetGroupMsg.Success).msgElem.isEmpty()) break
-
-                    // the message may be sorted increasing by message time,
-                    // if so, additional sortBy will not take cost.
-                    val msgElems = resp.msgElem.sortedBy { it.msgHead.msgTime }
-                    results.addAll(0, msgElems)
-
-                    val firstMsgElem = msgElems.first()
-                    if (firstMsgElem.msgHead.msgTime < timeStart) {
-                        break
-                    } else {
-                        currentSeq = (firstMsgElem.msgHead.msgSeq - 1).toLong()
-                    }
-                }
-
-                // use binary search to find the first message that message time is lager than lastMessageTime
-                var right = results.indexFirstBE(lastMessageTime) { it.msgHead.msgTime.toLong() }
-                // check messages with same time
-                if (results[right].msgHead.msgTime.toLong() == lastMessageTime) {
-                    do {
-                        right++
-                    } while (right <= results.size - 1 && results[right].msgHead.msgTime <= lastMessageTime)
-                }
-                // loops at most 20 times, just traverse
-                val left = results.indexOfFirst { it.msgHead.msgTime >= timeStart }
-
-                MessageSvcPbGetRoamMsgReq.Response(
-                    if (left == right) null else results.subList(left, right),
-                    if (left == right) -1L else results[right - 1].msgHead.msgTime.toLong(), -1L, byteArrayOf()
-                )
-            }
-
-            is TroopManagement.GetGroupLastMsgSeq.Response.Failed -> {
-                MessageSvcPbGetRoamMsgReq.Response(null, -1L, -1L, byteArrayOf())
-            }
+        return when (lastMsgSeqResp) {
+            TroopManagement.GetGroupLastMsgSeq.Response.Failed -> null
+            is TroopManagement.GetGroupLastMsgSeq.Response.Success -> lastMsgSeqResp.seq
         }
     }
 }
