@@ -17,6 +17,7 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.JavaFriendlyAPI
+import net.mamoe.mirai.utils.JdkStreamSupport.toStream
 import java.util.stream.Stream
 
 
@@ -102,7 +103,7 @@ public actual interface RoamingMessages {
         timeStart: Long,
         timeEnd: Long,
         filter: RoamingMessageFilter? = null
-    ): Stream<MessageChain>
+    ): Stream<MessageChain> = getMessagesIn(timeStart, timeEnd, filter).toStream()
 
     /**
      * 查询所有漫游消息记录. Kotlin Flow 版本查看 [getAllMessages].
