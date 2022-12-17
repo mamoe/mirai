@@ -17,7 +17,7 @@ import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.stream
 import java.util.stream.Stream
 
-internal actual sealed class RoamingMessagesImpl : CommonRoamingMessagesImpl() {
+internal actual sealed class TimeBasedRoamingMessagesImpl : CommonTimeBasedRoamingMessagesImpl() {
     @JavaFriendlyAPI
     override suspend fun getMessagesStream(
         timeStart: Long,

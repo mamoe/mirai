@@ -9,5 +9,5 @@
 
 package net.mamoe.mirai.internal.contact.roaming
 
-internal actual sealed class RoamingMessagesImpl actual constructor() :
-    CommonRoamingMessagesImpl()
+internal actual sealed class TimeBasedRoamingMessagesImpl actual constructor() :
+    CommonTimeBasedRoamingMessagesImpl()
