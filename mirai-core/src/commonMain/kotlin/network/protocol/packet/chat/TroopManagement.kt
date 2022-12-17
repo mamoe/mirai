@@ -466,14 +466,14 @@ internal class TroopManagement {
     }
 
     internal object GetGroupLastMsgSeq : OutgoingPacketFactory<GetGroupLastMsgSeq.Response>("OidbSvc.0x88d_0") {
-        sealed class Response(val groupUin: Long, val seq: Long) : Packet {
+        sealed class Response(val groupUin: Long, val seq: Int) : Packet {
             object Failed : Response(-1, -1) {
                 override fun toString(): String {
                     return "TroopManagement.GetGroupLastMsgSeq.Failed"
                 }
             }
 
-            class Success(groupUin: Long, seq: Long) : Response(groupUin, seq) {
+            class Success(groupUin: Long, seq: Int) : Response(groupUin, seq) {
                 override fun toString(): String {
                     return "TroopManagement.GetGroupLastMsgSeq.Response(groupUin=${groupUin}, seq=${seq})"
                 }
@@ -511,7 +511,7 @@ internal class TroopManagement {
             val info = group.stgroupinfo ?: return Response.Failed
             val seq = info.groupCurMsgSeq ?: return Response.Failed
 
-            return Response.Success(group.groupCode, seq.toLong())
+            return Response.Success(group.groupCode, seq)
         }
     }
 }

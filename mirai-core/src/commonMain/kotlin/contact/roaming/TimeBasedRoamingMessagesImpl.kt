@@ -20,8 +20,7 @@ import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetRoamMsgReq
 import net.mamoe.mirai.message.data.MessageChain
 
-// Can't make sealed, used by actuals 
-internal abstract class CommonTimeBasedRoamingMessagesImpl : AbstractRoamingMessages() {
+internal sealed class TimeBasedRoamingMessagesImpl : AbstractRoamingMessages() {
     override suspend fun getMessagesIn(
         timeStart: Long,
         timeEnd: Long,
@@ -56,6 +55,3 @@ internal abstract class CommonTimeBasedRoamingMessagesImpl : AbstractRoamingMess
         random: Long
     ): MessageSvcPbGetRoamMsgReq.Response
 }
-
-
-internal expect sealed class TimeBasedRoamingMessagesImpl() : CommonTimeBasedRoamingMessagesImpl
