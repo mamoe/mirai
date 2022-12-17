@@ -114,9 +114,17 @@ internal class GroupMemberListCaches(
         return map.getOrPut(id) {
             val file = resolveCacheFile(id)
             if (file.exists() && file.isFile) {
-                val text = file.readText()
-                if (text.isNotBlank()) {
-                    return JsonForCache.decodeFromString(GroupMemberListCache.serializer(), text)
+                try {
+                    val text = file.readText()
+                    if (text.isNotBlank()) {
+                        return JsonForCache.decodeFromString(GroupMemberListCache.serializer(), text)
+                    }
+                } catch (e: Exception) {
+                    logger.warning(
+                        "Exception while loading GroupMemberListCache for group $id, possibly file corrupted. Deleting cache file.",
+                        e
+                    )
+                    file.delete()
                 }
             }
 
