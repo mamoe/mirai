@@ -16,6 +16,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.active.defaultJson
 import net.mamoe.mirai.internal.network.components.HttpClientProvider
@@ -56,7 +57,7 @@ internal data class DigestMessage(
     @SerialName("group_code")
     val groupCode: String = "",
     @SerialName("msg_content")
-    val msgContent: List<DigestMessageContent> = emptyList(),
+    val msgContent: List<JsonObject> = emptyList(),
     @SerialName("msg_random")
     val msgRandom: Int = 0,
     @SerialName("msg_seq")
@@ -69,17 +70,7 @@ internal data class DigestMessage(
     val senderUin: Long = 0
 )
 
-@Serializable
-internal data class DigestMessageContent(
-    @SerialName("image_thumbnail_url")
-    val imageThumbnailUrl: String = "",
-    @SerialName("image_url")
-    val imageUrl: String = "",
-    @SerialName("msg_type")
-    val msgType: Int = 0,
-    @SerialName("text")
-    val text: String = ""
-)
+internal val IMAGE_MD5_REGEX: Regex = """([0-9a-fA-F]{32})\.([0-9a-zA-Z]+)""".toRegex()
 
 @Serializable
 internal data class DigestShare(
@@ -139,7 +130,6 @@ internal suspend fun QQAndroidBot.cancelDigest(
         else -> throw IllegalStateException("cancel digest error, status: ${data.errorCode} - ${data.errorMessage}, reason: ${data.reason}")
     }
 }
-
 
 internal suspend fun QQAndroidBot.shareDigest(
     groupCode: Long, msgSeq: Int, msgRandom: Int, targetGroupCode: Long

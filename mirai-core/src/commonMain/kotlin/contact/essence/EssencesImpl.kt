@@ -13,11 +13,15 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import net.mamoe.mirai.contact.essence.EssenceMessageRecord
 import net.mamoe.mirai.contact.essence.Essences
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.warning
 
 internal expect class EssencesImpl(
     group: GroupImpl,
@@ -39,15 +43,27 @@ internal abstract class CommonEssencesImpl(
             targetId = group.id
 
             messages(message.msgContent.map { content ->
-                when (content.msgType) {
-                    1 -> PlainText(content.text)
+                when (content.getValue("msg_type").jsonPrimitive.intOrNull) {
+                    1 -> PlainText(content = content.getValue("text").jsonPrimitive.content)
+                    2 -> Face(id = content.getValue("face_index").jsonPrimitive.int)
                     3 -> {
-                        // TODO: image url -> md5 -> image_id
-                        content.imageUrl
-                        Image("")
+                        val url = content.getValue("image_url").jsonPrimitive.content
+                        val (md5, ext) = IMAGE_MD5_REGEX.find(url)!!.destructured
+                        val imageId = buildString {
+                            append(md5)
+                            insert(8,"-")
+                            insert(13,"-")
+                            insert(18,"-")
+                            insert(23,"-")
+                            insert(0, "{")
+                            append("}.")
+                            append(ext.replace("jpeg", "jpg"))
+                        }
+                        Image(imageId)
                     }
                     else -> {
                         // XXX: unknown message type
+                        logger.warning { "unknown digest message type for $content" }
                         emptyMessageChain()
                     }
                 }
