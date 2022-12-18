@@ -35,6 +35,7 @@ import net.mamoe.mirai.console.internal.data.builtins.DataScope
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.permission.getPermittedPermissionsAndSource
+import net.mamoe.mirai.console.internal.plugin.JvmPluginInternal
 import net.mamoe.mirai.console.internal.pluginManagerImpl
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
@@ -617,7 +618,13 @@ public object BuiltInCommands {
                         if (plugin.isEnabled) {
                             green().append(plugin.name).reset().append(" v").gold()
                         } else {
-                            red().append(plugin.name).append("(disabled)").reset().append(" v").gold()
+                            red().append(plugin.name)
+                            if (plugin is JvmPluginInternal) {
+                                append("(").append(plugin.currentPluginStatus.name.lowercase()).append(")")
+                            } else {
+                                append("(disabled)")
+                            }
+                            reset().append(" v").gold()
                         }
                         plugin.version.toString()
                     }
