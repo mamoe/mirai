@@ -29,6 +29,7 @@ import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScopeImpl
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
+import net.mamoe.mirai.console.internal.plugin.impl
 import net.mamoe.mirai.console.internal.pluginManagerImpl
 import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.plugin.Plugin
@@ -350,7 +351,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
          * @since 2.10.0-RC
          */
         public fun createDefaultJvmPluginLoader(coroutineContext: CoroutineContext): JvmPluginLoader =
-            BuiltInJvmPluginLoaderImpl(coroutineContext)
+            BuiltInJvmPluginLoaderImpl(coroutineContext + MiraiConsole.pluginManager.impl.coroutineContext.job)
 
         /**
          * @since 2.10.0-RC

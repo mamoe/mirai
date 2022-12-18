@@ -194,6 +194,22 @@ internal abstract class JvmPluginInternal(
         CoroutineName("Plugin $dataHolderName")
     }
 
+    private val pluginParentJob: Job = run {
+        val job = parentCoroutineContext[Job] ?: JvmPluginLoader.coroutineContext[Job]!!
+
+        val pluginManagerJob = MiraiConsole.pluginManager.impl.coroutineContext.job
+
+        val allJobs = generateSequence(sequenceOf(pluginManagerJob)) { parentSeqs ->
+            parentSeqs.flatMap { it.children }
+        }.flatten()
+
+        check(allJobs.contains(job)) {
+            "The parent job of plugin `$id' not a child of PluginManager"
+        }
+
+        job
+    }
+
     @JvmField
     internal val coroutineContextInitializer = {
         CoroutineExceptionHandler { context, throwable ->
@@ -203,16 +219,7 @@ internal abstract class JvmPluginInternal(
             )
         }
             .plus(parentCoroutineContext)
-            .plus(CoroutineName("Plugin ${(this as AbstractJvmPlugin).dataHolderName}"))
-            .plus(
-                SupervisorJob(parentCoroutineContext[Job] ?: JvmPluginLoader.coroutineContext[Job]!!)
-            )
-            .also {
-                if (!MiraiConsole.isActive) return@also
-                JvmPluginLoader.coroutineContext[Job]!!.invokeOnCompletion {
-                    this.cancel()
-                }
-            }
+            .plus(SupervisorJob(pluginParentJob))
             .plus(_intrinsicCoroutineContext)
     }
 
