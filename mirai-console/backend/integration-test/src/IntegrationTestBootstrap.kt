@@ -117,6 +117,8 @@ private fun prepareConsole() {
 defaultPriority: ALL
 loggers: 
   Bot: ALL
+  org.eclipse.aether.internal: INFO
+  org.apache.http.wire: INFO
 """
     )
     fun saveSha1(t: File) {
