@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console.internal.plugin
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.job
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.extensions.PluginLoaderProvider
 import net.mamoe.mirai.console.internal.data.mkdir
@@ -74,7 +74,13 @@ internal class PluginManagerImpl(
         plugin.safeLoader.getPluginDescription(plugin)
 
     init {
-        MiraiConsole.coroutineContext[Job]!!.invokeOnCompletion {
+        // Kotlin coroutine job cancelling ordering:
+        // - sub job 0 invokeOnCompletion called
+        // - sub job 1 invokeOnCompletion called
+        // - sub job N invokeOnCompletion called
+        // - parent    invokeOnCompletion called
+        // So we need register a child job to control plugins' disabling order
+        this.childScopeContext("PluginManager shutdown monitor").job.invokeOnCompletion {
             plugins.asReversed().forEach { plugin ->
                 if (plugin.isEnabled) {
                     disablePlugin(plugin)
