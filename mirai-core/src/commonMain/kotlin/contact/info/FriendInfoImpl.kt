@@ -18,7 +18,7 @@ internal data class FriendInfoImpl(
     override val uin: Long,
     override var nick: String,
     override var remark: String,
-    override var friendGroupId: Int
+    override var friendGroupId: Int = 0
 ) : FriendInfo {
     companion object {
         fun FriendInfo.impl() = if (this is FriendInfoImpl) this else FriendInfoImpl(uin, nick, remark, friendGroupId)
