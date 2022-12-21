@@ -96,14 +96,14 @@ internal abstract class CommonEssencesImpl(
         return page.messages.map(this::record)
     }
 
-    override suspend fun share(source: MessageSource) {
+    override suspend fun share(source: MessageSource): String {
         val share = group.bot.shareDigest(
             groupCode = group.id,
             msgSeq = source.ids.first(),
             msgRandom = source.internalIds.first(),
             targetGroupCode = 0
         )
-        share.shareKey
+        return "https://qun.qq.com/essence/share?_wv=3&_wwv=128&_wvx=2&sharekey=${share.shareKey}"
     }
 
     override suspend fun remove(source: MessageSource) {

@@ -9,8 +9,16 @@
 
 package net.mamoe.mirai.mock.contact.essence
 
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.essence.Essences
+import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.mock.MockBotDSL
 
 public interface MockEssences : Essences {
 
+    /**
+     * 直接以 [actor] 的身份设置一条精华消息
+     */
+    @MockBotDSL
+    public fun mockSetEssences(source: MessageSource, actor: NormalMember)
 }

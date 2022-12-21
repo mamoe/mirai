@@ -10,6 +10,7 @@
 package net.mamoe.mirai.mock.internal.contact.essence
 
 import kotlinx.coroutines.flow.Flow
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.essence.EssenceMessageRecord
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.mock.contact.essence.MockEssences
@@ -19,11 +20,15 @@ internal class MockEssencesImpl(
     private val group: MockGroupImpl
 ) : MockEssences {
 
+    override fun mockSetEssences(source: MessageSource, actor: NormalMember) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun page(start: Int, limit: Int): List<EssenceMessageRecord> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun share(source: MessageSource) {
+    override suspend fun share(source: MessageSource): String {
         TODO("Not yet implemented")
     }
 

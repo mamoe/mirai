@@ -336,11 +336,13 @@ internal class MockGroupImpl(
         resource.mockUploadVoice(bot)
 
     override suspend fun setEssenceMessage(source: MessageSource): Boolean {
-        essences.share(source)
+        checkBotPermission(MemberPermission.ADMINISTRATOR)
+        essences.mockSetEssences(source, this.botAsMember)
         return true
     }
 
     override suspend fun removeEssenceMessage(source: MessageSource): Boolean {
+        checkBotPermission(MemberPermission.ADMINISTRATOR)
         essences.remove(source)
         return true
     }
