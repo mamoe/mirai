@@ -28,7 +28,7 @@ object Versions {
 
     val core get() = project
     val console get() = project
-    val consoleIntellij get() = "221-$project-171-2" // idea-mirai-kotlin-patch
+    val consoleIntellij get() = "223-$project-172-1" // idea-mirai-kotlin-patch
     val consoleTerminal get() = project
 
     const val kotlinCompiler = "1.7.10"
