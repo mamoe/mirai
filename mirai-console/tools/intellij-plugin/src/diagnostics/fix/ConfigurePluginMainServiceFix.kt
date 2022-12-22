@@ -18,11 +18,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import net.mamoe.mirai.console.intellij.diagnostics.readChildText
 import net.mamoe.mirai.console.intellij.diagnostics.writeChild
-import org.jetbrains.kotlin.idea.core.isAndroidModule
+import org.jetbrains.kotlin.idea.base.util.isAndroidModule
+import org.jetbrains.kotlin.idea.base.util.module
 import org.jetbrains.kotlin.idea.inspections.KotlinUniversalQuickFix
 import org.jetbrains.kotlin.idea.quickfix.KotlinCrossLanguageQuickFixAction
 import org.jetbrains.kotlin.idea.util.application.executeWriteCommand
-import org.jetbrains.kotlin.idea.util.module
 
 
 class ConfigurePluginMainServiceFix(

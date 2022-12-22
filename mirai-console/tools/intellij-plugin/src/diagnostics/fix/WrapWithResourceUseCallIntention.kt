@@ -19,8 +19,8 @@ import net.mamoe.mirai.console.intellij.diagnostics.ResourceNotClosedInspectionP
 import net.mamoe.mirai.console.intellij.diagnostics.replaceExpressionAndShortenReferences
 import net.mamoe.mirai.console.intellij.diagnostics.resolveCalleeFunction
 import net.mamoe.mirai.console.intellij.resolve.hasSignature
-import org.jetbrains.kotlin.idea.intentions.SelfTargetingIntention
-import org.jetbrains.kotlin.idea.util.module
+import org.jetbrains.kotlin.idea.base.util.module
+import org.jetbrains.kotlin.idea.codeinsight.api.classic.intentions.SelfTargetingIntention
 import org.jetbrains.kotlin.psi.KtDotQualifiedExpression
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression

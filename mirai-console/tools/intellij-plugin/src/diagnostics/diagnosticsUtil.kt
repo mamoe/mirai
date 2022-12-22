@@ -15,7 +15,7 @@ import net.mamoe.mirai.console.compiler.common.resolve.READ_ONLY_PLUGIN_DATA_FQ_
 import net.mamoe.mirai.console.intellij.resolve.getResolvedCall
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
-import org.jetbrains.kotlin.idea.base.utils.fqname.getKotlinFqName
+import org.jetbrains.kotlin.idea.base.psi.kotlinFqName
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtElement
@@ -47,7 +47,7 @@ fun KtElement.getResolvedCall(
 }
 
 fun KtTypeReference.isReferencing(fqName: FqName): Boolean {
-    return resolveReferencedType()?.getKotlinFqName() == fqName
+    return resolveReferencedType()?.kotlinFqName == fqName
 }
 
 val KtTypeReference.referencedUserType: KtUserType? get() = this.typeElement.castOrNull()

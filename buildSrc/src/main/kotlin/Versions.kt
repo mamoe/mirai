@@ -72,7 +72,7 @@ object Versions {
     const val junit = "5.7.2"
 
     const val yamlkt = "0.12.0"
-    const val intellijGradlePlugin = "1.7.0"
+    const val intellijGradlePlugin = "1.11.0"
 
     // https://github.com/google/jimfs
     // Java In Memory File System
