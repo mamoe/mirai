@@ -68,7 +68,20 @@ internal class TmpResourceServerImpl(
     override suspend fun uploadResourceAsImage(resource: ExternalResource): URI {
         val imgId = generateUUID(resource.md5)
         val resId = uploadResource(resource)
-        images.resolve(imgId).createLinkPointingTo(storage.resolve(resId))
+
+        val imgPath = images.resolve(imgId)
+        val storagePath = storage.resolve(resId).toAbsolutePath()
+
+        if (imgPath.exists()) {
+            return resolveImageUrl(imgId)
+        }
+
+        kotlin.runCatching {
+            imgPath.createLinkPointingTo(storagePath)
+        }.recoverCatchingSuppressed {
+            imgPath.createSymbolicLinkPointingTo(storagePath)
+        }.getOrThrow()
+
         return resolveImageUrl(imgId)
     }
 
