@@ -238,9 +238,15 @@ internal class WtLogin {
                 // 1, 15 -> onErrorMessage(tlvMap) ?: error("Cannot find error message")
                 else -> {
                     onErrorMessage(type.toInt(), tlvMap, bot)
-                        ?: error("Cannot find error message, unknown login result type: $type, TLVMap = ${tlvMap.structureToString()}")
+                        ?: error(
+                            "Cannot find error message, unknown login result type: $type, TLVMap = ${dumpTlvMap(tlvMap)}"
+                        )
                 }
             }
+        }
+
+        private fun dumpTlvMap(tlvMap: TlvMap) {
+            tlvMap.entries.joinToString { "${it.key}=${it.value.toUHexString()}" }
         }
 
         private fun onDevLockLogin(
