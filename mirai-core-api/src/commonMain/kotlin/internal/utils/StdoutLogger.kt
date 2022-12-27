@@ -63,7 +63,7 @@ internal open class StdoutLogger constructor(
         get() = when (this) {
             SimpleLogger.LogPriority.VERBOSE -> Color.RESET
             SimpleLogger.LogPriority.INFO -> Color.LIGHT_GREEN
-            SimpleLogger.LogPriority.WARNING -> Color.LIGHT_RED
+            SimpleLogger.LogPriority.WARNING -> Color.LIGHT_YELLOW
             SimpleLogger.LogPriority.ERROR -> Color.RED
             SimpleLogger.LogPriority.DEBUG -> Color.LIGHT_CYAN
         }
