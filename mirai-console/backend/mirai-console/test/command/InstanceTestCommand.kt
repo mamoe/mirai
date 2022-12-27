@@ -24,6 +24,7 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterCommand
 import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
+
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.flattenCommandComponents
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
@@ -33,6 +34,46 @@ import java.time.*
 import java.time.temporal.TemporalAccessor
 import kotlin.reflect.KClass
 import kotlin.test.*
+
+import net.mamoe.mirai.console.command.SubCommandGroup.SubCommand
+import net.mamoe.mirai.console.command.SubCommandGroup.FlattenSubCommands
+
+class MyUnifiedCommand : CompositeCommand(
+    owner, "testMyUnifiedCommand", "tsMUC"
+) {
+    // 插件一个模块的部分功能
+    class ModuleAPart1 : AbstractSubCommandGroup() {
+        @SubCommand
+        fun function1(arg0: Int) {
+            Testing.ok(arg0)
+        }
+    }
+
+    // 插件一个模块的另一部分功能
+    class ModuleAPart2 : AbstractSubCommandGroup() {
+        @SubCommand
+        fun function2(arg0: Int) {
+            Testing.ok(arg0)
+        }
+    }
+
+    class ModuleACommandGroup: AbstractSubCommandGroup() {
+        @SubCommand // 与在函数上标注这个注解类似, 它会带 `part1` 这个名称前缀来注册指令. 需要执行  /base part1 function1
+        val part1 = ModuleAPart1()
+        @SubCommand("part1NewName") // 也可以使用 SubCommand 的参数来覆盖名称 /base part1NewName function1
+        val part1b = ModuleAPart1()
+        @FlattenSubCommands // 新增, 不带前缀注册指令, 执行 /base function2
+        val part2 = ModuleAPart2()
+    }
+
+    @FlattenSubCommands
+    val moduleA = ModuleACommandGroup()
+
+    @SubCommand
+    fun about(arg0: Int) {
+        Testing.ok(arg0)
+    }
+}
 
 class TestCompositeCommand : CompositeCommand(
     owner,
@@ -163,6 +204,7 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
     private val simpleCommand by lazy { TestSimpleCommand() }
     private val rawCommand by lazy { TestRawCommand() }
     private val compositeCommand by lazy { TestCompositeCommand() }
+    private val unifiedCompositeCommand by lazy { MyUnifiedCommand() }
 
     @BeforeTest
     fun grantPermission() {
@@ -495,6 +537,24 @@ internal class InstanceTestCommand : AbstractConsoleInstanceTest() {
         compositeCommand.withRegistration {
             assertEquals(1, withTesting {
                 assertSuccess(compositeCommand.execute(sender, "mute 1"))
+            })
+        }
+    }
+
+    @Test
+    fun `container composite command executing`() = runBlocking {
+        unifiedCompositeCommand.withRegistration {
+            assertEquals(0, withTesting {
+                assertSuccess(unifiedCompositeCommand.execute(sender, "part1 function1 0"))
+            })
+            assertEquals(0, withTesting {
+                assertSuccess(unifiedCompositeCommand.execute(sender, "part1NewName function1 0"))
+            })
+            assertEquals(0, withTesting {
+                assertSuccess(unifiedCompositeCommand.execute(sender, "function2 0"))
+            })
+            assertEquals(0, withTesting {
+                assertSuccess(unifiedCompositeCommand.execute(sender, "about 0"))
             })
         }
     }

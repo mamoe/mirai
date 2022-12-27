@@ -88,6 +88,25 @@ public abstract class net/mamoe/mirai/console/command/AbstractPluginCustomComman
 	protected abstract fun sendMessageImpl (Ljava/lang/String;)V
 }
 
+public abstract class net/mamoe/mirai/console/command/AbstractSubCommandGroup : net/mamoe/mirai/console/command/SubCommandGroup, net/mamoe/mirai/console/command/descriptor/CommandArgumentContextAware {
+	public fun <init> ()V
+	public fun <init> (Lnet/mamoe/mirai/console/command/descriptor/CommandArgumentContext;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/console/command/descriptor/CommandArgumentContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getContext ()Lnet/mamoe/mirai/console/command/descriptor/CommandArgumentContext;
+	public final fun getProvideOverloads ()Ljava/util/List;
+}
+
+protected abstract interface annotation class net/mamoe/mirai/console/command/AbstractSubCommandGroup$AnotherCombinedCommand : java/lang/annotation/Annotation {
+}
+
+protected abstract interface annotation class net/mamoe/mirai/console/command/AbstractSubCommandGroup$AnotherDescription : java/lang/annotation/Annotation {
+	public abstract fun value ()Ljava/lang/String;
+}
+
+protected abstract interface annotation class net/mamoe/mirai/console/command/AbstractSubCommandGroup$AnotherSubCommand : java/lang/annotation/Annotation {
+	public abstract fun value ()[Ljava/lang/String;
+}
+
 public abstract class net/mamoe/mirai/console/command/AbstractUserCommandSender : net/mamoe/mirai/console/command/AbstractCommandSender, net/mamoe/mirai/console/command/UserCommandSender {
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
 	public final fun getName ()Ljava/lang/String;
@@ -392,6 +411,9 @@ public abstract class net/mamoe/mirai/console/command/CompositeCommand : net/mam
 	public fun getUsage ()Ljava/lang/String;
 }
 
+protected abstract interface annotation class net/mamoe/mirai/console/command/CompositeCommand$CombinedCommand : java/lang/annotation/Annotation {
+}
+
 protected abstract interface annotation class net/mamoe/mirai/console/command/CompositeCommand$Description : java/lang/annotation/Annotation {
 	public abstract fun value ()Ljava/lang/String;
 }
@@ -616,6 +638,10 @@ public class net/mamoe/mirai/console/command/StrangerCommandSender : net/mamoe/m
 public final class net/mamoe/mirai/console/command/StrangerCommandSenderOnMessage : net/mamoe/mirai/console/command/StrangerCommandSender, net/mamoe/mirai/console/command/CommandSenderOnMessage {
 	public synthetic fun getFromEvent ()Lnet/mamoe/mirai/event/events/MessageEvent;
 	public fun getFromEvent ()Lnet/mamoe/mirai/event/events/StrangerMessageEvent;
+}
+
+public abstract interface class net/mamoe/mirai/console/command/SubCommandGroup {
+	public abstract fun getProvideOverloads ()Ljava/util/List;
 }
 
 public abstract interface class net/mamoe/mirai/console/command/SystemCommandSender : net/mamoe/mirai/console/command/CommandSender {
@@ -1100,6 +1126,12 @@ public final class net/mamoe/mirai/console/command/descriptor/StringValueArgumen
 	public static final field INSTANCE Lnet/mamoe/mirai/console/command/descriptor/StringValueArgumentParser;
 	public synthetic fun parse (Ljava/lang/String;Lnet/mamoe/mirai/console/command/CommandSender;)Ljava/lang/Object;
 	public fun parse (Ljava/lang/String;Lnet/mamoe/mirai/console/command/CommandSender;)Ljava/lang/String;
+}
+
+public class net/mamoe/mirai/console/command/descriptor/SubcommandDeclarationClashException : net/mamoe/mirai/console/command/descriptor/CommandDeclarationException {
+	public fun <init> (Ljava/lang/Object;Ljava/util/List;)V
+	public final fun getOwner ()Ljava/lang/Object;
+	public final fun getSignatures ()Ljava/util/List;
 }
 
 public abstract interface class net/mamoe/mirai/console/command/descriptor/TypeVariant {
