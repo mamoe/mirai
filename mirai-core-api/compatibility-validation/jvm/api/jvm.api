@@ -5119,7 +5119,7 @@ public final class net/mamoe/mirai/message/data/RockPaperScissors : java/lang/En
 	public static final field SCISSORS Lnet/mamoe/mirai/message/data/RockPaperScissors;
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public fun contentToString ()Ljava/lang/String;
-	public final fun eliminate (Lnet/mamoe/mirai/message/data/RockPaperScissors;)Ljava/lang/Boolean;
+	public final fun eliminates (Lnet/mamoe/mirai/message/data/RockPaperScissors;)Ljava/lang/Boolean;
 	public final fun getContent ()Ljava/lang/String;
 	public fun getId ()I
 	public final fun getInternalId ()B

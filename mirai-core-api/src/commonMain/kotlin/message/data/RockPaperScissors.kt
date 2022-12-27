@@ -74,7 +74,7 @@ public enum class RockPaperScissors(
      *
      * @return 赢返回 `true`，输返回 `false`，平局时返回 `null`
      */
-    public infix fun eliminate(other: RockPaperScissors): Boolean? {
+    public infix fun eliminates(other: RockPaperScissors): Boolean? {
         return when {
             this == other -> null
             this == ROCK && other == SCISSORS -> true
