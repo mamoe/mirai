@@ -146,11 +146,16 @@ internal abstract class AbstractBot constructor(
                 e.unwrapForPublicApi()
             } else e
 
-            // close bot if it hadn't been done during `resumeConnection()`
-            if (!components[SsoProcessor].firstLoginSucceed) {
-                close(cause) // failed to do first login, close bot
-            } else if (cause is LoginFailedException && cause.killBot) {
-                close(cause) // re-login failed and has caused bot being somehow killed by server
+            try {
+                // close bot if it hadn't been done during `resumeConnection()`
+                if (!components[SsoProcessor].firstLoginSucceed) {
+                    close(cause) // failed to do first login, close bot
+                } else if (cause is LoginFailedException && cause.killBot) {
+                    close(cause) // re-login failed and has caused bot being somehow killed by server
+                }
+            } catch (errorInClose: Throwable) {
+                errorInClose.addSuppressed(cause)
+                throw errorInClose
             }
 
             throw cause
