@@ -29,7 +29,7 @@ import kotlin.test.*
 /**
  * Test whether the selector can recover the connection after first successful login.
  */
-internal class SelectorRecoveryTest : AbstractCommonNHTestWithSelector() {
+internal class SelectorHeartbeatRecoveryTest : AbstractCommonNHTestWithSelector() {
 //    @BeforeTest
 //    fun beforeTest(info: TestInfo) {
 //        println("=".repeat(30) + "BEGIN: ${info.displayName}" + "=".repeat(30))
