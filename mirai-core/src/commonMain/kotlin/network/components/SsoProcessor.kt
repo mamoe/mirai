@@ -182,7 +182,9 @@ internal class SsoProcessorImpl(
     }
 
     override suspend fun logout(handler: NetworkHandler) {
-        handler.sendWithoutExpect(StatSvc.Register.offline(client))
+        if (firstLoginSucceed) {
+            handler.sendWithoutExpect(StatSvc.Register.offline(client))
+        }
     }
 
     private fun createClient(bot: QQAndroidBot): QQAndroidClient {
@@ -265,6 +267,7 @@ internal class SsoProcessorImpl(
                         logger.info { "Login successful" }
                         break@mainloop
                     }
+
                     is LoginPacketResponse.DeviceLockLogin -> {
                         response = WtLogin20(client).sendAndExpect()
                     }
@@ -278,6 +281,7 @@ internal class SsoProcessorImpl(
                             is UrlDeviceVerificationResult -> {
                                 WtLogin9(client, allowSlider).sendAndExpect()
                             }
+
                             is SmsDeviceVerificationResult -> {
                                 WtLogin7(client, result.token, result.code).sendAndExpect()
                             }
