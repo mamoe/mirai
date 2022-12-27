@@ -1,6 +1,5 @@
 public abstract class net/mamoe/mirai/console/frontendbase/AbstractMiraiConsoleFrontendImplementation : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/console/MiraiConsoleImplementation {
 	public fun <init> (Ljava/lang/String;)V
-	public fun createLogger (Ljava/lang/String;)Lnet/mamoe/mirai/utils/MiraiLogger;
 	public fun createLoggerFactory (Lnet/mamoe/mirai/console/MiraiConsoleImplementation$FrontendLoggingInitContext;)Lnet/mamoe/mirai/utils/MiraiLogger$Factory;
 	public fun getBuiltInPluginLoaders ()Ljava/util/List;
 	public fun getCommandManager ()Lnet/mamoe/mirai/console/command/CommandManager;

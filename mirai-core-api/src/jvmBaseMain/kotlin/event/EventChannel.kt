@@ -83,32 +83,6 @@ public actual abstract class EventChannel<out BaseEvent : Event> @MiraiInternalA
     public actual val defaultCoroutineContext: CoroutineContext,
 ) {
     /**
-     * 创建事件监听并将监听结果发送在 [Channel]. 将返回值 [Channel] [关闭][Channel.close] 时将会同时关闭事件监听.
-     *
-     * @param capacity Channel 容量. 详见 [Channel] 构造.
-     *
-     * @see subscribeAlways
-     * @see Channel
-     */
-    @Deprecated(
-        "Please use forwardToChannel instead.",
-        replaceWith = ReplaceWith(
-            "Channel<BaseEvent>(capacity).apply { forwardToChannel(this, coroutineContext, priority) }",
-            "kotlinx.coroutines.channels.Channel"
-        ),
-        level = DeprecationLevel.WARNING,
-    )
-    @DeprecatedSinceMirai(warningSince = "2.10")
-    @MiraiExperimentalApi
-    public fun asChannel(
-        capacity: Int = Channel.RENDEZVOUS,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext,
-        @Suppress("UNUSED_PARAMETER") concurrency: ConcurrencyKind = CONCURRENT,
-        priority: EventPriority = EventPriority.NORMAL,
-    ): Channel<out BaseEvent> =
-        Channel<BaseEvent>(capacity).apply { forwardToChannel(this, coroutineContext, priority) }
-
-    /**
      * 创建事件监听并将监听结果转发到 [channel]. 当 [Channel.send] 抛出 [ClosedSendChannelException] 时停止 [Listener] 监听和转发.
      *
      * 返回创建的会转发监听到的所有事件到 [channel] 的[事件监听器][Listener]. [停止][Listener.complete] 该监听器会停止转发, 不会影响目标 [channel].
@@ -681,6 +655,40 @@ public actual abstract class EventChannel<out BaseEvent : Event> @MiraiInternalA
             ListeningStatus.STOPPED
         }
     )
+
+    // endregion
+
+    // region deprecated
+
+    /**
+     * 创建事件监听并将监听结果发送在 [Channel]. 将返回值 [Channel] [关闭][Channel.close] 时将会同时关闭事件监听.
+     *
+     * ## 已弃用
+     *
+     * 请使用 [forwardToChannel] 替代.
+     *
+     * @param capacity Channel 容量. 详见 [Channel] 构造.
+     *
+     * @see subscribeAlways
+     * @see Channel
+     */
+    @Deprecated(
+        "Please use forwardToChannel instead.",
+        replaceWith = ReplaceWith(
+            "Channel<BaseEvent>(capacity).apply { forwardToChannel(this, coroutineContext, priority) }",
+            "kotlinx.coroutines.channels.Channel"
+        ),
+        level = DeprecationLevel.ERROR,
+    )
+    @DeprecatedSinceMirai(warningSince = "2.10", errorSince = "2.14")
+    @MiraiExperimentalApi
+    public fun asChannel(
+        capacity: Int = Channel.RENDEZVOUS,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
+        @Suppress("UNUSED_PARAMETER") concurrency: ConcurrencyKind = CONCURRENT,
+        priority: EventPriority = EventPriority.NORMAL,
+    ): Channel<out BaseEvent> =
+        Channel<BaseEvent>(capacity).apply { forwardToChannel(this, coroutineContext, priority) }
 
     // endregion
 

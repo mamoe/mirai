@@ -132,13 +132,13 @@ public interface MiraiConsole : CoroutineScope {
      */
     @Deprecated(
         "Please use the standard way in mirai-core to create loggers, i.e. MiraiLogger.Factory.INSTANCE.create()",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith(
             "MiraiLogger.Factory.create(yourClass::class, identity)",
             "net.mamoe.mirai.utils.MiraiLogger"
         ),
     )
-    @DeprecatedSinceMirai(warningSince = "2.13")
+    @DeprecatedSinceMirai(warningSince = "2.13", errorSince = "2.14") // for removal
     @ConsoleExperimentalApi
     public fun createLogger(identity: String?): MiraiLogger
 

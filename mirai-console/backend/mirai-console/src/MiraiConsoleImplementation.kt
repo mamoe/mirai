@@ -210,19 +210,6 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      */
     public fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver
 
-    /**
-     * 创建一个 [MiraiLogger].
-     *
-     * **注意**: [MiraiConsole] 会将 [net.mamoe.mirai.utils.MiraiLogger.Factory] 设置为 `MiraiConsole::createLogger`.
-     * 因此不要在 [createLogger] 中调用 [net.mamoe.mirai.utils.MiraiLogger.create]
-     */
-    @Deprecated(
-        "Deprecated for removal. Implement the other overload, or use MiraiConsole.createLogger instead.",
-        level = DeprecationLevel.ERROR
-    )
-    @DeprecatedSinceMirai(errorSince = "2.13")
-    public fun createLogger(identity: String?): MiraiLogger
-
     /** @see [MiraiConsole.newProcessProgress] */
     public fun createNewProcessProgress(): ProcessProgress {
         return DefaultLoggingProcessProgress()

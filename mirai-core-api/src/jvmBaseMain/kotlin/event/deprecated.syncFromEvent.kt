@@ -203,8 +203,8 @@ public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
 //// internal
 //////////////
 
-@Deprecated("Deprecated since its usages are deprecated")
-@DeprecatedSinceMirai(warningSince = "2.10")
+@Deprecated("Deprecated since its usages are deprecated", level = DeprecationLevel.HIDDEN)
+@DeprecatedSinceMirai(warningSince = "2.10", hiddenSince = "2.14")
 @JvmSynthetic
 @PublishedApi
 internal suspend inline fun <E : Event, R> syncFromEventImpl(

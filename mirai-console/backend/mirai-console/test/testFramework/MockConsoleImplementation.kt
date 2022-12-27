@@ -79,7 +79,7 @@ open class MockConsoleImplementation : MiraiConsoleImplementation {
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated(
         "Deprecated for removal. Implement the other overload, or use MiraiConsole.createLogger instead.",
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.HIDDEN
     )
     override fun createLogger(identity: String?): MiraiLogger {
         return PlatformLogger(identity)

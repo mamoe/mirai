@@ -75,18 +75,6 @@ public abstract class AbstractMiraiConsoleFrontendImplementation(
 
 
     // region Logging
-    @Deprecated(
-        "Deprecated for removal. Implement the other overload, or use MiraiConsole.createLogger instead.",
-        level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith(
-            "MiraiLogger.Factory.create(javaClass, identity)",
-            "net.mamoe.mirai.utils.MiraiLogger"
-        )
-    )
-    override fun createLogger(identity: String?): MiraiLogger {
-        return MiraiLogger.Factory.create(javaClass, identity)
-    }
-
     override fun createLoggerFactory(context: MiraiConsoleImplementation.FrontendLoggingInitContext): MiraiLogger.Factory {
         @Suppress("INVISIBLE_MEMBER")
         frontendBase.initScreen_forwardStdToScreen()

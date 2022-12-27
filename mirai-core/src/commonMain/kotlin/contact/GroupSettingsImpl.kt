@@ -35,14 +35,14 @@ internal class GroupSettingsImpl(
         getter: () -> T,
         setter: (T) -> Unit,
         crossinline packetConstructor: (client: QQAndroidClient, groupCode: Long, newValue: T) -> OutgoingPacket,
-        crossinline eventConstructor: (old: T) -> Event,
+        crossinline eventConstructor: (old: T) -> Event?,
     ) {
         checkBotPermission(MemberPermission.ADMINISTRATOR)
         val oldValue = getter()
         setter(newValue)
         launch {
             bot.network.sendWithoutExpect(packetConstructor(bot.client, id, newValue))
-            eventConstructor(oldValue).broadcast()
+            eventConstructor(oldValue)?.broadcast()
         }
     }
 
@@ -64,8 +64,7 @@ internal class GroupSettingsImpl(
         get() = _entranceAnnouncement
         set(newValue) {
             group.setImpl(newValue, { _entranceAnnouncement }, { _entranceAnnouncement = it }, GroupOperation::memo) {
-                @Suppress("DEPRECATION")
-                net.mamoe.mirai.event.events.GroupEntranceAnnouncementChangeEvent(it, newValue, group, null)
+                null
             }
         }
 

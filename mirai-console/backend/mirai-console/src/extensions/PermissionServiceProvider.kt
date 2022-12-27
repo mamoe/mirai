@@ -29,15 +29,15 @@ public interface PermissionServiceProvider : InstanceExtension<PermissionService
 /**
  * @see PermissionServiceProvider
  */
-@Deprecated("Please implement your own PermissionServiceProvider.", level = DeprecationLevel.ERROR)
-@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13") // for hidden.
+@Deprecated("Please implement your own PermissionServiceProvider.", level = DeprecationLevel.HIDDEN)
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13", hiddenSince = "2.14") // for hidden.
 public class PermissionServiceProviderImpl(override val instance: PermissionService<*>) : PermissionServiceProvider
 
 /**
  * @see PermissionServiceProvider
  */
-@Deprecated("Please implement your own PermissionServiceProvider.", level = DeprecationLevel.ERROR)
-@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13") // for hidden.
+@Deprecated("Please implement your own PermissionServiceProvider.", level = DeprecationLevel.HIDDEN)
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13", hiddenSince = "2.14") // for hidden.
 public class PermissionServiceProviderImplLazy(initializer: () -> PermissionService<*>) : PermissionServiceProvider {
     override val instance: PermissionService<*> by lazy(initializer)
 }

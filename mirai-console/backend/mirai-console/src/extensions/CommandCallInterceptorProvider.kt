@@ -13,7 +13,6 @@ import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.resolve.CommandCallInterceptor
 import net.mamoe.mirai.console.extension.AbstractInstanceExtensionPoint
 import net.mamoe.mirai.console.extension.InstanceExtension
-import net.mamoe.mirai.utils.DeprecatedSinceMirai
 
 @ExperimentalCommandDescriptors
 public interface CommandCallInterceptorProvider : InstanceExtension<CommandCallInterceptor> {
@@ -22,24 +21,4 @@ public interface CommandCallInterceptorProvider : InstanceExtension<CommandCallI
         AbstractInstanceExtensionPoint<CommandCallInterceptorProvider, CommandCallInterceptor>(
             CommandCallInterceptorProvider::class
         )
-}
-
-@Deprecated(
-    "Deprecated for removal. Please implement your own CommandCallInterceptorProvider.",
-    level = DeprecationLevel.ERROR
-)
-@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13") // for removal.
-@ExperimentalCommandDescriptors
-public class CommandCallInterceptorProviderImpl(override val instance: CommandCallInterceptor) :
-    CommandCallInterceptorProvider
-
-@Deprecated(
-    "Deprecated for removal. Please implement your own CommandCallInterceptorProvider.",
-    level = DeprecationLevel.ERROR
-)
-@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13") // for removal.
-@ExperimentalCommandDescriptors
-public class CommandCallInterceptorProviderImplLazy(initializer: () -> CommandCallInterceptor) :
-    CommandCallInterceptorProvider {
-    override val instance: CommandCallInterceptor by lazy(initializer)
 }

@@ -66,9 +66,9 @@ public interface FunctionExtension : Extension
 @Deprecated(
     "Please use InstanceExtension instead.",
     replaceWith = ReplaceWith("InstanceExtension"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
-@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13", hiddenSince = "2.14")
 public interface SingletonExtension<T> : Extension {
     public val instance: T
 }

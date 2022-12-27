@@ -73,9 +73,9 @@ import kotlin.reflect.full.createType
 @Deprecated(
     "请使用 JavaAutoSavePluginData",
     replaceWith = ReplaceWith("JavaAutoSavePluginData", "net.mamoe.mirai.console.data.java.JavaAutoSavePluginData"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
-@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13", hiddenSince = "2.14")
 public abstract class JAutoSavePluginData public constructor(saveName: String) : AutoSavePluginData(saveName),
     PluginConfig {
 
