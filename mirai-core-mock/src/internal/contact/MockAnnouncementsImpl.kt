@@ -71,7 +71,7 @@ internal class MockAnnouncementsImpl(
         putDirect(ann)
         if (!events) return ann
 
-        @Suppress("DEPRECATION")
+        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         net.mamoe.mirai.event.events.GroupEntranceAnnouncementChangeEvent(
             origin = old?.content.orEmpty(),
             new = ann.content,
