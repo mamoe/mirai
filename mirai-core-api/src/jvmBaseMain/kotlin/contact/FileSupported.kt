@@ -28,11 +28,17 @@ public actual interface FileSupported : Contact {
     /**
      * 文件根目录. 可通过 [net.mamoe.mirai.utils.RemoteFile.listFiles] 获取目录下文件列表.
      *
+     * **注意:** 已弃用, 请使用 [files].
+     *
      * @since 2.5
      */
-    @Suppress("DEPRECATION")
-    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root")) // deprecated since 2.8.0-RC
-    @DeprecatedSinceMirai(warningSince = "2.8")
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
+    @Deprecated(
+        "Please use files instead.",
+        replaceWith = ReplaceWith("files.root"),
+        level = DeprecationLevel.ERROR
+    ) // deprecated since 2.8.0-RC
+    @DeprecatedSinceMirai(warningSince = "2.8", errorSince = "2.14")
     public val filesRoot: net.mamoe.mirai.utils.RemoteFile
 
     /**

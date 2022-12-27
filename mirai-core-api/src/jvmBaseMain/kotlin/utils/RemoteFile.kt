@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("unused", "DEPRECATION")
+@file:Suppress("unused", "DEPRECATION", "DEPRECATION_ERROR")
 @file:JvmBlockingBridge
 
 package net.mamoe.mirai.utils
@@ -20,6 +20,7 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.message.data.sendTo
@@ -30,6 +31,8 @@ import java.io.File
 
 /**
  * 表示一个远程文件或目录.
+ *
+ * # 注意: 此 API 已弃用, 请使用 [AbsoluteFile] 代替.
  *
  * [RemoteFile] 仅保存 [id], [name], [path], [parent], [contact] 这五个属性, 除获取这些属性外的所有的操作都是在*远程*完成的.
  * 意味着操作的结果会因文件或目录在服务器中的状态变化而变化.
@@ -99,9 +102,9 @@ import java.io.File
  */
 @Deprecated(
     "Please use RemoteFiles and AbsoluteFileFolder form fileSupported.files",
-    level = DeprecationLevel.WARNING
+    level = DeprecationLevel.ERROR
 ) // deprecated since 2.8.0-RC
-@DeprecatedSinceMirai(warningSince = "2.8")
+@DeprecatedSinceMirai(warningSince = "2.8", errorSince = "2.14")
 @NotStableForInheritance
 public interface RemoteFile {
     /**
@@ -146,6 +149,8 @@ public interface RemoteFile {
      */
     public suspend fun length(): Long
 
+    @Deprecated("RemoteFile is deprecated. Use RemoteFiles instead.", level = DeprecationLevel.ERROR)
+    @DeprecatedSinceMirai(errorSince = "2.14") // 在弃用 RemoteFile 的时候忘了弃用这个类, 所以它没有 warningSince
     public class FileInfo @MiraiInternalApi constructor(
         /**
          * 文件或目录名.
@@ -358,9 +363,9 @@ public interface RemoteFile {
     @Deprecated(
         "Deprecated without replacement. Please use AbsoluteFolder.uploadNewFile",
         ReplaceWith("contact.files.uploadNewFile(path, this, callback)"),
-        level = DeprecationLevel.WARNING
+        level = DeprecationLevel.ERROR
     ) // deprecated since 2.8.0-RC
-    @DeprecatedSinceMirai(warningSince = "2.8")
+    @DeprecatedSinceMirai(warningSince = "2.8", errorSince = "2.14")
     public interface ProgressionCallback {
         /**
          * 当上传开始时调用
@@ -384,6 +389,8 @@ public interface RemoteFile {
          */
         public fun onFailure(file: RemoteFile, resource: ExternalResource, exception: Throwable) {}
 
+        @Deprecated("RemoteFile is deprecated. Use RemoteFiles instead.", level = DeprecationLevel.ERROR)
+        @DeprecatedSinceMirai(errorSince = "2.14") // 在弃用 RemoteFile 的时候忘了弃用这个类, 所以它没有 warningSince
         public companion object {
             /**
              * 将一个 [SendChannel] 作为 [ProgressionCallback] 使用.
@@ -537,6 +544,8 @@ public interface RemoteFile {
      */
     public suspend fun getDownloadInfo(): DownloadInfo?
 
+    @Deprecated("RemoteFile is deprecated. Use RemoteFiles instead.", level = DeprecationLevel.ERROR)
+    @DeprecatedSinceMirai(errorSince = "2.14") // 在弃用 RemoteFile 的时候忘了弃用这个类, 所以它没有 warningSince
     public class DownloadInfo @MiraiInternalApi constructor(
         /**
          * @see RemoteFile.name
@@ -564,6 +573,8 @@ public interface RemoteFile {
         }
     }
 
+    @Deprecated("RemoteFile is deprecated. Use RemoteFiles instead.", level = DeprecationLevel.ERROR)
+    @DeprecatedSinceMirai(errorSince = "2.14") // 在弃用 RemoteFile 的时候忘了弃用这个类, 所以它没有 warningSince
     public companion object {
         /**
          * 根目录路径
@@ -591,7 +602,7 @@ public interface RemoteFile {
             ),
             level = DeprecationLevel.ERROR
         ) // deprecated since 2.7-M1
-        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10") // left ERROR intentionally
+        @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10")
         @Suppress("_FUNCTION_WITH_DEFAULT_ARGUMENTS")
         public suspend fun FileSupported.uploadFile(
             path: String,

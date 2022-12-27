@@ -145,7 +145,7 @@ internal class MockGroupTest : MockBotTestBase() {
         }
     }
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
     @Test
     internal fun testGroupFileV1() = runTest {
         val fsroot = bot.addGroup(5417, "58aw").filesRoot
