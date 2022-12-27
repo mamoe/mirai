@@ -21,7 +21,6 @@ import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.mock.contact.announcement.MockAnnouncements
 import net.mamoe.mirai.mock.contact.announcement.MockOnlineAnnouncement
 import net.mamoe.mirai.mock.contact.announcement.copy
-import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.currentTimeSeconds
@@ -70,14 +69,6 @@ internal class MockAnnouncementsImpl(
         )
         putDirect(ann)
         if (!events) return ann
-
-        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-        net.mamoe.mirai.event.events.GroupEntranceAnnouncementChangeEvent(
-            origin = old?.content.orEmpty(),
-            new = ann.content,
-            group = group,
-            operator = actor.takeUnless { it.id == group.bot.id }
-        ).broadcastBlocking()
 
         // TODO: mirai-core no other events about announcements
         return ann
