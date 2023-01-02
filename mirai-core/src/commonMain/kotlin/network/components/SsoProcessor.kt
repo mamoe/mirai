@@ -146,6 +146,8 @@ internal class SsoProcessorImpl(
      * Do login. Throws [LoginFailedException] if failed
      */
     override suspend fun login(handler: NetworkHandler) = withExceptionCollector {
+        components[CacheValidator].validate()
+
         components[BdhSessionSyncer].loadServerListFromCache()
         try {
             if (client.wLoginSigInfoInitialized) {

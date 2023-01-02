@@ -22,7 +22,7 @@ import net.mamoe.mirai.internal.utils.actualCacheDir
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.Volatile
 
-internal interface BdhSessionSyncer {
+internal interface BdhSessionSyncer : Cacheable {
     val bdhSession: CompletableDeferred<BdhSession>
     val hasSession: Boolean
 
@@ -76,6 +76,11 @@ internal class BdhSessionSyncerImpl(
         get() = configuration.actualCacheDir().resolve("session.bin")
     private val serverListCacheFile: MiraiFile
         get() = configuration.actualCacheDir().resolve("servers.json")
+
+    override fun invalidate() {
+        sessionCacheFile.delete()
+        serverListCacheFile.delete()
+    }
 
     override fun loadServerListFromCache() {
         val serverListCacheFile = this.serverListCacheFile
