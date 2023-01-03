@@ -71,6 +71,7 @@ internal class MessageSerializationTest : AbstractTest() {
         AtAll,
         image,
         Face(Face.AI_NI),
+        RockPaperScissors.PAPER,
         UnsupportedMessageImpl(ImMsgBody.Elem())
     )
 

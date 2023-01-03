@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.testFramework.dynamicTest
 import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.message.data.Dice
 import net.mamoe.mirai.message.data.MarketFace
+import net.mamoe.mirai.message.data.RockPaperScissors
 import net.mamoe.mirai.utils.hexToBytes
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -104,6 +105,354 @@ internal class MarketFaceProtocolTest : AbstractMessageProtocolTest() {
         }.doEncoderChecks()
     }
 
+    @Test
+    fun `decode RockPaperScissors`() {
+        // region WinQQ PC
+        buildCodingChecks {
+            elem(
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                        itemType = 6,
+                        faceInfo = 1,
+                        faceId = "E5 D8 89 F1 DF 79 B2 B4 51 83 F6 25 58 44 65 D3".hexToBytes(),
+                        tabId = 11415,
+                        subType = 3,
+                        key = "7de39febcf45e6db".toByteArray(), /* 37 64 65 33 39 66 65 62 63 66 34 35 65 36 64 62 */
+                        imageWidth = 100,
+                        imageHeight = 100,
+                        pbReserve = "0A 06 08 C8 01 10 C8 01 40 01".hexToBytes(),
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "[猜拳]",
+                        attr7Buf = "01".hexToBytes(),
+                    ),
+                ),
+            )
+
+            message(RockPaperScissors.ROCK)
+            useOrdinaryEquality()
+        }.doDecoderChecks()
+        buildCodingChecks {
+            elem(
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                        itemType = 6,
+                        faceInfo = 1,
+                        faceId = "62 8F A4 AB 7B 6C 2B CC FC DC D0 C2 DA F7 A6 0C".hexToBytes(),
+                        tabId = 11415,
+                        subType = 3,
+                        key = "7de39febcf45e6db".toByteArray(), /* 37 64 65 33 39 66 65 62 63 66 34 35 65 36 64 62 */
+                        imageWidth = 100,
+                        imageHeight = 100,
+                        pbReserve = "0A 06 08 C8 01 10 C8 01 40 01".hexToBytes(),
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "[猜拳]",
+                        attr7Buf = "01".hexToBytes(),
+                    ),
+                ),
+            )
+
+            message(RockPaperScissors.SCISSORS)
+            useOrdinaryEquality()
+        }.doDecoderChecks()
+        buildCodingChecks {
+            elem(
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                        itemType = 6,
+                        faceInfo = 1,
+                        faceId = "45 7C DE 42 0F 59 8E B4 24 CE D2 E9 05 D3 8D 8B".hexToBytes(),
+                        tabId = 11415,
+                        subType = 3,
+                        key = "7de39febcf45e6db".toByteArray(), /* 37 64 65 33 39 66 65 62 63 66 34 35 65 36 64 62 */
+                        imageWidth = 100,
+                        imageHeight = 100,
+                        pbReserve = "0A 06 08 C8 01 10 C8 01 40 01".hexToBytes(),
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "[猜拳]",
+                        attr7Buf = "01".hexToBytes(),
+                    ),
+                ),
+            )
+
+            message(RockPaperScissors.PAPER)
+            useOrdinaryEquality()
+        }.doDecoderChecks()
+        // endregion
+
+        // region AndroidQQ 8.4.18.49145
+        buildCodingChecks {
+            elem(
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                        faceName = "[猜拳]".toByteArray(), /* 5B E7 8C 9C E6 8B B3 5D */
+                        itemType = 6,
+                        faceInfo = 1,
+                        faceId = "83 C8 A2 93 AE 65 CA 14 0F 34 81 20 A7 74 48 EE".hexToBytes(),
+                        tabId = 11415,
+                        subType = 3,
+                        key = "7de39febcf45e6db".toByteArray(), /* 37 64 65 33 39 66 65 62 63 66 34 35 65 36 64 62 */
+                        imageWidth = 200,
+                        imageHeight = 200,
+                        mobileParam = "rscType?1;value=2".toByteArray(), /* 72 73 63 54 79 70 65 3F 31 3B 76 61 6C 75 65 3D 32 */
+                        pbReserve = "0A 06 08 C8 01 10 C8 01 40 01".hexToBytes(),
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "[猜拳]",
+                    ),
+                ),
+            )
+            message(RockPaperScissors.PAPER)
+            useOrdinaryEquality()
+        }.doDecoderChecks()
+        buildCodingChecks {
+            elem(
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                        faceName = "[猜拳]".toByteArray(), /* 5B E7 8C 9C E6 8B B3 5D */
+                        itemType = 6,
+                        faceInfo = 1,
+                        faceId = "83 C8 A2 93 AE 65 CA 14 0F 34 81 20 A7 74 48 EE".hexToBytes(),
+                        tabId = 11415,
+                        subType = 3,
+                        key = "7de39febcf45e6db".toByteArray(), /* 37 64 65 33 39 66 65 62 63 66 34 35 65 36 64 62 */
+                        imageWidth = 200,
+                        imageHeight = 200,
+                        mobileParam = "rscType?1;value=0".toByteArray(), /* 72 73 63 54 79 70 65 3F 31 3B 76 61 6C 75 65 3D 30 */
+                        pbReserve = "0A 06 08 C8 01 10 C8 01 40 01".hexToBytes(),
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "[猜拳]",
+                    ),
+                ),
+            )
+            message(RockPaperScissors.ROCK)
+            useOrdinaryEquality()
+        }.doDecoderChecks()
+        buildCodingChecks {
+            elem(
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                        faceName = "[猜拳]".toByteArray(), /* 5B E7 8C 9C E6 8B B3 5D */
+                        itemType = 6,
+                        faceInfo = 1,
+                        faceId = "83 C8 A2 93 AE 65 CA 14 0F 34 81 20 A7 74 48 EE".hexToBytes(),
+                        tabId = 11415,
+                        subType = 3,
+                        key = "7de39febcf45e6db".toByteArray(), /* 37 64 65 33 39 66 65 62 63 66 34 35 65 36 64 62 */
+                        imageWidth = 200,
+                        imageHeight = 200,
+                        mobileParam = "rscType?1;value=1".toByteArray(), /* 72 73 63 54 79 70 65 3F 31 3B 76 61 6C 75 65 3D 31 */
+                        pbReserve = "0A 06 08 C8 01 10 C8 01 40 01".hexToBytes(),
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "[猜拳]",
+                    ),
+                ),
+            )
+            message(RockPaperScissors.SCISSORS)
+            useOrdinaryEquality()
+        }.doDecoderChecks()
+        // endregion
+
+        // region MacOS
+        buildCodingChecks {
+            elem(
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                        faceName = "[猜拳]".toByteArray(), /* 5B E7 8C 9C E6 8B B3 5D */
+                        itemType = 6,
+                        faceInfo = 1,
+                        faceId = "83 C8 A2 93 AE 65 CA 14 0F 34 81 20 A7 74 48 EE".hexToBytes(),
+                        tabId = 11415,
+                        subType = 3,
+                        key = "7de39febcf45e6db".toByteArray(), /* 37 64 65 33 39 66 65 62 63 66 34 35 65 36 64 62 */
+                        imageWidth = 200,
+                        imageHeight = 200,
+                        mobileParam = "rscType?1;value=0".toByteArray(), /* 72 73 63 54 79 70 65 3F 31 3B 76 61 6C 75 65 3D 30 */
+                        pbReserve = "0A 06 08 C8 01 10 C8 01 40 01".hexToBytes(),
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "[猜拳]",
+                    ),
+                ),
+            )
+
+            message(RockPaperScissors.ROCK)
+            useOrdinaryEquality()
+        }.doDecoderChecks()
+        // endregion
+
+        // region iOS
+        buildCodingChecks {
+            elem(
+                // ROCK
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                        faceName = "[猜拳]".toByteArray(), /* 5B E7 8C 9C E6 8B B3 5D */
+                        itemType = 6,
+                        faceInfo = 1,
+                        faceId = "83 C8 A2 93 AE 65 CA 14 0F 34 81 20 A7 74 48 EE".hexToBytes(),
+                        tabId = 11415,
+                        subType = 3,
+                        key = "7de39febcf45e6db".toByteArray(), /* 37 64 65 33 39 66 65 62 63 66 34 35 65 36 64 62 */
+                        imageWidth = 200,
+                        imageHeight = 200,
+                        mobileParam = "rscType?1;value=0".toByteArray(), /* 72 73 63 54 79 70 65 3F 31 3B 76 61 6C 75 65 3D 30 */
+                        pbReserve = "0A 06 08 C8 01 10 C8 01 40 01".hexToBytes(),
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "[猜拳]",
+                    ),
+                ),
+            )
+            message(RockPaperScissors.ROCK)
+            useOrdinaryEquality()
+        }.doDecoderChecks()
+        buildCodingChecks { // paper
+            elem(
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                        faceName = "[猜拳]".toByteArray(), /* 5B E7 8C 9C E6 8B B3 5D */
+                        itemType = 6,
+                        faceInfo = 1,
+                        faceId = "83 C8 A2 93 AE 65 CA 14 0F 34 81 20 A7 74 48 EE".hexToBytes(),
+                        tabId = 11415,
+                        subType = 3,
+                        key = "7de39febcf45e6db".toByteArray(), /* 37 64 65 33 39 66 65 62 63 66 34 35 65 36 64 62 */
+                        imageWidth = 200,
+                        imageHeight = 200,
+                        mobileParam = "rscType?1;value=2".toByteArray(), /* 72 73 63 54 79 70 65 3F 31 3B 76 61 6C 75 65 3D 32 */
+                        pbReserve = "0A 06 08 C8 01 10 C8 01 40 01".hexToBytes(),
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "[猜拳]",
+                    ),
+                ),
+            )
+            message(RockPaperScissors.PAPER)
+            useOrdinaryEquality()
+        }.doDecoderChecks()
+        // endregion
+    }
+
+    @Test
+    fun `encode RockPaperScissors`() {
+        buildCodingChecks {
+            elem(
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                        faceName = "[猜拳]".toByteArray(), /* 5B E7 8C 9C E6 8B B3 5D */
+                        itemType = 6,
+                        faceInfo = 1,
+                        faceId = "83 C8 A2 93 AE 65 CA 14 0F 34 81 20 A7 74 48 EE".hexToBytes(),
+                        tabId = 11415,
+                        subType = 3,
+                        key = "7de39febcf45e6db".toByteArray(), /* 37 64 65 33 39 66 65 62 63 66 34 35 65 36 64 62 */
+                        imageWidth = 200,
+                        imageHeight = 200,
+                        mobileParam = "rscType?1;value=0".toByteArray(), /* 72 73 63 54 79 70 65 3F 31 3B 76 61 6C 75 65 3D 30 */
+                        pbReserve = "0A 06 08 C8 01 10 C8 01 40 01".hexToBytes(),
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "[猜拳]",
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    extraInfo = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.ExtraInfo(
+                        flags = 8,
+                        groupMask = 1,
+                    ),
+                ),
+            )
+            message(RockPaperScissors.ROCK)
+        }.doBothChecks()
+
+        buildCodingChecks {
+            elem(
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                        faceName = "[猜拳]".toByteArray(), /* 5B E7 8C 9C E6 8B B3 5D */
+                        itemType = 6,
+                        faceInfo = 1,
+                        faceId = "83 C8 A2 93 AE 65 CA 14 0F 34 81 20 A7 74 48 EE".hexToBytes(),
+                        tabId = 11415,
+                        subType = 3,
+                        key = "7de39febcf45e6db".toByteArray(), /* 37 64 65 33 39 66 65 62 63 66 34 35 65 36 64 62 */
+                        imageWidth = 200,
+                        imageHeight = 200,
+                        mobileParam = "rscType?1;value=1".toByteArray(), /* 72 73 63 54 79 70 65 3F 31 3B 76 61 6C 75 65 3D 31 */
+                        pbReserve = "0A 06 08 C8 01 10 C8 01 40 01".hexToBytes(),
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "[猜拳]",
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    extraInfo = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.ExtraInfo(
+                        flags = 8,
+                        groupMask = 1,
+                    ),
+                ),
+            )
+            message(RockPaperScissors.SCISSORS)
+        }.doBothChecks()
+
+        buildCodingChecks {
+            elem(
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    marketFace = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.MarketFace(
+                        faceName = "[猜拳]".toByteArray(), /* 5B E7 8C 9C E6 8B B3 5D */
+                        itemType = 6,
+                        faceInfo = 1,
+                        faceId = "83 C8 A2 93 AE 65 CA 14 0F 34 81 20 A7 74 48 EE".hexToBytes(),
+                        tabId = 11415,
+                        subType = 3,
+                        key = "7de39febcf45e6db".toByteArray(), /* 37 64 65 33 39 66 65 62 63 66 34 35 65 36 64 62 */
+                        imageWidth = 200,
+                        imageHeight = 200,
+                        mobileParam = "rscType?1;value=2".toByteArray(), /* 72 73 63 54 79 70 65 3F 31 3B 76 61 6C 75 65 3D 32 */
+                        pbReserve = "0A 06 08 C8 01 10 C8 01 40 01".hexToBytes(),
+                    ),
+                ), net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "[猜拳]",
+                    ),
+                ), net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    extraInfo = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.ExtraInfo(
+                        flags = 8,
+                        groupMask = 1,
+                    ),
+                )
+            )
+            message(RockPaperScissors.PAPER)
+        }.doBothChecks()
+
+    }
 
     @Test
     fun `encode decode MarketFace from Android`() {

@@ -48,6 +48,7 @@ public interface MessageVisitor<in D, out R> {
     // region MarketFace
     public fun visitMarketFace(message: MarketFace, data: D): R
     public fun visitDice(message: Dice, data: D): R
+    public fun visitRockPaperScissors(message: RockPaperScissors, data: D): R
 
     // endregion
     // endregion
@@ -181,6 +182,10 @@ public abstract class AbstractMessageVisitor<in D, out R> : MessageVisitor<D, R>
     }
 
     public override fun visitDice(message: Dice, data: D): R {
+        return visitMarketFace(message, data)
+    }
+
+    public override fun visitRockPaperScissors(message: RockPaperScissors, data: D): R {
         return visitMarketFace(message, data)
     }
 
