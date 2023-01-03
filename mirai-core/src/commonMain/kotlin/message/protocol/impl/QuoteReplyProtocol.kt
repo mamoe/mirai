@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.AnonymousMember
+import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
@@ -24,7 +25,6 @@ import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.message.source.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.copy
 import net.mamoe.mirai.utils.map
 
 internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
@@ -100,7 +100,7 @@ internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
                 MessageSerializer(
                     MessageSource::class,
                     OfflineMessageSourceImplData.serializer().map(
-                        OfflineMessageSourceImplData.serializer().descriptor.copy(MessageSource.SERIAL_NAME),
+                        MessageSourceSerializerImpl.serialDataSerializer().descriptor,
                         { it },
                         {
                             OfflineMessageSourceImplData(

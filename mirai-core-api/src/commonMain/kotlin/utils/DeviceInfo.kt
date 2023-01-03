@@ -11,6 +11,7 @@ package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.core.*
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.serializer
@@ -292,7 +293,7 @@ internal object DeviceInfoManager {
     )
 
     private object DeviceInfoVersionSerializer : KSerializer<DeviceInfo.Version> by SerialData.serializer().map(
-        resultantDescriptor = SerialData.serializer().descriptor.copy("Version"),
+        resultantDescriptor = SerialData.serializer().descriptor,
         deserialize = {
             DeviceInfo.Version(incremental, release, codename, sdk)
         },
@@ -300,6 +301,7 @@ internal object DeviceInfoManager {
             SerialData(incremental, release, codename, sdk)
         }
     ) {
+        @SerialName("Version")
         @Serializable
         private class SerialData(
             val incremental: ByteArray = "5891938".toByteArray(),
