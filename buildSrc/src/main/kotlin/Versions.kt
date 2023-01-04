@@ -28,14 +28,14 @@ object Versions {
 
     val core get() = project
     val console get() = project
-    val consoleIntellij get() = "221-$project-171-2" // idea-mirai-kotlin-patch
+    val consoleIntellij get() = "223-$project-172-1" // idea-mirai-kotlin-patch
     val consoleTerminal get() = project
 
     const val kotlinCompiler = "1.7.10"
     const val kotlinStdlib = kotlinCompiler
     const val dokka = "1.7.10"
 
-    const val kotlinCompilerForIdeaPlugin = "1.7.10"
+    const val kotlinCompilerForIdeaPlugin = "1.7.20"
 
     const val coroutines = "1.6.4"
     const val atomicFU = "0.18.3"
@@ -72,7 +72,7 @@ object Versions {
     const val junit = "5.7.2"
 
     const val yamlkt = "0.12.0"
-    const val intellijGradlePlugin = "1.7.0"
+    const val intellijGradlePlugin = "1.11.0"
 
     // https://github.com/google/jimfs
     // Java In Memory File System
@@ -84,7 +84,7 @@ object Versions {
 
     // don't update easily unless you want your disk space -= 1000 MB
     // (700 MB for IDEA, 150 MB for sources, 150 MB for JBR)
-    const val intellij = "222.3345-EAP-CANDIDATE-SNAPSHOT"
+    const val intellij = "2022.3.1"
 }
 
 @Suppress("unused")

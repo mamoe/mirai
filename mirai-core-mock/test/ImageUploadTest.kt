@@ -19,6 +19,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.net.URL
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
@@ -42,6 +43,15 @@ internal class ImageUploadTest {
         println(img.imageId)
         assertTrue {
             data.contentEquals(URL(img.queryUrl()).readBytes())
+        }
+    }
+
+    @Test
+    fun testSameImageMultiUpload() = runBlocking<Unit> {
+        Image.randomImageContent().toExternalResource().use { imgData ->
+            val img1 = bot.asFriend.uploadImage(imgData)
+            val img2 = bot.asFriend.uploadImage(imgData)
+            assertEquals(img1, img2)
         }
     }
 }

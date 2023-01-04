@@ -14,12 +14,13 @@ import com.intellij.psi.PsiModifier
 import net.mamoe.mirai.console.intellij.diagnostics.resolveReferencedType
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
-import org.jetbrains.kotlin.idea.base.utils.fqname.getKotlinFqName
+import org.jetbrains.kotlin.idea.base.psi.kotlinFqName
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
+import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
 import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
 import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
 import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.nj2k.postProcessing.type
+import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFunction
 import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
@@ -87,7 +88,7 @@ fun KtFunction.hasSignature(functionSignature: FunctionSignature): Boolean {
     }
     if (functionSignature.extensionReceiver != null) {
         if (this.receiverTypeReference?.resolveReferencedType()
-                ?.getKotlinFqName() != functionSignature.extensionReceiver
+                ?.kotlinFqName != functionSignature.extensionReceiver
         ) return false
     }
     if (functionSignature.parameters != null) {
@@ -97,12 +98,14 @@ fun KtFunction.hasSignature(functionSignature: FunctionSignature): Boolean {
     }
     if (functionSignature.returnType != null) {
         if (this.getReturnTypeReference()?.resolveReferencedType()
-                ?.getKotlinFqName() != functionSignature.returnType
+                ?.kotlinFqName != functionSignature.returnType
         ) return false
     }
     return true
 }
 
+fun KtDeclaration.type() =
+    (resolveToDescriptorIfAny() as? CallableDescriptor)?.returnType
 
 fun PsiMethod.hasSignature(functionSignature: FunctionSignature): Boolean {
     if (functionSignature.name != null) {
@@ -115,8 +118,8 @@ fun PsiMethod.hasSignature(functionSignature: FunctionSignature): Boolean {
         val kotlinContainingClassFqn = if (this is KtLightMethod) {
             if (this.modifierList.hasExplicitModifier(PsiModifier.STATIC)) {
                 this.containingClass.kotlinOrigin?.companionObjects?.firstOrNull()?.fqName
-            } else containingClass.getKotlinFqName()
-        } else containingClass.getKotlinFqName()
+            } else containingClass.kotlinFqName
+        } else containingClass.kotlinFqName
 
         if (kotlinContainingClassFqn != functionSignature.dispatchReceiver) return false
     }

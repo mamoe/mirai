@@ -36,7 +36,7 @@ fun Project.useIr() {
 
 private fun Project.jvmVersion(): JavaVersion {
     return if (project.path.endsWith("mirai-console-intellij")) {
-        JavaVersion.VERSION_11
+        JavaVersion.VERSION_17
     } else {
         JavaVersion.VERSION_1_8
     }

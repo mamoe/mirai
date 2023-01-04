@@ -16,15 +16,15 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import net.mamoe.mirai.console.intellij.resolve.*
-import org.jetbrains.kotlin.idea.base.utils.fqname.getKotlinFqName
+import org.jetbrains.kotlin.idea.base.psi.kotlinFqName
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
-import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
+import org.jetbrains.kotlin.idea.codeinsight.api.classic.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.idea.inspections.KotlinUniversalQuickFix
 import org.jetbrains.kotlin.idea.quickfix.KotlinCrossLanguageQuickFixAction
+import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.idea.search.usagesSearch.descriptor
 import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.nj2k.postProcessing.resolve
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
@@ -65,7 +65,7 @@ val CONTACT_FQ_NAME = FqName("net.mamoe.mirai.contact.Contact")
 val CONTACT_COMPANION_FQ_NAME = FqName("net.mamoe.mirai.contact.Contact.Companion")
 
 fun KtReferenceExpression.resolveCalleeFunction(): KtNamedFunction? {
-    val originalCallee = getCalleeExpressionIfAny()?.referenceExpression()?.resolve() ?: return null
+    val originalCallee = getCalleeExpressionIfAny()?.referenceExpression()?.mainReference?.resolve() ?: return null
     if (originalCallee !is KtNamedFunction) return null
 
     return originalCallee
@@ -77,12 +77,12 @@ fun KtNamedFunction.isNamedMemberFunctionOf(
     extensionReceiver: String? = null
 ): Boolean {
     if (extensionReceiver != null) {
-        if (this.receiverTypeReference?.resolveReferencedType()?.getKotlinFqName()
+        if (this.receiverTypeReference?.resolveReferencedType()?.kotlinFqName
                 ?.toString() != extensionReceiver
         ) return false
     }
     return this.name == functionName && this.containingClassOrObject?.allSuperTypes?.any {
-        it.getKotlinFqName()?.toString() == className
+        it.kotlinFqName?.toString() == className
     } == true
 }
 
@@ -142,6 +142,7 @@ object ResourceNotClosedInspectionProcessors {
                         Fix("sendAsImageTo"),
                     )
                 }
+
                 callee.hasSignature(UPLOAD_AS_IMAGE) -> {
                     holder.registerResourceNotClosedProblem(
                         parent.receiverExpression,
@@ -232,6 +233,7 @@ object ResourceNotClosedInspectionProcessors {
                         fileTypeArgument = arguments.getOrNull(1)
                     ) { it.methodExpression.qualifierExpression?.text ?: "this" }
                 }
+
                 callee.hasSignature(CONTACT_UPLOAD_IMAGE_STATIC) -> {
                     createFixImpl(
                         expr = expr,

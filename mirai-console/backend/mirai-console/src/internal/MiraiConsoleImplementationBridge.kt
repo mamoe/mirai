@@ -160,7 +160,7 @@ internal class MiraiConsoleImplementationBridge(
             "MiraiLogger.Factory.create(yourClass::class, identity)",
             "net.mamoe.mirai.utils.MiraiLogger"
         ),
-        level = DeprecationLevel.WARNING
+        level = DeprecationLevel.ERROR
     )
     override fun createLogger(identity: String?): MiraiLogger {
         return MiraiLogger.Factory.create(MiraiConsole::class, identity)

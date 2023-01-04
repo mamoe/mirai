@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,12 +14,11 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import org.jetbrains.kotlin.diagnostics.Diagnostic
+import org.jetbrains.kotlin.idea.base.psi.replaced
 import org.jetbrains.kotlin.idea.core.ShortenReferences
-import org.jetbrains.kotlin.idea.core.replaced
 import org.jetbrains.kotlin.idea.inspections.KotlinUniversalQuickFix
 import org.jetbrains.kotlin.idea.quickfix.KotlinCrossLanguageQuickFixAction
 import org.jetbrains.kotlin.idea.quickfix.KotlinSingleIntentionActionFactory
-import org.jetbrains.kotlin.idea.util.application.executeWriteCommand
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.psi.KtTypeProjection
 
@@ -32,18 +31,15 @@ abstract class AbstractTypeProjectionFix(
 
     override fun invokeImpl(project: Project, editor: Editor?, file: PsiFile) {
         val element = element ?: return
-        project.executeWriteCommand(name) {
-            val arguments = element.text.substringAfter('<', "")
-
-            val e = element.replaced(
-                KtPsiFactory(project).createTypeArgument(
-                    if (arguments.isBlank()) {
-                        newTypeFqn
-                    } else "$newTypeFqn<$arguments"
-                )
-            )
-            ShortenReferences.DEFAULT.process(e)
-        }
+        val arguments = element.text.substringAfter('<', "")
+        val newTypeElement = KtPsiFactory(project).createTypeArgument(
+            if (arguments.isBlank()) {
+                newTypeFqn
+            } else "$newTypeFqn<$arguments"
+        )
+        val e = element.replaced(newTypeElement)
+        // ABI change
+        ShortenReferences.DEFAULT.process(e)
     }
 }
 

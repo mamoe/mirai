@@ -374,18 +374,22 @@ public sealed interface MessageChain :
  * @since 2.12
  */
 // Java: MessageUtils.emptyMessageChain()
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION", "DEPRECATION_ERROR")
 public fun emptyMessageChain(): MessageChain = EmptyMessageChain
 
 /**
- * 不含任何元素的 [MessageChain]. 已弃用, 请使用 [emptyMessageChain]
+ * 不含任何元素的 [MessageChain]. 已弃用, 请使用 [emptyMessageChain].
  */
 //@Serializable(MessageChain.Serializer::class)
 @Deprecated(
     "Please use emptyMessageChain()",
-    replaceWith = ReplaceWith("emptyMessageChain()", "net.mamoe.mirai.message.data.emptyMessageChain")
+    replaceWith = ReplaceWith("emptyMessageChain()", "net.mamoe.mirai.message.data.emptyMessageChain"),
+    level = DeprecationLevel.ERROR
 )
-@DeprecatedSinceMirai(warningSince = "2.12")
+@DeprecatedSinceMirai(
+    warningSince = "2.12",
+    errorSince = "2.14"
+) // make internal after deprecation cycle, but keep as @PublishedApi!
 @Suppress("EXPOSED_SUPER_CLASS")
 public object EmptyMessageChain : MessageChain, List<SingleMessage> by emptyList(),
     AbstractMessageChain(), DirectSizeAccess, DirectToStringAccess {

@@ -100,9 +100,7 @@ internal class MockGroupTest : MockBotTestBase() {
                 )
             )
         }.let { events ->
-            assertEquals(2, events.size)
-            @Suppress("RemoveRedundantQualifierName", "DEPRECATION")
-            assertIsInstance<net.mamoe.mirai.event.events.GroupEntranceAnnouncementChangeEvent>(events[0])
+            assertEquals(0, events.size)
         }
         val anc = group.announcements.asFlow().toList()
         assertEquals(1, anc.size)
@@ -145,7 +143,7 @@ internal class MockGroupTest : MockBotTestBase() {
         }
     }
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
     @Test
     internal fun testGroupFileV1() = runTest {
         val fsroot = bot.addGroup(5417, "58aw").filesRoot

@@ -15,15 +15,15 @@ import net.mamoe.mirai.console.compiler.common.resolve.COMPOSITE_COMMAND_SUB_COM
 import net.mamoe.mirai.console.compiler.common.resolve.SIMPLE_COMMAND_HANDLER_COMMAND_FQ_NAME
 import net.mamoe.mirai.console.compiler.common.resolve.findParent
 import org.jetbrains.kotlin.descriptors.*
-import org.jetbrains.kotlin.idea.base.utils.fqname.getKotlinFqName
+import org.jetbrains.kotlin.idea.base.psi.kotlinFqName
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
 import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
 import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
+import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.idea.references.resolveToDescriptors
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.nj2k.postProcessing.resolve
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -67,7 +67,8 @@ val KtPureClassOrObject.allSuperTypes: Sequence<KtSuperTypeListEntry>
         yieldAll(superTypeListEntries)
         for (list in superTypeListEntries.asSequence()) {
             yieldAll(
-                (list.typeAsUserType?.referenceExpression?.resolve()?.parents(true)?.filterIsInstance<KtClass>()
+                (list.typeAsUserType?.referenceExpression?.mainReference?.resolve()?.parents(true)
+                    ?.filterIsInstance<KtClass>()
                     ?.firstOrNull())?.allSuperTypes.orEmpty()
             )
         }
@@ -118,7 +119,7 @@ fun KtClass.hasSuperType(fqName: FqName): Boolean = allSuperNames.contains(fqNam
 @kotlin.internal.LowPriorityInOverloadResolution
 fun PsiElement.hasSuperType(fqName: FqName): Boolean = allSuperNames.contains(fqName)
 
-val KtClassOrObject.allSuperNames: Sequence<FqName> get() = allSuperTypes.mapNotNull { it.getKotlinFqName() }
+val KtClassOrObject.allSuperNames: Sequence<FqName> get() = allSuperTypes.mapNotNull { it.kotlinFqName }
 val PsiClass.allSuperNames: Sequence<FqName>
     get() = allSuperTypes.mapNotNull { clazz ->
         clazz.qualifiedName?.let {
@@ -151,14 +152,14 @@ fun getElementForLineMark(callElement: PsiElement): PsiElement =
 val KtAnnotationEntry.annotationClass: KtClass?
     get() = calleeExpression?.constructorReferenceExpression?.run {
         try {
-            resolve()
+            mainReference.resolve()
         } catch (e: Exception) {
             null // type inference with `by lazy {}` is unstable for now. I just ignore exceptions encountering with such issue.
         }
     }?.findParent<KtClass>()
 
 fun KtAnnotated.hasAnnotation(fqName: FqName): Boolean =
-    this.annotationEntries.any { it.annotationClass?.getKotlinFqName() == fqName }
+    this.annotationEntries.any { it.annotationClass?.kotlinFqName == fqName }
 
 fun ValueArgument.resolveStringConstantValues(bindingContext: BindingContext): Sequence<String>? {
     return this.getArgumentExpression()?.resolveStringConstantValues(bindingContext)
@@ -199,6 +200,7 @@ fun ConstantValue<*>.selfOrChildrenConstantStrings(): Sequence<String> {
         is ArrayValue -> sequence {
             yieldAll(this@selfOrChildrenConstantStrings.selfOrChildrenConstantStrings())
         }
+
         else -> emptySequence()
     }
 }
@@ -230,6 +232,7 @@ fun KtExpression.resolveStringConstantValues(bindingContext: BindingContext): Se
                 //}
             }
         }
+
         is KtStringTemplateExpression -> {
             if (hasInterpolation()) return emptySequence()
             return sequenceOf(entries.joinToString("") { it.text })

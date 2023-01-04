@@ -60,8 +60,12 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
     @AfterTest
     fun afterEach() {
         println("Test finished, closing Bot")
-        if (botInit) bot.close()
-        runBlockingUnit { bot.join() }
+        if (botInit) {
+            bot.close()
+            println("joining Bot")
+            runBlockingUnit { bot.join() }
+            println("cleanup ok")
+        }
     }
 
     protected open fun createBot(account: BotAccount = MockAccount): QQAndroidBot {

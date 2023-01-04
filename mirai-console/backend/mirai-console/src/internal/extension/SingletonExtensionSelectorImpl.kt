@@ -26,9 +26,9 @@ import kotlin.reflect.KClass
 
 @Deprecated(
     "Order of extensions is not determined by its priority property since 2.11. SingletonExtensionSelector is not needed anymore. ",
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
-@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13", hiddenSince = "2.14")
 internal object SingletonExtensionSelectorImpl : SingletonExtensionSelector {
 
     internal val config: SaveData = SaveData()

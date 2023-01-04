@@ -350,7 +350,7 @@ internal class MockGroupImpl(
     override val essences: MockEssences = MockEssencesImpl(this)
 
     @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"))
-    @Suppress("OverridingDeprecatedMember", "DEPRECATION")
+    @Suppress("OverridingDeprecatedMember", "DEPRECATION", "DEPRECATION_ERROR")
     override val filesRoot: RemoteFile by lazy {
         net.mamoe.mirai.mock.internal.remotefile.remotefile.RootRemoteFile(txFileSystem, this)
     }

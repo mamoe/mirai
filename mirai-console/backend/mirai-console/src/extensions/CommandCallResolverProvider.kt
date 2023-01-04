@@ -13,7 +13,6 @@ import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver
 import net.mamoe.mirai.console.extension.AbstractInstanceExtensionPoint
 import net.mamoe.mirai.console.extension.InstanceExtension
-import net.mamoe.mirai.utils.DeprecatedSinceMirai
 
 @ExperimentalCommandDescriptors
 public interface CommandCallResolverProvider : InstanceExtension<CommandCallResolver> {
@@ -21,22 +20,4 @@ public interface CommandCallResolverProvider : InstanceExtension<CommandCallReso
     @ExperimentalCommandDescriptors
     public companion object ExtensionPoint :
         AbstractInstanceExtensionPoint<CommandCallResolverProvider, CommandCallResolver>(CommandCallResolverProvider::class)
-}
-
-@Deprecated(
-    "Deprecated for removal. Please implement your own CommandCallResolverProvider.",
-    level = DeprecationLevel.ERROR
-)
-@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13") // for removal.
-@ExperimentalCommandDescriptors
-public class CommandCallResolverProviderImpl(override val instance: CommandCallResolver) : CommandCallResolverProvider
-
-@Deprecated(
-    "Deprecated for removal. Please implement your own CommandCallResolverProvider.",
-    level = DeprecationLevel.ERROR
-)
-@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13") // for removal.
-@ExperimentalCommandDescriptors
-public class CommandCallResolverProviderImplLazy(initializer: () -> CommandCallResolver) : CommandCallResolverProvider {
-    override val instance: CommandCallResolver by lazy(initializer)
 }

@@ -17,12 +17,12 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
 import net.mamoe.mirai.console.intellij.resolve.*
+import org.jetbrains.kotlin.idea.codeinsight.api.classic.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.idea.core.ShortenReferences
-import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.idea.inspections.KotlinUniversalQuickFix
 import org.jetbrains.kotlin.idea.quickfix.KotlinCrossLanguageQuickFixAction
+import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.nj2k.postProcessing.resolve
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
 import org.jetbrains.kotlin.psi.psiUtil.getQualifiedExpressionForReceiver
@@ -42,7 +42,7 @@ class UsingStringPlusMessageInspection : AbstractKotlinInspection() {
 
 
         fun KtReferenceExpression.isCallingStringPlus(): Boolean {
-            val callee = this.referenceExpression()?.resolve() ?: return false
+            val callee = this.referenceExpression()?.mainReference?.resolve() ?: return false
             if (callee !is KtNamedFunction) return false
 
             val className = callee.containingClassOrObject?.fqName?.asString()

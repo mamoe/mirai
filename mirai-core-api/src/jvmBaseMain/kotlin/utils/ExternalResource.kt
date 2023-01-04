@@ -558,12 +558,13 @@ public actual interface ExternalResource : Closeable {
         @Suppress("DEPRECATION_ERROR", "DEPRECATION")
         @Deprecated(
             "Deprecated. Please use AbsoluteFolder.uploadNewFile",
-            ReplaceWith("contact.files.uploadNewFile(path, this, callback)")
+            ReplaceWith("contact.files.uploadNewFile(path, this, callback)"),
+            level = DeprecationLevel.ERROR,
         ) // deprecated since 2.8.0-RC
         @JvmStatic
         @JvmBlockingBridge
         @JvmOverloads
-        @DeprecatedSinceMirai(warningSince = "2.8")
+        @DeprecatedSinceMirai(warningSince = "2.8", errorSince = "2.14")
         public suspend fun <C : FileSupported> File.sendTo(
             contact: C,
             path: String,
@@ -585,13 +586,14 @@ public actual interface ExternalResource : Closeable {
         @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         @Deprecated(
             "Deprecated. Please use AbsoluteFolder.uploadNewFile",
-            ReplaceWith("contact.files.uploadNewFile(path, this, callback)")
+            ReplaceWith("contact.files.uploadNewFile(path, this, callback)"),
+            level = DeprecationLevel.ERROR
         ) // deprecated since 2.8.0-RC
         @JvmStatic
         @JvmBlockingBridge
         @JvmName("sendAsFile")
         @JvmOverloads
-        @DeprecatedSinceMirai(warningSince = "2.8")
+        @DeprecatedSinceMirai(warningSince = "2.8", errorSince = "2.14")
         public suspend fun <C : FileSupported> ExternalResource.sendAsFileTo(
             contact: C,
             path: String,

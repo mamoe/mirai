@@ -75,9 +75,13 @@ public actual interface FileMessage : MessageContent, ConstrainSingle, CodableMe
     /**
      * 获取一个对应的 [RemoteFile]. 当目标群或好友不存在这个文件时返回 `null`.
      */
-    @Suppress("DEPRECATION")
-    @Deprecated("Please use toAbsoluteFile", ReplaceWith("this.toAbsoluteFile(contact)")) // deprecated since 2.8.0-RC
-    @DeprecatedSinceMirai(warningSince = "2.8")
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
+    @Deprecated(
+        "Please use toAbsoluteFile",
+        ReplaceWith("this.toAbsoluteFile(contact)"),
+        level = DeprecationLevel.ERROR
+    ) // deprecated since 2.8.0-RC
+    @DeprecatedSinceMirai(warningSince = "2.8", errorSince = "2.14")
     public suspend fun toRemoteFile(contact: FileSupported): RemoteFile? {
         @Suppress("DEPRECATION")
         return contact.filesRoot.resolveById(id)

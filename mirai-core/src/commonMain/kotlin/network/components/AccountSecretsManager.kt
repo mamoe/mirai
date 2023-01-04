@@ -35,10 +35,10 @@ import kotlin.jvm.Volatile
  * @see FileCacheAccountSecretsManager
  * @see CombinedAccountSecretsManager
  */
-internal interface AccountSecretsManager {
+internal interface AccountSecretsManager : Cacheable {
     fun saveSecrets(account: BotAccount, secrets: AccountSecrets)
     fun getSecrets(account: BotAccount): AccountSecrets?
-    fun invalidate()
+    override fun invalidate()
 
     companion object : ComponentKey<AccountSecretsManager>
 }

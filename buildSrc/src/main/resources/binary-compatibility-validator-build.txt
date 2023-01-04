@@ -28,4 +28,5 @@ apiValidation {
     nonPublicMarkers.add("net.mamoe.mirai.console.ConsoleFrontEndImplementation") // added on 2.11
     nonPublicMarkers.add("net.mamoe.mirai.console.util.ConsoleExperimentalApi")
     nonPublicMarkers.add("net.mamoe.mirai.utils.MiraiExperimentalApi")
+    nonPublicMarkers.add("net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors") // added on 2.14
 }

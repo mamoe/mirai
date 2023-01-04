@@ -31,12 +31,12 @@ public interface PluginLoaderProvider : InstanceExtension<PluginLoader<*, *>> {
     public companion object ExtensionPoint : AbstractExtensionPoint<PluginLoaderProvider>(PluginLoaderProvider::class)
 }
 
-@Deprecated("Please implement your own PluginLoaderProvider.", level = DeprecationLevel.ERROR)
-@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13") // for hidden.
+@Deprecated("Please implement your own PluginLoaderProvider.", level = DeprecationLevel.HIDDEN)
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13", hiddenSince = "2.14") // for hidden.
 public class PluginLoaderProviderImpl(override val instance: PluginLoader<*, *>) : PluginLoaderProvider
 
-@Deprecated("Please implement your own PluginLoaderProvider.", level = DeprecationLevel.ERROR)
-@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13") // for hidden.
+@Deprecated("Please implement your own PluginLoaderProvider.", level = DeprecationLevel.HIDDEN)
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13", hiddenSince = "2.14") // for hidden.
 public class PluginLoaderProviderImplLazy(initializer: () -> PluginLoader<*, *>) : PluginLoaderProvider {
     override val instance: PluginLoader<*, *> by lazy(initializer)
 }

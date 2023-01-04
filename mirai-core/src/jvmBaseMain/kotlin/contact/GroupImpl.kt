@@ -26,8 +26,8 @@ internal actual class GroupImpl actual constructor(
 ) : Group, CommonGroupImpl(bot, parentCoroutineContext, id, groupInfo, members) {
     actual companion object;
 
-    @Suppress("DEPRECATION")
-    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"), level = DeprecationLevel.WARNING)
-    @DeprecatedSinceMirai(warningSince = "2.8")
+    @Suppress("DEPRECATION_ERROR")
+    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"), level = DeprecationLevel.ERROR)
+    @DeprecatedSinceMirai(warningSince = "2.8", errorSince = "2.14")
     override val filesRoot: net.mamoe.mirai.utils.RemoteFile by lazy { RemoteFileImpl(this, "/") }
 }

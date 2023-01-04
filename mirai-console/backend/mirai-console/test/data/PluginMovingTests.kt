@@ -21,11 +21,17 @@ import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
 import kotlin.test.Test
 
 class PluginMovingTests : AbstractConsoleInstanceTest() {
-    private val mockPluginWithName = object : KotlinPlugin(JvmPluginDescription("org.test1.test1", "1.0.0", "test1")) {}
-    private val mockPluginWithName2 =
+    private val mockPluginWithName by lazy {
+        object : KotlinPlugin(JvmPluginDescription("org.test1.test1", "1.0.0", "test1")) {}
+    }
+
+    private val mockPluginWithName2 by lazy {
         object : KotlinPlugin(JvmPluginDescription("org.test2.test2", "1.0.0", "test2")) {}
-    private val mockPluginWithName3 =
+    }
+
+    private val mockPluginWithName3 by lazy {
         object : KotlinPlugin(JvmPluginDescription("org.test2.test3", "1.0.0", "test3")) {}
+    }
 
     private fun mkdir(abstractPath: String) = PluginManager.pluginsDataPath.resolve(abstractPath).mkdir()
 

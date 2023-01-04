@@ -28,9 +28,9 @@ import kotlin.reflect.KClass
  */
 @Deprecated(
     "Order of extensions is now determined by its priority property since 2.11. SingletonExtensionSelector is not needed anymore. ",
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
-@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
+@DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13", hiddenSince = "2.14")
 @Suppress("DEPRECATION_ERROR")
 public interface SingletonExtensionSelector : FunctionExtension {
     /**
@@ -38,9 +38,9 @@ public interface SingletonExtensionSelector : FunctionExtension {
      */
     @Deprecated(
         "Order of extensions is now determined by its priority property since 2.11. SingletonExtensionSelector is not needed anymore. ",
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.HIDDEN
     )
-    @DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
+    @DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13", hiddenSince = "2.14")
     public data class Registry<T : Extension>(
         val plugin: Plugin?,
         val extension: T,
@@ -56,9 +56,9 @@ public interface SingletonExtensionSelector : FunctionExtension {
 
     @Deprecated(
         "Order of extensions is now determined by its priority property since 2.11. SingletonExtensionSelector is not needed anymore. ",
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.HIDDEN
     )
-    @DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13")
+    @DeprecatedSinceMirai(warningSince = "2.11", errorSince = "2.13", hiddenSince = "2.14")
     public companion object ExtensionPoint :
         AbstractExtensionPoint<SingletonExtensionSelector>(SingletonExtensionSelector::class) {
 
@@ -68,7 +68,7 @@ public interface SingletonExtensionSelector : FunctionExtension {
 
         internal fun init() {
             check(instanceField == null) { "Internal error: reinitialize SingletonExtensionSelector" }
-            val instances = GlobalComponentStorage.getExtensions(ExtensionPoint).toList()
+            val instances = GlobalComponentStorage.getExtensions<SingletonExtensionSelector>(ExtensionPoint).toList()
             instanceField = when {
                 instances.isEmpty() -> SingletonExtensionSelectorImpl
                 instances.size == 1 -> {
@@ -76,6 +76,7 @@ public interface SingletonExtensionSelector : FunctionExtension {
                         MiraiConsole.mainLogger.info { "Loaded SingletonExtensionSelector: ${registry.extension} from ${registry.plugin?.name ?: "<builtin>"}" }
                     }.extension
                 }
+
                 else -> {
                     val hint = instances.joinToString { reg ->
                         "'${reg.extension}' from '${reg.plugin?.name ?: "<builtin>"}'"

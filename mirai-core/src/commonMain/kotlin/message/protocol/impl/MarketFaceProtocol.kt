@@ -28,6 +28,7 @@ import net.mamoe.mirai.utils.map
 internal class MarketFaceProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(DiceEncoder())
+        add(RockPaperScissorsEncoder())
         add(MarketFaceImplEncoder())
 
         add(MarketFaceDecoder())
@@ -46,11 +47,12 @@ internal class MarketFaceProtocol : MessageProtocol() {
                 MarketFace::class, MarketFaceImpl.serializer().map(
                     resultantDescriptor = MarketFaceImpl.serializer().descriptor.copy(MarketFace.SERIAL_NAME),
                     deserialize = {
-                        it.delegate.toDiceOrNull() ?: it
+                        it.delegate.toDiceOrNull() ?: it.delegate.toRockPaperScissorsOrNull() ?: it
                     },
                     serialize = {
                         when (it) {
                             is Dice -> MarketFaceImpl(it.toJceStruct())
+                            is RockPaperScissors -> MarketFaceImpl(it.toJceStruct())
                             is MarketFaceImpl -> it
                             else -> {
                                 error("Unsupported MarketFace type ${it::class.qualifiedName}")
@@ -64,6 +66,7 @@ internal class MarketFaceProtocol : MessageProtocol() {
         MessageSerializer.superclassesScope(MarketFace::class, MessageContent::class, SingleMessage::class) {
             add(MessageSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer()))
             add(MessageSerializer(Dice::class, Dice.serializer()))
+            add(MessageSerializer(RockPaperScissors::class, RockPaperScissors.serializer()))
         }
     }
 
@@ -90,11 +93,23 @@ internal class MarketFaceProtocol : MessageProtocol() {
         }
     }
 
+    private class RockPaperScissorsEncoder : MessageEncoder<RockPaperScissors> {
+        override suspend fun MessageEncoderContext.process(data: RockPaperScissors) {
+            markAsConsumed()
+            processAlso(MarketFaceImpl(data.toJceStruct()))
+        }
+    }
+
     private class MarketFaceDecoder : MessageDecoder {
         override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
             val proto = data.marketFace ?: return
 
             proto.toDiceOrNull()?.let {
+                collect(it)
+                return
+            }
+
+            proto.toRockPaperScissorsOrNull()?.let {
                 collect(it)
                 return
             }
@@ -118,6 +133,12 @@ internal class MarketFaceProtocol : MessageProtocol() {
             6 to "7A2303AD80755FCB6BBFAC38327E0C01".hexToBytes(),
         )
 
+        private val RPS_PC_FACE_IDS = mapOf(
+            48 to "E5D889F1DF79B2B45183F625584465D3".hexToBytes(),
+            49 to "628FA4AB7B6C2BCCFCDCD0C2DAF7A60C".hexToBytes(),
+            50 to "457CDE420F598EB424CED2E905D38D8B".hexToBytes(),
+        )
+
         private fun ImMsgBody.MarketFace.toDiceOrNull(): Dice? {
             if (this.tabId != 11464) return null
             val value = when {
@@ -128,6 +149,26 @@ internal class MarketFaceProtocol : MessageProtocol() {
                 return Dice(value)
             }
             return null
+        }
+
+        private fun ImMsgBody.MarketFace.toRockPaperScissorsOrNull(): RockPaperScissors? {
+            if (tabId != 11415) return null
+
+            val value = when {
+                mobileParam.isNotEmpty() -> {
+                    val theLast = mobileParam.lastOrNull() ?: return null
+                    theLast.toInt().and(0xff)
+                }
+                else -> RPS_PC_FACE_IDS.entries.find { it.value.contentEquals(faceId) }?.key ?: return null
+            }
+
+            return when (value) {
+                48 -> RockPaperScissors.ROCK
+                49 -> RockPaperScissors.SCISSORS
+                50 -> RockPaperScissors.PAPER
+
+                else -> null
+            }
         }
 
         // From https://github.com/mamoe/mirai/issues/1012
@@ -159,6 +200,32 @@ internal class MarketFaceProtocol : MessageProtocol() {
                     48, 48, 48, 48, 48, 106, 9, 35,
                     48, 48, 48, 48, 48, 48, 48, 48
                 )
+            )
+        }
+
+        private fun RockPaperScissors.toJceStruct(): ImMsgBody.MarketFace {
+            return ImMsgBody.MarketFace(
+                faceName = byteArrayOf(91, -25, -116, -100, -26, -117, -77, 93),
+                itemType = 6,
+                faceInfo = 1,
+                faceId = byteArrayOf(
+                    -125, -56, -94, -109, -82,
+                    101, -54, 20, 15, 52,
+                    -127, 32, -89, 116, 72, -18
+                ),
+                tabId = 11415,
+                subType = 3,
+                key = byteArrayOf(55, 100, 101, 51, 57, 102, 101, 98, 99, 102, 52, 53, 101, 54, 100, 98),
+                mediaType = 0,
+                imageWidth = 200,
+                imageHeight = 200,
+                mobileParam = byteArrayOf(
+                    114, 115, 99, 84, 121, 112, 101,
+                    63, 49, 59, 118, 97, 108, 117,
+                    101, 61,
+                    internalId
+                ),
+                pbReserve = byteArrayOf(10, 6, 8, -56, 1, 16, -56, 1, 64, 1)
             )
         }
     }
