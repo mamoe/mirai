@@ -43,22 +43,24 @@ public interface Essences : Streamable<EssenceMessageRecord> {
 
     /**
      * 按页获取精华消息记录
-     * @param start 起始Index
+     * @param start 起始索引
      * @param limit 页大小
      */
     @JvmBlockingBridge
-    public suspend fun page(start: Int, limit: Int): List<EssenceMessageRecord>
+    public suspend fun getPage(start: Int, limit: Int): List<EssenceMessageRecord>
 
     /**
      * 分享精华消息
      * @param source 要分享的消息源
-     * @return 分享URL
+     * @throws IllegalStateException [source] 不为精华消息时将会触发异常
+     * @return 分享 URL
      */
     @JvmBlockingBridge
     public suspend fun share(source: MessageSource): String
 
     /**
      * 移除精华消息
+     * @throws IllegalStateException [source] 不为精华消息或权限不足时将会触发异常
      * @param source 要移除的消息源
      */
     @JvmBlockingBridge

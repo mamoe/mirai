@@ -23,14 +23,9 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.warning
 
-internal expect class EssencesImpl(
-    group: GroupImpl,
-    logger: MiraiLogger,
-) : CommonEssencesImpl
-
-internal abstract class CommonEssencesImpl(
-    protected val group: GroupImpl,
-    protected val logger: MiraiLogger,
+internal class EssencesImpl(
+    internal val group: GroupImpl,
+    internal val logger: MiraiLogger,
 ) : Essences {
 
     private fun source(message: DigestMessage): MessageSource {
@@ -86,7 +81,7 @@ internal abstract class CommonEssencesImpl(
         )
     }
 
-    override suspend fun page(start: Int, limit: Int): List<EssenceMessageRecord> {
+    override suspend fun getPage(start: Int, limit: Int): List<EssenceMessageRecord> {
         val page = group.bot.getDigestList(
             groupCode = group.id,
             pageStart = start,
