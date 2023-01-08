@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -43,8 +43,9 @@ public interface Essences : Streamable<EssenceMessageRecord> {
 
     /**
      * 按页获取精华消息记录
-     * @param start 起始索引
-     * @param limit 页大小
+     * @param start 起始索引 从 0 开始
+     * @param limit 页大小 返回的记录最大数量，最大取 50
+     * @throws IllegalStateException [limit] 过大或其他参数错误时会触发异常
      */
     @JvmBlockingBridge
     public suspend fun getPage(start: Int, limit: Int): List<EssenceMessageRecord>
