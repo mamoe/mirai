@@ -19,7 +19,9 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
+import net.mamoe.mirai.internal.utils.io.writeResource
 import net.mamoe.mirai.utils.CheckableResponseA
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.JsonStruct
 import net.mamoe.mirai.utils.loadAs
 
@@ -69,8 +71,45 @@ internal data class GroupVote(
         @SerialName("class_ext") val classExt: Int = 0,
         @SerialName("group_id") val groupId: Int = 0
     )
-
 }
+
+@Serializable
+internal data class PublishVoteResult(
+    @SerialName("ec") override val errorCode: Int = 0,
+    @SerialName("em") override val errorMessage: String? = null,
+    @SerialName("fid") val fid: String = "",
+    @SerialName("ltsm") val ltsm: Int = 0,
+    @SerialName("read_only") val readOnly: Int = 0,
+    @SerialName("role") val role: Int = 0,
+    @SerialName("srv_code") val srvCode: Int = 0
+) : CheckableResponseA(), JsonStruct
+
+@Serializable
+internal data class UploadVoteImage(
+    @SerialName("ec") override val errorCode: Int = 0,
+    @SerialName("em") override val errorMessage: String? = null,
+    @SerialName("id") val id: String,
+) : CheckableResponseA(), JsonStruct
+
+@Serializable
+internal data class DeleteVote(
+    @SerialName("ec") override val errorCode: Int = 0,
+    @SerialName("em") override val errorMessage: String? = null,
+    @SerialName("fid") val fid: String = "",
+    @SerialName("id") val id: Int = 0,
+    @SerialName("ltsm") val ltsm: Int = 0,
+    @SerialName("read_only") val readOnly: Int = 0,
+    @SerialName("role") val role: Int = 0,
+    @SerialName("srv_code") val srvCode: Int = 0
+) : CheckableResponseA(), JsonStruct
+
+@Serializable
+internal data class VoterInfo(
+    @SerialName("ec") override val errorCode: Int = 0,
+    @SerialName("em") override val errorMessage: String? = null,
+    @SerialName("ui")
+    val ui: Map<Int, UserInfo> = emptyMap()
+) : CheckableResponseA(), JsonStruct
 
 @Serializable
 internal data class UserInfo(
@@ -171,4 +210,155 @@ internal suspend fun QQAndroidBot.getGroupVote(
             )
         }
     }.bodyAsText().loadAs(GroupVote.serializer())
+}
+
+internal suspend fun QQAndroidBot.publishGroupVote(
+    groupCode: Long
+): PublishVoteResult {
+    return components[HttpClientProvider].getHttpClient().post {
+        url("https://client.qun.qq.com/cgi-bin/feeds/publish_vote_client")
+
+        setBody(
+            MultiPartFormDataContent(formData {
+                append("qid", groupCode)
+                append("bkn", client.wLoginSigInfo.bkn)
+
+                // title
+                append("title", "test")
+                append("ni", 1)
+
+                // options
+                append("op1", "option 1")
+                append("op2", "option 2")
+
+                // type 1 2 3
+                append("mo", 2)
+
+                // end date time
+                append("dl", 0)
+
+                // remind date time
+                append("remind", 0)
+
+                // anon 0 1
+                append("vsb", 1)
+
+                // image
+                append("i1", 1)
+                append("w1", 400)
+                append("h1", 800)
+            })
+        )
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
+            )
+        }
+    }.bodyAsText().loadAs(PublishVoteResult.serializer())
+}
+
+internal suspend fun QQAndroidBot.pushGroupVote(
+    groupCode: Long, fid: String, options: List<Int>
+): PublishVoteResult {
+    return components[HttpClientProvider].getHttpClient().post {
+        url("https://client.qun.qq.com/cgi-bin/feeds/vote")
+
+        setBody(
+            MultiPartFormDataContent(formData {
+                append("qid", groupCode)
+                append("bkn", client.wLoginSigInfo.bkn)
+                append("fid", fid)
+
+                // options
+                for(option in options) {
+                    append("v$options", 1)
+                }
+            })
+        )
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
+            )
+        }
+    }.bodyAsText().loadAs(PublishVoteResult.serializer())
+}
+
+internal suspend fun QQAndroidBot.uploadGroupVoteImage(
+    groupCode: Long, resource: ExternalResource
+): UploadVoteImage {
+    return components[HttpClientProvider].getHttpClient().post {
+        url("https://client.qun.qq.com/cgi-bin/feeds/upload_img")
+
+        setBody(
+            MultiPartFormDataContent(formData {
+                append("qid", groupCode)
+                append("bkn", client.wLoginSigInfo.bkn)
+
+                append("m", 0)
+                append("source", "qunvote")
+                append("filename", "uploadpic_${0}.${resource.formatName}")
+                append("pic64_up") {
+                    writeResource(resource)
+                }
+            })
+        )
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
+            )
+        }
+    }.bodyAsText().loadAs(UploadVoteImage.serializer())
+}
+
+internal suspend fun QQAndroidBot.deleteGroupVote(
+    groupCode: Long, fid: String
+): DeleteVote {
+    return components[HttpClientProvider].getHttpClient().post {
+        url("https://client.qun.qq.com/cgi-bin/feeds/del_feed")
+
+        setBody(
+            MultiPartFormDataContent(formData {
+                append("qid", groupCode)
+                append("bkn", client.wLoginSigInfo.bkn)
+                append("fid", fid)
+            })
+        )
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
+            )
+        }
+    }.bodyAsText().loadAs(DeleteVote.serializer())
+}
+
+internal suspend fun QQAndroidBot.getVoterInfo(
+    groupCode: Long, list: List<Long>
+): VoterInfo {
+    return components[HttpClientProvider].getHttpClient().get {
+        url("https://client.qun.qq.com/cgi-bin/feeds/uin_info")
+
+        parameter("qid", groupCode)
+        parameter("bkn", client.wLoginSigInfo.bkn)
+        parameter("u", list.joinToString("-"))
+
+        headers {
+            // ktor bug
+            append(
+                "cookie",
+                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
+            )
+        }
+    }.bodyAsText().loadAs(VoterInfo.serializer())
 }
