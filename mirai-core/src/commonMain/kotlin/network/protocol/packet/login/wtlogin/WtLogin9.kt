@@ -13,6 +13,7 @@ import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.internal.utils.io.writeShortLVPacket
 
 internal object WtLogin9 : WtLoginExt {
     private const val appId = 16L
@@ -26,13 +27,20 @@ internal object WtLogin9 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(9) // subCommand
-                writeShort(if (allowSlider) 0x18 else 0x17) // count of TLVs, probably ignored by server?
+                writeShort((if (client.wLoginSigInfoInitialized && client.wLoginSigInfo.noPicSig != null) (if (allowSlider) 0x18 else 0x17) + 1 else (if (allowSlider) 0x18 else 0x17)).toShort()) // count of TLVs, probably ignored by server?
                 //writeShort(LoginType.PASSWORD.value.toShort())
 
                 t18(appId, client.appClientVersion, client.uin)
                 t1(client.uin, client.device.ipAddress)
 
-                t106(appId, client)
+                if (client.wLoginSigInfoInitialized && client.wLoginSigInfo.encryptA1 != null) {
+                    writeShort(0x106)
+                    writeShortLVPacket {
+                        writeFully(client.wLoginSigInfo.encryptA1!!)
+                    }
+                } else {
+                    t106(appId, client)
+                }
 
                 /* // from GetStWithPasswd
                 int mMiscBitmap = this.mMiscBitmap;
@@ -66,8 +74,9 @@ internal object WtLogin9 : WtLoginExt {
                     t166(1)
                 }
                 */
-
-                // ignored t16a because array5 is null
+                if (client.wLoginSigInfoInitialized && client.wLoginSigInfo.noPicSig != null) {
+                    t16a(client.wLoginSigInfo.noPicSig!!)
+                }
 
                 t154(sequenceId)
                 t141(client.device.simInfo, client.networkType, client.device.apn)
