@@ -105,8 +105,8 @@ setProtocol(MiraiProtocol.ANDROID_PAD)
 
 在登录时可能遇到图形验证码或滑动验证码，Mirai 会使用 `LoginSolver` 解决验证码。
 
-- 在 JVM, Mirai 会根据环境支持情况选择 Swing/CLI 实现，通常不需要手动提供
-- 在 Android 需要手动提供 `LoginSolver`
+- 在 JVM, Mirai 提供默认的命令行实现
+- 在 Android 需要手动实现 `LoginSolver`
 
 若要覆盖默认的 `LoginSolver` （通常不需要）：
 ```

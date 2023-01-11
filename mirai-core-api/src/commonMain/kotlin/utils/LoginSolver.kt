@@ -123,13 +123,8 @@ public abstract class LoginSolver {
         /**
          * 当前平台默认的 [LoginSolver]。
          *
-         * 检测策略:
-         * 1. 若是 `mirai-core-api-android` 或 `android.util.Log` 存在, 返回 `null`.
-         * 2. 检测 JVM 属性 `mirai.no-desktop`. 若存在, 返回 `StandardCharImageLoginSolver`
-         * 3. 检测 JVM 桌面环境, 若支持, 返回 `SwingSolver`
-         * 4. 返回 `StandardCharImageLoginSolver`
-         *
-         * @return `SwingSolver` 或 `StandardCharImageLoginSolver` 或 `null`
+         * 在 Android 环境时, 此函数返回 `null`.
+         * 在其他 JVM 环境时, 此函数返回一个默认实现, 它通常会是 [StandardCharImageLoginSolver][net.mamoe.mirai.utils.StandardCharImageLoginSolver], 但调用方不应该依赖该属性.
          */
         @JvmField
         public val Default: LoginSolver? = PlatformLoginSolverImplementations.default

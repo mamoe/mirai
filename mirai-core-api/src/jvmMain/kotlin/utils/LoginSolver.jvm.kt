@@ -17,8 +17,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.internal.utils.SeleniumLoginSolver
-import net.mamoe.mirai.internal.utils.isSliderCaptchaSupportKind
 import net.mamoe.mirai.network.NoStandardInputForCaptchaException
 import net.mamoe.mirai.utils.StandardCharImageLoginSolver.Companion.createBlocking
 import java.awt.Image
@@ -29,18 +27,9 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 internal actual object PlatformLoginSolverImplementations {
-    actual val isSliderCaptchaSupported: Boolean get() = isSliderCaptchaSupportKind ?: true
+    actual val isSliderCaptchaSupported: Boolean get() = default!!.isSliderCaptchaSupported
     actual val default: LoginSolver? by lazy {
-        when (WindowHelperJvm.platformKind) {
-            WindowHelperJvm.PlatformKind.ANDROID -> null
-            WindowHelperJvm.PlatformKind.SWING -> {
-                when (isSliderCaptchaSupportKind) {
-                    null, false -> SwingSolver
-                    true -> SeleniumLoginSolver ?: SwingSolver
-                }
-            }
-            WindowHelperJvm.PlatformKind.CLI -> StandardCharImageLoginSolver()
-        }
+        StandardCharImageLoginSolver()
     }
 }
 
