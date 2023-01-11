@@ -13,6 +13,7 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.mock.test.MockBotTestBase
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
 internal class MockMemberTest : MockBotTestBase() {
@@ -20,5 +21,14 @@ internal class MockMemberTest : MockBotTestBase() {
     internal fun testAvatar() = runTest {
         val m = bot.addGroup(111, "aaa").addMember(simpleMemberInfo(222, "bbb", permission = MemberPermission.MEMBER))
         assertNotEquals("", m.avatarUrl)
+    }
+
+    @Test
+    internal fun modifyAdmin() = runTest {
+        val m = bot.addGroup(111, "aaa").also {
+            it.botAsMember.mockApi.permission = MemberPermission.OWNER
+        }.addMember(simpleMemberInfo(222, "bbb", permission = MemberPermission.MEMBER))
+        m.modifyAdmin(true)
+        assertEquals(MemberPermission.ADMINISTRATOR, m.permission)
     }
 }
