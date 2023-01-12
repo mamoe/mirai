@@ -13,7 +13,6 @@ import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
-import net.mamoe.mirai.internal.utils.io.writeShortLVPacket
 
 internal object WtLogin9 : WtLoginExt {
     private const val appId = 16L
@@ -42,10 +41,7 @@ internal object WtLogin9 : WtLoginExt {
                 t1(client.uin, client.device.ipAddress)
 
                 if (useEncryptA1AndNoPicSig) {
-                    writeShort(0x106)
-                    writeShortLVPacket {
-                        writeFully(client.wLoginSigInfo.encryptA1!!)
-                    }
+                    t106(client.wLoginSigInfo.encryptA1!!)
                 } else {
                     t106(appId, client)
                 }
