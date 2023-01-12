@@ -10,6 +10,7 @@
 package net.mamoe.mirai.mock.test.mock
 
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.event.events.BotGroupPermissionChangeEvent
 import net.mamoe.mirai.event.events.MemberPermissionChangeEvent
 import net.mamoe.mirai.mock.test.MockBotTestBase
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
@@ -23,6 +24,21 @@ internal class MockMemberTest : MockBotTestBase() {
     internal fun testAvatar() = runTest {
         val m = bot.addGroup(111, "aaa").addMember(simpleMemberInfo(222, "bbb", permission = MemberPermission.MEMBER))
         assertNotEquals("", m.avatarUrl)
+    }
+
+    @Test
+    internal fun changeOwner() = runTest {
+        val group = bot.addGroup(111, "aaa")
+        val member = group.addMember(simpleMemberInfo(222, "bbb", permission = MemberPermission.MEMBER))
+        val events = runAndReceiveEventBroadcast {
+            group.changeOwner(member)
+        }
+        assertEquals(2, events.size)
+        assertTrue {
+            events[0] is MemberPermissionChangeEvent
+                    && events[1] is BotGroupPermissionChangeEvent
+        }
+        assertEquals(MemberPermission.OWNER, member.permission)
     }
 
     @Test
