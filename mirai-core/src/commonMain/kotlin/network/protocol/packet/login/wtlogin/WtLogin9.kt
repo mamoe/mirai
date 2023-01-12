@@ -27,13 +27,21 @@ internal object WtLogin9 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(9) // subCommand
-                writeShort((if (client.wLoginSigInfoInitialized && client.wLoginSigInfo.noPicSig != null) (if (allowSlider) 0x18 else 0x17) + 1 else (if (allowSlider) 0x18 else 0x17)).toShort()) // count of TLVs, probably ignored by server?
+                var tlvCount = if (allowSlider) 0x18 else 0x17;
+                val useEncryptA1AndNoPicSig =
+                    client.wLoginSigInfoInitialized
+                            && client.wLoginSigInfo.noPicSig != null
+                            && client.wLoginSigInfo.encryptA1 != null
+                if (useEncryptA1AndNoPicSig) {
+                    tlvCount++;
+                }
+                writeShort(tlvCount.toShort()) // count of TLVs, probably ignored by server?
                 //writeShort(LoginType.PASSWORD.value.toShort())
 
                 t18(appId, client.appClientVersion, client.uin)
                 t1(client.uin, client.device.ipAddress)
 
-                if (client.wLoginSigInfoInitialized && client.wLoginSigInfo.encryptA1 != null) {
+                if (useEncryptA1AndNoPicSig) {
                     writeShort(0x106)
                     writeShortLVPacket {
                         writeFully(client.wLoginSigInfo.encryptA1!!)
@@ -74,7 +82,7 @@ internal object WtLogin9 : WtLoginExt {
                     t166(1)
                 }
                 */
-                if (client.wLoginSigInfoInitialized && client.wLoginSigInfo.noPicSig != null) {
+                if (useEncryptA1AndNoPicSig) {
                     t16a(client.wLoginSigInfo.noPicSig!!)
                 }
 
