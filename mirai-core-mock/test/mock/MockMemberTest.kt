@@ -17,6 +17,7 @@ import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 internal class MockMemberTest : MockBotTestBase() {
@@ -46,32 +47,22 @@ internal class MockMemberTest : MockBotTestBase() {
         val m = bot.addGroup(111, "aaa").also { group ->
             group.changeOwner(group.botAsMember)
         }.addMember(simpleMemberInfo(222, "bbb", permission = MemberPermission.MEMBER))
-        runAndReceiveEventBroadcast {
+        val events = runAndReceiveEventBroadcast {
             m.modifyAdmin(true)
-        }.let { events ->
-            assertTrue {
-                events.size == 1 && events[0] is MemberPermissionChangeEvent
-            }
-            val event = events[0] as MemberPermissionChangeEvent
-            assertTrue {
-                event.new == MemberPermission.ADMINISTRATOR
-                        && event.member.id == 222L
-            }
-        }
-        assertEquals(MemberPermission.ADMINISTRATOR, m.permission)
-
-        runAndReceiveEventBroadcast {
+            assertEquals(MemberPermission.ADMINISTRATOR, m.permission)
             m.modifyAdmin(false)
-        }.let { events ->
-            assertTrue {
-                events.size == 1 && events[0] is MemberPermissionChangeEvent
-            }
-            val event = events[0] as MemberPermissionChangeEvent
-            assertTrue {
-                event.new == MemberPermission.MEMBER
-                        && event.member.id == 222L
-            }
+            assertEquals(MemberPermission.MEMBER, m.permission)
         }
-        assertEquals(MemberPermission.MEMBER, m.permission)
+        assertTrue { events.size == 2 }
+        assertIsInstance<MemberPermissionChangeEvent>(events[0]) {
+            assertSame(m, member)
+            assertSame(MemberPermission.MEMBER, origin)
+            assertSame(MemberPermission.ADMINISTRATOR, new)
+        }
+        assertIsInstance<MemberPermissionChangeEvent>(events[1]) {
+            assertSame(m, member)
+            assertSame(MemberPermission.ADMINISTRATOR, origin)
+            assertSame(MemberPermission.MEMBER, new)
+        }
     }
 }
