@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertSame
-import kotlin.test.assertTrue
 
 internal class MockMemberTest : MockBotTestBase() {
     @Test
@@ -33,36 +32,46 @@ internal class MockMemberTest : MockBotTestBase() {
         val member = group.addMember(simpleMemberInfo(222, "bbb", permission = MemberPermission.MEMBER))
         val events = runAndReceiveEventBroadcast {
             group.changeOwner(member)
+            assertSame(member, group.owner)
+            assertSame(MemberPermission.OWNER, member.permission)
         }
         assertEquals(2, events.size)
-        assertTrue {
-            events[0] is MemberPermissionChangeEvent
-                    && events[1] is BotGroupPermissionChangeEvent
+        assertIsInstance<MemberPermissionChangeEvent>(events[0]) {
+            assertSame(member, this.member)
+            assertSame(MemberPermission.OWNER, new)
+            assertSame(MemberPermission.MEMBER, origin)
+            assertSame(group, this.group)
         }
-        assertEquals(MemberPermission.OWNER, member.permission)
+        assertIsInstance<BotGroupPermissionChangeEvent>(events[1]) {
+            assertSame(MemberPermission.MEMBER, new)
+            assertSame(MemberPermission.OWNER, origin)
+            assertSame(group, this.group)
+        }
     }
 
     @Test
     internal fun modifyAdmin() = runTest {
-        val m = bot.addGroup(111, "aaa").also { group ->
-            group.changeOwner(group.botAsMember)
-        }.addMember(simpleMemberInfo(222, "bbb", permission = MemberPermission.MEMBER))
+        val group = bot.addGroup(111, "aaa")
+        group.changeOwner(group.botAsMember)
+        val m = group.addMember(simpleMemberInfo(222, "bbb", permission = MemberPermission.MEMBER))
         val events = runAndReceiveEventBroadcast {
             m.modifyAdmin(true)
             assertEquals(MemberPermission.ADMINISTRATOR, m.permission)
             m.modifyAdmin(false)
             assertEquals(MemberPermission.MEMBER, m.permission)
         }
-        assertTrue { events.size == 2 }
+        assertEquals(2, events.size)
         assertIsInstance<MemberPermissionChangeEvent>(events[0]) {
             assertSame(m, member)
             assertSame(MemberPermission.MEMBER, origin)
             assertSame(MemberPermission.ADMINISTRATOR, new)
+            assertSame(group, this.group)
         }
         assertIsInstance<MemberPermissionChangeEvent>(events[1]) {
             assertSame(m, member)
             assertSame(MemberPermission.ADMINISTRATOR, origin)
             assertSame(MemberPermission.MEMBER, new)
+            assertSame(group, this.group)
         }
     }
 }
