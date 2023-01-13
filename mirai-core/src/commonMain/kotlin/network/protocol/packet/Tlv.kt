@@ -121,6 +121,15 @@ internal fun BytePacketBuilder.t106(
     )
 }
 
+internal fun BytePacketBuilder.t106(
+    encryptA1: ByteArray
+) {
+    writeShort(0x106)
+    writeShortLVPacket {
+        writeFully(encryptA1)
+    }
+}
+
 /**
  * A1
  */

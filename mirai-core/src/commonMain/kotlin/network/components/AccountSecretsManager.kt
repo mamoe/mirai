@@ -27,6 +27,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.Synchronized
 import kotlin.jvm.Volatile
+import kotlin.random.Random
 
 /**
  * For a [Bot].
@@ -138,7 +139,7 @@ internal fun AccountSecretsImpl(
         dpwd = get_mpasswd().toByteArray(),
         randSeed = EMPTY_BYTE_ARRAY,
         ksid = EMPTY_BYTE_ARRAY,
-        tgtgtKey = (account.passwordMd5 + ByteArray(4) + account.id.toInt().toByteArray()).md5(),
+        tgtgtKey = (Random.nextBytes(16) + device.guid).md5(),
         randomKey = getRandomByteArray(16),
         ecdhInitialPublicKey = QQEcdhInitialPublicKey.default
     )

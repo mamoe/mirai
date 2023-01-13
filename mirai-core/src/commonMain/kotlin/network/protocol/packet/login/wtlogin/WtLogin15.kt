@@ -13,7 +13,6 @@ import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
-import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -56,9 +55,7 @@ internal object WtLogin15 : WtLoginExt {
             t1(client.uin, ByteArray(4))
 
             //  t106(client = client)
-            writeShort(0x106)
-            val encryptA1 = client.wLoginSigInfo.encryptA1!!
-            writeShortLVByteArray(encryptA1)
+            t106(client.wLoginSigInfo.encryptA1!!)
 //            kotlin.run {
 //                val key = (client.account.passwordMd5 + ByteArray(4) + client.uin.toInt().toByteArray()).md5()
 //                kotlin.runCatching {

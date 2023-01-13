@@ -26,13 +26,25 @@ internal object WtLogin9 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(9) // subCommand
-                writeShort(if (allowSlider) 0x18 else 0x17) // count of TLVs, probably ignored by server?
+                var tlvCount = if (allowSlider) 0x18 else 0x17;
+                val useEncryptA1AndNoPicSig =
+                    client.wLoginSigInfoInitialized
+                            && client.wLoginSigInfo.noPicSig != null
+                            && client.wLoginSigInfo.encryptA1 != null
+                if (useEncryptA1AndNoPicSig) {
+                    tlvCount++;
+                }
+                writeShort(tlvCount.toShort()) // count of TLVs, probably ignored by server?
                 //writeShort(LoginType.PASSWORD.value.toShort())
 
                 t18(appId, client.appClientVersion, client.uin)
                 t1(client.uin, client.device.ipAddress)
 
-                t106(appId, client)
+                if (useEncryptA1AndNoPicSig) {
+                    t106(client.wLoginSigInfo.encryptA1!!)
+                } else {
+                    t106(appId, client)
+                }
 
                 /* // from GetStWithPasswd
                 int mMiscBitmap = this.mMiscBitmap;
@@ -66,8 +78,9 @@ internal object WtLogin9 : WtLoginExt {
                     t166(1)
                 }
                 */
-
-                // ignored t16a because array5 is null
+                if (useEncryptA1AndNoPicSig) {
+                    t16a(client.wLoginSigInfo.noPicSig!!)
+                }
 
                 t154(sequenceId)
                 t141(client.device.simInfo, client.networkType, client.device.apn)
