@@ -17,7 +17,6 @@ import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.protocol.packet.t145
-import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 import net.mamoe.mirai.utils.*
 
@@ -208,22 +207,9 @@ internal interface WtLoginExt { // so as not to register to global extension
         }
     }
 
-    fun QQAndroidClient.analyzeTlv106(t106: ByteArray) {
-        val tgtgtKey = decodeA1(t106) {
-            discardExact(51)
-            readBytes(16)
-        }
-        this.tgtgtKey = tgtgtKey
-    }
-
     fun Input.readUShortLVString(): String = String(this.readUShortLVByteArray())
 }
 
-internal inline fun <R> QQAndroidClient.decodeA1(a1: ByteArray, block: ByteReadPacket.() -> R): R {
-    val key = (account.passwordMd5 + ByteArray(4) + uin.toInt().toByteArray()).md5()
-    val v = TEA.decrypt(a1, key)
-    return v.toReadPacket().withUse(block)
-}
 
 internal fun ByteArray?.orEmpty(size: Int = 0): ByteArray {
     return this ?: if (size == 0) EMPTY_BYTE_ARRAY else ByteArray(size)

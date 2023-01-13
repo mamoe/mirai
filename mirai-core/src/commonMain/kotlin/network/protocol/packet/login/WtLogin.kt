@@ -371,7 +371,9 @@ internal class WtLogin {
                         tlvMap119.smartToString().printStructure("TlvMap119")
                     }
 
-                    tlvMap119[0x106]?.let { client.analyzeTlv106(it) }
+                    tlvMap119[0x10c]?.read {
+                        client.tgtgtKey = readBytes(16)
+                    }
 
                     // ???
                     tlvMap119[0x1c]?.read {
