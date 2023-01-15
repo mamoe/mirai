@@ -15,15 +15,13 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.contact.vote.Vote
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.internal.utils.io.writeResource
-import net.mamoe.mirai.utils.CheckableResponseA
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.JsonStruct
-import net.mamoe.mirai.utils.loadAs
+import net.mamoe.mirai.utils.*
 
 @Serializable
 internal data class GroupVoteList(
@@ -52,17 +50,17 @@ internal data class GroupVote(
     @SerialName("fn") val fn: Int = 0,
     @SerialName("gmn") val gmn: Int = 0,
     @SerialName("group") val group: Group = Group(),
-    @SerialName("jointime") val jointime: Int = 0,
+    @SerialName("jointime") val joinTime: Long = 0,
     @SerialName("ltsm") val ltsm: Int = 0,
     @SerialName("msg") val detail: GroupVoteDetail = GroupVoteDetail(),
-    @SerialName("pubt") val pubt: Int = 0,
+    @SerialName("pubt") val published: Long = 0,
     @SerialName("read_only") val readOnly: Int = 0,
     @SerialName("role") val role: Int = 0,
     @SerialName("server_time") val serverTime: Long = 0,
     @SerialName("srv_code") val srvCode: Int = 0,
     @SerialName("svrt") val svrt: Int = 0,
     @SerialName("type") val type: Int = 0,
-    @SerialName("u") val u: Long = 0,
+    @SerialName("u") val uid: Long = 0,
     @SerialName("ui") val ui: Map<Int, UserInfo> = emptyMap(),
     @SerialName("vn") val vn: Int = 0
 ) : CheckableResponseA(), JsonStruct {
@@ -124,14 +122,14 @@ internal data class GroupVoteContent(
 
 @Serializable
 internal data class GroupVoteDetail(
-    @SerialName("dl") val dl: Int = 0,
-    @SerialName("mo") val mo: Int = 0,
+    @SerialName("dl") val end: Long = 0,
+    @SerialName("mo") val type: Int = 0,
     @SerialName("op") val options: List<Option> = emptyList(),
     @SerialName("sta") val sta: Int = 0,
     @SerialName("t") val title: GroupVoteContent = GroupVoteContent(),
     @SerialName("us") val us: List<Int> = emptyList(),
-    @SerialName("vr") val result: List<VoteResult> = emptyList(),
-    @SerialName("vsb") val vsb: Int = 0
+    @SerialName("vr") val results: List<VoteResult> = emptyList(),
+    @SerialName("vsb") val anonymous: Int = 0
 ) {
     @Serializable
     data class Option(
@@ -151,7 +149,7 @@ internal data class GroupVoteDetail(
 internal data class GroupVoteSettings(
     @SerialName("confirm_required") val confirmRequired: Int = 0,
     @SerialName("is_show_edit_card") val isShowEditCard: Int = 0,
-    @SerialName("remind_ts") val remindTs: Int = 0,
+    @SerialName("remind_ts") val remindTs: Long = 0,
     @SerialName("tip_window_type") val tipWindowType: Int = 0
 )
 
@@ -161,7 +159,7 @@ internal data class GroupVoteInfo(
     @SerialName("fid") val fid: String = "",
     @SerialName("fn") val fn: Int = 0,
     @SerialName("msg") val detail: GroupVoteDetail = GroupVoteDetail(),
-    @SerialName("pubt") val published: Int = 0,
+    @SerialName("pubt") val published: Long = 0,
     @SerialName("read_num") val readNum: Int = 0,
     @SerialName("settings") val settings: GroupVoteSettings = GroupVoteSettings(),
     @SerialName("type") val type: Int = 0,
@@ -170,17 +168,17 @@ internal data class GroupVoteInfo(
 )
 
 internal suspend fun QQAndroidBot.getGroupVoteList(
-    groupCode: Long, limit: Int
+    groupCode: Long, page: Int, limit: Int
 ): GroupVoteList {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://client.qun.qq.com/cgi-bin/feeds/get_t_list")
 
         parameter("qid", groupCode)
-        parameter("s", -1)
+        parameter("bkn", client.wLoginSigInfo.bkn)
         parameter("ft", 21)
+        parameter("s", -1)
         parameter("i", 1)
         parameter("n", limit)
-        parameter("bkn", client.wLoginSigInfo.bkn)
 
         headers {
             // ktor bug
@@ -213,7 +211,7 @@ internal suspend fun QQAndroidBot.getGroupVote(
 }
 
 internal suspend fun QQAndroidBot.publishGroupVote(
-    groupCode: Long
+    groupCode: Long, vote: Vote
 ): PublishVoteResult {
     return components[HttpClientProvider].getHttpClient().post {
         url("https://client.qun.qq.com/cgi-bin/feeds/publish_vote_client")
@@ -224,29 +222,35 @@ internal suspend fun QQAndroidBot.publishGroupVote(
                 append("bkn", client.wLoginSigInfo.bkn)
 
                 // title
-                append("title", "test")
+                append("title", vote.title)
                 append("ni", 1)
 
                 // options
-                append("op1", "option 1")
-                append("op2", "option 2")
+                vote.options.forEachIndexed { index, content ->
+                    append("op${index}", content)
+                }
 
                 // type 1 2 3
-                append("mo", 2)
+                append("mo", vote.parameters.type)
+
+                val current = currentTimeSeconds()
 
                 // end date time
-                append("dl", 0)
+                append("dl", current + vote.parameters.end)
 
                 // remind date time
-                append("remind", 0)
+                append("remind", current + vote.parameters.remind)
 
                 // anon 0 1
-                append("vsb", 1)
+                append("vsb", if (vote.parameters.anonymous) 0 else 1)
 
                 // image
-                append("i1", 1)
-                append("w1", 400)
-                append("h1", 800)
+                val image = vote.parameters.image
+                if (image != null) {
+                    append("i1", image.id)
+                    append("w1", image.width)
+                    append("h1", image.height)
+                }
             })
         )
 
@@ -302,7 +306,7 @@ internal suspend fun QQAndroidBot.uploadGroupVoteImage(
 
                 append("m", 0)
                 append("source", "qunvote")
-                append("filename", "uploadpic_${0}.${resource.formatName}")
+                append("filename", "uploadpic_${currentTimeMillis()}.${resource.formatName}")
                 append("pic64_up") {
                     writeResource(resource)
                 }
