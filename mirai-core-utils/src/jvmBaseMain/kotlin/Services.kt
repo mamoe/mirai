@@ -16,6 +16,7 @@ import kotlin.reflect.full.createInstance
 public actual fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementation: String?): T {
     var suppressed: Throwable? = null
     return ServiceLoader.load(clazz.java).firstOrNull()
+        ?: ServiceLoader.load(clazz.java, clazz.java.classLoader).firstOrNull()
         ?: (if (fallbackImplementation == null) null
         else runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull())
         ?: throw NoSuchElementException("Could not find an implementation for service class ${clazz.qualifiedName}").apply {
@@ -29,10 +30,14 @@ private fun <T : Any> findCreateInstance(fallbackImplementation: String): T {
 
 public actual fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImplementation: String?): T? {
     return ServiceLoader.load(clazz.java).firstOrNull()
+        ?: ServiceLoader.load(clazz.java, clazz.java.classLoader).firstOrNull()
         ?: if (fallbackImplementation == null) return null
         else runCatching { findCreateInstance<T>(fallbackImplementation) }.getOrNull()
 }
 
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
-    return ServiceLoader.load(clazz.java).asSequence()
+    return sequence {
+        yieldAll(ServiceLoader.load(clazz.java))
+        yieldAll(ServiceLoader.load(clazz.java, clazz.java.classLoader))
+    }
 }
