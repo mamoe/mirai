@@ -37,7 +37,11 @@ public actual fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImpl
 
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
     return sequence {
-        yieldAll(ServiceLoader.load(clazz.java))
-        yieldAll(ServiceLoader.load(clazz.java, clazz.java.classLoader))
+        val current = ServiceLoader.load(clazz.java).iterator()
+        if (current.hasNext()) {
+            yieldAll(current)
+        } else {
+            yieldAll(ServiceLoader.load(clazz.java, clazz.java.classLoader))
+        }
     }
 }
