@@ -21,7 +21,7 @@ import java.net.URL
 import java.net.URLClassLoader
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.zip.ZipFile
+import java.util.zip.*
 
 /*
 Class resolving:
@@ -372,9 +372,13 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         }
 
         fun newLoader(file: File, ctx: JvmPluginsLoadingCtx): JvmPluginClassLoaderN {
-            return when {
-                DynamicClasspathClassLoader.java9 -> JvmPluginClassLoaderN(file, ctx)
-                else -> JvmPluginClassLoaderN(file, ctx, Unit)
+            return try {
+                when {
+                    DynamicClasspathClassLoader.java9 -> JvmPluginClassLoaderN(file, ctx)
+                    else -> JvmPluginClassLoaderN(file, ctx, Unit)
+                }
+            } catch (cause: ZipException) {
+                throw IllegalStateException("JVM插件 ${file.path} 可能有损坏")
             }
         }
     }
