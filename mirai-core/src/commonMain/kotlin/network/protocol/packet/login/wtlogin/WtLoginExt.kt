@@ -291,7 +291,7 @@ internal interface WtLoginExt { // so as not to register to global extension
                 writeInt(recursiveDepth)
             }.readBytes()
         } else {
-            bot.logger.warning("Failed to got pow result, login may fail with error 0x6!")
+            bot.logger.warning("Failed to get pow result, login may fail with error 0x6!")
         }
 
     }
