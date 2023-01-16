@@ -141,6 +141,7 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 | `JavaScript` / TypeScript | [YunYouJun/mirai-ts]                 |
 | `JavaScript` / TypeScript | [nepsyn/miraipie]                    |
 | `Julia`                   | [MiraiBots.jl]                       |
+| `PHP`                     | [MR-XieXuan/MiraiTravel]             |
 | `PHP`                     | [nkxingxh/miraiez]                   |
 | `Python`                  | [AliceBot]                           |
 | `Python`                  | [Ariadne][GraiaProject/Ariadne]      |
