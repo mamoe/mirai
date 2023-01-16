@@ -311,7 +311,7 @@ internal interface WtLoginExt { // so as not to register to global extension
                 writeInt(recursiveDepth)
             }.readBytes()
         } else {
-            this.t547 = EMPTY_BYTE_ARRAY
+            bot.logger.warning("Calc pow failed, it may affect login!")
         }
 
     }
