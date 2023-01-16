@@ -178,7 +178,6 @@ internal interface WtLoginExt { // so as not to register to global extension
         val version: Byte
         val algorithmType: Byte
         val hashType: Byte
-        var hasResult: Byte
         val maxIndex: Short
         val reserveBytes: ByteArray
         val inputBigNumArr: ByteArray
@@ -248,7 +247,7 @@ internal interface WtLoginExt { // so as not to register to global extension
             version = readByte()
             algorithmType = readByte()
             hashType = readByte()
-            hasResult = readByte()
+            readByte() // Ignore resultStatus since it's useless
             maxIndex = readShort()
             reserveBytes = readBytes(2)
             inputBigNumArr = readBytes(readShort().toInt())
@@ -275,12 +274,11 @@ internal interface WtLoginExt { // so as not to register to global extension
         if (!failed) {
             costTimeMS = (currentTimeMillis() - startTimeMS).toInt()
             bot.logger.info("Got pow result, cost: $costTimeMS ms")
-            hasResult = 1.toByte()
             this.t547 = buildPacket {
                 writeByte(version)
                 writeByte(algorithmType)
                 writeByte(hashType)
-                writeByte(hasResult)
+                writeByte(1) //resultStatus
                 writeShort(maxIndex)
                 writeFully(reserveBytes)
                 writeShortLVByteArray(inputBigNumArr)
