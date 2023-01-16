@@ -254,18 +254,12 @@ internal interface WtLoginExt { // so as not to register to global extension
             inputBigNumArr = readBytes(readShort().toInt())
             targetHashArr = readBytes(readShort().toInt())
             reserveHashArr = readBytes(readShort().toInt())
-            //TODO: remove it since its useless
-            if (hasResult == 1.toByte()) {
-                resultArr = readBytes(readShort().toInt())
-                costTimeMS = readInt()
-                recursiveDepth = readInt()
-            }
         }
         val startTimeMS: Long = currentTimeMillis()
         costTimeMS = 0
         recursiveDepth = 0
         if (hashType == 1.toByte()) {
-            bot.logger.info("Calculating type $algorithmType pow, it can take some time to done....")
+            bot.logger.info("Calculating type $algorithmType pow, it can take some time....")
             when (algorithmType.toInt()) {
                 1 -> calcType1(inputBigNumArr, maxIndex)
                 2 -> calcType2(inputBigNumArr, targetHashArr)
@@ -280,7 +274,7 @@ internal interface WtLoginExt { // so as not to register to global extension
         }
         if (!failed) {
             costTimeMS = (currentTimeMillis() - startTimeMS).toInt()
-            bot.logger.info("Successfully calc pow, cost: $costTimeMS ms")
+            bot.logger.info("Got pow result, cost: $costTimeMS ms")
             hasResult = 1.toByte()
             this.t547 = buildPacket {
                 writeByte(version)
@@ -297,7 +291,7 @@ internal interface WtLoginExt { // so as not to register to global extension
                 writeInt(recursiveDepth)
             }.readBytes()
         } else {
-            bot.logger.warning("Failed to calc pow, login may fail with error 0x6!")
+            bot.logger.warning("Failed to got pow result, login may fail with error 0x6!")
         }
 
     }
