@@ -378,7 +378,7 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
                     else -> JvmPluginClassLoaderN(file, ctx, Unit)
                 }
             } catch (cause: ZipException) {
-                throw IllegalStateException("JVM插件 ${file.path} 可能有损坏")
+                throw IllegalStateException("JVM插件 ${file.path} 可能有损坏", cause)
             }
         }
     }
