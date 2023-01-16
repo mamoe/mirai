@@ -10,7 +10,8 @@
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
 import com.ionspin.kotlin.bignum.integer.BigInteger
-import com.ionspin.kotlin.bignum.integer.Sign
+import com.ionspin.kotlin.bignum.integer.util.fromTwosComplementByteArray
+import com.ionspin.kotlin.bignum.integer.util.toTwosComplementByteArray
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.LoginExtraData
@@ -204,26 +205,10 @@ internal interface WtLoginExt { // so as not to register to global extension
             return 0
         }
 
-        fun createBigInteger(bigIntArr: ByteArray): BigInteger {
-            val sign = if (bigIntArr[0] < 0) {
-                Sign.NEGATIVE
-            } else {
-                if (bigIntArr.firstOrNull { b -> b != 0.toByte() } != null) {
-                    Sign.POSITIVE
-                } else {
-                    Sign.ZERO
-                }
-
-            }
-            return BigInteger.fromByteArray(bigIntArr, sign)
-        }
-
         fun calcType1(bigNumArrIn: ByteArray, maxLength: Short) {
-            bot.logger.info("Calculating Type 1 Pow....")
-
             var bigIntArrClone = bigNumArrIn.copyOf()
             val originLength = bigIntArrClone.size
-            var bigInteger = createBigInteger(bigIntArrClone)
+            var bigInteger = BigInteger.fromTwosComplementByteArray(bigIntArrClone)
             while (true) {
                 if (getPadRemaining(bigIntArrClone.sha256().copyOf(32), maxLength) == 0) {
                     resultArr = bigIntArrClone
@@ -231,7 +216,7 @@ internal interface WtLoginExt { // so as not to register to global extension
                 }
                 recursiveDepth++
                 bigInteger = bigInteger.add(BigInteger.ONE)
-                bigIntArrClone = bigInteger.toByteArray()
+                bigIntArrClone = bigInteger.toTwosComplementByteArray()
                 if (bigIntArrClone.size > originLength) {
                     failed = true
                     return
@@ -240,10 +225,9 @@ internal interface WtLoginExt { // so as not to register to global extension
         }
 
         fun calcType2(bigNumArrIn: ByteArray, hashTarget: ByteArray) {
-            bot.logger.info("Calculating Type 2 Pow....")
             var bigIntArrClone = bigNumArrIn.copyOf()
             val originLength = bigIntArrClone.size
-            var bigInteger = createBigInteger(bigIntArrClone)
+            var bigInteger = BigInteger.fromTwosComplementByteArray(bigIntArrClone)
             while (true) {
                 if (bigIntArrClone.sha256().copyOf(32).contentEquals(hashTarget)) {
                     resultArr = bigIntArrClone
@@ -251,7 +235,7 @@ internal interface WtLoginExt { // so as not to register to global extension
                 }
                 recursiveDepth++
                 bigInteger = bigInteger.add(BigInteger.ONE)
-                bigIntArrClone = bigInteger.toByteArray()
+                bigIntArrClone = bigInteger.toTwosComplementByteArray()
                 if (bigIntArrClone.size > originLength) {
                     failed = true
                     return
@@ -281,6 +265,7 @@ internal interface WtLoginExt { // so as not to register to global extension
         costTimeMS = 0
         recursiveDepth = 0
         if (hashType == 1.toByte()) {
+            bot.logger.info("Calculating type $algorithmType pow, it can take some time to done....")
             when (algorithmType.toInt()) {
                 1 -> calcType1(inputBigNumArr, maxIndex)
                 2 -> calcType2(inputBigNumArr, targetHashArr)
@@ -295,6 +280,7 @@ internal interface WtLoginExt { // so as not to register to global extension
         }
         if (!failed) {
             costTimeMS = (currentTimeMillis() - startTimeMS).toInt()
+            bot.logger.info("Successfully calc pow, cost: $costTimeMS ms")
             hasResult = 1.toByte()
             this.t547 = buildPacket {
                 writeByte(version)
@@ -311,7 +297,7 @@ internal interface WtLoginExt { // so as not to register to global extension
                 writeInt(recursiveDepth)
             }.readBytes()
         } else {
-            bot.logger.warning("Calc pow failed, it may affect login!")
+            bot.logger.warning("Failed to calc pow, login may fail with error 0x6!")
         }
 
     }
