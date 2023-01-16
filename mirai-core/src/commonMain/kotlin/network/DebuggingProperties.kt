@@ -10,5 +10,5 @@
 package net.mamoe.mirai.internal.network
 
 internal object DebuggingProperties {
-    const val SHOW_TLV_MAP_ON_LOGIN_SUCCESS = false
+    const val SHOW_TLV_MAP_ON_LOGIN_SUCCESS = true
 }

@@ -41,6 +41,7 @@ kotlin {
                 api(`kotlinx-serialization-json`)
                 api(`kotlinx-coroutines-core`)
 
+                implementation(`kt-bignum`)
                 implementation(project(":mirai-core-utils"))
                 implementation(`kotlinx-serialization-protobuf`)
                 implementation(`kotlinx-atomicfu`)
