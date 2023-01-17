@@ -25,6 +25,7 @@ dependencies {
     api(project(":mirai-core-utils"))
     implementation(`slf4j-api`) // Required by mirai-console
 
+    relocateImplementation(project, `kt-bignum_relocated`)
     relocateImplementation(project, `ktor-client-core_relocated`)
     relocateImplementation(project, `ktor-client-okhttp_relocated`)
     relocateImplementation(project, `ktor-io_relocated`)
