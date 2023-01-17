@@ -110,8 +110,7 @@ kotlin {
 
 
         // Kt bignum
-
-        findByName("jvmBaseMain")?.apply {
+        findByName("commonMain")?.apply {
             dependencies {
                 relocateImplementation(`kt-bignum_relocated`)
             }
