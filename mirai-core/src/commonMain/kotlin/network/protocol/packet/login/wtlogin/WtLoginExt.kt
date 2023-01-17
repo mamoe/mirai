@@ -258,7 +258,7 @@ internal interface WtLoginExt { // so as not to register to global extension
         costTimeMS = 0
         recursiveDepth = 0
         if (hashType == 1.toByte()) {
-            bot.logger.info("Calculating type $algorithmType pow, it can take some time....")
+            bot.logger.info("Calculating type $algorithmType PoW, it can take some time....")
             when (algorithmType.toInt()) {
                 1 -> calcType1(inputBigNumArr, maxIndex)
                 2 -> calcType2(inputBigNumArr, targetHashArr)
@@ -273,7 +273,7 @@ internal interface WtLoginExt { // so as not to register to global extension
         }
         if (!failed) {
             costTimeMS = (currentTimeMillis() - startTimeMS).toInt()
-            bot.logger.info("Got pow result, cost: $costTimeMS ms")
+            bot.logger.info("Got PoW result, cost: $costTimeMS ms")
             this.t547 = buildPacket {
                 writeByte(version)
                 writeByte(algorithmType)
@@ -289,7 +289,7 @@ internal interface WtLoginExt { // so as not to register to global extension
                 writeInt(recursiveDepth)
             }.readBytes()
         } else {
-            bot.logger.warning("Failed to get pow result, login may fail with error 0x6!")
+            bot.logger.warning("Failed to get PoW result, login may fail with error 0x6!")
         }
 
     }
