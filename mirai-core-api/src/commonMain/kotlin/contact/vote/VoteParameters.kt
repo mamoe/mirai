@@ -36,9 +36,9 @@ public class VoteParameters internal constructor(
     /** 结束时间间隔，单位秒 */
     public val end: Long = 3 * 24 * 60 * 60,
     /** 提醒时间间隔，单位秒 */
-    public val remind: Long = 3 * 24 * 60 * 60 - 6 * 60 * 60,
-    /** 类型 */
-    public val type: Int = 0
+    public val remind: Long = 3 * 24 * 60 * 60 - 30 * 60,
+    /** 可选选项数量 */
+    public val capacity: Int = 1
 ) {
     /**
      * 以该对象作为原型创建一个 [VoteParametersBuilder].
@@ -49,7 +49,7 @@ public class VoteParameters internal constructor(
         anonymous(outer.anonymous)
         end(outer.end)
         remind(outer.remind)
-        type(outer.type)
+        capacity(outer.capacity)
     }
 
     public companion object {
@@ -71,7 +71,7 @@ public class VoteParameters internal constructor(
         if (anonymous != other.anonymous) return false
         if (end != other.end) return false
         if (remind != other.remind) return false
-        if (type != other.type) return false
+        if (capacity != other.capacity) return false
 
         return true
     }
@@ -81,11 +81,11 @@ public class VoteParameters internal constructor(
         result = 31 * result + anonymous.hashCode()
         result = 31 * result + end.hashCode()
         result = 31 * result + remind.hashCode()
-        result = 31 * result + type.hashCode()
+        result = 31 * result + capacity.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "VoteParameters(image=$image, anonymous=$anonymous, end=$end, remind=$remind, type=$type)"
+        return "VoteParameters(image=$image, anonymous=$anonymous, end=$end, remind=$remind, type=$capacity)"
     }
 }

@@ -58,6 +58,13 @@ public interface OnlineVote : Vote {
     public val publicationTime: Long
 
     /**
+     * 投票截至的时间，为 EpochSecond (自 1970-01-01T00：00：00Z 的秒数)
+     *
+     * @see java.time.Instant.ofEpochSecond
+     */
+    public val endTime: Long
+
+    /**
      * 删除这个投票. 需要管理员权限. 使用 [Votes.delete] 与此方法效果相同.
      *
      * @return 成功返回 `true`, 群投票已被删除时返回 `false`

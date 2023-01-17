@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -19,6 +19,7 @@ import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.contact.roaming.RoamingSupported
+import net.mamoe.mirai.contact.vote.Votes
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -139,6 +140,11 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported,
      */
     public val announcements: Announcements
 
+    /**
+     * 获取群投票相关功能接口
+     * @since 2.14
+     */
+    public val votes: Votes
 
     /**
      * 获取群荣誉相关功能接口

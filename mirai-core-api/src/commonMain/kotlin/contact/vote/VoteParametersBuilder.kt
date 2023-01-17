@@ -32,7 +32,7 @@ import kotlin.time.Duration
  *
  * ```
  * val parameters = buildVoteParameters {
- *     sendToNewMember = true
+ *     anonymous = true
  *     // ...
  * }
  * ```
@@ -40,15 +40,14 @@ import kotlin.time.Duration
  * ### 在 Java 使用
  *
  * ```java
- * AnnouncementParameters parameters = new AnnouncementParametersBuilder()
- *         .sendToNewMember(true)
- *         .pinned(true)
+ * VoteParameters parameters = new VoteParametersBuilder()
+ *         .anonymous(true)
  *         .build();
  * ```
  *
  * @see buildVoteParameters
  *
- * @since 2.7
+ * @since 2.14
  */
 public class VoteParametersBuilder @JvmOverloads constructor(
     prototype: VoteParameters = VoteParameters.DEFAULT
@@ -82,10 +81,10 @@ public class VoteParametersBuilder @JvmOverloads constructor(
         @JvmSynthetic set
 
     /**
-     * @see VoteParameters.type
+     * @see VoteParameters.capacity
      */
-    public var type: Int = prototype.type
-        @JvmName("type") get
+    public var capacity: Int = prototype.capacity
+        @JvmName("capacity") get
         @JvmSynthetic set
 
     /**
@@ -137,10 +136,10 @@ public class VoteParametersBuilder @JvmOverloads constructor(
     }
 
     /**
-     * @see VoteParameters.type
+     * @see VoteParameters.capacity
      */
-    public fun type(type: Int): VoteParametersBuilder {
-        this.type = type
+    public fun capacity(number: Int): VoteParametersBuilder {
+        this.capacity = number
         return this
     }
 
@@ -148,7 +147,7 @@ public class VoteParametersBuilder @JvmOverloads constructor(
      * 使用当前参数构造 [VoteParameters].
      */
     public fun build(): VoteParameters =
-        VoteParameters(image, anonymous, end, remind, type)
+        VoteParameters(image, anonymous, end, remind, capacity)
 }
 
 /**

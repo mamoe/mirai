@@ -21,6 +21,7 @@ import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.contact.roaming.RoamingMessages
+import net.mamoe.mirai.contact.vote.Votes
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
@@ -32,6 +33,7 @@ import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
 import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplGroup
+import net.mamoe.mirai.internal.contact.vote.VotesImpl
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
 import net.mamoe.mirai.internal.message.image.OfflineGroupImage
@@ -167,6 +169,13 @@ internal abstract class CommonGroupImpl constructor(
 
     final override val announcements: Announcements by lazy {
         AnnouncementsImpl(
+            this as GroupImpl,
+            bot.network.logger.subLogger("Group $id")
+        )
+    }
+
+    final override val votes: Votes by lazy {
+        VotesImpl(
             this as GroupImpl,
             bot.network.logger.subLogger("Group $id")
         )

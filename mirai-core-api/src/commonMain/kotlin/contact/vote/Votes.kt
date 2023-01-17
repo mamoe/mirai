@@ -23,7 +23,7 @@ public interface Votes : Streamable<Vote> {
      * @see Vote.publishTo
      */
     @JvmBlockingBridge
-    public suspend fun publish(vote: Vote): Vote
+    public suspend fun publish(vote: Vote): OnlineVote
 
     /**
      * 上传资源作为群投票图片. 返回值可用于 [VoteParameters.image].
@@ -33,4 +33,27 @@ public interface Votes : Streamable<Vote> {
      */
     @JvmBlockingBridge
     public suspend fun uploadImage(resource: ExternalResource): VoteImage
+
+    /**
+     * 删除一个群投票. 使用 [OnlineVote.delete] 与此方法效果相同.
+     *
+     * @param fid 公告的 [OnlineVote.fid]
+     * @return 成功返回 `true`, 群投票不存在时返回 `false`
+     *
+     * @throws IllegalStateException 当协议异常时抛出
+     *
+     * @see OnlineVote.delete
+     */
+    @JvmBlockingBridge
+    public suspend fun delete(fid: String): Boolean
+
+    /**
+     * 获取一个群投票.
+     * @param fid 公告的 [OnlineVote.fid]
+     * @return 返回 `null` 表示不存在该 [fid] 的群投票
+     * @throws IllegalStateException 当协议异常时抛出
+     */
+    @JvmBlockingBridge
+    public suspend fun get(fid: String): OnlineVote?
+
 }

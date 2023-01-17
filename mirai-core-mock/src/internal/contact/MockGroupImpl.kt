@@ -31,6 +31,7 @@ import net.mamoe.mirai.mock.contact.MockGroup
 import net.mamoe.mirai.mock.contact.MockGroupControlPane
 import net.mamoe.mirai.mock.contact.MockNormalMember
 import net.mamoe.mirai.mock.contact.active.MockGroupActive
+import net.mamoe.mirai.mock.contact.vote.MockVotes
 import net.mamoe.mirai.mock.internal.contact.active.MockGroupActiveImpl
 import net.mamoe.mirai.mock.internal.contact.roaming.MockRoamingMessages
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToGroup
@@ -263,6 +264,8 @@ internal class MockGroupImpl(
     }
 
     override val announcements = MockAnnouncementsImpl(this)
+
+    override val votes: MockVotes = MockVotesImpl(this)
 
     @Suppress("OverridingDeprecatedMember", "OVERRIDE_DEPRECATION")
     override val settings: GroupSettings = object : GroupSettings {

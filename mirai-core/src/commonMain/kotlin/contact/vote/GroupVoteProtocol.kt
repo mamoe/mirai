@@ -16,6 +16,7 @@ import io.ktor.http.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.vote.Vote
+import net.mamoe.mirai.contact.vote.VoteImage
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.psKey
@@ -30,7 +31,7 @@ internal data class GroupVoteList(
     @SerialName("em") override val errorMessage: String? = null,
     @SerialName("feeds") val votes: List<GroupVoteInfo> = emptyList(),
     @SerialName("gln") val gln: Int = 0,
-    @SerialName("ltsm") val ltsm: Int = 0,
+    @SerialName("ltsm") val ltsm: Long = 0,
     @SerialName("read_only") val readOnly: Int = 0,
     @SerialName("role") val role: Int = 0,
     @SerialName("server_time") val serverTime: Long = 0,
@@ -51,8 +52,8 @@ internal data class GroupVote(
     @SerialName("gmn") val gmn: Int = 0,
     @SerialName("group") val group: Group = Group(),
     @SerialName("jointime") val joinTime: Long = 0,
-    @SerialName("ltsm") val ltsm: Int = 0,
-    @SerialName("msg") val detail: GroupVoteDetail = GroupVoteDetail(),
+    @SerialName("ltsm") val ltsm: Long = 0,
+    @SerialName("msg") val detail: GroupVoteDetail? = null,
     @SerialName("pubt") val published: Long = 0,
     @SerialName("read_only") val readOnly: Int = 0,
     @SerialName("role") val role: Int = 0,
@@ -76,7 +77,7 @@ internal data class PublishVoteResult(
     @SerialName("ec") override val errorCode: Int = 0,
     @SerialName("em") override val errorMessage: String? = null,
     @SerialName("fid") val fid: String = "",
-    @SerialName("ltsm") val ltsm: Int = 0,
+    @SerialName("ltsm") val ltsm: Long = 0,
     @SerialName("read_only") val readOnly: Int = 0,
     @SerialName("role") val role: Int = 0,
     @SerialName("srv_code") val srvCode: Int = 0
@@ -90,12 +91,23 @@ internal data class UploadVoteImage(
 ) : CheckableResponseA(), JsonStruct
 
 @Serializable
+internal class GroupVotePicture(
+    @SerialName("h") val height: Int,
+    @SerialName("w") val width: Int,
+    @SerialName("id") val id: String,
+    @SerialName("url") val url: String? = null
+) : JsonStruct {
+    fun toPublic(): VoteImage =
+        VoteImage.create(id, height, width, url ?: "https://gdynamic.qpic.cn/gdynamic/${id}/628")
+}
+
+@Serializable
 internal data class DeleteVote(
     @SerialName("ec") override val errorCode: Int = 0,
     @SerialName("em") override val errorMessage: String? = null,
     @SerialName("fid") val fid: String = "",
     @SerialName("id") val id: Int = 0,
-    @SerialName("ltsm") val ltsm: Int = 0,
+    @SerialName("ltsm") val ltsm: Long = 0,
     @SerialName("read_only") val readOnly: Int = 0,
     @SerialName("role") val role: Int = 0,
     @SerialName("srv_code") val srvCode: Int = 0
@@ -117,13 +129,14 @@ internal data class UserInfo(
 
 @Serializable
 internal data class GroupVoteContent(
-    @SerialName("text") val text: String = ""
+    @SerialName("text") val text: String = "",
+    @SerialName("pics") val pictures: List<GroupVotePicture> = emptyList()
 )
 
 @Serializable
 internal data class GroupVoteDetail(
     @SerialName("dl") val end: Long = 0,
-    @SerialName("mo") val type: Int = 0,
+    @SerialName("mo") val capacity: Int = 0,
     @SerialName("op") val options: List<Option> = emptyList(),
     @SerialName("sta") val sta: Int = 0,
     @SerialName("t") val title: GroupVoteContent = GroupVoteContent(),
@@ -168,7 +181,7 @@ internal data class GroupVoteInfo(
 )
 
 internal suspend fun QQAndroidBot.getGroupVoteList(
-    groupCode: Long, page: Int, limit: Int
+    groupCode: Long, page: Int, amount: Int = 10
 ): GroupVoteList {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://client.qun.qq.com/cgi-bin/feeds/get_t_list")
@@ -176,17 +189,14 @@ internal suspend fun QQAndroidBot.getGroupVoteList(
         parameter("qid", groupCode)
         parameter("bkn", client.wLoginSigInfo.bkn)
         parameter("ft", 21)
-        parameter("s", -1)
-        parameter("i", 1)
-        parameter("n", limit)
+        parameter("s", if (page == 1) 0 else -(page * amount + 1))
+        parameter("i", if (page == 1) 1 else 0)
+        parameter("n", amount)
 
-        headers {
-            // ktor bug
-            append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
-            )
-        }
+        cookie("uin", "o$id")
+        cookie("p_uin", "o$id")
+        cookie("skey", sKey)
+        cookie("p_skey", psKey("qun.qq.com"))
     }.bodyAsText().loadAs(GroupVoteList.serializer())
 }
 
@@ -200,13 +210,10 @@ internal suspend fun QQAndroidBot.getGroupVote(
         parameter("qid", groupCode)
         parameter("bkn", client.wLoginSigInfo.bkn)
 
-        headers {
-            // ktor bug
-            append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
-            )
-        }
+        cookie("uin", "o$id")
+        cookie("p_uin", "o$id")
+        cookie("skey", sKey)
+        cookie("p_skey", psKey("qun.qq.com"))
     }.bodyAsText().loadAs(GroupVote.serializer())
 }
 
@@ -231,7 +238,7 @@ internal suspend fun QQAndroidBot.publishGroupVote(
                 }
 
                 // type 1 2 3
-                append("mo", vote.parameters.type)
+                append("mo", vote.parameters.capacity)
 
                 val current = currentTimeSeconds()
 
@@ -254,13 +261,10 @@ internal suspend fun QQAndroidBot.publishGroupVote(
             })
         )
 
-        headers {
-            // ktor bug
-            append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
-            )
-        }
+        cookie("uin", "o$id")
+        cookie("p_uin", "o$id")
+        cookie("skey", sKey)
+        cookie("p_skey", psKey("qun.qq.com"))
     }.bodyAsText().loadAs(PublishVoteResult.serializer())
 }
 
@@ -277,19 +281,16 @@ internal suspend fun QQAndroidBot.pushGroupVote(
                 append("fid", fid)
 
                 // options
-                for(option in options) {
+                for (option in options) {
                     append("v$options", 1)
                 }
             })
         )
 
-        headers {
-            // ktor bug
-            append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
-            )
-        }
+        cookie("uin", "o$id")
+        cookie("p_uin", "o$id")
+        cookie("skey", sKey)
+        cookie("p_skey", psKey("qun.qq.com"))
     }.bodyAsText().loadAs(PublishVoteResult.serializer())
 }
 
@@ -306,20 +307,17 @@ internal suspend fun QQAndroidBot.uploadGroupVoteImage(
 
                 append("m", 0)
                 append("source", "qunvote")
-                append("filename", "uploadpic_${currentTimeMillis()}.${resource.formatName}")
+                append("filename", "uploadpic_${currentTimeMillis()}.jpg")
                 append("pic64_up") {
                     writeResource(resource)
                 }
             })
         )
 
-        headers {
-            // ktor bug
-            append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
-            )
-        }
+        cookie("uin", "o$id")
+        cookie("p_uin", "o$id")
+        cookie("skey", sKey)
+        cookie("p_skey", psKey("qun.qq.com"))
     }.bodyAsText().loadAs(UploadVoteImage.serializer())
 }
 
@@ -337,13 +335,10 @@ internal suspend fun QQAndroidBot.deleteGroupVote(
             })
         )
 
-        headers {
-            // ktor bug
-            append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
-            )
-        }
+        cookie("uin", "o$id")
+        cookie("p_uin", "o$id")
+        cookie("skey", sKey)
+        cookie("p_skey", psKey("qun.qq.com"))
     }.bodyAsText().loadAs(DeleteVote.serializer())
 }
 
@@ -357,12 +352,9 @@ internal suspend fun QQAndroidBot.getVoterInfo(
         parameter("bkn", client.wLoginSigInfo.bkn)
         parameter("u", list.joinToString("-"))
 
-        headers {
-            // ktor bug
-            append(
-                "cookie",
-                "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey("qun.qq.com")};"
-            )
-        }
+        cookie("uin", "o$id")
+        cookie("p_uin", "o$id")
+        cookie("skey", sKey)
+        cookie("p_skey", psKey("qun.qq.com"))
     }.bodyAsText().loadAs(VoterInfo.serializer())
 }

@@ -28,6 +28,7 @@ public class VoteImage private constructor(
     public val id: String,
     public val height: Int,
     public val width: Int,
+    public val url: String
 ) {
     // For stability, do not make it `data class`.
 
@@ -38,8 +39,8 @@ public class VoteImage private constructor(
          * 创建 [VoteImage] 实例.
          */
         @JvmStatic
-        public fun create(id: String, height: Int, width: Int): VoteImage {
-            return VoteImage(id, height, width)
+        public fun create(id: String, height: Int, width: Int, url: String): VoteImage {
+            return VoteImage(id, height, width, url)
         }
     }
 
