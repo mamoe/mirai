@@ -98,6 +98,8 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 
 [easyMirai]:https://github.com/easyMirais/easyMirai
 
+[MR-XieXuan/MiraiTravel]:https://github.com/MR-XieXuan/MiraiTravel
+
 ### 原生接口
 
 这些接口直接在 JVM 上实现，不需要中间件，拥有更佳的性能。
