@@ -65,13 +65,19 @@ public interface OnlineVote : Vote {
     public val endTime: Long
 
     /**
+     * 各个选项的投票数
+     * @see options
+     */
+    public val select: List<Int>
+
+    /**
      * 删除这个投票. 需要管理员权限. 使用 [Votes.delete] 与此方法效果相同.
      *
      * @return 成功返回 `true`, 群投票已被删除时返回 `false`
      * @throws IllegalStateException 当协议异常时抛出
      * @see Votes.delete
      */
-    public suspend fun delete(): Boolean = TODO()
+    public suspend fun delete(): Boolean = group.votes.delete(fid = fid)
 
     /**
      * 获取 选项的投票者
@@ -91,3 +97,40 @@ public interface OnlineVote : Vote {
  * @since 2.14
  */
 public inline val OnlineVote.bot: Bot get() = group.bot
+
+/**
+ * 一次投票记录
+ */
+@NotStableForInheritance
+public interface OnlineVoteRecord {
+    /**
+     * 原投票
+     */
+    public val vote: Vote
+
+    /**
+     * 投票者 [NormalMember.id]
+     */
+    public val voterId: Long
+
+    /**
+     * 投票者. 当该成员已经离开群后为 `null`
+     */
+    public val voter: NormalMember?
+
+    /**
+     * 选择的选项
+     */
+    public val options: List<Int>
+
+    /**
+     * 时间戳
+     */
+    public val time: Long
+}
+
+@NotStableForInheritance
+public data class OnlineVoteStatus(
+    val vote: OnlineVote,
+    val records: List<OnlineVoteRecord>
+)

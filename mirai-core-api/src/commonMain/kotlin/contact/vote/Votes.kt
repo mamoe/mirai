@@ -54,6 +54,6 @@ public interface Votes : Streamable<Vote> {
      * @throws IllegalStateException 当协议异常时抛出
      */
     @JvmBlockingBridge
-    public suspend fun get(fid: String): OnlineVote?
+    public suspend fun get(fid: String): OnlineVoteStatus?
 
 }

@@ -86,6 +86,6 @@ public class VoteParameters internal constructor(
     }
 
     override fun toString(): String {
-        return "VoteParameters(image=$image, anonymous=$anonymous, end=$end, remind=$remind, type=$capacity)"
+        return "VoteParameters(image=$image, anonymous=$anonymous, end=$end, remind=$remind, capacity=$capacity)"
     }
 }

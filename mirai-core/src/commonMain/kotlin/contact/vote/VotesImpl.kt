@@ -36,6 +36,7 @@ internal class VotesImpl(
             endTime = result.ltsm + vote.parameters.end,
             title = vote.title,
             options = vote.options,
+            select = emptyList(),
             parameters = vote.parameters
         )
     }
@@ -67,11 +68,11 @@ internal class VotesImpl(
         return true
     }
 
-    override suspend fun get(fid: String): OnlineVote? {
+    override suspend fun get(fid: String): OnlineVoteStatus? {
         val data = bot.getGroupVote(groupCode = group.id, fid = fid)
         if (data.detail == null) return null
 
-        return OnlineVoteImpl(
+        val impl = OnlineVoteImpl(
             group = group,
             senderId = data.uid,
             sender = group[data.uid],
@@ -80,6 +81,7 @@ internal class VotesImpl(
             endTime = data.detail.end,
             title = data.detail.title.text,
             options = data.detail.options.map { it.content.text },
+            select = data.detail.options.map { it.selected },
             parameters = buildVoteParameters {
                 capacity = data.detail.capacity
                 anonymous = data.detail.anonymous == 1
@@ -87,6 +89,18 @@ internal class VotesImpl(
                 // XXX: 提醒时间没有返回
                 // remind = 0
                 image = data.detail.title.pictures.firstOrNull()?.toPublic()
+            }
+        )
+        return OnlineVoteStatus(
+            vote = impl,
+            records = data.detail.results.map { result ->
+                OnlineVoteRecordImpl(
+                    vote = impl,
+                    voterId = result.uid,
+                    voter = group[result.uid],
+                    options = result.options,
+                    time = result.time
+                )
             }
         )
     }
@@ -108,6 +122,7 @@ internal class VotesImpl(
                         endTime = info.detail.end,
                         title = info.detail.title.text,
                         options = info.detail.options.map { it.content.text },
+                        select = info.detail.options.map { it.selected },
                         parameters = buildVoteParameters {
                             capacity = info.detail.capacity
                             anonymous = info.detail.anonymous == 1

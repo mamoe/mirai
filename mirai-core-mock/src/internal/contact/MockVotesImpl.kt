@@ -12,6 +12,7 @@ package net.mamoe.mirai.mock.internal.contact
 import kotlinx.coroutines.flow.Flow
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.vote.OnlineVote
+import net.mamoe.mirai.contact.vote.OnlineVoteStatus
 import net.mamoe.mirai.contact.vote.Vote
 import net.mamoe.mirai.contact.vote.VoteImage
 import net.mamoe.mirai.mock.contact.vote.MockVotes
@@ -32,7 +33,7 @@ internal class MockVotesImpl(
         TODO("Not yet implemented")
     }
 
-    override suspend fun get(fid: String): OnlineVote? {
+    override suspend fun get(fid: String): OnlineVoteStatus? {
         TODO("Not yet implemented")
     }
 

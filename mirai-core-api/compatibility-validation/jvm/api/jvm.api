@@ -1118,6 +1118,7 @@ public abstract interface class net/mamoe/mirai/contact/vote/OnlineVote : net/ma
 	public abstract fun getFid ()Ljava/lang/String;
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 	public abstract fun getPublicationTime ()J
+	public abstract fun getSelect ()Ljava/util/List;
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
 	public abstract fun getSenderId ()J
 	public fun members (I)Ljava/util/List;
@@ -1127,6 +1128,27 @@ public abstract interface class net/mamoe/mirai/contact/vote/OnlineVote : net/ma
 
 public final class net/mamoe/mirai/contact/vote/OnlineVoteKt {
 	public static final fun getBot (Lnet/mamoe/mirai/contact/vote/OnlineVote;)Lnet/mamoe/mirai/Bot;
+}
+
+public abstract interface class net/mamoe/mirai/contact/vote/OnlineVoteRecord {
+	public abstract fun getOptions ()Ljava/util/List;
+	public abstract fun getTime ()J
+	public abstract fun getVote ()Lnet/mamoe/mirai/contact/vote/Vote;
+	public abstract fun getVoter ()Lnet/mamoe/mirai/contact/NormalMember;
+	public abstract fun getVoterId ()J
+}
+
+public final class net/mamoe/mirai/contact/vote/OnlineVoteStatus {
+	public fun <init> (Lnet/mamoe/mirai/contact/vote/OnlineVote;Ljava/util/List;)V
+	public final fun component1 ()Lnet/mamoe/mirai/contact/vote/OnlineVote;
+	public final fun component2 ()Ljava/util/List;
+	public final fun copy (Lnet/mamoe/mirai/contact/vote/OnlineVote;Ljava/util/List;)Lnet/mamoe/mirai/contact/vote/OnlineVoteStatus;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/contact/vote/OnlineVoteStatus;Lnet/mamoe/mirai/contact/vote/OnlineVote;Ljava/util/List;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/vote/OnlineVoteStatus;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getRecords ()Ljava/util/List;
+	public final fun getVote ()Lnet/mamoe/mirai/contact/vote/OnlineVote;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class net/mamoe/mirai/contact/vote/Vote {
@@ -1236,7 +1258,7 @@ public final class net/mamoe/mirai/contact/vote/VoteParametersBuilderKt {
 public abstract interface class net/mamoe/mirai/contact/vote/Votes : net/mamoe/mirai/utils/Streamable {
 	public fun delete (Ljava/lang/String;)Z
 	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun get (Ljava/lang/String;)Lnet/mamoe/mirai/contact/vote/OnlineVote;
+	public fun get (Ljava/lang/String;)Lnet/mamoe/mirai/contact/vote/OnlineVoteStatus;
 	public abstract fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun publish (Lnet/mamoe/mirai/contact/vote/Vote;)Lnet/mamoe/mirai/contact/vote/OnlineVote;
 	public abstract fun publish (Lnet/mamoe/mirai/contact/vote/Vote;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

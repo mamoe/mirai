@@ -147,12 +147,12 @@ internal data class GroupVoteDetail(
     @Serializable
     data class Option(
         @SerialName("c") val content: GroupVoteContent = GroupVoteContent(),
-        @SerialName("sn") val sn: Int = 0
+        @SerialName("sn") val selected: Int = 0
     )
 
     @Serializable
     data class VoteResult(
-        @SerialName("o") val option: List<Int> = emptyList(),
+        @SerialName("o") val options: List<Int> = emptyList(),
         @SerialName("t") val time: Long = 0,
         @SerialName("u") val uid: Long = 0
     )

@@ -23,5 +23,6 @@ internal class OnlineVoteImpl(
     override val endTime: Long,
     override val title: String,
     override val options: List<String>,
+    override val select: List<Int>,
     override val parameters: VoteParameters
 ) : OnlineVote
