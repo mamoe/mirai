@@ -22,8 +22,10 @@ import net.mamoe.mirai.mock.internal.serverfs.MockServerFileSystemImpl
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.md5
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import java.io.ByteArrayInputStream
 import java.nio.file.FileSystem
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -97,4 +99,26 @@ internal class AbsoluteFileTest : MockBotTestBase() {
         assertEquals(true, file.exists())
         assertNotEquals(null, folder.resolveFiles("test.txt").firstOrNull())
     }
+
+    @Test
+    fun testMD5() = runTest {
+        val bytes = "test".toByteArray()
+        val file = bytes.toExternalResource().use { res ->
+            files.root.uploadNewFile("/test.txt", res)
+        }
+        assertEquals(bytes.md5().joinToString(" "), file.md5.joinToString(" "))
+    }
+
+    @Test
+    fun testMD5WithStream() = runTest {
+        val bytes = "test".toByteArray()
+        ByteArrayInputStream(bytes).use { stream ->
+            val absFile = stream.toExternalResource().use { res ->
+                files.root.uploadNewFile("/test.txt", res)
+            }
+            assertEquals(bytes.md5().joinToString(" "), absFile.md5.joinToString(" "))
+        }
+
+    }
+
 }

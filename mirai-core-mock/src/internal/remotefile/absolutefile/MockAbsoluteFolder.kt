@@ -43,11 +43,10 @@ private fun MockServerRemoteFile.toMockAbsFolder(files: MockRemoteFiles): Absolu
 
 private fun MockServerRemoteFile.toMockAbsFile(
     files: MockRemoteFiles,
-    md5: ByteArray = byteArrayOf(),
-    sha1: ByteArray = byteArrayOf()
+    md5: ByteArray = asExternalResource().use { it.md5 },
+    sha1: ByteArray = asExternalResource().use { it.sha1 }
 ): AbsoluteFile {
     val parent = this.parent.toMockAbsFolder(files)
-    // todo md5 and sha
     return MockAbsoluteFile(
         sha1,
         md5,
