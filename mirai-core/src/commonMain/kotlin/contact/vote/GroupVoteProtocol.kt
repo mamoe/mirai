@@ -302,13 +302,12 @@ internal suspend fun QQAndroidBot.uploadGroupVoteImage(
 
         setBody(
             MultiPartFormDataContent(formData {
-                append("qid", groupCode)
-                append("bkn", client.wLoginSigInfo.bkn)
+                append("qid".quote(), groupCode)
+                append("bkn".quote(), client.wLoginSigInfo.bkn)
+                append("source".quote(), "qunvote")
+                append("m".quote(), 0)
 
-                append("m", 0)
-                append("source", "qunvote")
-                append("filename", "uploadpic_${currentTimeMillis()}.jpg")
-                append("pic64_up") {
+                append("pic_up".quote(), "uploadpic_${currentTimeMillis()}.jpg".quote()) {
                     writeResource(resource)
                 }
             })

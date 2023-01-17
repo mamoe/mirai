@@ -46,7 +46,7 @@ internal class VotesImpl(
             bot,
             listOf("client.qun.qq.com" to 80),
             resource.size,
-            ResourceKind.ANNOUNCEMENT_IMAGE,
+            ResourceKind.VOTE_IMAGE,
             ChannelKind.HTTP
         ) { _, _ ->
             // use common logging
