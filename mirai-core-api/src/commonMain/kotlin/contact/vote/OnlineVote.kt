@@ -65,6 +65,11 @@ public interface OnlineVote : Vote {
     public val endTime: Long
 
     /**
+     * 投票详情页 URL
+     */
+    public val url: String get() = "https://client.qun.qq.com/qqweb/m/qun/vote/detail.html?fid=${fid}&groupuin=${group.id}"
+
+    /**
      * 各个选项的投票数
      * @see options
      */
@@ -80,16 +85,13 @@ public interface OnlineVote : Vote {
     public suspend fun delete(): Boolean = group.votes.delete(fid = fid)
 
     /**
-     * 获取 选项的投票者
+     * 获取 选项的投票记录
      *
-     * @param option 选项序号
-     * @return 群成员列表
+     * @return 投票记录列表
      *
      * @throws IllegalStateException 当协议异常时抛出
-     *
-     * @see Votes.members
      */
-    public suspend fun members(option: Int): List<NormalMember> = TODO()
+    public suspend fun records(): List<OnlineVoteRecord> = group.votes.get(fid = fid)?.records.orEmpty()
 }
 
 /**

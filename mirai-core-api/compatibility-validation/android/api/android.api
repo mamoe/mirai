@@ -1121,9 +1121,10 @@ public abstract interface class net/mamoe/mirai/contact/vote/OnlineVote : net/ma
 	public abstract fun getSelect ()Ljava/util/List;
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
 	public abstract fun getSenderId ()J
-	public fun members (I)Ljava/util/List;
-	public fun members (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun members$suspendImpl (Lnet/mamoe/mirai/contact/vote/OnlineVote;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getUrl ()Ljava/lang/String;
+	public fun records ()Ljava/util/List;
+	public fun records (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun records$suspendImpl (Lnet/mamoe/mirai/contact/vote/OnlineVote;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/contact/vote/OnlineVoteKt {
