@@ -109,6 +109,15 @@ kotlin {
         }
 
 
+        // Kt bignum
+
+        findByName("jvmBaseMain")?.apply {
+            dependencies {
+                relocateImplementation(`kt-bignum_relocated`)
+            }
+        }
+
+
         // Ktor
 
         findByName("commonMain")?.apply {
