@@ -63,12 +63,16 @@ internal class ForwardMessageProtocol : MessageProtocol() {
             forward: ForwardMessage,
             contact: AbstractContact
         ) {
-            check(forward.nodeList.size <= 200) {
+            check(forward.nodeList.size <= MAX_NODES) {
                 throw MessageTooLargeException(
                     contact, forward, forward,
                     "ForwardMessage allows up to 200 nodes, but found ${forward.nodeList.size}"
                 )
             }
         }
+    }
+    
+    companion object {
+        const val MAX_NODES : Int = 200
     }
 }
