@@ -11,7 +11,9 @@ package net.mamoe.mirai.mock.test
 
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.mock.MockBotFactory
+import net.mamoe.mirai.mock.database.queryMessageInfo
 import net.mamoe.mirai.mock.internal.MockBotImpl
 import net.mamoe.mirai.mock.utils.MockActionsScope
 import net.mamoe.mirai.mock.utils.broadcastMockEvents
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.TestInstance
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.test.fail
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 internal open class MockBotTestBase : TestBase() {
@@ -53,6 +56,19 @@ internal open class MockBotTestBase : TestBase() {
 
         listener.cancel()
         return result
+    }
+
+
+    internal fun assertMessageNotAvailable(source: MessageSource) {
+        if (bot.msgDatabase.queryMessageInfo(source.ids, source.internalIds) != null) {
+            fail("Require message $source no longer available.")
+        }
+    }
+
+    internal fun assertMessageAvailable(source: MessageSource) {
+        if (bot.msgDatabase.queryMessageInfo(source.ids, source.internalIds) == null) {
+            fail("Require message $source available.")
+        }
     }
 
 }
