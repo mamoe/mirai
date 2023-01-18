@@ -209,6 +209,8 @@ internal abstract class JvmPluginInternal(
             pluginStatus.value = PluginStatus.CRASHED_LOAD_ERROR
 
             cancel(CancellationException("Exception while loading plugin", e))
+
+            throw e
         }
     }
 
