@@ -313,7 +313,7 @@ internal class MessagingTest : MockBotTestBase() {
 
                 val group = bot.addGroup(18451444229, "owner group")
                 val owner = group.addMember(MockMemberInfoBuilder.create {
-                    uin(184).permission(MemberPermission.OWNER)
+                    uin(184554).permission(MemberPermission.OWNER)
                 })
                 val administrator = group.addMember(MockMemberInfoBuilder.create {
                     uin(184).permission(MemberPermission.ADMINISTRATOR)
