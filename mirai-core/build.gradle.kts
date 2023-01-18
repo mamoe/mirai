@@ -41,6 +41,7 @@ kotlin {
                 api(`kotlinx-serialization-json`)
                 api(`kotlinx-coroutines-core`)
 
+                implementation(`kt-bignum`)
                 implementation(project(":mirai-core-utils"))
                 implementation(`kotlinx-serialization-protobuf`)
                 implementation(`kotlinx-atomicfu`)
@@ -104,6 +105,14 @@ kotlin {
 
         findByName("nativeMain")?.apply {
             dependencies {
+            }
+        }
+
+
+        // Kt bignum
+        findByName("jvmBaseMain")?.apply {
+            dependencies {
+                relocateImplementation(`kt-bignum_relocated`)
             }
         }
 

@@ -13,7 +13,7 @@
 package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.core.*
-import io.ktor.utils.io.streams.asInput
+import io.ktor.utils.io.streams.*
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -50,6 +50,10 @@ public fun InputStream.sha1(): ByteArray {
     return digest("SHA-1")
 }
 
+public fun InputStream.sha256(): ByteArray {
+    return digest("SHA-256")
+}
+
 public actual fun ByteArray.md5(offset: Int, length: Int): ByteArray {
     checkOffsetAndLength(offset, length)
     return MessageDigest.getInstance("MD5").apply { update(this@md5, offset, length) }.digest()
@@ -60,6 +64,12 @@ public actual fun ByteArray.md5(offset: Int, length: Int): ByteArray {
 public actual fun ByteArray.sha1(offset: Int, length: Int): ByteArray {
     checkOffsetAndLength(offset, length)
     return MessageDigest.getInstance("SHA-1").apply { update(this@sha1, offset, length) }.digest()
+}
+
+@JvmOverloads
+public actual fun ByteArray.sha256(offset: Int, length: Int): ByteArray {
+    checkOffsetAndLength(offset, length)
+    return MessageDigest.getInstance("SHA-256").apply { update(this@sha256, offset, length) }.digest()
 }
 
 @JvmOverloads

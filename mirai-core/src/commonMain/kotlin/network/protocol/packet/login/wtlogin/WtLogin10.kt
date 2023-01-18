@@ -43,7 +43,7 @@ internal object WtLogin10 : WtLoginExt {
                 0x0810
             ) {
                 writeShort(11) // subCommand
-                writeShort(17)
+                writeShort(18)
                 t100(appId, subAppId, client.appClientVersion, client.ssoVersion, mainSigMap)
                 t10a(client.wLoginSigInfo.tgt)
                 t116(client.miscBitMap, client.subSigMap)
@@ -80,6 +80,7 @@ internal object WtLogin10 : WtLoginExt {
                 t188(client.device.androidId)
                 t194(client.device.imsiMd5)
                 t511()
+                t202(client.device.wifiBSSID, client.device.wifiSSID)
                 //t544()
 
             }

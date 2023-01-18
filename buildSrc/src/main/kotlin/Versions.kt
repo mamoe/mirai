@@ -267,6 +267,9 @@ const val `netty-transport` = "io.netty:netty-transport:${Versions.netty}"
 const val `netty-buffer` = "io.netty:netty-buffer:${Versions.netty}"
 const val `bouncycastle` = "org.bouncycastle:bcprov-jdk15on:${Versions.bouncycastle}"
 
+const val `kt-bignum` = "com.ionspin.kotlin:bignum:0.3.7"
+val `kt-bignum_relocated` = RelocatedDependency(`kt-bignum`, "com.ionspin.kotlin.bignum")
+
 const val `maven-resolver-api` = "org.apache.maven.resolver:maven-resolver-api:${Versions.mavenArtifactResolver}"
 const val `maven-resolver-impl` = "org.apache.maven.resolver:maven-resolver-impl:${Versions.mavenArtifactResolver}"
 const val `maven-resolver-connector-basic` =
