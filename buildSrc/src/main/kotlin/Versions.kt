@@ -263,6 +263,9 @@ const val `android-runtime` = "com.google.android:android:${Versions.android}"
 const val `netty-all` = "io.netty:netty-all:${Versions.netty}"
 const val `bouncycastle` = "org.bouncycastle:bcprov-jdk15on:${Versions.bouncycastle}"
 
+const val `kt-bignum` = "com.ionspin.kotlin:bignum:0.3.7"
+val `kt-bignum_relocated` = RelocatedDependency(`kt-bignum`, "com.ionspin.kotlin.bignum")
+
 const val `maven-resolver-api` = "org.apache.maven.resolver:maven-resolver-api:${Versions.mavenArtifactResolver}"
 const val `maven-resolver-impl` = "org.apache.maven.resolver:maven-resolver-impl:${Versions.mavenArtifactResolver}"
 const val `maven-resolver-connector-basic` =

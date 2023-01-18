@@ -275,6 +275,15 @@ internal fun BytePacketBuilder.t104(
     }
 }
 
+internal fun BytePacketBuilder.t547(
+    t547Data: ByteArray
+) {
+    writeShort(0x547)
+    writeShortLVPacket {
+        writeFully(t547Data)
+    }
+}
+
 internal fun BytePacketBuilder.t174(
     t174Data: ByteArray
 ) {

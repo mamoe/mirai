@@ -24,6 +24,7 @@ dependencies {
     api(project(":mirai-core-api"))
     api(project(":mirai-core-utils"))
 
+    relocateImplementation(project, `kt-bignum_relocated`)
     relocateImplementation(project, `ktor-client-core_relocated`)
     relocateImplementation(project, `ktor-client-okhttp_relocated`)
     relocateImplementation(project, `ktor-io_relocated`)

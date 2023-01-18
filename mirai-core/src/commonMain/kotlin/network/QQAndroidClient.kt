@@ -166,6 +166,7 @@ internal open class QQAndroidClient(
     var reserveUinInfo: ReserveUinInfo? = null
     var t402: ByteArray? = null
     lateinit var t104: ByteArray
+    var t547: ByteArray? = null
 }
 
 internal val QQAndroidClient.apkId: ByteArray get() = "com.tencent.mobileqq".toByteArray()
