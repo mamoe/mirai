@@ -11,17 +11,11 @@ package net.mamoe.mirai.mock
 
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
-import net.mamoe.mirai.message.data.OnlineMessageSource
-import net.mamoe.mirai.message.data.source
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.mock.contact.MockFriend
 import net.mamoe.mirai.mock.contact.MockNormalMember
 import net.mamoe.mirai.mock.contact.MockStranger
@@ -125,42 +119,99 @@ public object MockActions {
      */
     @JvmStatic
     public suspend fun fireMessageRecalled(source: MessageSource, operator: User? = null) {
-        if (source is OnlineMessageSource) {
-            val from = source.sender
-            when (val target = source.target) {
-                is Group -> {
-                    from.bot.mock().msgDatabase.removeMessageInfo(source)
-                    MessageRecallEvent.GroupRecall(
-                        source.bot,
-                        from.id,
-                        source.ids,
-                        source.internalIds,
-                        source.time,
-                        operator?.cast(),
-                        target,
-                        when (from) {
-                            is Bot -> target.botAsMember
-                            else -> from.cast()
-                        }
-                    ).broadcast()
-                    return
+        fun notSupported(): Nothing = error("Unsupported message source kind: ${source.kind}: ${source.javaClass}")
+
+        val bot: MockBot = when {
+            source is OnlineMessageSource -> source.bot.mock()
+            operator != null -> operator.bot.mock()
+            else -> source.botOrNull?.mock() ?: error("Cannot find bot from source or operator")
+        }
+
+        val sourceKind = source.kind
+
+        fun target(): ContactOrBot = when {
+            source is OnlineMessageSource -> source.target
+            source.targetId == bot.id -> bot
+
+            sourceKind == MessageSourceKind.FRIEND -> bot.getFriendOrFail(source.targetId)
+            sourceKind == MessageSourceKind.STRANGER -> bot.getStrangerOrFail(source.targetId)
+            sourceKind == MessageSourceKind.TEMP -> error("Cannot detect message target from TEMP source kind")
+            sourceKind == MessageSourceKind.GROUP -> bot.getGroupOrFail(source.targetId)
+
+            else -> notSupported()
+        }
+
+        fun sender(): ContactOrBot = when {
+            source is OnlineMessageSource -> source.sender
+            source.fromId == bot.id -> bot
+
+
+            sourceKind == MessageSourceKind.FRIEND -> bot.getFriendOrFail(source.fromId)
+            sourceKind == MessageSourceKind.STRANGER -> bot.getStrangerOrFail(source.fromId)
+            sourceKind == MessageSourceKind.TEMP -> error("Cannot detect message sender from TEMP source kind")
+            sourceKind == MessageSourceKind.GROUP -> throw AssertionError("Message from group")
+
+            else -> notSupported()
+        }
+
+        fun subject(): Contact = when {
+            source is OnlineMessageSource -> source.subject
+
+            source.fromId == bot.id -> target() as Contact
+            sourceKind == MessageSourceKind.GROUP -> target() as Contact
+
+            else -> sender() as Contact
+        }
+
+
+        when (sourceKind) {
+            MessageSourceKind.GROUP -> {
+                val sender = sender()
+                val group = subject() as Group
+
+                val operator0 = when {
+                    operator === bot -> null
+                    operator === group.botAsMember -> null
+
+                    operator == null -> sender.cast()
+                    operator is Member -> operator
+
+                    else -> error("Provided operator $operator(${operator.javaClass}) not a member")
                 }
 
-                is Friend -> {
-                    from.bot.mock().msgDatabase.removeMessageInfo(source)
-                    MessageRecallEvent.FriendRecall(
-                        source.bot,
-                        source.ids,
-                        source.internalIds,
-                        source.time,
-                        from.id,
-                        from.cast()
-                    ).broadcast()
-                    return
-                }
+                bot.msgDatabase.removeMessageInfo(source)
+                MessageRecallEvent.GroupRecall(
+                    bot, sender.id, source.ids, source.internalIds, source.time,
+                    operator0,
+                    group,
+                    when (sender) {
+                        is Bot -> group.botAsMember
+                        else -> sender.cast()
+                    }
+                ).broadcast()
             }
+            MessageSourceKind.FRIEND -> {
+                val subject = subject() as Friend
+
+                bot.msgDatabase.removeMessageInfo(source)
+                if (source.fromId == bot.id) {
+                    return // no event
+                }
+
+                MessageRecallEvent.FriendRecall(bot, source.ids, source.internalIds, source.time, subject.id, subject)
+                    .broadcast()
+            }
+            MessageSourceKind.TEMP -> {
+                bot.mock().msgDatabase.removeMessageInfo(source)
+                // TODO: event not available
+            }
+            MessageSourceKind.STRANGER -> {
+                bot.mock().msgDatabase.removeMessageInfo(source)
+                // TODO: event not available
+            }
+
+            else -> notSupported()
         }
-        error("Unsupported message source type: ${source.javaClass}")
     }
 
     /**
