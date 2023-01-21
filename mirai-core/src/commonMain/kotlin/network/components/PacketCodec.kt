@@ -119,7 +119,15 @@ internal class PacketCodecImpl : PacketCodec {
 
             when (flag2) {
                 2 -> TEA.decrypt(buffer, DECRYPTER_16_ZERO, size)
-                1 -> TEA.decrypt(buffer, client.wLoginSigInfo.d2Key, size)
+                1 -> {
+                    TEA.decrypt(buffer, kotlin.runCatching { client.wLoginSigInfo.d2Key }.getOrElse {
+                        throw PacketCodecException(
+                            "Received packet needed d2Key to decrypt but d2Key doesn't existed, ignoring. Please report to https://github.com/mamoe/mirai/issues/new/choose if you see anything abnormal",
+                            OTHER
+                        )
+                    }, size)
+                }
+
                 0 -> buffer
                 else -> throw PacketCodecException("Unknown flag2=$flag2", PROTOCOL_UPDATED)
             }.let { decryptedData ->
@@ -139,7 +147,7 @@ internal class PacketCodecImpl : PacketCodec {
                         raw.sequenceId,
                         raw.body.withUse {
                             try {
-                                parseOicqResponse(client)
+                                parseOicqResponse(client, raw.commandName)
                             } catch (e: Throwable) {
                                 throw PacketCodecException(e, PacketCodecException.Kind.OTHER)
                             }
@@ -242,9 +250,73 @@ internal class PacketCodecImpl : PacketCodec {
 
     private fun ByteReadPacket.parseOicqResponse(
         client: SsoSession,
+        commandName: String
     ): ByteArray {
+        val qqEcdh = (client as QQAndroidClient).bot.components[EcdhInitialPublicKeyUpdater].getQQEcdh()
+        fun decrypt(encryptionMethod: Int): ByteArray {
+            return when (encryptionMethod) {
+                4 -> {
+                    val size = (this.remaining - 1).toInt()
+                    val data =
+                        TEA.decrypt(
+                            this.readBytes(),
+                            qqEcdh.initialQQShareKey,
+                            length = size
+                        )
+
+                    val peerShareKey =
+                        qqEcdh.calculateQQShareKey(Ecdh.Instance.importPublicKey(readUShortLVByteArray()))
+                    TEA.decrypt(data, peerShareKey)
+                }
+
+                3 -> {
+                    val size = (this.remaining - 1).toInt()
+                    // session
+                    TEA.decrypt(
+                        this.readBytes(),
+                        client.wLoginSigInfo.wtSessionTicketKey,
+                        length = size
+                    )
+                }
+
+                0 -> {
+                    if (client.loginState == 0) {
+                        val size = (this.remaining - 1).toInt()
+                        val byteArrayBuffer = this.readBytes(size)
+
+                        runCatching {
+                            TEA.decrypt(byteArrayBuffer, qqEcdh.initialQQShareKey, length = size)
+                        }.getOrElse {
+                            TEA.decrypt(byteArrayBuffer, client.randomKey, length = size)
+                        }
+                    } else {
+                        val size = (this.remaining - 1).toInt()
+                        TEA.decrypt(this.readBytes(), client.randomKey, length = size)
+                    }
+                }
+
+                else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")
+            }
+        }
         readByte().toInt().let {
-            check(it == 2) { "$it" }
+            if (it != 2) {
+                val fullPacketDump = copy().readBytes().toUHexString()
+                var decryptedData: String? = null;
+                if (remaining > 15) {
+                    discardExact(12)
+                    val encryptionMethod = this.readUShort().toInt()
+                    discardExact(1)
+                    decryptedData = kotlin.runCatching {
+                        decrypt(encryptionMethod).toUHexString()
+                    }.getOrNull()
+                }
+                throw PacketCodecException(
+                    "Received unknown oicq packet type = $it, command name=$commandName, ignoring. Please report to https://github.com/mamoe/mirai/issues/new/choose, \n" +
+                            "Full packet dump: $fullPacketDump" +
+                            "Decrypted data: $decryptedData",
+                    OTHER
+                )
+            }
         }
         this.discardExact(2)
         this.discardExact(2)
@@ -254,48 +326,7 @@ internal class PacketCodecImpl : PacketCodec {
         val encryptionMethod = this.readUShort().toInt()
 
         this.discardExact(1)
-        val qqEcdh =
-            (client as QQAndroidClient).bot.components[EcdhInitialPublicKeyUpdater].getQQEcdh()
-        return when (encryptionMethod) {
-            4 -> {
-                val size = (this.remaining - 1).toInt()
-                val data =
-                    TEA.decrypt(
-                        this.readBytes(),
-                        qqEcdh.initialQQShareKey,
-                        length = size
-                    )
-
-                val peerShareKey =
-                    qqEcdh.calculateQQShareKey(Ecdh.Instance.importPublicKey(readUShortLVByteArray()))
-                TEA.decrypt(data, peerShareKey)
-            }
-            3 -> {
-                val size = (this.remaining - 1).toInt()
-                // session
-                TEA.decrypt(
-                    this.readBytes(),
-                    client.wLoginSigInfo.wtSessionTicketKey,
-                    length = size
-                )
-            }
-            0 -> {
-                if (client.loginState == 0) {
-                    val size = (this.remaining - 1).toInt()
-                    val byteArrayBuffer = this.readBytes(size)
-
-                    runCatching {
-                        TEA.decrypt(byteArrayBuffer, qqEcdh.initialQQShareKey, length = size)
-                    }.getOrElse {
-                        TEA.decrypt(byteArrayBuffer, client.randomKey, length = size)
-                    }
-                } else {
-                    val size = (this.remaining - 1).toInt()
-                    TEA.decrypt(this.readBytes(), client.randomKey, length = size)
-                }
-            }
-            else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")
-        }
+        return decrypt(encryptionMethod);
     }
 
     /**
