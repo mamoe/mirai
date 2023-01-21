@@ -13,9 +13,10 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.console.internal.*
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
- * 自动登陆执行后广播的指令
+ * 自动登陆执行后广播的事件
  * @property bot 登录的BOT
  * @see MiraiConsoleImplementationBridge.doStart
  */
@@ -23,10 +24,15 @@ public sealed class AutoLoginEvent : BotEvent, ConsoleEvent, AbstractEvent() {
     /**
      * 登录成功
      */
-    public class Success(override val bot: Bot): AutoLoginEvent()
+    public class Success @MiraiInternalApi constructor(
+        override val bot: Bot
+    ) : AutoLoginEvent()
 
     /**
      * 登录失败
      */
-    public class Failure(override val bot: Bot, public val cause: Throwable): AutoLoginEvent()
+    public class Failure @MiraiInternalApi constructor(
+        override val bot: Bot,
+        public val cause: Throwable
+    ) : AutoLoginEvent()
 }

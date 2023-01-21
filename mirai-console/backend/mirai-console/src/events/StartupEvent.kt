@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.events
 import net.mamoe.mirai.console.extensions.PostStartupExtension
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.console.internal.*
+import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
  * 在 Console 启动完成后广播的事件
@@ -19,4 +20,6 @@ import net.mamoe.mirai.console.internal.*
  * @see MiraiConsoleImplementationBridge.doStart
  * @see PostStartupExtension
  */
-public class StartupEvent(public val timestamp: Long) : ConsoleEvent, AbstractEvent()
+public class StartupEvent @MiraiInternalApi constructor(
+    public val timestamp: Long
+) : ConsoleEvent, AbstractEvent()
