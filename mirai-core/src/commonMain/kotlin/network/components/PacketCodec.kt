@@ -298,26 +298,28 @@ internal class PacketCodecImpl : PacketCodec {
                 else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")
             }
         }
-        readByte().toInt().let {
-            if (it != 2) {
-                val fullPacketDump = copy().readBytes().toUHexString()
-                var decryptedData: String? = null;
-                if (remaining > 15) {
-                    discardExact(12)
-                    val encryptionMethod = this.readUShort().toInt()
-                    discardExact(1)
-                    decryptedData = kotlin.runCatching {
-                        decrypt(encryptionMethod).toUHexString()
-                    }.getOrNull()
-                }
-                throw PacketCodecException(
-                    "Received unknown oicq packet type = $it, command name=$commandName, ignoring. Please report to https://github.com/mamoe/mirai/issues/new/choose, \n" +
-                            "Full packet dump: $fullPacketDump" +
-                            "Decrypted data: $decryptedData",
-                    OTHER
-                )
+
+        val packetType = readByte().toInt();
+        if (packetType != 2) {
+            val fullPacketDump = copy().readBytes().toUHexString()
+            var decryptedData: String? = null;
+            if (remaining > 15) {
+                discardExact(12)
+                val encryptionMethod = this.readUShort().toInt()
+                discardExact(1)
+                decryptedData = kotlin.runCatching {
+                    decrypt(encryptionMethod).toUHexString()
+                }.getOrNull()
             }
+                throw PacketCodecException(
+                    "Received unknown oicq packet type = $packetType, command name = $commandName, ignoring..." +
+                            "\nPlease report this message to https://github.com/mamoe/mirai/issues/new/choose, \n" +
+                            "Full packet dump: $fullPacketDump\n" +
+                            "Decrypted data (Do not provide it if you haven't change password!!!): $decryptedData",
+                    PROTOCOL_UPDATED
+                )
         }
+
         this.discardExact(2)
         this.discardExact(2)
         this.readUShort()
