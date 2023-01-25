@@ -89,6 +89,10 @@ public interface User : Contact, UserOrBot, CoroutineScope {
     /**
      * 查询用户信息
      *
+     * 此方法会重新向服务器发起查询，查询需要时间
+     * 请不要一次性对大量用户发起此操作，比如对2000人群里每一个人执行queryProfile()
+     * 这是极其耗时的
+     *
      * @since 2.1
      */
     public suspend fun queryProfile(): UserProfile = Mirai.queryProfile(bot, this.id)
