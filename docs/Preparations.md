@@ -46,7 +46,7 @@
 
 ### Kotlin
 
-Kotlin 是[让开发人员更快乐的一门现代编程语言](https://www.kotlincn.net/)，由 [IntelliJ IDEA](https://www.jetbrains.com/idea/) 的开发公司 [JetBrains](https://www.jetbrains.com/) 维护，被 Google 推举为 Android 首选编程语言。
+[Kotlin](https://kotl.in) 是让开发人员更快乐的一门现代编程语言，由 [IntelliJ IDEA](https://www.jetbrains.com/idea/) 的开发公司 [JetBrains](https://www.jetbrains.com/) 维护，被 Google 推举为 Android 首选编程语言。
 
 使用 Mirai 是一个不错的学习 Kotlin 机会，使用者有兴趣可以在 [官方中文文档](https://www.kotlincn.net/docs/reference/) 学习 Kotlin。
 
