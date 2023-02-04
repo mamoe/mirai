@@ -457,4 +457,20 @@ internal class MockGroupTest : MockBotTestBase() {
             }
         }
     }
+
+    @Test
+    fun testHonorMember() = runTest {
+        val group = bot.addGroup(1, "")
+        val member = group.addMember(2, "")
+        assertEquals(emptyList(), group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records)
+
+        group.honorMembers[GroupHonorType.TALKATIVE] = member
+        assertEquals(member, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).current!!.member!!)
+        assertEquals(emptyList(), group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records)
+
+        group.honorMembers[GroupHonorType.TALKATIVE] = group.botAsMember
+        assertEquals(group.botAsMember, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).current!!.member!!)
+        assertEquals(1, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records.size)
+        assertEquals(member, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records[0].member!!)
+    }
 }

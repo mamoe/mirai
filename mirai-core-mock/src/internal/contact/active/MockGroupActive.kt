@@ -12,10 +12,7 @@ package net.mamoe.mirai.mock.internal.contact.active
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.active.ActiveChart
-import net.mamoe.mirai.contact.active.ActiveHonorList
-import net.mamoe.mirai.contact.active.ActiveRankRecord
-import net.mamoe.mirai.contact.active.ActiveRecord
+import net.mamoe.mirai.contact.active.*
 import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.mock.contact.active.MockGroupActive
@@ -82,8 +79,32 @@ internal class MockGroupActiveImpl(
 
     private var honorHistories: MutableMap<GroupHonorType, ActiveHonorList> = ConcurrentHashMap()
 
+    @Suppress("INVISIBLE_MEMBER")
     override suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList {
-        return honorHistories.getOrElse(type) { ActiveHonorList(type, null, listOf()) }
+        val current = this.group.honorMembers[type]
+        val old = honorHistories[type]
+        if (current == null) {
+            if (old == null) {
+                honorHistories[type] = ActiveHonorList(type, null, emptyList())
+            } else {
+                honorHistories[type] = ActiveHonorList(type, null, old.current?.let {
+                    old.records.plus(it)
+                } ?: old.records)
+            }
+        } else {
+            val info = ActiveHonorInfo(current.nameCard, current.id, current.avatarUrl, current, 0, 0, 0)
+            if (old == null) {
+                honorHistories[type] = ActiveHonorList(type, info, emptyList())
+            } else {
+                if (old.current?.memberId != info.memberId) {
+                    honorHistories[type] =
+                        ActiveHonorList(type, info, old.current?.let {
+                            old.records.plus(it)
+                        } ?: old.records)
+                }
+            }
+        }
+        return honorHistories[type]!!
     }
 
     @Volatile
