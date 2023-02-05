@@ -239,7 +239,7 @@ protected constructor(
 
     override fun registerBefore(processor: P): ProcessorPipeline.DisposableRegistry {
         val box = ProcessorBox(processor)
-        processors.add(box)
+        processors.addFirst(box)
         return ProcessorPipeline.DisposableRegistry {
             processors.remove(box)
         }
