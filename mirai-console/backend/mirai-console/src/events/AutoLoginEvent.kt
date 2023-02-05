@@ -16,9 +16,10 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
- * 自动登陆执行后广播的事件
+ * 自动登录执行后广播的事件
  * @property bot 登录的BOT
  * @see MiraiConsoleImplementationBridge.doStart
+ * @since 2.15
  */
 public sealed class AutoLoginEvent : BotEvent, ConsoleEvent, AbstractEvent() {
     /**

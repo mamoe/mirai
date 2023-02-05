@@ -19,6 +19,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  * @property timestamp 启动完成的时间戳
  * @see MiraiConsoleImplementationBridge.doStart
  * @see PostStartupExtension
+ * @since 2.15
  */
 public class StartupEvent @MiraiInternalApi constructor(
     public val timestamp: Long
