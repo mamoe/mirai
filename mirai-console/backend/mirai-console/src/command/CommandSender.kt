@@ -134,11 +134,11 @@ import kotlin.coroutines.CoroutineContext
  *                                   |                      +------+------------+---------------+                     |
  *                                   |                             |                            |                     |
  *                                   |                             |                            |                     |      }
- *                           FriendCommandSender          MemberCommandSender           TempCommandSender             |      } 二级子类
+ *                           FriendCommandSender          MemberCommandSender         GroupTempCommandSender          |      } 二级子类
  *                                   ↑                             ↑                            ↑                     |      }
  *                                   |                             |                            |                     |
  *                                   |                             |                            |                     |      }
- *                      FriendCommandSenderOnMessage  MemberCommandSenderOnMessage  TempCommandSenderOnMessage        |      } 三级子类
+ *                      FriendCommandSenderOnMessage  MemberCommandSenderOnMessage  GroupTempCommandSenderOnMessage   |      } 三级子类
  *                                   |                             |                            |                     |      }
  *                                   |                             |                            |                     |
  *                                   +-----------------------------+----------------------------+---------------------+

@@ -24,6 +24,9 @@ public fun String.sha1(): ByteArray = toByteArray().sha1()
 
 public expect fun ByteArray.sha1(offset: Int = 0, length: Int = size - offset): ByteArray
 
+public fun String.sha256(): ByteArray = toByteArray().sha256()
+
+public expect fun ByteArray.sha256(offset: Int = 0, length: Int = size - offset): ByteArray
 
 ///////////////////////////////////////////////////////////////////////////
 // How to choose 'inflate', 'inflateAllAvailable', 'InflateInput'?

@@ -15,6 +15,9 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.events.MessagePostSendEvent
 import net.mamoe.mirai.event.events.MessagePreSendEvent
+import org.junit.jupiter.api.DynamicContainer
+import org.junit.jupiter.api.DynamicNode
+import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.fail
 import java.net.URL
 import kotlin.reflect.jvm.jvmName
@@ -45,6 +48,17 @@ internal open class TestBase {
 
     internal inline fun <T> T.runAndAssertFails(block: T.() -> Unit) {
         assertFails { block() }
+    }
+
+    internal fun dynamicTest(displayName: String, action: suspend CoroutineScope.() -> Unit): DynamicTest {
+        return DynamicTest.dynamicTest(displayName) { runBlocking(block = action) }
+    }
+
+    internal fun dynamicContainer(
+        displayName: String,
+        action: suspend CoroutineScope.() -> Iterable<DynamicNode>
+    ): DynamicContainer {
+        return DynamicContainer.dynamicContainer(displayName, runBlocking(block = action))
     }
 
 }
