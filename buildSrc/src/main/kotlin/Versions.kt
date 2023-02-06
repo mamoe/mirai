@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 object Versions {
     val project = System.getenv("mirai.build.project.version")?.takeIf { it.isNotBlank() }
         ?: System.getProperty("mirai.build.project.version")?.takeIf { it.isNotBlank() }
-        ?: /*PROJECT_VERSION_START*/"2.14.0"/*PROJECT_VERSION_END*/
+        ?: /*PROJECT_VERSION_START*/"2.15.0"/*PROJECT_VERSION_END*/
     // DO NOT ADD SPACE BETWEEN!
 
     val core get() = project
