@@ -211,7 +211,7 @@ ___  ____           _   _____                       _
                         */
                         append("\n\n")
 
-                        val textA = """[ Mirai consosle $version ]"""
+                        val textA = """[ Mirai console $version ]"""
                         val logoLength = 94
                         lightBlue()
                         val barlength = logoLength - textA.length
