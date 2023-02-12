@@ -122,7 +122,10 @@ internal open class MultiFilePluginDataStorageImpl(
                     json.decodeFromString(instance.updaterSerializer, string) // test json
                 }
             }.getOrElse {
-                throw IllegalStateException("Exception while saving $instance, saveName=${instance.saveName} in json format", it)
+                throw IllegalStateException(
+                    "Exception while saving $instance, saveName=${instance.saveName} in json format",
+                    it
+                )
             }
         )
 //        logger.verbose { "Successfully saved PluginData: ${instance.saveName} (containing ${instance.castOrNull<AbstractPluginData>()?.valueNodes?.size} properties)" }
