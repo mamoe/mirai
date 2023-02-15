@@ -57,9 +57,8 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
     }
 
     override val isSliderCaptchaSupported: Boolean get() = true
-
-    override val qrCodeLoginListener: QRCodeLoginListener =
-        object : QRCodeLoginListener {
+    override fun createQRCodeLoginListener(bot: Bot): QRCodeLoginListener {
+        return object : QRCodeLoginListener {
             override fun onFetchQRCode(bot: Bot, data: ByteArray) {
                 val logger = loggerSupplier(bot)
                 val tempFile: File = File.createTempFile(
@@ -77,7 +76,10 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
                     logger.info { "[QRCodeLogin] Displaying qrcode image. If not clear, view file ${tempFile.absolutePath}." }
                 } catch (e: Exception) {
                     logger.warning("[QRCodeLogin] 无法写出二维码图片. 请尽量关闭终端个性化样式后扫描二维码字符图片", e)
-                    logger.warning("[QRCodeLogin] Failed to export qrcode image. Please try to scan the char-image after disabling custom terminal style indeed.", e)
+                    logger.warning(
+                        "[QRCodeLogin] Failed to export qrcode image. Please try to scan the char-image after disabling custom terminal style indeed.",
+                        e
+                    )
                 }
 
                 tempFile.inputStream().use { stream ->
@@ -99,31 +101,36 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
 
             override fun onStatusChanged(bot: Bot, state: QRCodeLoginListener.State) {
                 val logger = loggerSupplier(bot)
-                logger.info { buildString {
-                    append("[QRCodeLogin] ")
-                    when(state) {
-                        QRCodeLoginListener.State.WAITING_FOR_SCAN -> append("等待扫描二维码中")
-                        QRCodeLoginListener.State.WAITING_FOR_CONFIRM -> append("扫描完成，请在手机 QQ 确认登录")
-                        QRCodeLoginListener.State.CANCELLED -> append("已取消登录，将会重新获取二维码")
-                        QRCodeLoginListener.State.TIMEOUT -> append("扫描超时，将会重新获取二维码")
-                        QRCodeLoginListener.State.CONFIRMED -> append("已确认登录")
-                        else -> append("default state")
+                logger.info {
+                    buildString {
+                        append("[QRCodeLogin] ")
+                        when (state) {
+                            QRCodeLoginListener.State.WAITING_FOR_SCAN -> append("等待扫描二维码中")
+                            QRCodeLoginListener.State.WAITING_FOR_CONFIRM -> append("扫描完成，请在手机 QQ 确认登录")
+                            QRCodeLoginListener.State.CANCELLED -> append("已取消登录，将会重新获取二维码")
+                            QRCodeLoginListener.State.TIMEOUT -> append("扫描超时，将会重新获取二维码")
+                            QRCodeLoginListener.State.CONFIRMED -> append("已确认登录")
+                            else -> append("default state")
+                        }
                     }
-                } }
-                logger.info { buildString {
-                    append("[QRCodeLogin] ")
-                    when(state) {
-                        QRCodeLoginListener.State.WAITING_FOR_SCAN -> append("Waiting for scanning qrcode.")
-                        QRCodeLoginListener.State.WAITING_FOR_CONFIRM -> append("Scan complete. Please confirm login.")
-                        QRCodeLoginListener.State.CANCELLED -> append("Login cancelled, we will try to fetch qrcode again.")
-                        QRCodeLoginListener.State.TIMEOUT -> append("Timeout scanning, we will try to fetch qrcode again.")
-                        QRCodeLoginListener.State.CONFIRMED -> append("Login confirmed.")
-                        else -> append("default state")
+                }
+                logger.info {
+                    buildString {
+                        append("[QRCodeLogin] ")
+                        when (state) {
+                            QRCodeLoginListener.State.WAITING_FOR_SCAN -> append("Waiting for scanning qrcode.")
+                            QRCodeLoginListener.State.WAITING_FOR_CONFIRM -> append("Scan complete. Please confirm login.")
+                            QRCodeLoginListener.State.CANCELLED -> append("Login cancelled, we will try to fetch qrcode again.")
+                            QRCodeLoginListener.State.TIMEOUT -> append("Timeout scanning, we will try to fetch qrcode again.")
+                            QRCodeLoginListener.State.CONFIRMED -> append("Login confirmed.")
+                            else -> append("default state")
+                        }
                     }
-                } }
+                }
             }
 
         }
+    }
 
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? = loginSolverLock.withLock {
         val logger = loggerSupplier(bot)

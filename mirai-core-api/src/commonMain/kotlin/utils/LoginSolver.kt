@@ -58,7 +58,9 @@ public abstract class LoginSolver {
      * @see QRCodeLoginListener
      * @since 2.15
      */
-    public open val qrCodeLoginListener: QRCodeLoginListener? = null
+    public open fun createQRCodeLoginListener(bot: Bot): QRCodeLoginListener {
+        throw UnsupportedSmsLoginException("This login session requires QRCode login, but current LoginSolver($this) does not support it. Please override `LoginSolver.createQRCodeLoginListener`.")
+    }
 
     /**
      * 处理滑动验证码.
