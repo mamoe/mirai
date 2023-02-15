@@ -49,7 +49,8 @@ internal class QRCodeLoginProcessorImpl(
     private var state by atomic(LoginSolver.QRCodeLoginListener.State.DEFAULT)
 
     private suspend fun requestQRCode(handler: NetworkHandler, client: QQAndroidClient) : WtLogin.TransEmp.TransEmpResponse.FetchQRCode {
-        val resp = handler.sendAndExpect(WtLogin.TransEmp.FetchQRCode(client))
+        logger.debug { "requesting qrcode." }
+        val resp = handler.sendAndExpect(WtLogin.TransEmp.FetchQRCode(client), attempts = 1)
         check(resp is WtLogin.TransEmp.TransEmpResponse.FetchQRCode) { "Cannot fetch qrcode, resp=$resp" }
         listener.onFetchQRCode(resp.imageData)
         return resp
@@ -60,7 +61,8 @@ internal class QRCodeLoginProcessorImpl(
         client: QQAndroidClient,
         sig: ByteArray
     ) : WtLogin.TransEmp.TransEmpResponse {
-        val resp = handler.sendAndExpect(WtLogin.TransEmp.QueryQRCodeStatus(client, sig))
+        logger.debug { "querying qrcode state. sig=${sig.toUHexString()}" }
+        val resp = handler.sendAndExpect(WtLogin.TransEmp.QueryQRCodeStatus(client, sig), attempts = 1, timeout = 500)
         check(
             resp is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus ||
             resp is WtLogin.TransEmp.TransEmpResponse.QRCodeConfirmed
@@ -80,15 +82,20 @@ internal class QRCodeLoginProcessorImpl(
         main@ while (true) { // TODO: add new bot config property to set times of fetching qrcode
             val qrCodeData = try {
                 requestQRCode(handler, client)
-            } catch (e: IllegalStateException) {
-                logger.warning(e)
+            } catch (e: Throwable) {
+                if (e is IllegalStateException) {
+                    logger.warning(e)
+                }
                 continue@main
             }
             state@ while (true) {
                 val status = try {
                     queryQRCodeStatus(handler, client, qrCodeData.sig)
-                } catch (e: IllegalStateException) {
-                    logger.warning(e)
+                } catch (e: Throwable) {
+                    if (e is IllegalStateException) {
+                        logger.warning(e)
+                    }
+                    delay(5000) // TODO: add new bot config property to set interval of querying qrcode state
                     continue@state
                 }
 
@@ -103,12 +110,11 @@ internal class QRCodeLoginProcessorImpl(
                             logger.warning(e)
                             break@state
                         }
-                        else -> { } // WAITING_FOR_SCAN or WAITING_FOR_CONFIRM
+                        else -> { delay(5000) } // WAITING_FOR_SCAN or WAITING_FOR_CONFIRM
                     }
                     // status is FetchQRCode, which is unreachable.
                     else -> { break@state }
                 }
-                delay(5000) // TODO: add new bot config property to set interval of querying qrcode state
             }
         }
     }
