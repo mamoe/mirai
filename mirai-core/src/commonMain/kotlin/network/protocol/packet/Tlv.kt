@@ -82,6 +82,26 @@ internal fun BytePacketBuilder.t8(
     }
 }
 
+internal fun BytePacketBuilder.t16(
+    ssoVersion: Int,
+    subAppId: Long,
+    guid: ByteArray,
+    apkId: ByteArray,
+    apkVersionName: ByteArray,
+    apkSignatureMd5: ByteArray
+) {
+    writeShort(0x16)
+    writeShortLVPacket {
+        writeInt(ssoVersion)
+        writeInt(16)
+        writeInt(subAppId.toInt())
+        writeFully(guid)
+        writeShortLVByteArray(apkId)
+        writeShortLVByteArray(apkVersionName)
+        writeShortLVByteArray(apkSignatureMd5)
+    }
+}
+
 internal fun BytePacketBuilder.t18(
     appId: Long,
     appClientVersion: Int = 0,
@@ -98,6 +118,80 @@ internal fun BytePacketBuilder.t18(
         writeShort(constant1_always_0.toShort())
         writeShort(0)
     } shouldEqualsTo 22
+}
+
+internal fun BytePacketBuilder.t1b(
+    micro: Int = 0,
+    version: Int = 0,
+    size: Int = 3,
+    margin: Int = 4,
+    dpi: Int = 72,
+    ecLevel: Int = 2,
+    hint: Int = 2
+) {
+    writeShort(0x1b)
+    writeShortLVPacket {
+        writeInt(micro)
+        writeInt(version)
+        writeInt(size)
+        writeInt(margin)
+        writeInt(dpi)
+        writeInt(ecLevel)
+        writeInt(hint)
+        writeShort(0)
+    }
+}
+
+internal fun BytePacketBuilder.t1d(
+    miscBitmap: Int,
+) {
+    writeShort(0x1d)
+    writeShortLVPacket {
+        writeByte(1)
+        writeInt(miscBitmap)
+        writeInt(0)
+        writeByte(0)
+        writeInt(0)
+    }
+}
+
+internal fun BytePacketBuilder.t1f(
+    isRoot: Boolean = false,
+    osName: ByteArray,
+    osVersion: ByteArray,
+    simVendor: ByteArray,
+    apn: ByteArray,
+    networkType: Short = 2,
+) {
+    writeShort(0x1f)
+    writeShortLVPacket {
+        writeByte(if (isRoot) 1 else 0)
+        writeShortLVByteArray(osName)
+        writeShortLVByteArray(osVersion)
+        writeShort(networkType)
+        writeShortLVByteArray(simVendor)
+        writeShortLVByteArray(EMPTY_BYTE_ARRAY)
+        writeShortLVByteArray(apn)
+    }
+}
+
+internal fun BytePacketBuilder.t33(
+    guid: ByteArray,
+) {
+    writeShort(0x33)
+    writeShortLVByteArray(guid)
+}
+
+internal fun BytePacketBuilder.t35(
+    protocol: BotConfiguration.MiraiProtocol
+) {
+    writeShort(0x35)
+    writeShortLVPacket {
+        writeInt(when(protocol) {
+            BotConfiguration.MiraiProtocol.MACOS -> 5
+            else -> 8
+        })
+    }
 }
 
 internal fun BytePacketBuilder.t106(

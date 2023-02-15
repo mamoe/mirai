@@ -50,6 +50,13 @@ public abstract class LoginSolver {
     public open val isSliderCaptchaSupported: Boolean get() = PlatformLoginSolverImplementations.isSliderCaptchaSupported
 
     /**
+     * 二维码扫描登录监听器，当此监听器被设置时，将会进行二维码登录
+     * @see QRCodeLoginListener
+     * @since 2.15
+     */
+    public open val qrCodeLoginListener: QRCodeLoginListener? = null
+
+    /**
      * 处理滑动验证码.
      *
      * 返回 `null` 以表示无法处理验证码, 将会刷新验证码或重试登录.
@@ -117,6 +124,51 @@ public abstract class LoginSolver {
     public open suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
         // This function was abstract, open since 2.13.0
         throw UnsupportedSmsLoginException("This login session requires device verification, but current LoginSolver($this) does not support it. Please override `LoginSolver.onSolveDeviceVerification`.")
+    }
+
+    /**
+     * 二维码扫描登录监听器
+     * @since 2.15
+     */
+    public interface QRCodeLoginListener {
+        /**
+         * 从服务器获取二维码时调用，在下级显示二维码并扫描.
+         */
+        public fun onFetchQRCode(data: ByteArray)
+
+        /**
+         * 当二维码状态变化时调用.
+         * @see State
+         */
+        public fun onStatusChanged(state: State)
+
+        public enum class State {
+            /**
+             * 等待扫描中，请在此阶段请扫描二维码.
+             * @see QRCodeLoginListener.onFetchQRCode
+             */
+            WAITING_FOR_SCAN,
+            /**
+             * 二维码已扫描，等待扫描端确认登录.
+             */
+            WAITING_FOR_CONFIRM,
+            /**
+             * 扫描后取消了确认.
+             */
+            CANCELLED,
+            /**
+             * 二维码超时，必须重新获取二维码.
+             */
+            TIMEOUT,
+            /**
+             * 二维码已确认，将会继续登录.
+             */
+            CONFIRMED,
+            /**
+             * 默认状态，在登录前通常为此状态.
+             */
+            DEFAULT,
+        }
     }
 
     public companion object {

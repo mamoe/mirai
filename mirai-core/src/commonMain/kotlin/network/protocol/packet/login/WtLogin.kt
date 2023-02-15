@@ -25,6 +25,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLoginExt
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.analysisTlv0x531
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.orEmpty
 import net.mamoe.mirai.internal.utils.crypto.TEA
+import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
+import net.mamoe.mirai.internal.utils.io.writeShortLVPacket
 import net.mamoe.mirai.internal.utils.printStructure
 import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.network.WrongPasswordException
@@ -635,7 +637,7 @@ internal class WtLogin {
                             deviceToken = tlvMap119.getOrEmpty(0x322),
                             encryptedDownloadSession = tlvMap119[0x11d]?.let {
                                 client.analysisTlv11d(it)
-                            }
+                            },
                         )
                     }
                     //bot.network.logger.error(client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString())
@@ -651,6 +653,208 @@ internal class WtLogin {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Login.LoginPacketResponse {
             return Login.run {
                 decode(bot)
+            }
+        }
+
+    }
+
+    internal object TransEmp : OutgoingPacketFactory<TransEmp.TransEmpResponse>("wtlogin.trans_emp") {
+
+        fun FetchQRCode(
+            client: QQAndroidClient
+        ) = TransEmp.buildLoginOutgoingPacket(client, bodyType = 2, uin = "") { sequenceId ->
+            writeSsoPacket(client, client.subAppId, TransEmp.commandName, sequenceId = sequenceId) {
+                writeOicqRequestPacket(client, uin = 0, commandId = 0x812) {
+                    val code2dPacket = buildCode2dPacket(0, 0, 0x31) {
+                        writeShort(0)
+                        writeInt(16)
+                        writeLong(0)
+                        writeByte(8)
+                        writeShortLVPacket { }
+
+                        writeShort(6)
+                        t16(
+                            client.ssoVersion,
+                            client.subAppId,
+                            client.device.guid,
+                            client.apkId,
+                            client.apkVersionName,
+                            client.apkSignatureMd5
+                        )
+                        t1b()
+                        t1d(client.miscBitMap)
+
+                        // TODO macos
+                        if (client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.MACOS) {
+                            t1f(
+                                false,
+                                "Mac OSX".toByteArray(),
+                                "10".toByteArray(),
+                                "mac carrier".toByteArray(),
+                                client.device.apn,
+                                2
+                            )
+                        } else {
+                            t1f(
+                                false,
+                                client.device.osType,
+                                "7.1.2".toByteArray(),
+                                "China Mobile GSM".toByteArray(),
+                                client.device.apn,
+                                2
+                            )
+                        }
+
+                        t33(client.device.guid)
+                        t35(client.bot.configuration.protocol)
+                    }
+                    writeByte(0)
+                    writeShort(0x0111) // code2d packet length?? or maybe a command id
+                    // TODO: subAppId is not always equal to appId. e.g. protocol QIDIAN
+                    // this field is originally appId
+                    writeInt(client.subAppId.toInt()) // client.subAppId??
+                    writeInt(0x72) // 0x90
+                    writeFully(ByteArray(3) { 0x00 })
+                    writeUInt(currentTimeSeconds().toUInt())
+                    writePacket(code2dPacket)
+                    code2dPacket.release()
+                }
+            }
+        }
+
+        fun QueryQRCodeStatus(
+            client: QQAndroidClient,
+            sig: ByteArray,
+        ) = TransEmp.buildLoginOutgoingPacket(client, bodyType = 2, uin = "") { sequenceId ->
+            writeSsoPacket(client, client.subAppId, TransEmp.commandName, sequenceId = sequenceId) {
+                writeOicqRequestPacket(client, uin = 0, commandId = 0x812) {
+                    val code2CPacket = buildCode2dPacket(1, 0, 0x12) {
+                        writeShort(5)
+                        writeByte(1)
+                        writeInt(8)
+                        writeInt(16)
+                        writeShortLVByteArray(sig)
+                        writeLong(0)
+                        writeByte(8)
+                        writeShortLVPacket { }
+                        writeShort(0)
+                    }
+                    writeByte(0)
+                    writeShort(code2CPacket.remaining.toShort())
+                    // TODO: subAppId is not always equal to appId. e.g. protocol QIDIAN
+                    // https://github.com/lz1998/ricq/blob/c88d08/ricq-core/src/protocol/version.rs#L123
+                    writeInt(client.subAppId.toInt())
+                    writeInt(144)
+                    writeFully(ByteArray(3) { 0x00 })
+                    writePacket(code2CPacket)
+                    code2CPacket.release()
+                }
+            }
+        }
+
+        fun buildCode2dPacket(
+            sequence: Int,
+            j: Long,
+            command: Short,
+            body: BytePacketBuilder.() -> Unit
+        ) = buildPacket {
+            writeByte(2)
+            val bodyPacket = buildPacket(body)
+            writeUShort((43 + bodyPacket.remaining + 1).toUShort())
+            writeUShort(command.toUShort())
+            writeFully(ByteArray(21) { 0 })
+            writeByte(3)
+            writeUShort(0u)
+            writeUShort(50u)
+            writeUInt(sequence.toUInt())
+            writeULong(j.toULong())
+            writePacket(bodyPacket)
+            bodyPacket.release()
+            writeByte(3)
+        }
+
+        sealed class TransEmpResponse() : Packet {
+            class FetchQRCode(val imageData: ByteArray, val sig: ByteArray) : TransEmpResponse()
+            class QRCodeStatus(val state: State) : TransEmpResponse() {
+                enum class State { WAITING_FOR_SCAN, WAITING_FOR_CONFIRM, CANCELLED, TIMEOUT }
+            }
+
+            class QRCodeConfirmed(val data: QRCodeLoginData) : TransEmpResponse()
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): TransEmpResponse {
+            check(remaining >= 48) { "remaining payload is too short, current is $remaining." }
+
+            discardExact(5)
+            readUByte()
+            readUShort()
+            val command = readUShort().toInt()
+            discardExact(21)
+            readUByte()
+            readUShort()
+            readUShort()
+            readInt()
+            readLong()
+
+            return when (command) {
+                0x31 -> { // qr code data
+                    readUShort()
+                    readInt()
+
+                    val code = readByte().toInt()
+                    check(code != 0) { "code is not 0 while parsing wtlogin.trans_emp with command 0x31." }
+                    val sig = readUShortLVByteArray()
+                    readUShort()
+
+                    val tlv = _readTLVMap()
+                    val data =
+                        tlv.getOrFail(0x17) { "missing tlv 0x17 while parsing wtlogin.trans_emp with command 0x31." }
+
+                    TransEmpResponse.FetchQRCode(data, sig)
+                }
+
+                0x12 -> { // qr code state
+                    var length = readUShort().toInt()
+                    if (length != 0) {
+                        length--
+                        if (readUByte().toInt() == 2) {
+                            readLong().also(::println) //TODO: print
+                            length -= 8
+                        }
+                    }
+
+                    if (length > 0) {
+                        discardExact(length)
+                    }
+
+                    when (readUByte().toInt()) { // code
+                        0x30 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.WAITING_FOR_SCAN)
+                        0x35 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.WAITING_FOR_CONFIRM)
+                        0x36 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.CANCELLED)
+                        0x11 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.TIMEOUT)
+                        else -> {
+                            val client = bot.client
+
+                            client._uin = readLong()
+                            readInt()
+                            readUShort()
+                            val tlv = _readTLVMap()
+
+                            val encryptA1 =
+                                tlv.getOrFail(0x18) { "missing tlv 0x18 while parsing wtlogin.trans_emp with command 0x12." }
+                            val noPicSig =
+                                tlv.getOrFail(0x19) { "missing tlv 0x19 while parsing wtlogin.trans_emp with command 0x12." }
+                            val tgtQR =
+                                tlv.getOrFail(0x65) { "missing tlv 0x65 while parsing wtlogin.trans_emp with command 0x12." }
+
+                            client.tgtgtKey =
+                                tlv.getOrFail(0x1e) { "missing tlv 0x1e while parsing wtlogin.trans_emp with command 0x12." }
+
+                            TransEmpResponse.QRCodeConfirmed(QRCodeLoginData(encryptA1, noPicSig, tgtQR))
+                        }
+                    }
+                }
+                else -> error("wtlogin.trans_emp received an unknown command: $command")
             }
         }
 
