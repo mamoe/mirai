@@ -90,37 +90,23 @@ internal class QRCodeLoginProcessorImpl(
 
     override suspend fun process(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginData {
         main@ while (true) { // TODO: add new bot config property to set times of fetching qrcode
-            val qrCodeData = try {
-                requestQRCode(handler, client)
-            } catch (e: IllegalStateException) {
-                logger.warning(e)
-                continue@main
-            }
+            val qrCodeData = requestQRCode(handler, client)
             state@ while (true) {
-                val status = try {
-                    queryQRCodeStatus(handler, client, qrCodeData.sig)
-                } catch (e: IllegalStateException) {
-                    logger.warning(e)
-                    delay(5000) // TODO: add new bot config property to set interval of querying qrcode state
-                    continue@state
-                }
-
-                when(status) {
+                when(val status = queryQRCodeStatus(handler, client, qrCodeData.sig)) {
                     is WtLogin.TransEmp.TransEmpResponse.QRCodeConfirmed -> {
                         return status.data
                     }
                     is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus -> when(status.state) {
                         WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.TIMEOUT,
                         WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.CANCELLED -> {
-                            val e = IllegalStateException("QRCode cancelled. sig=${qrCodeData.sig.toUHexString()}")
-                            logger.warning(e)
                             break@state
                         }
-                        else -> { delay(5000) } // WAITING_FOR_SCAN or WAITING_FOR_CONFIRM
+                        else -> { } // WAITING_FOR_SCAN or WAITING_FOR_CONFIRM
                     }
                     // status is FetchQRCode, which is unreachable.
-                    else -> { break@state }
+                    else -> { error("query qrcode status packet should not be FetchQRCode.") }
                 }
+                delay(5000)
             }
         }
     }
