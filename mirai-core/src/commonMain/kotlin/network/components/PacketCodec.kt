@@ -37,7 +37,7 @@ internal interface PacketCodec {
      * @return decoded
      */
     @Throws(PacketCodecException::class)
-    fun decodeRaw(client: SsoSession, input: ByteReadPacket): RawIncomingPacket
+    fun decodeRaw(client: QQAndroidBot, ssoSession: SsoSession, input: ByteReadPacket): RawIncomingPacket
 
     /**
      * Process [RawIncomingPacket] using [IncomingPacketFactory.decode].
@@ -96,20 +96,24 @@ internal class PacketCodecException(
 
 internal class PacketCodecImpl : PacketCodec {
 
-    override fun decodeRaw(client: SsoSession, input: ByteReadPacket): RawIncomingPacket = input.run {
-        // login
-        val flag1 = readInt()
+    override fun decodeRaw(client: QQAndroidBot, ssoSession: SsoSession, input: ByteReadPacket): RawIncomingPacket = input.run {
+        // packet type
+        val type = readInt()
 
         PacketLogger.verbose { "开始处理一个包" }
 
-        val flag2 = readByte().toInt()
+        val encryptMethod = readByte().toInt()
         val flag3 = readByte().toInt()
         if (flag3 != 0) {
-            throw PacketCodecException(
-                "Illegal flag3. Expected 0, whereas got $flag3. flag1=$flag1, flag2=$flag2. " +
-                        "Remaining=${this.readBytes().toUHexString()}",
+            val ex = PacketCodecException(
+                "Illegal flag3. Expected 0, whereas got $flag3. packet type=$type, encrypt method=$encryptMethod. ",
                 kind = PROTOCOL_UPDATED
             )
+            if (client.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_WATCH) {
+                PacketLogger.warning("unknown flag3: $flag3, which may means protocol is updated on ANDROID_WATCH protocol.", ex)
+            } else {
+                throw ex
+            }
         }
 
         readString(readInt() - 4)// uinAccount
@@ -117,29 +121,29 @@ internal class PacketCodecImpl : PacketCodec {
         ByteArrayPool.useInstance(this.remaining.toInt()) { buffer ->
             val size = this.readAvailable(buffer)
 
-            when (flag2) {
+            when (encryptMethod) {
                 2 -> TEA.decrypt(buffer, DECRYPTER_16_ZERO, size)
-                1 -> TEA.decrypt(buffer, client.wLoginSigInfo.d2Key, size)
+                1 -> TEA.decrypt(buffer, ssoSession.wLoginSigInfo.d2Key, size)
                 0 -> buffer
-                else -> throw PacketCodecException("Unknown flag2=$flag2", PROTOCOL_UPDATED)
+                else -> throw PacketCodecException("Unknown encrypt type=$encryptMethod", PROTOCOL_UPDATED)
             }.let { decryptedData ->
-                when (flag1) {
-                    0x0A -> parseSsoFrame(client, decryptedData)
-                    0x0B -> parseSsoFrame(client, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
+                when (type) {
+                    0x0A -> parseSsoFrame(ssoSession, decryptedData)
+                    0x0B -> parseSsoFrame(ssoSession, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
                     else -> throw PacketCodecException(
-                        "unknown flag1: ${flag1.toByte().toUHexString()}",
+                        "unknown packet type: ${type.toByte().toUHexString()}",
                         PROTOCOL_UPDATED
                     )
                 }
             }.let { raw ->
-                when (flag2) {
+                when (encryptMethod) {
                     0, 1 -> RawIncomingPacket(raw.commandName, raw.sequenceId, raw.body.readBytes())
                     2 -> RawIncomingPacket(
                         raw.commandName,
                         raw.sequenceId,
                         raw.body.withUse {
                             try {
-                                parseOicqResponse(client)
+                                parseOicqResponse(ssoSession)
                             } catch (e: Throwable) {
                                 throw PacketCodecException(e, PacketCodecException.Kind.OTHER)
                             }
