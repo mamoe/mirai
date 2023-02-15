@@ -706,13 +706,14 @@ internal class WtLogin {
                         }
 
                         t33(client.device.guid)
-                        t35(client.bot.configuration.protocol)
+                        // TODO macos
+                        t35(if (client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.MACOS) 5 else 8)
                     }
                     writeByte(0)
-                    writeShort(0x0111) // code2d packet length?? or maybe a command id
+                    writeShort(0x0111) // code2d packet length??
                     // TODO: subAppId is not always equal to appId. e.g. protocol QIDIAN
                     // this field is originally appId
-                    writeInt(client.subAppId.toInt()) // client.subAppId??
+                    writeInt(0x10) // client.subAppId??
                     writeInt(0x72) // 0x90
                     writeFully(ByteArray(3) { 0x00 })
                     writeUInt(currentTimeSeconds().toUInt())
@@ -740,12 +741,13 @@ internal class WtLogin {
                         writeShort(0)
                     }
                     writeByte(0)
-                    writeShort(code2CPacket.remaining.toShort())
+                    writeShort(0x62)
                     // TODO: subAppId is not always equal to appId. e.g. protocol QIDIAN
                     // https://github.com/lz1998/ricq/blob/c88d08/ricq-core/src/protocol/version.rs#L123
                     writeInt(client.subAppId.toInt())
-                    writeInt(144)
+                    writeInt(0x72) // 0x90
                     writeFully(ByteArray(3) { 0x00 })
+                    writeUInt(currentTimeSeconds().toUInt())
                     writePacket(code2CPacket)
                     code2CPacket.release()
                 }
@@ -798,11 +800,11 @@ internal class WtLogin {
 
             return when (command) {
                 0x31 -> { // qr code data
-                    readUShort()
+                    readShort()
                     readInt()
 
                     val code = readByte().toInt()
-                    check(code != 0) { "code is not 0 while parsing wtlogin.trans_emp with command 0x31." }
+                    check(code == 0) { "code is not 0 while parsing wtlogin.trans_emp with command 0x31." }
                     val sig = readUShortLVByteArray()
                     readUShort()
 
@@ -818,7 +820,7 @@ internal class WtLogin {
                     if (length != 0) {
                         length--
                         if (readUByte().toInt() == 2) {
-                            readLong().also(::println) //TODO: print
+                            readLong()
                             length -= 8
                         }
                     }
@@ -826,32 +828,36 @@ internal class WtLogin {
                     if (length > 0) {
                         discardExact(length)
                     }
+                    readInt()
 
-                    when (readUByte().toInt()) { // code
-                        0x30 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.WAITING_FOR_SCAN)
-                        0x35 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.WAITING_FOR_CONFIRM)
-                        0x36 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.CANCELLED)
-                        0x11 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.TIMEOUT)
-                        else -> {
-                            val client = bot.client
-
-                            client._uin = readLong()
-                            readInt()
-                            readUShort()
-                            val tlv = _readTLVMap()
-
-                            val encryptA1 =
-                                tlv.getOrFail(0x18) { "missing tlv 0x18 while parsing wtlogin.trans_emp with command 0x12." }
-                            val noPicSig =
-                                tlv.getOrFail(0x19) { "missing tlv 0x19 while parsing wtlogin.trans_emp with command 0x12." }
-                            val tgtQR =
-                                tlv.getOrFail(0x65) { "missing tlv 0x65 while parsing wtlogin.trans_emp with command 0x12." }
-
-                            client.tgtgtKey =
-                                tlv.getOrFail(0x1e) { "missing tlv 0x1e while parsing wtlogin.trans_emp with command 0x12." }
-
-                            TransEmpResponse.QRCodeConfirmed(QRCodeLoginData(encryptA1, noPicSig, tgtQR))
+                    val code = readUByte().toInt()
+                    if (code != 0) {
+                        when (code) { // code
+                            0x30 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.WAITING_FOR_SCAN)
+                            0x35 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.WAITING_FOR_CONFIRM)
+                            0x36 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.CANCELLED)
+                            0x11 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.TIMEOUT)
+                            else -> error("unknown code $code while parsing wtlogin.trans_emp with command 0x12.")
                         }
+                    } else {
+                        val client = bot.client
+
+                        client._uin = readLong()
+                        readInt()
+                        readUShort()
+                        val tlv = _readTLVMap()
+
+                        val tmpPwd =
+                            tlv.getOrFail(0x18) { "missing tlv 0x18 while parsing wtlogin.trans_emp with command 0x12." }
+                        val noPicSig =
+                            tlv.getOrFail(0x19) { "missing tlv 0x19 while parsing wtlogin.trans_emp with command 0x12." }
+                        val tgtQR =
+                            tlv.getOrFail(0x65) { "missing tlv 0x65 while parsing wtlogin.trans_emp with command 0x12." }
+
+                        client.tgtgtKey =
+                            tlv.getOrFail(0x1e) { "missing tlv 0x1e while parsing wtlogin.trans_emp with command 0x12." }
+
+                        TransEmpResponse.QRCodeConfirmed(QRCodeLoginData(tmpPwd, noPicSig, tgtQR))
                     }
                 }
                 else -> error("wtlogin.trans_emp received an unknown command: $command")

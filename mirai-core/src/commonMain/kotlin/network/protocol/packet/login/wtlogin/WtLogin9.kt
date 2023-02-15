@@ -134,7 +134,7 @@ internal object WtLogin9 : WtLoginExt {
                 t18(appId, client.appClientVersion, client.uin)
                 t1(client.uin, client.device.ipAddress)
 
-                t106(data.encryptA1)
+                t106(data.tmpPwd)
 
                 t116(client.miscBitMap, client.subSigMap)
                 t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)

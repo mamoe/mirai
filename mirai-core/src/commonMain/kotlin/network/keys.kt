@@ -76,12 +76,12 @@ internal fun BytePacketBuilder.writeLoginExtraData(loginExtraData: LoginExtraDat
 
 @Serializable
 internal class QRCodeLoginData(
-    val encryptA1: ByteArray, // get from wtlogin.trans_emp, don't use client.wLoginSigInfo.encryptA1
+    val tmpPwd: ByteArray, // get from wtlogin.trans_emp, don't use client.wLoginSigInfo.encryptA1
     val noPicSig: ByteArray, // get from wtlogin.trans_emp, don't use client.wLoginSigInfo.encryptA1
     val tgtQR: ByteArray,
 ) {
     override fun toString(): String {
-        return "QRCodeLoginData(encryptA1=${encryptA1.toUHexString()}, noPicSig=${noPicSig.toUHexString()}, tgtQR=${tgtQR.toUHexString()})"
+        return "QRCodeLoginData(tmpPwd=${tmpPwd.toUHexString()}, noPicSig=${noPicSig.toUHexString()}, tgtQR=${tgtQR.toUHexString()})"
     }
 }
 

@@ -183,14 +183,11 @@ internal fun BytePacketBuilder.t33(
 }
 
 internal fun BytePacketBuilder.t35(
-    protocol: BotConfiguration.MiraiProtocol
+    productType: Int
 ) {
     writeShort(0x35)
     writeShortLVPacket {
-        writeInt(when(protocol) {
-            BotConfiguration.MiraiProtocol.MACOS -> 5
-            else -> 8
-        })
+        writeInt(productType)
     }
 }
 
