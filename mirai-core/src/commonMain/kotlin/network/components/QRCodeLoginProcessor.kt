@@ -18,51 +18,71 @@ import net.mamoe.mirai.internal.network.QRCodeLoginData
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.internal.utils.MiraiProtocolInternal.Companion.asInternal
+import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.toUHexString
 
 internal interface QRCodeLoginProcessor {
-    suspend fun process(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginData
+    suspend fun process(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginData = error("Not implemented")
+
+    /**
+     * Allocate a special processor for once login request
+     */
+    fun prepareProcess(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginProcessor =
+        error("Not implemented")
 
     companion object : ComponentKey<QRCodeLoginProcessor> {
-        internal val NOOP = object : QRCodeLoginProcessor {
-
-            override suspend fun process(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginData {
-                error("NOOP")
-            }
-        }
+        internal val NOOP = object : QRCodeLoginProcessor {}
 
         //TODO: these exception should throw in network instead here.
         fun parse(ssoContext: SsoProcessorContext, logger: MiraiLogger): QRCodeLoginProcessor {
-            if (!ssoContext.bot.configuration.qrCodeLogin) return NOOP
-            check(ssoContext.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_WATCH) {
+            if (!ssoContext.bot.configuration.doQRCodeLogin) return NOOP
+            check(ssoContext.bot.configuration.protocol.asInternal.canDoQRCodeLogin) {
                 "The login protocol must be ANDROID_WATCH while enabling qrcode login." +
                         "Set it by `bot.configuration.protocol = BotConfiguration.MiraiProtocol.ANDROID_WATCH`."
             }
-            val loginSolver = ssoContext.bot.configuration.loginSolver
-                ?: throw IllegalStateException("No LoginSolver found while enabling qrcode login. " +
-                        "Please provide by BotConfiguration.loginSolver. " +
-                        "For example use `BotFactory.newBot(...) { loginSolver = yourLoginSolver}` in Kotlin, " +
-                        "use `BotFactory.newBot(..., new BotConfiguration() {{ setLoginSolver(yourLoginSolver) }})` in Java.")
-            val qrCodeLoginListener = loginSolver.qrCodeLoginListener
-                ?: throw IllegalStateException("No QRCodeLoginListener provided in LoginSolver while enabling qrcode login.")
-            return QRCodeLoginProcessorImpl(qrCodeLoginListener, logger)
+            return QRCodeLoginProcessorPreLoaded(ssoContext, logger)
         }
     }
 }
 
+internal class QRCodeLoginProcessorPreLoaded(
+    private val ssoContext: SsoProcessorContext,
+    private val logger: MiraiLogger,
+) : QRCodeLoginProcessor {
+    override fun prepareProcess(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginProcessor {
+        val loginSolver = ssoContext.bot.configuration.loginSolver
+            ?: throw IllegalStateException(
+                "No LoginSolver found while enabling qrcode login. " +
+                        "Please provide by BotConfiguration.loginSolver. " +
+                        "For example use `BotFactory.newBot(...) { loginSolver = yourLoginSolver}` in Kotlin, " +
+                        "use `BotFactory.newBot(..., new BotConfiguration() {{ setLoginSolver(yourLoginSolver) }})` in Java."
+            )
+
+        val qrCodeLoginListener = loginSolver.createQRCodeLoginListener(client.bot)
+
+        return QRCodeLoginProcessorImpl(qrCodeLoginListener, logger)
+    }
+}
+
 internal class QRCodeLoginProcessorImpl(
-    private val listener: LoginSolver.QRCodeLoginListener,
+    private val qrCodeLoginListener: LoginSolver.QRCodeLoginListener,
     private val logger: MiraiLogger,
 ) : QRCodeLoginProcessor {
 
     private val lock = Mutex(false)
-    private var state by atomic(LoginSolver.QRCodeLoginListener.State.DEFAULT)
+    private var state = atomic(LoginSolver.QRCodeLoginListener.State.DEFAULT)
 
-    private suspend fun requestQRCode(handler: NetworkHandler, client: QQAndroidClient) : WtLogin.TransEmp.TransEmpResponse.FetchQRCode {
+    private suspend fun requestQRCode(
+        handler: NetworkHandler,
+        client: QQAndroidClient
+    ): WtLogin.TransEmp.TransEmpResponse.FetchQRCode {
         logger.debug { "requesting qrcode." }
         val resp = handler.sendAndExpect(WtLogin.TransEmp.FetchQRCode(client), attempts = 1)
         check(resp is WtLogin.TransEmp.TransEmpResponse.FetchQRCode) { "Cannot fetch qrcode, resp=$resp" }
-        listener.onFetchQRCode(handler.context.bot, resp.imageData)
+        qrCodeLoginListener.onFetchQRCode(handler.context.bot, resp.imageData)
         return resp
     }
 
@@ -70,19 +90,20 @@ internal class QRCodeLoginProcessorImpl(
         handler: NetworkHandler,
         client: QQAndroidClient,
         sig: ByteArray
-    ) : WtLogin.TransEmp.TransEmpResponse {
+    ): WtLogin.TransEmp.TransEmpResponse {
         logger.debug { "querying qrcode state. sig=${sig.toUHexString()}" }
         val resp = handler.sendAndExpect(WtLogin.TransEmp.QueryQRCodeStatus(client, sig), attempts = 1, timeout = 500)
+
         check(
-            resp is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus ||
-            resp is WtLogin.TransEmp.TransEmpResponse.QRCodeConfirmed
+            resp is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus || resp is WtLogin.TransEmp.TransEmpResponse.QRCodeConfirmed
         ) { "Cannot query qrcode status, resp=$resp" }
+
         lock.withLock {
-            val currState = resp.mapProtocolState()
-            if (currState != state) {
-                state = currState
+            val currentState = state.value
+            val newState = resp.mapProtocolState()
+            if (currentState != newState && state.compareAndSet(currentState, newState)) {
                 logger.debug { "qrcode state changed: $state" }
-                listener.onStatusChanged(handler.context.bot, state)
+                qrCodeLoginListener.onStatusChanged(handler.context.bot, newState)
             }
         }
         return resp
@@ -92,19 +113,21 @@ internal class QRCodeLoginProcessorImpl(
         main@ while (true) { // TODO: add new bot config property to set times of fetching qrcode
             val qrCodeData = requestQRCode(handler, client)
             state@ while (true) {
-                when(val status = queryQRCodeStatus(handler, client, qrCodeData.sig)) {
+                when (val status = queryQRCodeStatus(handler, client, qrCodeData.sig)) {
                     is WtLogin.TransEmp.TransEmpResponse.QRCodeConfirmed -> {
                         return status.data
                     }
-                    is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus -> when(status.state) {
+                    is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus -> when (status.state) {
                         WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.TIMEOUT,
                         WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.CANCELLED -> {
                             break@state
                         }
-                        else -> { } // WAITING_FOR_SCAN or WAITING_FOR_CONFIRM
+                        else -> {} // WAITING_FOR_SCAN or WAITING_FOR_CONFIRM
                     }
                     // status is FetchQRCode, which is unreachable.
-                    else -> { error("query qrcode status packet should not be FetchQRCode.") }
+                    else -> {
+                        error("query qrcode status packet should not be FetchQRCode.")
+                    }
                 }
                 delay(5000)
             }
@@ -113,7 +136,7 @@ internal class QRCodeLoginProcessorImpl(
 
     private fun WtLogin.TransEmp.TransEmpResponse.mapProtocolState(): LoginSolver.QRCodeLoginListener.State {
         return when (this) {
-            is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus -> when(this.state) {
+            is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus -> when (this.state) {
                 WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.WAITING_FOR_SCAN ->
                     LoginSolver.QRCodeLoginListener.State.WAITING_FOR_SCAN
 

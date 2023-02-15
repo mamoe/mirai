@@ -165,7 +165,7 @@ internal class SsoProcessorImpl(
 
                 val qrCodeLoginProcessor = ssoContext.bot.components[QRCodeLoginProcessor]
                 if (qrCodeLoginProcessor !== QRCodeLoginProcessor.NOOP) {
-                    val qrcodeLoginData = qrCodeLoginProcessor.process(handler, client)
+                    val qrcodeLoginData = qrCodeLoginProcessor.prepareProcess(handler, client).process(handler, client)
                     SlowLoginImpl(handler, LoginType.QRCode(qrcodeLoginData)).doLogin()
                 } else {
                     SlowLoginImpl(handler, LoginType.Password).doLogin()
@@ -229,7 +229,7 @@ internal class SsoProcessorImpl(
 
     private inner class SlowLoginImpl(
         handler: NetworkHandler,
-        private val type: LoginType
+        private val loginType: LoginType
     ) : LoginStrategy(handler) {
 
         private fun loginSolverNotNull(): LoginSolver {
@@ -270,14 +270,15 @@ internal class SsoProcessorImpl(
 
         override suspend fun doLogin() = withExceptionCollector {
 
-            fun QQAndroidClient.getWtLogin9Packet(allowSlider: Boolean, type: LoginType) = when(type) {
-                is LoginType.Password -> WtLogin9.Password(this, allowSlider)
-                is LoginType.QRCode -> WtLogin9.QRCode(this, type.qrCodeLoginData)
+            @Suppress("FunctionName")
+            fun SSOWtLogin9(allowSlider: Boolean) = when (loginType) {
+                is LoginType.Password -> WtLogin9.Password(client, allowSlider)
+                is LoginType.QRCode -> WtLogin9.QRCode(client, loginType.qrCodeLoginData)
             }
 
             var allowSlider = sliderSupported || bot.configuration.protocol == MiraiProtocol.ANDROID_PHONE
 
-            var response: LoginPacketResponse = client.getWtLogin9Packet(allowSlider, type).sendAndExpect()
+            var response: LoginPacketResponse = SSOWtLogin9(allowSlider).sendAndExpect()
 
             mainloop@ while (true) {
                 when (response) {
@@ -297,7 +298,7 @@ internal class SsoProcessorImpl(
                         check(result is DeviceVerificationResultImpl)
                         response = when (result) {
                             is UrlDeviceVerificationResult -> {
-                                client.getWtLogin9Packet(allowSlider, type).sendAndExpect()
+                                SSOWtLogin9(allowSlider).sendAndExpect()
                             }
 
                             is SmsDeviceVerificationResult -> {
@@ -324,7 +325,7 @@ internal class SsoProcessorImpl(
                                 collectThrow(error)
                             }
                             response = if (ticket == null) {
-                                client.getWtLogin9Packet(allowSlider, type).sendAndExpect()
+                                SSOWtLogin9(allowSlider).sendAndExpect()
                             } else {
                                 WtLogin2.SubmitSliderCaptcha(client, ticket).sendAndExpect()
                             }

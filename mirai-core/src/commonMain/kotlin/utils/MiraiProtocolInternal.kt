@@ -25,6 +25,7 @@ internal class MiraiProtocolInternal(
     @JvmField internal val sign: String,
     @JvmField internal val buildTime: Long,
     @JvmField internal val ssoVersion: Int,
+    @JvmField internal val canDoQRCodeLogin: Boolean = false,
 ) {
     internal companion object {
         internal val protocols = EnumMap<MiraiProtocol, MiraiProtocolInternal>(MiraiProtocol::class)
@@ -70,6 +71,7 @@ internal class MiraiProtocolInternal(
                 "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
                 1559564731L,
                 5,
+                canDoQRCodeLogin = true,
             )
             protocols[MiraiProtocol.IPAD] = MiraiProtocolInternal(
                 "com.tencent.minihd.qq",
@@ -96,5 +98,7 @@ internal class MiraiProtocolInternal(
                 7,
             )
         }
+
+        inline val MiraiProtocol.asInternal: MiraiProtocolInternal get() = get(this)
     }
 }
