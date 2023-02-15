@@ -710,13 +710,10 @@ internal class WtLogin {
                         t35(if (client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.MACOS) 5 else 8)
                     }
                     writeByte(0)
-                    writeShort(0x0111) // code2d packet length??
-                    // TODO: subAppId is not always equal to appId. e.g. protocol QIDIAN
-                    // this field is originally appId
-                    writeInt(0x10) // client.subAppId??
+                    writeShort(code2dPacket.remaining.toShort())
+                    writeInt(0x10) // appId, const 16
                     writeInt(0x72) // 0x90
                     writeFully(ByteArray(3) { 0x00 })
-                    writeUInt(currentTimeSeconds().toUInt())
                     writePacket(code2dPacket)
                     code2dPacket.release()
                 }
@@ -729,7 +726,7 @@ internal class WtLogin {
         ) = TransEmp.buildLoginOutgoingPacket(client, bodyType = 2, uin = "") { sequenceId ->
             writeSsoPacket(client, client.subAppId, TransEmp.commandName, sequenceId = sequenceId) {
                 writeOicqRequestPacket(client, uin = 0, commandId = 0x812) {
-                    val code2CPacket = buildCode2dPacket(1, 0, 0x12) {
+                    val code2dPacket = buildCode2dPacket(1, 0, 0x12) {
                         writeShort(5)
                         writeByte(1)
                         writeInt(8)
@@ -741,35 +738,33 @@ internal class WtLogin {
                         writeShort(0)
                     }
                     writeByte(0)
-                    writeShort(0x62)
-                    // TODO: subAppId is not always equal to appId. e.g. protocol QIDIAN
-                    // https://github.com/lz1998/ricq/blob/c88d08/ricq-core/src/protocol/version.rs#L123
-                    writeInt(client.subAppId.toInt())
+                    writeShort(code2dPacket.remaining.toShort())
+                    writeInt(0x10) // appId, const 16
                     writeInt(0x72) // 0x90
                     writeFully(ByteArray(3) { 0x00 })
-                    writeUInt(currentTimeSeconds().toUInt())
-                    writePacket(code2CPacket)
-                    code2CPacket.release()
+                    writePacket(code2dPacket)
+                    code2dPacket.release()
                 }
             }
         }
 
-        fun buildCode2dPacket(
+        private fun buildCode2dPacket(
             sequence: Int,
-            j: Long,
+            uin: Long,
             command: Short,
             body: BytePacketBuilder.() -> Unit
         ) = buildPacket {
+            writeInt(currentTimeSeconds().toInt())
             writeByte(2)
             val bodyPacket = buildPacket(body)
             writeUShort((43 + bodyPacket.remaining + 1).toUShort())
             writeUShort(command.toUShort())
             writeFully(ByteArray(21) { 0 })
             writeByte(3)
-            writeUShort(0u)
-            writeUShort(50u)
-            writeUInt(sequence.toUInt())
-            writeULong(j.toULong())
+            writeShort(0)
+            writeShort(50)
+            writeInt(sequence)
+            writeLong(uin)
             writePacket(bodyPacket)
             bodyPacket.release()
             writeByte(3)
