@@ -51,6 +51,10 @@ public abstract class LoginSolver {
 
     /**
      * 二维码扫描登录监听器，当此监听器被设置时，将会进行二维码登录
+     *
+     * - 在 Android 需要手动提供监听器
+     * - 在 JVM, Mirai 会根据环境支持情况选择 Swing/CLI 实现
+     *
      * @see QRCodeLoginListener
      * @since 2.15
      */
@@ -134,13 +138,13 @@ public abstract class LoginSolver {
         /**
          * 从服务器获取二维码时调用，在下级显示二维码并扫描.
          */
-        public fun onFetchQRCode(data: ByteArray)
+        public fun onFetchQRCode(bot: Bot, data: ByteArray)
 
         /**
          * 当二维码状态变化时调用.
          * @see State
          */
-        public fun onStatusChanged(state: State)
+        public fun onStatusChanged(bot: Bot, state: State)
 
         public enum class State {
             /**

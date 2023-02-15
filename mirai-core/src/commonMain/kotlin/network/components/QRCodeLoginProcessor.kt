@@ -31,10 +31,20 @@ internal interface QRCodeLoginProcessor {
             }
         }
 
+        //TODO: these exception should throw in network instead here.
         fun parse(ssoContext: SsoProcessorContext, logger: MiraiLogger): QRCodeLoginProcessor {
-            val loginSolver = ssoContext.bot.configuration.loginSolver ?: return NOOP
-            if (ssoContext.bot.configuration.protocol != BotConfiguration.MiraiProtocol.ANDROID_WATCH) return NOOP
-            val qrCodeLoginListener = loginSolver.qrCodeLoginListener ?: return NOOP
+            if (!ssoContext.bot.configuration.qrCodeLogin) return NOOP
+            check(ssoContext.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_WATCH) {
+                "The login protocol must be ANDROID_WATCH while enabling qrcode login." +
+                        "Set it by `bot.configuration.protocol = BotConfiguration.MiraiProtocol.ANDROID_WATCH`."
+            }
+            val loginSolver = ssoContext.bot.configuration.loginSolver
+                ?: throw IllegalStateException("No LoginSolver found while enabling qrcode login. " +
+                        "Please provide by BotConfiguration.loginSolver. " +
+                        "For example use `BotFactory.newBot(...) { loginSolver = yourLoginSolver}` in Kotlin, " +
+                        "use `BotFactory.newBot(..., new BotConfiguration() {{ setLoginSolver(yourLoginSolver) }})` in Java.")
+            val qrCodeLoginListener = loginSolver.qrCodeLoginListener
+                ?: throw IllegalStateException("No QRCodeLoginListener provided in LoginSolver while enabling qrcode login.")
             return QRCodeLoginProcessorImpl(qrCodeLoginListener, logger)
         }
     }
@@ -52,7 +62,7 @@ internal class QRCodeLoginProcessorImpl(
         logger.debug { "requesting qrcode." }
         val resp = handler.sendAndExpect(WtLogin.TransEmp.FetchQRCode(client), attempts = 1)
         check(resp is WtLogin.TransEmp.TransEmpResponse.FetchQRCode) { "Cannot fetch qrcode, resp=$resp" }
-        listener.onFetchQRCode(resp.imageData)
+        listener.onFetchQRCode(handler.context.bot, resp.imageData)
         return resp
     }
 
@@ -72,7 +82,7 @@ internal class QRCodeLoginProcessorImpl(
             if (currState != state) {
                 state = currState
                 logger.debug { "qrcode state changed: $state" }
-                listener.onStatusChanged(state)
+                listener.onStatusChanged(handler.context.bot, state)
             }
         }
         return resp
