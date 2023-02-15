@@ -28,6 +28,7 @@ import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 import net.mamoe.mirai.internal.utils.io.writeShortLVPacket
 import net.mamoe.mirai.internal.utils.printStructure
+import net.mamoe.mirai.network.InconsistentBotException
 import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.utils.*
@@ -837,7 +838,10 @@ internal class WtLogin {
                     } else {
                         val client = bot.client
 
-                        client._uin = readLong()
+                        val uin = readLong()
+                        if(client.uin != uin) {
+                            throw InconsistentBotException(expected = client.uin, actual = uin)
+                        }
                         readInt()
                         readUShort()
                         val tlv = _readTLVMap()

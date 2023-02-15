@@ -82,19 +82,15 @@ internal class QRCodeLoginProcessorImpl(
         main@ while (true) { // TODO: add new bot config property to set times of fetching qrcode
             val qrCodeData = try {
                 requestQRCode(handler, client)
-            } catch (e: Throwable) {
-                if (e is IllegalStateException) {
-                    logger.warning(e)
-                }
+            } catch (e: IllegalStateException) {
+                logger.warning(e)
                 continue@main
             }
             state@ while (true) {
                 val status = try {
                     queryQRCodeStatus(handler, client, qrCodeData.sig)
-                } catch (e: Throwable) {
-                    if (e is IllegalStateException) {
-                        logger.warning(e)
-                    }
+                } catch (e: IllegalStateException) {
+                    logger.warning(e)
                     delay(5000) // TODO: add new bot config property to set interval of querying qrcode state
                     continue@state
                 }

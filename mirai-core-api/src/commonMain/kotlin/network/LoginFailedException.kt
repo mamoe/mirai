@@ -38,6 +38,18 @@ public class WrongPasswordException @MiraiInternalApi constructor(
 ) : LoginFailedException(true, message)
 
 /**
+ * 二维码扫码账号与 BOT 账号不一致。
+ */
+public class InconsistentBotException @MiraiInternalApi constructor(
+    public val expected: Long,
+    public val actual: Long,
+    message: String? = null
+) : LoginFailedException(
+    true,
+    message ?: "trying to logging a bot which is inconsistent from BotFactory, expected=$expected, actual=$actual."
+)
+
+/**
  * 无可用服务器
  */
 public class NoServerAvailableException @MiraiInternalApi constructor(
