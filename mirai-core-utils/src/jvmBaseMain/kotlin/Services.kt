@@ -13,17 +13,24 @@ import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
+private inline fun <T : Any> loadDependOnProp(jdkBlock: () -> T?, fallBackBlock: () -> T?): T? {
+    return when (systemProp("mirai.service.loader", "jdk")) {
+        "jdk" -> jdkBlock()
+        "fallback" -> fallBackBlock()
+        else -> throw IllegalArgumentException("mirai.service.loader must be jdk or fallback, cannot find a service loader")
+    }
+}
+
 @Suppress("UNCHECKED_CAST")
 public actual fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementation: String?): T {
     var suppressed: Throwable? = null
-    return if (systemProp("mirai.service.loader", "jdk") == "jdk") {
+    return loadDependOnProp({
         ServiceLoader.load(clazz.java).firstOrNull()
             ?: (Services.firstImplementationOrNull(Services.qualifiedNameOrFail(clazz)) as T?)
-    } else {
-        // mirai.service.loader=fallback
+    }, {
         (Services.firstImplementationOrNull(Services.qualifiedNameOrFail(clazz)) as T?)
             ?: ServiceLoader.load(clazz.java).firstOrNull()
-    } ?: (if (fallbackImplementation == null) null
+    }) ?: (if (fallbackImplementation == null) null
     else runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull())
     ?: throw NoSuchElementException("Could not find an implementation for service class ${clazz.qualifiedName}").apply {
         if (suppressed != null) addSuppressed(suppressed)
@@ -43,10 +50,5 @@ public actual fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImpl
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
     val seq: Sequence<T> =
         Services.implementations(Services.qualifiedNameOrFail(clazz))?.map { it.value }.orEmpty().castUp()
-    return if (systemProp("mirai.service.loader", "jdk") == "jdk") {
-        ServiceLoader.load(clazz.java).asSequence().plus(seq)
-    } else {
-        // mirai.service.loader=fallback
-        seq
-    }
+    return loadDependOnProp({ ServiceLoader.load(clazz.java).asSequence().plus(seq) }, { seq })!!
 }
