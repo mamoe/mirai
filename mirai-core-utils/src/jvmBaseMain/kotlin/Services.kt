@@ -40,11 +40,9 @@ public actual fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImpl
         else runCatching { findCreateInstance<T>(fallbackImplementation) }.getOrNull()
 }
 
-@Suppress("UNCHECKED_CAST")
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
     val seq: Sequence<T> =
-        Services.implementations(Services.qualifiedNameOrFail(clazz))?.map { it.value as T }?.asSequence()
-            ?: emptySequence()
+        Services.implementations(Services.qualifiedNameOrFail(clazz))?.map { it.value }.orEmpty().castUp()
     return if (systemProp("mirai.service.loader", "jdk") == "jdk") {
         ServiceLoader.load(clazz.java).asSequence().plus(seq)
     } else {
