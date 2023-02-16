@@ -11,8 +11,48 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.atomicfu.locks.reentrantLock
+import kotlinx.atomicfu.locks.withLock
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
+
+public object Services {
+    private val lock = reentrantLock()
+    public fun <T : Any> qualifiedNameOrFail(clazz: KClass<out T>): String =
+        clazz.qualifiedName ?: error("Could not find qualifiedName for $clazz")
+
+    private class Implementation(
+        val implementationClass: String,
+        val instance: Lazy<Any>
+    )
+
+    private val registered: MutableMap<String, MutableList<Implementation>> = mutableMapOf()
+
+    public fun register(baseClass: String, implementationClass: String, implementation: () -> Any) {
+        lock.withLock {
+            registered.getOrPut(baseClass, ::mutableListOf)
+                .add(Implementation(implementationClass, lazy(implementation)))
+        }
+    }
+
+    public fun firstImplementationOrNull(baseClass: String): Any? {
+        lock.withLock {
+            return registered[baseClass]?.firstOrNull()?.instance?.value
+        }
+    }
+
+    public fun implementations(baseClass: String): List<Lazy<Any>>? {
+        lock.withLock {
+            return registered[baseClass]?.map { it.instance }
+        }
+    }
+
+    public fun print(): String {
+        lock.withLock {
+            return registered.entries.joinToString { "${it.key}:${it.value}" }
+        }
+    }
+}
 
 public expect fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImplementation: String? = null): T?
 public expect fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementation: String? = null): T

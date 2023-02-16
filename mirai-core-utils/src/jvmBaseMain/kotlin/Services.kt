@@ -13,14 +13,21 @@ import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
+@Suppress("UNCHECKED_CAST")
 public actual fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementation: String?): T {
     var suppressed: Throwable? = null
-    return ServiceLoader.load(clazz.java).firstOrNull()
-        ?: (if (fallbackImplementation == null) null
-        else runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull())
-        ?: throw NoSuchElementException("Could not find an implementation for service class ${clazz.qualifiedName}").apply {
-            if (suppressed != null) addSuppressed(suppressed)
-        }
+    return if (systemProp("mirai.service.loader", "jdk") == "jdk") {
+        ServiceLoader.load(clazz.java).firstOrNull()
+            ?: (Services.firstImplementationOrNull(Services.qualifiedNameOrFail(clazz)) as T?)
+    } else {
+        // mirai.service.loader=fallback
+        (Services.firstImplementationOrNull(Services.qualifiedNameOrFail(clazz)) as T?)
+            ?: ServiceLoader.load(clazz.java).firstOrNull()
+    } ?: (if (fallbackImplementation == null) null
+    else runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull())
+    ?: throw NoSuchElementException("Could not find an implementation for service class ${clazz.qualifiedName}").apply {
+        if (suppressed != null) addSuppressed(suppressed)
+    }
 }
 
 private fun <T : Any> findCreateInstance(fallbackImplementation: String): T {
@@ -33,6 +40,15 @@ public actual fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImpl
         else runCatching { findCreateInstance<T>(fallbackImplementation) }.getOrNull()
 }
 
+@Suppress("UNCHECKED_CAST")
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
-    return ServiceLoader.load(clazz.java).asSequence()
+    val seq: Sequence<T> =
+        Services.implementations(Services.qualifiedNameOrFail(clazz))?.map { it.value as T }?.asSequence()
+            ?: emptySequence()
+    return if (systemProp("mirai.service.loader", "jdk") == "jdk") {
+        ServiceLoader.load(clazz.java).asSequence().plus(seq)
+    } else {
+        // mirai.service.loader=fallback
+        seq
+    }
 }
