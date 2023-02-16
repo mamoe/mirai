@@ -38,7 +38,7 @@ internal interface QRCodeLoginProcessor {
         fun parse(ssoContext: SsoProcessorContext, logger: MiraiLogger): QRCodeLoginProcessor {
             if (!ssoContext.bot.configuration.doQRCodeLogin) return NOOP
             check(ssoContext.bot.configuration.protocol.asInternal.canDoQRCodeLogin) {
-                "The login protocol must be ANDROID_WATCH while enabling qrcode login." +
+                "The login protocol must be ANDROID_WATCH or MACOS while enabling qrcode login." +
                         "Set it by `bot.configuration.protocol = BotConfiguration.MiraiProtocol.ANDROID_WATCH`."
             }
             return QRCodeLoginProcessorPreLoaded(ssoContext, logger)

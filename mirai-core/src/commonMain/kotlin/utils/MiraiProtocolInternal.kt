@@ -96,6 +96,7 @@ internal class MiraiProtocolInternal(
                 "com.tencent.qq".encodeToByteArray().toUHexString(" "),
                 0L,
                 7,
+                canDoQRCodeLogin = true,
             )
         }
 

@@ -685,9 +685,9 @@ internal class WtLogin {
                         t1b()
                         t1d(client.miscBitMap)
 
-                        // TODO macos
-                        if (client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.MACOS) {
-                            t1f(
+                        val protocol = client.bot.configuration.protocol
+                        when(protocol) {
+                            BotConfiguration.MiraiProtocol.MACOS -> t1f(
                                 false,
                                 "Mac OSX".toByteArray(),
                                 "10".toByteArray(),
@@ -695,8 +695,7 @@ internal class WtLogin {
                                 client.device.apn,
                                 2
                             )
-                        } else {
-                            t1f(
+                            BotConfiguration.MiraiProtocol.ANDROID_WATCH -> t1f(
                                 false,
                                 client.device.osType,
                                 "7.1.2".toByteArray(),
@@ -704,11 +703,15 @@ internal class WtLogin {
                                 client.device.apn,
                                 2
                             )
+                            else -> error("protocol $protocol doesn't support qrcode login.")
                         }
 
                         t33(client.device.guid)
-                        // TODO macos
-                        t35(if (client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.MACOS) 5 else 8)
+                        t35(when(protocol) {
+                            BotConfiguration.MiraiProtocol.MACOS -> 5
+                            BotConfiguration.MiraiProtocol.ANDROID_WATCH -> 8
+                            else -> error("protocol $protocol doesn't support qrcode login.")
+                        })
                     }
                     writeByte(0)
                     writeShort(code2dPacket.remaining.toShort())
