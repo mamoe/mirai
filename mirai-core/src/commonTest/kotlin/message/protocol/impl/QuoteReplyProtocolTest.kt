@@ -97,6 +97,12 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
                 ),
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
                     text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "@",
+                        attr6Buf = "00 01 00 00 00 01 00 00 12 C4 B1 00 00".hexToBytes(),
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
                         str = "s",
                     ),
                 ),
