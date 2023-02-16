@@ -11,8 +11,6 @@ package net.mamoe.mirai.internal.network.components
 
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.QRCodeLoginData
 import net.mamoe.mirai.internal.network.component.ComponentKey
@@ -72,7 +70,6 @@ internal class QRCodeLoginProcessorImpl(
     private val logger: MiraiLogger,
 ) : QRCodeLoginProcessor {
 
-    private val lock = Mutex(false)
     private var state = atomic(LoginSolver.QRCodeLoginListener.State.DEFAULT)
 
     private suspend fun requestQRCode(
@@ -93,18 +90,15 @@ internal class QRCodeLoginProcessorImpl(
     ): WtLogin.TransEmp.TransEmpResponse {
         logger.debug { "querying qrcode state. sig=${sig.toUHexString()}" }
         val resp = handler.sendAndExpect(WtLogin.TransEmp.QueryQRCodeStatus(client, sig), attempts = 1, timeout = 500)
-
         check(
             resp is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus || resp is WtLogin.TransEmp.TransEmpResponse.QRCodeConfirmed
         ) { "Cannot query qrcode status, resp=$resp" }
 
-        lock.withLock {
-            val currentState = state.value
-            val newState = resp.mapProtocolState()
-            if (currentState != newState && state.compareAndSet(currentState, newState)) {
-                logger.debug { "qrcode state changed: $state" }
-                qrCodeLoginListener.onStatusChanged(handler.context.bot, newState)
-            }
+        val currentState = state.value
+        val newState = resp.mapProtocolState()
+        if (currentState != newState && state.compareAndSet(currentState, newState)) {
+            logger.debug { "qrcode state changed: $state" }
+            qrCodeLoginListener.onStatusChanged(handler.context.bot, newState)
         }
         return resp
     }
