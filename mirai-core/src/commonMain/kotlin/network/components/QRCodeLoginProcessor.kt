@@ -20,7 +20,6 @@ import net.mamoe.mirai.internal.utils.MiraiProtocolInternal.Companion.asInternal
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.toUHexString
 
 internal interface QRCodeLoginProcessor {
     suspend fun process(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginData = error("Not implemented")
@@ -88,7 +87,7 @@ internal class QRCodeLoginProcessorImpl(
         client: QQAndroidClient,
         sig: ByteArray
     ): WtLogin.TransEmp.TransEmpResponse {
-        logger.debug { "querying qrcode state. sig=${sig.toUHexString()}" }
+        logger.debug { "querying qrcode state." }
         val resp = handler.sendAndExpect(WtLogin.TransEmp.QueryQRCodeStatus(client, sig), attempts = 1, timeout = 500)
         check(
             resp is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus || resp is WtLogin.TransEmp.TransEmpResponse.QRCodeConfirmed
