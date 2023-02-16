@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.network.components.PacketCodec.Companion.PacketL
 import net.mamoe.mirai.internal.network.components.PacketCodecException.Kind.*
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.protocol.packet.*
+import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.crypto.Ecdh
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.utils.*
@@ -104,53 +105,68 @@ internal class PacketCodecImpl : PacketCodec {
 
         val encryptMethod = readByte().toInt()
         val flag3 = readByte().toInt()
-        if (flag3 != 0) {
-            val ex = PacketCodecException(
+        val flag3Exception = if (flag3 != 0) {
+            PacketCodecException(
                 "Illegal flag3. Expected 0, whereas got $flag3. packet type=$type, encrypt method=$encryptMethod. ",
                 kind = PROTOCOL_UPDATED
             )
-            if (client.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_WATCH) {
-                PacketLogger.warning("unknown flag3: $flag3, which may means protocol is updated on ANDROID_WATCH protocol.", ex)
-            } else {
-                throw ex
-            }
-        }
+        } else null
 
         readString(readInt() - 4)// uinAccount
 
         ByteArrayPool.useInstance(this.remaining.toInt()) { buffer ->
             val size = this.readAvailable(buffer)
 
-            when (encryptMethod) {
-                2 -> TEA.decrypt(buffer, DECRYPTER_16_ZERO, size)
-                1 -> TEA.decrypt(buffer, ssoSession.wLoginSigInfo.d2Key, size)
-                0 -> buffer
-                else -> throw PacketCodecException("Unknown encrypt type=$encryptMethod", PROTOCOL_UPDATED)
-            }.let { decryptedData ->
-                when (type) {
-                    0x0A -> parseSsoFrame(ssoSession, decryptedData)
-                    0x0B -> parseSsoFrame(ssoSession, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
-                    else -> throw PacketCodecException(
-                        "unknown packet type: ${type.toByte().toUHexString()}",
-                        PROTOCOL_UPDATED
-                    )
-                }
-            }.let { raw ->
+            val raw = try {
                 when (encryptMethod) {
-                    0, 1 -> RawIncomingPacket(raw.commandName, raw.sequenceId, raw.body.readBytes())
-                    2 -> RawIncomingPacket(
-                        raw.commandName,
-                        raw.sequenceId,
-                        raw.body.withUse {
-                            try {
-                                parseOicqResponse(ssoSession)
-                            } catch (e: Throwable) {
-                                throw PacketCodecException(e, PacketCodecException.Kind.OTHER)
-                            }
-                        }
-                    )
-                    else -> error("unreachable")
+                    2 -> TEA.decrypt(buffer, DECRYPTER_16_ZERO, size)
+                    1 -> TEA.decrypt(buffer, ssoSession.wLoginSigInfo.d2Key, size)
+                    0 -> buffer
+                    else -> throw PacketCodecException("Unknown encrypt type=$encryptMethod", PROTOCOL_UPDATED)
+                }.let { decryptedData ->
+                    when (type) {
+                        0x0A -> parseSsoFrame(ssoSession, decryptedData)
+                        0x0B -> parseSsoFrame(ssoSession, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
+                        else -> throw PacketCodecException(
+                            "unknown packet type: ${type.toByte().toUHexString()}",
+                            PROTOCOL_UPDATED
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                throw e.also {
+                    if (flag3Exception != null) {
+                        it.addSuppressed(flag3Exception)
+                    }
+                }
+            }
+
+            if (flag3 != 0) {
+                if (raw.commandName == WtLogin.TransEmp.commandName) {
+                    PacketLogger.warning(
+                        "unknown flag3: $flag3 in packet ${WtLogin.TransEmp.commandName}, " +
+                                "which may means protocol is updated.",
+                        flag3Exception!!
+                    )
+                } else {
+                    throw flag3Exception!!
+                }
+            }
+
+            when (encryptMethod) {
+                0, 1 -> RawIncomingPacket(raw.commandName, raw.sequenceId, raw.body.readBytes())
+                2 -> RawIncomingPacket(
+                    raw.commandName,
+                    raw.sequenceId,
+                    raw.body.withUse {
+                        try {
+                            parseOicqResponse(ssoSession)
+                        } catch (e: Throwable) {
+                            throw PacketCodecException(e, PacketCodecException.Kind.OTHER)
+                        }
+                    }
+                )
+                else -> error("unreachable")
             }
         }
     }
