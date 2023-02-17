@@ -47,8 +47,9 @@ public actual fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImpl
         else runCatching { findCreateInstance<T>(fallbackImplementation) }.getOrNull()
 }
 
+@Suppress("UNCHECKED_CAST")
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
     val seq: Sequence<T> =
-        Services.implementations(Services.qualifiedNameOrFail(clazz))?.map { it.value }.orEmpty().castUp()
+        Services.implementations(Services.qualifiedNameOrFail(clazz))?.map { it.value as T }.orEmpty().asSequence()
     return loadDependOnProp({ ServiceLoader.load(clazz.java).asSequence().plus(seq) }, { seq })!!
 }
