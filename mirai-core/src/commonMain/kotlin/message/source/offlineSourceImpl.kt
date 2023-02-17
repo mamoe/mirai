@@ -162,12 +162,21 @@ internal fun OfflineMessageSourceImplData(
     it.originalMessage // initialize lazy, to make isOriginalMessageInitialized true.
 }
 
+@Suppress("LocalVariableName")
 internal fun OfflineMessageSourceImplData(
     delegate: ImMsgBody.SourceMsg,
     bot: Bot,
-    messageSourceKind: MessageSourceKind,
-    groupIdOrZero: Long,
+    _messageSourceKind: MessageSourceKind,
+    _groupIdOrZero: Long,
 ): OfflineMessageSourceImplData {
+    var messageSourceKind = _messageSourceKind
+    var groupIdOrZero = _groupIdOrZero
+
+    if (messageSourceKind != MessageSourceKind.GROUP && delegate.troopName.isNotEmpty()) { // FROM GROUP: 单独回复
+        messageSourceKind = MessageSourceKind.GROUP
+        groupIdOrZero = 0
+    }
+
     return OfflineMessageSourceImplData(
         kind = messageSourceKind,
         ids = delegate.origSeqs.fixIds(messageSourceKind),
