@@ -256,7 +256,7 @@ internal open class MultiMsgUploader(
                     fromNick = pm.msg.senderName,
                     msgSeq = pm.seq,
                     msgTime = pm.msg.time,
-                    msgUid = 0x01000000000000000L or pm.uid.toLongUnsigned(),
+                    msgUid = 0x0100000000000000L or pm.uid.toLongUnsigned(),
                     mutiltransHead = MsgComm.MutilTransHead(
                         status = 0,
                         msgId = 1,

@@ -252,7 +252,7 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
     open inner class TestMessageProtocolStrategy : MessageProtocolStrategy<AbstractContact> {
         override suspend fun sendPacket(bot: AbstractBot, packet: OutgoingPacket): Packet {
             assertEquals(0x123, packet.sequenceId)
-            return MessageSvcPbSendMsg.Response.SUCCESS
+            return MessageSvcPbSendMsg.Response.SUCCESS(123)
         }
 
         override suspend fun createPacketsForGeneralMessage(

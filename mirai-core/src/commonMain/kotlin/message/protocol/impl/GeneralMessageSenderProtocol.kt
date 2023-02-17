@@ -27,7 +27,9 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelin
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelineContext.Companion.components
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
 import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
+import net.mamoe.mirai.internal.message.source.OutgoingMessageSourceInternal
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
+import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.message.data.AtAll
@@ -69,8 +71,15 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
                 fragmented = step == SendMessageStep.FRAGMENTED || currentMessageChain.contains(ForceAsFragmentedMessage)
             ) { source = it }
 
-            if (sendAllPackets(bot, step, contact, packets)) {
+            var finalTime = bot.clock.server.currentTimeSeconds().toInt()
+            val sendPacketOk = sendAllPackets(bot, step, contact, packets) { idx, rsp ->
+                if (rsp is MessageSvcPbSendMsg.Response.SUCCESS) {
+                    finalTime = rsp.sendTime
+                }
+            }
+            if (sendPacketOk) {
                 val sourceAwait = source?.await() ?: error("Internal error: source is not initialized")
+                (sourceAwait as OutgoingMessageSourceInternal).time = finalTime
                 sourceAwait.tryEnsureSequenceIdAvailable()
                 collect(sourceAwait.createMessageReceipt(contact, true))
             }
@@ -83,14 +92,19 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
             bot: AbstractBot,
             step: SendMessageStep,
             contact: Contact,
-            packets: List<OutgoingPacket>
+            packets: List<OutgoingPacket>,
+            packetResponseConsumer: (Int, MessageSvcPbSendMsg.Response) -> Unit = { _, _ -> },
         ): Boolean {
             if (!step.allowMultiplePackets && packets.size != 1) {
                 throw IllegalStateException("Internal error: step $step doesn't allow multiple packets while found ${packets.size} ones.")
             }
 
-            packets.forEach { packet ->
-                if (!sendSinglePacket(bot, packet, step, contact)) return@sendAllPackets false
+            packets.forEachIndexed { index, packet ->
+                if (!sendSinglePacket(
+                        bot, packet, step, contact,
+                        index, packetResponseConsumer
+                    )
+                ) return@sendAllPackets false
             }
 
             return true
@@ -101,12 +115,15 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
             packet: OutgoingPacket,
             step: SendMessageStep,
             contact: Contact,
+            index: Int,
+            packetResponseConsumer: (Int, MessageSvcPbSendMsg.Response) -> Unit,
         ): Boolean {
             val originalMessage = attributes[ORIGINAL_MESSAGE]
             val protocolStrategy = components[MessageProtocolStrategy]
             val finalMessage = currentMessageChain
 
             val resp = protocolStrategy.sendPacket(bot, packet) as MessageSvcPbSendMsg.Response
+            packetResponseConsumer(index, resp)
             if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
                 logger.info { "STEP $step: message too large." }
                 val next = step.nextStepOrNull()

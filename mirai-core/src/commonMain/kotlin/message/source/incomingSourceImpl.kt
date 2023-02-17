@@ -48,7 +48,7 @@ internal class OnlineMessageSourceFromFriendImpl(
 ) : OnlineMessageSource.Incoming.FromFriend(), IncomingMessageSourceInternal {
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromFriend")
 
-    override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
+    override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq.and(0xFFFF) }
 
     private val _isRecalledOrPlanned = atomic(false)
 
@@ -119,10 +119,12 @@ internal class OnlineMessageSourceFromStrangerImpl(
 
 private fun List<MsgComm.Msg>.toJceDataPrivate(ids: IntArray): ImMsgBody.SourceMsg {
     val elements = flatMap { it.msgBody.richText.elems }.toMutableList().also {
-        if (it.last().elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
+        if (it.lastOrNull()?.elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
     }
 
-    first().msgHead.run {
+    val firstMsgMsgHead = first().msgHead
+
+    firstMsgMsgHead.run {
         return ImMsgBody.SourceMsg(
             origSeqs = mapToIntArray { it.msgHead.msgSeq },
             senderUin = fromUin,
@@ -132,7 +134,7 @@ private fun List<MsgComm.Msg>.toJceDataPrivate(ids: IntArray): ImMsgBody.SourceM
             type = 0,
             time = msgTime,
             pbReserve = SourceMsg.ResvAttr(
-                origUids = ids.map { it.toLong() and 0xFFFF_FFFF }
+                origUids = mutableListOf(firstMsgMsgHead.msgUid)
             ).toByteArray(SourceMsg.ResvAttr.serializer()),
             srcMsg = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
@@ -142,7 +144,8 @@ private fun List<MsgComm.Msg>.toJceDataPrivate(ids: IntArray): ImMsgBody.SourceM
                     c2cCmd = c2cCmd,
                     msgSeq = msgSeq,
                     msgTime = msgTime,
-                    msgUid = ids.single().toLong() and 0xFFFF_FFFF, // ok
+                    msgUid = firstMsgMsgHead.msgUid, // ok
+//                    msgUid = ids.single().toLong() and 0xFFFF_FFFF, // ok
                     // groupInfo = MsgComm.GroupInfo(groupCode = msgHead.groupInfo.groupCode),
                     isSrcMsg = true
                 ),
