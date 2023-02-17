@@ -107,6 +107,15 @@ internal class OfflineMessageSourceImplData(
     }
 }
 
+private fun IntArray.fixIds(kind: MessageSourceKind): IntArray {
+    if (kind == MessageSourceKind.FRIEND) {
+        for (idx in this.indices) {
+            this[idx] = this[idx].and(0xFFFF)
+        }
+    }
+    return this
+}
+
 internal fun OfflineMessageSourceImplData(
     bot: Bot,
     delegate: List<MsgComm.Msg>,
@@ -123,7 +132,7 @@ internal fun OfflineMessageSourceImplData(
             groupIdOrZero = head.groupInfo?.groupCode ?: 0,
             messageSourceKind = kind
         ),
-        ids = delegate.mapToIntArray { it.msgHead.msgSeq },
+        ids = delegate.mapToIntArray { it.msgHead.msgSeq }.fixIds(kind),
         internalIds = delegate.mapToIntArray { it.msgHead.msgUid.toInt() },
         botId = bot.id
     ).apply {
@@ -161,7 +170,7 @@ internal fun OfflineMessageSourceImplData(
 ): OfflineMessageSourceImplData {
     return OfflineMessageSourceImplData(
         kind = messageSourceKind,
-        ids = delegate.origSeqs,
+        ids = delegate.origSeqs.fixIds(messageSourceKind),
         internalIds = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer())
             .origUids?.mapToIntArray { it.toInt() } ?: intArrayOf(),
         time = delegate.time,
