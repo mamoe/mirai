@@ -56,9 +56,7 @@ internal class OnlineMessageSourceFromFriendImpl(
     override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
     override val ids: IntArray get() = sequenceIds // msg.msgBody.richText.attr!!.random
-    override val internalIds: IntArray = msg.mapToIntArray {
-        it.msgBody.richText.attr?.random ?: 0
-    } // other client 消息的这个是0
+    override val internalIds: IntArray = msg.mapToIntArray { it.decodeRandom() }
     override val time: Int = msg.first().msgHead.msgTime
     override var originalMessageLazy = lazy {
         msg.toMessageChainNoSource(bot, 0, MessageSourceKind.FRIEND)
@@ -95,9 +93,7 @@ internal class OnlineMessageSourceFromStrangerImpl(
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
 
     override val ids: IntArray get() = sequenceIds // msg.msgBody.richText.attr!!.random
-    override val internalIds: IntArray = msg.mapToIntArray {
-        it.msgBody.richText.attr?.random ?: 0
-    } // other client 消息的这个是0
+    override val internalIds: IntArray = msg.mapToIntArray { it.decodeRandom() }
     override val time: Int = msg.first().msgHead.msgTime
     override var originalMessageLazy = lazy {
         msg.toMessageChainNoSource(bot, 0, MessageSourceKind.STRANGER)
@@ -159,6 +155,13 @@ private fun List<MsgComm.Msg>.toJceDataPrivate(ids: IntArray): ImMsgBody.SourceM
     }
 }
 
+internal fun MsgComm.Msg.decodeRandom(): Int {
+    msgBody.richText.attr?.random?.let { return it }
+
+    // msg uin = 0x100000000000000 or rand.toLongUnsigned()
+    return msgHead.msgUid.toInt()
+}
+
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceFromTempImpl.Serializer::class)
 internal class OnlineMessageSourceFromTempImpl(
@@ -168,7 +171,7 @@ internal class OnlineMessageSourceFromTempImpl(
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromTemp")
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
-    override val internalIds: IntArray = msg.mapToIntArray { it.msgBody.richText.attr!!.random }
+    override val internalIds: IntArray = msg.mapToIntArray { it.decodeRandom() }
 
     private val _isRecalledOrPlanned = atomic(false)
 
@@ -217,7 +220,7 @@ internal class OnlineMessageSourceFromGroupImpl(
     override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
-    override val internalIds: IntArray = msg.mapToIntArray { it.msgBody.richText.attr!!.random }
+    override val internalIds: IntArray = msg.mapToIntArray { it.decodeRandom() }
     override val ids: IntArray get() = sequenceIds
     override val time: Int = msg.first().msgHead.msgTime
     override var originalMessageLazy = lazy {
