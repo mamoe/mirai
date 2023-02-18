@@ -14,6 +14,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 
 object GetNextSnapshotIndex {
@@ -21,16 +22,49 @@ object GetNextSnapshotIndex {
     fun main(args: Array<String>) {
         val commitRef = args.getOrNull(0) ?: error("Missing commitRef argument")
 
+
+
         println("Commit ref is: $commitRef")
         println("Making request...")
         HttpClient().use { client ->
-            val index = runBlocking { client.postNextIndex(commitRef = commitRef) }
-            println(index)
-            println()
+            runBlocking {
+                var index = client.getExistingIndex(commitRef = commitRef)
+                if (index == null) {
+                    print("No existing index found. ")
+                    index = client.postNextIndex(commitRef = commitRef)
+                    println("Got new index: $index")
+                } else {
+                    print("Existing index: $index")
+                }
+                println()
 
-            println("<SNAPSHOT_VERSION_START>${index.value}<SNAPSHOT_VERSION_END>")
+                println("<SNAPSHOT_VERSION_START>${index.value}<SNAPSHOT_VERSION_END>")
+            }
         }
     }
+}
+
+suspend fun HttpClient.getExistingIndex(
+    module: String = "mirai-core",
+    branch: String = "dev",
+    commitRef: String,
+): Index? {
+    // https://build.mirai.mamoe.net/v1/mirai-core/dev/indexes/?commitRef=29121565132bed6e996f3de32faaf49106ae8e39
+    val resp = post("https://build.mirai.mamoe.net/v1/$module/$branch/indexes/") {
+        basicAuth(
+            System.getenv("mirai.build.index.auth.username"),
+            System.getenv("mirai.build.index.auth.password")
+        )
+        parameter("commitRef", commitRef)
+    }
+    if (!resp.status.isSuccess()) {
+        val body = runCatching { resp.bodyAsText() }.getOrNull()
+        throw IllegalStateException("Request failed: ${resp.status}  $body")
+    }
+
+    val body = resp.bodyAsText()
+    if (body.isBlank()) return null
+    return Json.decodeFromString(ListSerializer(Index.serializer()), body).lastOrNull()
 }
 
 suspend fun HttpClient.postNextIndex(
