@@ -64,6 +64,8 @@ jobs:
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
           SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
           SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          MIRAI_BUILD_INDEX_AUTH_USERNAME: ${{ secrets.MIRAI_BUILD_INDEX_AUTH_USERNAME }}
+          MIRAI_BUILD_INDEX_AUTH_PASSWORD: ${{ secrets.MIRAI_BUILD_INDEX_AUTH_PASSWORD }}
           CURRENT_BRANCH_NAME: dev # always use -dev for now
 
       - name: "Assemble"
@@ -218,6 +220,8 @@ jobs:
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
           SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
           SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          MIRAI_BUILD_INDEX_AUTH_USERNAME: ${{ secrets.MIRAI_BUILD_INDEX_AUTH_USERNAME }}
+          MIRAI_BUILD_INDEX_AUTH_PASSWORD: ${{ secrets.MIRAI_BUILD_INDEX_AUTH_PASSWORD }}
           CURRENT_BRANCH_NAME: dev # always use -dev for now
 
       - name: "Assemble"
@@ -258,7 +262,7 @@ jobs:
           - ubuntu-20.04
           #          - ubuntu-18.04
           # - macos-12
-#          - macos-11
+        #          - macos-11
         include:
           - os: windows-2022
             targetName: mingwX64
@@ -361,6 +365,8 @@ jobs:
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
           SNAPSHOTS_PUBLISHING_KEY: ${{ secrets.SNAPSHOTS_PUBLISHING_KEY }}
           SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
+          MIRAI_BUILD_INDEX_AUTH_USERNAME: ${{ secrets.MIRAI_BUILD_INDEX_AUTH_USERNAME }}
+          MIRAI_BUILD_INDEX_AUTH_PASSWORD: ${{ secrets.MIRAI_BUILD_INDEX_AUTH_PASSWORD }}
           CURRENT_BRANCH_NAME: dev # always use -dev for now
 
       - name: "Test mirai-core-utils for ${{ matrix.os }}"

@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream
 plugins {
     id("io.codearte.nexus-staging") version "0.22.0"
     kotlin("jvm")
+    kotlin("plugin.serialization")
 }
 
 tasks.register<JavaExec>("runcihelper") {
@@ -66,25 +67,71 @@ nexusStaging {
 }
 
 dependencies {
+    implementation(`ktor-client-okhttp`)
     implementation(`kotlinx-serialization-json`)
+    implementation("org.jetbrains.kotlinx", "kotlinx-datetime", "0.4.0")
 }
 
 tasks.register("updateSnapshotVersion") {
     group = "mirai"
 
+    dependsOn(tasks.compileKotlin)
+    dependsOn(tasks.compileJava)
+
     doLast {
-        setProjectVersionForFutureBuilds(snapshotVersion)
+        val out = ByteArrayOutputStream()
+
+        val sha = getSha()
+        logger.info("CommitRef is $sha")
+
+        val result = javaexec {
+            standardOutput = out
+            classpath(sourceSets.main.get().runtimeClasspath)
+            mainClass.set("cihelper.buildIndex.GetNextSnapshotIndex")
+            args(sha)
+            environment(
+                "mirai.build.index.auth.username",
+                System.getenv("MIRAI_BUILD_INDEX_AUTH_USERNAME")
+                    ?: project.property("mirai.build.index.auth.username")
+
+            )
+            environment(
+                "mirai.build.index.auth.password",
+                System.getenv("MIRAI_BUILD_INDEX_AUTH_PASSWORD")
+                    ?: project.property("mirai.build.index.auth.password")
+            )
+        }
+        result.assertNormalExitValue()
+
+        val resultString = out.toByteArray().decodeToString()
+        val index = resultString
+            .substringAfter("<SNAPSHOT_VERSION_START>", "")
+            .substringBefore("<SNAPSHOT_VERSION_END>", "")
+
+        logger.info("Exec result:")
+        logger.info(resultString)
+
+        if (index.isEmpty()) {
+            throw GradleException("Failed to find version.")
+        }
+
+        logger.info("Snapshot version index is '$index'")
+        val branch = System.getenv("CURRENT_BRANCH_NAME")
+        logger.info("Current branch name is '$branch'")
+        val versionName = "${Versions.project}-$branch-${index}"
+        // https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-a-notice-message
+        println("::notice ::Snapshot version: $versionName") // Add annotation on GitHub Actions build
+        setProjectVersionForFutureBuilds(versionName)
     }
 }
 
 tasks.register("publishSnapshotPage") {
     doLast {
-        UpdateSnapshotPage.run(project, getSha())
+        val sha = getSha()
+        logger.info("CommitRef is $sha")
+        UpdateSnapshotPage.run(project, sha)
     }
 }
-
-
-val snapshotVersion by lazy { getSnapshotVersionImpl() }
 
 fun getSnapshotVersionImpl(): String {
     val branch = System.getenv("CURRENT_BRANCH_NAME")
@@ -137,7 +184,7 @@ fun getSha(): String {
         standardOutput = out
         workingDir = rootProject.projectDir
     }
-    val sha = out.toString()
+    val sha = out.toString().trim()
     logger.info("Current commit sha is '$sha'")
     return sha
 }
