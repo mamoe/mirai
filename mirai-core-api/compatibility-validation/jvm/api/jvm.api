@@ -4809,9 +4809,9 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource : net/mam
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming : net/mamoe/mirai/message/data/OnlineMessageSource {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Incoming$Key;
-	public final fun getFromId ()J
+	public fun getFromId ()J
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/User;
-	public final fun getTargetId ()J
+	public fun getTargetId ()J
 }
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromFriend : net/mamoe/mirai/message/data/OnlineMessageSource$Incoming {

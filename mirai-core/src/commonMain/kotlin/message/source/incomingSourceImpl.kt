@@ -206,7 +206,7 @@ internal class OnlineMessageSourceFromTempImpl(
 @Serializable(OnlineMessageSourceFromGroupImpl.Serializer::class)
 internal class OnlineMessageSourceFromGroupImpl(
     override val bot: Bot,
-    msg: List<MsgComm.Msg>,
+    private val msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromGroup(), IncomingMessageSourceInternal {
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromGroupImpl")
 
@@ -229,11 +229,8 @@ internal class OnlineMessageSourceFromGroupImpl(
 
 
     override val subject: GroupImpl by lazy {
-        val groupCode = msg.first().msgHead.groupInfo?.groupCode
-            ?: error("cannot find groupCode for OnlineMessageSourceFromGroupImpl. msg=${msg.structureToString()}")
-
-        val group = bot.getGroup(groupCode)?.checkIsGroupImpl()
-            ?: error("cannot find group for OnlineMessageSourceFromGroupImpl. msg=${msg.structureToString()}")
+        val group = bot.getGroup(targetId)?.checkIsGroupImpl()
+            ?: error("cannot find group for OnlineMessageSourceFromGroupImpl. Use `source.targetId` to get group id. msg=${msg.structureToString()}")
 
         group
     }
@@ -245,12 +242,19 @@ internal class OnlineMessageSourceFromGroupImpl(
         if (member != null) return@lazy member
 
         val anonymousInfo = msg.first().msgBody.richText.elems.firstOrNull { it.anonGroupMsg != null }
-            ?: error("cannot find member for OnlineMessageSourceFromGroupImpl. msg=${msg.structureToString()}")
+            ?: error("cannot find member for OnlineMessageSourceFromGroupImpl. Use `source.fromId` to get sender id. msg=${msg.structureToString()}")
 
         anonymousInfo.run {
             group.newAnonymous(anonGroupMsg!!.anonNick.decodeToString(), anonGroupMsg.anonId.encodeBase64())
         }
     }
+
+    override val fromId: Long get() = msg.first().msgHead.fromUin
+    override val targetId: Long
+        get() {
+            return msg.first().msgHead.groupInfo?.groupCode
+                ?: error("cannot find groupCode for OnlineMessageSourceFromGroupImpl. msg=${msg.structureToString()}")
+        }
 
     private val jceData: ImMsgBody.SourceMsg by lazy {
         ImMsgBody.SourceMsg(

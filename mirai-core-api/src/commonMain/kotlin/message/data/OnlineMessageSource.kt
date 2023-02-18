@@ -151,8 +151,9 @@ public sealed class OnlineMessageSource : MessageSource() {
     public sealed class Incoming : OnlineMessageSource() {
         public abstract override val sender: User
 
-        public final override val fromId: Long get() = sender.id
-        public final override val targetId: Long get() = target.id
+        /// NOTE: DONT use final to avoid contact not available
+        public override val fromId: Long get() = sender.id
+        public override val targetId: Long get() = target.id
 
         @NotStableForInheritance
         public abstract class FromFriend @MiraiInternalApi constructor() : Incoming() {
