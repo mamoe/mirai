@@ -20,18 +20,20 @@ import kotlinx.serialization.json.Json
 object GetNextSnapshotIndex {
     @JvmStatic
     fun main(args: Array<String>) {
-        val commitRef = args.getOrNull(0) ?: error("Missing commitRef argument")
-
+        val branch = args.getOrNull(0) ?: error("Missing branch argument")
+        val commitRef = args.getOrNull(1) ?: error("Missing commitRef argument")
 
 
         println("Commit ref is: $commitRef")
         println("Making request...")
         HttpClient().use { client ->
             runBlocking {
-                var index = client.getExistingIndex(commitRef = commitRef)
+                kotlin.runCatching { client.createBranch(branch = branch) }
+
+                var index = client.getExistingIndex(branch = branch, commitRef = commitRef)
                 if (index == null) {
                     print("No existing index found. ")
-                    index = client.postNextIndex(commitRef = commitRef)
+                    index = client.postNextIndex(branch = branch, commitRef = commitRef)
                     println("Got new index: $index")
                 } else {
                     print("Existing index: $index")
@@ -46,7 +48,7 @@ object GetNextSnapshotIndex {
 
 suspend fun HttpClient.getExistingIndex(
     module: String = "mirai-core",
-    branch: String = "dev",
+    branch: String,
     commitRef: String,
 ): Index? {
     // https://build.mirai.mamoe.net/v1/mirai-core/dev/indexes/?commitRef=29121565132bed6e996f3de32faaf49106ae8e39
@@ -67,9 +69,23 @@ suspend fun HttpClient.getExistingIndex(
     return Json.decodeFromString(ListSerializer(Index.serializer()), body).lastOrNull()
 }
 
+suspend fun HttpClient.createBranch(
+    module: String = "mirai-core",
+    branch: String,
+): Boolean {
+    // https://build.mirai.mamoe.net/v1/mirai-core/dev/indexes/?commitRef=29121565132bed6e996f3de32faaf49106ae8e39
+    val resp = put("https://build.mirai.mamoe.net/v1/$module/$branch") {
+        basicAuth(
+            System.getenv("mirai.build.index.auth.username"),
+            System.getenv("mirai.build.index.auth.password")
+        )
+    }
+    return resp.status.isSuccess()
+}
+
 suspend fun HttpClient.postNextIndex(
     module: String = "mirai-core",
-    branch: String = "dev",
+    branch: String,
     commitRef: String,
 ): Index {
     val resp = post("https://build.mirai.mamoe.net/v1/$module/$branch/indexes/next") {

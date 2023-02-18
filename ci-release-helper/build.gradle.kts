@@ -82,13 +82,13 @@ tasks.register("updateSnapshotVersion") {
         val out = ByteArrayOutputStream()
 
         val sha = getSha()
-        logger.info("CommitRef is $sha")
+        val branch = getCurrentGitBranch()
 
         val result = javaexec {
             standardOutput = out
             classpath(sourceSets.main.get().runtimeClasspath)
             mainClass.set("cihelper.buildIndex.GetNextSnapshotIndex")
-            args(sha)
+            args(branch, sha)
             environment(
                 "mirai.build.index.auth.username",
                 System.getenv("MIRAI_BUILD_INDEX_AUTH_USERNAME")
@@ -116,14 +116,12 @@ tasks.register("updateSnapshotVersion") {
         }
 
         logger.info("Snapshot version index is '$index'")
-        val branch = System.getenv("CURRENT_BRANCH_NAME")
-        logger.info("Current branch name is '$branch'")
         val versionName = "${Versions.project}-$branch-${index}"
 
         // Add annotation on GitHub Actions build
         // https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-a-notice-message
-        println("::notice ::本 commit 的预览版本号: $versionName\n在 https://github.com/mamoe/mirai/blob/dev/docs/UsingSnapshots.md 查看如何使用预览版本")
-        
+        println("::notice ::本 commit 的预览版本号: $versionName    在 https://github.com/mamoe/mirai/blob/dev/docs/UsingSnapshots.md 查看如何使用预览版本")
+
         setProjectVersionForFutureBuilds(versionName)
     }
 }
@@ -137,7 +135,7 @@ tasks.register("publishSnapshotPage") {
 }
 
 fun getSnapshotVersionImpl(): String {
-    val branch = System.getenv("CURRENT_BRANCH_NAME")
+    val branch = getCurrentGitBranch()
     logger.info("Current branch name is '$branch'")
     val sha = getSha().trim().take(8)
     return "${Versions.project}-$branch-${sha}".also {
@@ -189,5 +187,18 @@ fun getSha(): String {
     }
     val sha = out.toString().trim()
     logger.info("Current commit sha is '$sha'")
+    return sha
+}
+
+fun getCurrentGitBranch(): String {
+    val out = ByteArrayOutputStream()
+    exec {
+        commandLine("git")
+        args("rev-parse", "--abbrev-ref", "HEAD")
+        standardOutput = out
+        workingDir = rootProject.projectDir
+    }
+    val sha = out.toString().trim()
+    logger.info("Current branch is '$sha'")
     return sha
 }
