@@ -50,7 +50,7 @@ suspend fun HttpClient.getExistingIndex(
     commitRef: String,
 ): Index? {
     // https://build.mirai.mamoe.net/v1/mirai-core/dev/indexes/?commitRef=29121565132bed6e996f3de32faaf49106ae8e39
-    val resp = post("https://build.mirai.mamoe.net/v1/$module/$branch/indexes/") {
+    val resp = get("https://build.mirai.mamoe.net/v1/$module/$branch/indexes/") {
         basicAuth(
             System.getenv("mirai.build.index.auth.username"),
             System.getenv("mirai.build.index.auth.password")
