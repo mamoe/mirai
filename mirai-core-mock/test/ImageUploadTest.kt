@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.net.URL
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
@@ -44,6 +45,7 @@ internal class ImageUploadTest {
         assertTrue {
             data.contentEquals(URL(img.queryUrl()).readBytes())
         }
+        assertNotEquals(0, img.size)
     }
 
     @Test
