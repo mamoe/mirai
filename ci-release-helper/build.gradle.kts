@@ -119,8 +119,11 @@ tasks.register("updateSnapshotVersion") {
         val branch = System.getenv("CURRENT_BRANCH_NAME")
         logger.info("Current branch name is '$branch'")
         val versionName = "${Versions.project}-$branch-${index}"
+
+        // Add annotation on GitHub Actions build
         // https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-a-notice-message
-        println("::notice ::Snapshot version: $versionName") // Add annotation on GitHub Actions build
+        println("::warning ::本 commit 的预览版本号: $versionName\n在 https://github.com/mamoe/mirai/blob/dev/docs/UsingSnapshots.md 查看如何使用预览版本")
+        
         setProjectVersionForFutureBuilds(versionName)
     }
 }
