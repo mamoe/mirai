@@ -686,7 +686,7 @@ internal class WtLogin {
                         t1d(client.miscBitMap)
 
                         val protocol = client.bot.configuration.protocol
-                        when(protocol) {
+                        when (protocol) {
                             BotConfiguration.MiraiProtocol.MACOS -> t1f(
                                 false,
                                 "Mac OSX".toByteArray(),
@@ -695,6 +695,7 @@ internal class WtLogin {
                                 client.device.apn,
                                 2
                             )
+
                             BotConfiguration.MiraiProtocol.ANDROID_WATCH -> t1f(
                                 false,
                                 client.device.osType,
@@ -703,15 +704,18 @@ internal class WtLogin {
                                 client.device.apn,
                                 2
                             )
+
                             else -> error("protocol $protocol doesn't support qrcode login.")
                         }
 
                         t33(client.device.guid)
-                        t35(when(protocol) {
-                            BotConfiguration.MiraiProtocol.MACOS -> 5
-                            BotConfiguration.MiraiProtocol.ANDROID_WATCH -> 8
-                            else -> error("protocol $protocol doesn't support qrcode login.")
-                        })
+                        t35(
+                            when (protocol) {
+                                BotConfiguration.MiraiProtocol.MACOS -> 5
+                                BotConfiguration.MiraiProtocol.ANDROID_WATCH -> 8
+                                else -> error("assertion")
+                            }
+                        )
                     }
                     writeByte(0)
                     writeShort(code2dPacket.remaining.toShort())
@@ -753,10 +757,7 @@ internal class WtLogin {
         }
 
         private fun buildCode2dPacket(
-            sequence: Int,
-            uin: Long,
-            command: Short,
-            body: BytePacketBuilder.() -> Unit
+            sequence: Int, uin: Long, command: Short, body: BytePacketBuilder.() -> Unit
         ) = buildPacket {
             writeInt(currentTimeSeconds().toInt())
             writeByte(2)
@@ -842,26 +843,31 @@ internal class WtLogin {
                         val client = bot.client
 
                         val uin = readLong()
-                        if(client.uin != uin) {
+                        if (client.uin != uin) {
                             throw InconsistentBotException(expected = client.uin, actual = uin)
                         }
                         readInt()
                         readUShort()
                         val tlv = _readTLVMap()
 
-                        val tmpPwd =
-                            tlv.getOrFail(0x18) { "missing tlv 0x18 while parsing wtlogin.trans_emp with command 0x12." }
-                        val noPicSig =
-                            tlv.getOrFail(0x19) { "missing tlv 0x19 while parsing wtlogin.trans_emp with command 0x12." }
-                        val tgtQR =
-                            tlv.getOrFail(0x65) { "missing tlv 0x65 while parsing wtlogin.trans_emp with command 0x12." }
+                        val tmpPwd = tlv.getOrFail(0x18) {
+                            "missing tlv 0x18 while parsing wtlogin.trans_emp with command 0x12."
+                        }
+                        val noPicSig = tlv.getOrFail(0x19) {
+                            "missing tlv 0x19 while parsing wtlogin.trans_emp with command 0x12."
+                        }
+                        val tgtQR = tlv.getOrFail(0x65) {
+                            "missing tlv 0x65 while parsing wtlogin.trans_emp with command 0x12."
+                        }
 
-                        client.tgtgtKey =
-                            tlv.getOrFail(0x1e) { "missing tlv 0x1e while parsing wtlogin.trans_emp with command 0x12." }
+                        client.tgtgtKey = tlv.getOrFail(0x1e) {
+                            "missing tlv 0x1e while parsing wtlogin.trans_emp with command 0x12."
+                        }
 
                         TransEmpResponse.QRCodeConfirmed(QRCodeLoginData(tmpPwd, noPicSig, tgtQR))
                     }
                 }
+
                 else -> error("wtlogin.trans_emp received an unknown command: $command")
             }
         }

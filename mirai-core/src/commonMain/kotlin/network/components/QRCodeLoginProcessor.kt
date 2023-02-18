@@ -110,11 +110,13 @@ internal class QRCodeLoginProcessorImpl(
                     is WtLogin.TransEmp.TransEmpResponse.QRCodeConfirmed -> {
                         return status.data
                     }
+
                     is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus -> when (status.state) {
                         WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.TIMEOUT,
                         WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.CANCELLED -> {
                             break@state
                         }
+
                         else -> {} // WAITING_FOR_SCAN or WAITING_FOR_CONFIRM
                     }
                     // status is FetchQRCode, which is unreachable.
@@ -142,8 +144,10 @@ internal class QRCodeLoginProcessorImpl(
                 WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.TIMEOUT ->
                     LoginSolver.QRCodeLoginListener.State.TIMEOUT
             }
+
             is WtLogin.TransEmp.TransEmpResponse.QRCodeConfirmed ->
                 LoginSolver.QRCodeLoginListener.State.CONFIRMED
+
             is WtLogin.TransEmp.TransEmpResponse.FetchQRCode ->
                 error("TransEmpResponse is not QRCodeStatus or QRCodeConfirmed.")
         }
