@@ -15,11 +15,11 @@ jobs:
     name: "Initialize sonatype staging repository"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
 
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -55,11 +55,11 @@ jobs:
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
 
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -174,11 +174,11 @@ jobs:
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
       VCPKG_DEFAULT_BINARY_CACHE: ${{ startsWith(matrix.os, 'windows') && 'C:\vcpkg\binary_cache' || '/usr/local/share/vcpkg/binary_cache' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
 
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v3
         with:
           distribution: 'adopt-openj9'
           java-version: '17'
@@ -308,11 +308,11 @@ jobs:
 #      - publish-others
 #      - publish-core-native
 #    steps:
-#      - uses: actions/checkout@v2
+#      - uses: actions/checkout@v3
 #        with:
 #          submodules: 'recursive'
 #
-#      - uses: actions/setup-java@v2
+#      - uses: actions/setup-java@v3
 #        with:
 #          distribution: 'adopt-openj9'
 #          java-version: '17'
