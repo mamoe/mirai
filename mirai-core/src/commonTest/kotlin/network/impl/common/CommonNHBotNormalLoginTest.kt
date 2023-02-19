@@ -103,7 +103,7 @@ internal class CommonNHBotNormalLoginTest : AbstractCommonNHTest() {
                 delay(1000)
             }
         }
-        assertFailsWith<TimeoutCancellationException>("test Connection reset by peer") { bot.login() }
+        assertFailsWith<TimeoutCancellationException>("test TimeoutCancellationException") { bot.login() }
         assertState(NetworkHandler.State.CLOSED)
     }
 
@@ -153,14 +153,11 @@ internal class CommonNHBotNormalLoginTest : AbstractCommonNHTest() {
                 }
             }
         }
-        val preTimes = bot.configuration.reconnectionRetryTimes
-        bot.configuration.reconnectionRetryTimes = 20
         bot.login()
         bot.network.close(HeartbeatFailedException("Heartbeat Timeout", RuntimeException("Timeout stub"), true))
         eventDispatcher.joinBroadcast()
         delay(1000L) // auto resume in BotOfflineEventMonitor
         eventDispatcher.joinBroadcast()
-        bot.configuration.reconnectionRetryTimes = preTimes
         assertState(NetworkHandler.State.OK)
     }
 
