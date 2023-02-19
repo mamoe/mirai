@@ -12,10 +12,7 @@
 package net.mamoe.mirai.internal.network.impl.common
 
 import io.ktor.utils.io.errors.*
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.*
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.MockConfiguration
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -129,7 +126,7 @@ internal class CommonNHBotNormalLoginTest : AbstractCommonNHTest() {
         bot.network.close(StatSvc.ReqMSFOffline.MsfOfflineToken(0, 0, 0))
 
         eventDispatcher.joinBroadcast()
-        delay(1000L) // auto resume in BotOfflineEventMonitor
+        yield() // auto resume in BotOfflineEventMonitor
         eventDispatcher.joinBroadcast()
 
         assertState(NetworkHandler.State.OK)
