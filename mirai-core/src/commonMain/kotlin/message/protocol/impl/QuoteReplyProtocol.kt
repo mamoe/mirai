@@ -157,17 +157,27 @@ internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
             markAsConsumed()
             collect(ImMsgBody.Elem(srcMsg = source.toJceData()))
             if (sourceCommon.kind == MessageSourceKind.GROUP) {
-                if (source is OnlineMessageSource.Incoming.FromGroup) {
-                    val sender0 = source.sender
-                    if (sender0 !is AnonymousMember) {
-                        processAlso(At(sender0))
+
+                @Suppress("RemoveExplicitTypeArguments")
+                val needPlusAt = sequence<Boolean> {
+                    if (source is OnlineMessageSource.Incoming.FromGroup) {
+                        try {
+                            val sender0 = source.sender
+                            yield(sender0 !is AnonymousMember)
+                        } catch (_: IllegalStateException) {
+                            // Member not available now
+                        }
                     }
+
+                    yield(sourceCommon.fromId != 80000000L)
+                }
+
+                if (needPlusAt.first()) {
+                    processAlso(At(sourceCommon.fromId))
+
                     // transformOneMessage(PlainText(" "))
                     // removed by https://github.com/mamoe/mirai/issues/524
                     // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
-                } else if (sourceCommon.fromId != 80000000L) {
-                    // https://github.com/mamoe/mirai/issues/2501 OfflineMessageSource quote replying
-                    processAlso(At(sourceCommon.fromId))
                 }
             }
         }
