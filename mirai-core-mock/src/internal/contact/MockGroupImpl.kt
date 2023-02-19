@@ -344,12 +344,6 @@ internal class MockGroupImpl(
         return true
     }
 
-    override suspend fun removeEssenceMessage(source: MessageSource): Boolean {
-        checkBotPermission(MemberPermission.ADMINISTRATOR)
-        essences.remove(source)
-        return true
-    }
-
     override val essences: MockEssences = MockEssencesImpl(this)
 
     @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"))

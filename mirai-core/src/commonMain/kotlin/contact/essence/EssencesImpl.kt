@@ -16,6 +16,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.contact.essence.EssenceMessageRecord
 import net.mamoe.mirai.contact.essence.Essences
 import net.mamoe.mirai.internal.contact.GroupImpl
@@ -102,6 +104,7 @@ internal class EssencesImpl(
     }
 
     override suspend fun remove(source: MessageSource) {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
         group.bot.cancelDigest(
             groupCode = group.id,
             msgSeq = source.ids.first(),

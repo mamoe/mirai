@@ -15,7 +15,7 @@ import net.mamoe.mirai.message.data.MessageSource
 
 /**
  * 精华消息记录
- * @since 2.14
+ * @since 2.15
  * @param group 记录的群聊
  * @param sender 消息的发送者
  * @param senderId 消息的发送者的ID

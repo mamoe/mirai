@@ -36,7 +36,7 @@ import net.mamoe.mirai.utils.Streamable
  *
  * 通过 [remove] 可以从列表中移除指定精华消息 (WEB API)
  *
- * @since 2.14
+ * @since 2.15
  */
 @NotStableForInheritance
 public interface Essences : Streamable<EssenceMessageRecord> {

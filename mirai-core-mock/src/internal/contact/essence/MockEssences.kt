@@ -46,7 +46,7 @@ internal class MockEssencesImpl(
     }
 
     override suspend fun share(source: MessageSource): String {
-        return "https://qun.qq.com/essence/share?_wv=3&_wwv=128&_wvx=2&sharekey="
+        return "https://qun.qq.com/essence/share?_wv=3&_wwv=128&_wvx=2&sharekey=..."
     }
 
     override suspend fun remove(source: MessageSource) {

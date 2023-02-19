@@ -395,18 +395,19 @@ internal abstract class CommonGroupImpl constructor(
 
     override val roamingMessages: RoamingMessages by lazy { RoamingMessagesImplGroup(this) }
 
-    override suspend fun removeEssenceMessage(source: MessageSource): Boolean {
-        checkBotPermission(MemberPermission.ADMINISTRATOR)
-        val result = bot.network.sendAndExpect(
-            TroopEssenceMsgManager.SetEssence(
-                bot.client,
-                this@CommonGroupImpl.uin,
-                source.internalIds.first(),
-                source.ids.first()
-            ), 5000, 2
-        )
-        return result.success
-    }
+    // 鉴于在 [essences] 中 有相同的功能的 Web API 所以此方法移除
+//    override suspend fun removeEssenceMessage(source: MessageSource): Boolean {
+//        checkBotPermission(MemberPermission.ADMINISTRATOR)
+//        val result = bot.network.sendAndExpect(
+//            TroopEssenceMsgManager.RemoveEssence(
+//                bot.client,
+//                this@CommonGroupImpl.uin,
+//                source.internalIds.first(),
+//                source.ids.first()
+//            ), 5000, 2
+//        )
+//        return result.success
+//    }
 
     override val essences: Essences by lazy {
         EssencesImpl(
