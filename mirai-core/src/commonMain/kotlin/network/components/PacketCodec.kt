@@ -315,7 +315,7 @@ internal class PacketCodecImpl : PacketCodec {
                     "Received unknown oicq packet type = $packetType, command name = $commandName, ignoring..." +
                             "\nPlease report this message to https://github.com/mamoe/mirai/issues/new/choose, \n" +
                             "Full packet dump: $fullPacketDump\n" +
-                            "Decrypted data (Do not provide it if you haven't change password!!!): $decryptedData",
+                            "Decrypted data (contains your encrypted password, please change your password after reporting issue): $decryptedData",
                     PROTOCOL_UPDATED
                 )
         }
