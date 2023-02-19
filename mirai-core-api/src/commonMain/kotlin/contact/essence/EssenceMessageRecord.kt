@@ -9,9 +9,11 @@
 
 package net.mamoe.mirai.contact.essence
 
+import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
  * 精华消息记录
@@ -25,9 +27,8 @@ import net.mamoe.mirai.message.data.MessageSource
  * @param operatorId 设置精华的操作者的ID
  * @param operatorNick 设置精华的操作者的Nick
  * @param operatorTime 设置精华的时间
- * @param source 消息源
  */
-public class EssenceMessageRecord(
+public class EssenceMessageRecord @MiraiInternalApi constructor(
     public val group: Group,
     public val sender: NormalMember?,
     public val senderId: Long,
@@ -37,9 +38,19 @@ public class EssenceMessageRecord(
     public val operatorId: Long,
     public val operatorNick: String,
     public val operatorTime: Int,
-    public val source: MessageSource
+    private val loadMessageSource: suspend () -> MessageSource
 ) {
     override fun toString(): String {
         return "EssenceMessageRecord(group=${group}, sender=${senderNick}(${senderId}), senderTime=${senderTime}, operator=${operatorNick}(${operatorId}), operatorTime=${operatorTime})"
+    }
+
+    /**
+     * 获取消息源
+     *
+     * **注意** 当精华消息中包含 图片 时，会尝试将其下载然后重新上传, 以保证可用性
+     */
+    @JvmBlockingBridge
+    public suspend fun getSource(): MessageSource {
+        return loadMessageSource()
     }
 }

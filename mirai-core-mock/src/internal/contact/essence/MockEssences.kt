@@ -36,7 +36,7 @@ internal class MockEssencesImpl(
             operatorId = actor.id,
             operatorNick = actor.nick,
             operatorTime = currentTimeSeconds().toInt(),
-            source = source
+            loadMessageSource = { source }
         )
         cache[source] = record
     }

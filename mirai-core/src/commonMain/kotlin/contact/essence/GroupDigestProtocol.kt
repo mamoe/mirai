@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.contact.essence
 
+import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.serialization.KSerializer
@@ -150,4 +151,10 @@ internal suspend fun QQAndroidBot.shareDigest(
             )
         }
     }.bodyAsText().loadAs(DigestData.serializer()).loadData(DigestShare.serializer())
+}
+
+internal suspend fun QQAndroidBot.downloadEssenceMessageImage(urlString: String): ByteArray {
+    return components[HttpClientProvider].getHttpClient().get {
+        url(urlString)
+    }.body()
 }

@@ -902,7 +902,6 @@ public final class net/mamoe/mirai/contact/announcement/OnlineAnnouncementKt {
 }
 
 public final class net/mamoe/mirai/contact/essence/EssenceMessageRecord {
-	public fun <init> (Lnet/mamoe/mirai/contact/Group;Lnet/mamoe/mirai/contact/NormalMember;JLjava/lang/String;ILnet/mamoe/mirai/contact/NormalMember;JLjava/lang/String;ILnet/mamoe/mirai/message/data/MessageSource;)V
 	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 	public final fun getOperator ()Lnet/mamoe/mirai/contact/NormalMember;
 	public final fun getOperatorId ()J
@@ -913,6 +912,7 @@ public final class net/mamoe/mirai/contact/essence/EssenceMessageRecord {
 	public final fun getSenderNick ()Ljava/lang/String;
 	public final fun getSenderTime ()I
 	public final fun getSource ()Lnet/mamoe/mirai/message/data/MessageSource;
+	public final fun getSource (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun toString ()Ljava/lang/String;
 }
 

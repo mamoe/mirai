@@ -13,6 +13,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -22,15 +23,50 @@ import net.mamoe.mirai.contact.essence.EssenceMessageRecord
 import net.mamoe.mirai.contact.essence.Essences
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.warning
+import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 
 internal class EssencesImpl(
     internal val group: GroupImpl,
     internal val logger: MiraiLogger,
 ) : Essences {
 
-    private fun source(message: DigestMessage): MessageSource {
+    private suspend fun parse(content: JsonObject): Message {
+        return when (content.getValue("msg_type").jsonPrimitive.intOrNull) {
+            1 -> PlainText(content = content.getValue("text").jsonPrimitive.content)
+            2 -> Face(id = content.getValue("face_index").jsonPrimitive.int)
+            3 -> {
+                val url = content.getValue("image_url").jsonPrimitive.content
+
+                try {
+                    // url -> bytes -> group.upload
+                    val bytes = group.bot.downloadEssenceMessageImage(url)
+                    bytes.toExternalResource().use { group.uploadImage(it) }
+                } catch (cause: Exception) {
+                    logger.debug({ "essence message image $url download fail." }, cause)
+                    val (md5, ext) = IMAGE_MD5_REGEX.find(url)!!.destructured
+                    val imageId = buildString {
+                        append(md5)
+                        insert(8,"-")
+                        insert(13,"-")
+                        insert(18,"-")
+                        insert(23,"-")
+                        insert(0, "{")
+                        append("}.")
+                        append(ext.replace("jpeg", "jpg"))
+                    }
+                    Image(imageId)
+                }
+            }
+            else -> {
+                // XXX: unknown message type
+                logger.warning { "unknown digest message type for $content" }
+                emptyMessageChain()
+            }
+        }
+    }
+
+    private suspend fun source(message: DigestMessage): MessageSource {
         return group.bot.buildMessageSource(MessageSourceKind.GROUP) {
             ids = intArrayOf(message.msgSeq)
             internalIds = intArrayOf(message.msgRandom)
@@ -39,32 +75,7 @@ internal class EssencesImpl(
             fromId = message.senderUin
             targetId = group.id
 
-            messages(message.msgContent.map { content ->
-                when (content.getValue("msg_type").jsonPrimitive.intOrNull) {
-                    1 -> PlainText(content = content.getValue("text").jsonPrimitive.content)
-                    2 -> Face(id = content.getValue("face_index").jsonPrimitive.int)
-                    3 -> {
-                        val url = content.getValue("image_url").jsonPrimitive.content
-                        val (md5, ext) = IMAGE_MD5_REGEX.find(url)!!.destructured
-                        val imageId = buildString {
-                            append(md5)
-                            insert(8,"-")
-                            insert(13,"-")
-                            insert(18,"-")
-                            insert(23,"-")
-                            insert(0, "{")
-                            append("}.")
-                            append(ext.replace("jpeg", "jpg"))
-                        }
-                        Image(imageId)
-                    }
-                    else -> {
-                        // XXX: unknown message type
-                        logger.warning { "unknown digest message type for $content" }
-                        emptyMessageChain()
-                    }
-                }
-            })
+            messages(message.msgContent.map { content -> parse(content) })
         }
     }
 
@@ -79,7 +90,7 @@ internal class EssencesImpl(
             operatorId = message.addDigestUin,
             operatorNick = message.addDigestNick,
             operatorTime = message.addDigestTime,
-            source = source(message = message)
+            loadMessageSource = { source(message = message) }
         )
     }
 
