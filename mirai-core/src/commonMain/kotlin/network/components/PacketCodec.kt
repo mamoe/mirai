@@ -123,7 +123,7 @@ internal class PacketCodecImpl : PacketCodec {
                     TEA.decrypt(buffer, kotlin.runCatching { client.wLoginSigInfo.d2Key }.getOrElse {
                         throw PacketCodecException(
                             "Received packet needed d2Key to decrypt but d2Key doesn't existed, ignoring. Please report to https://github.com/mamoe/mirai/issues/new/choose if you see anything abnormal",
-                            OTHER
+                            PROTOCOL_UPDATED
                         )
                     }, size)
                 }
