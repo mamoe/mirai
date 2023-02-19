@@ -153,7 +153,7 @@ internal class CommonNHBotNormalLoginTest : AbstractCommonNHTest() {
         bot.login()
         bot.network.close(HeartbeatFailedException("Heartbeat Timeout", RuntimeException("Timeout stub"), true))
         eventDispatcher.joinBroadcast()
-        delay(1000L) // auto resume in BotOfflineEventMonitor
+        yield() // auto resume in BotOfflineEventMonitor
         eventDispatcher.joinBroadcast()
         assertState(NetworkHandler.State.OK)
     }
