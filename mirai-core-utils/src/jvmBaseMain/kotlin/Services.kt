@@ -13,28 +13,37 @@ import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
-private inline fun <T : Any> loadDependOnProp(jdkBlock: () -> T?, fallBackBlock: () -> T?): T? {
-    return when (systemProp("mirai.service.loader", "jdk")) {
-        "jdk" -> jdkBlock()
-        "fallback" -> fallBackBlock()
-        else -> throw IllegalArgumentException("mirai.service.loader must be jdk or fallback, cannot find a service loader")
-    }
+private enum class LoaderType {
+    JDK,
+    FALLBACK,
 }
+
+private val loaderType = when (systemProp("mirai.service.loader", "jdk")) {
+    "jdk" -> LoaderType.JDK
+    "fallback" -> LoaderType.FALLBACK
+    else -> throw IllegalStateException("mirai.service.loader must be jdk or fallback, cannot find a service loader")
+}
+
+private fun <T : Any> getJDKServices(clazz: KClass<out T>): ServiceLoader<out T> = ServiceLoader.load(clazz.java)
 
 @Suppress("UNCHECKED_CAST")
 public actual fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementation: String?): T {
-    var suppressed: Throwable? = null
-    return loadDependOnProp({
-        ServiceLoader.load(clazz.java).firstOrNull()
-            ?: (Services.firstImplementationOrNull(Services.qualifiedNameOrFail(clazz)) as T?)
-    }, {
+    fun getFALLBACKService(clazz: KClass<out T>) =
         (Services.firstImplementationOrNull(Services.qualifiedNameOrFail(clazz)) as T?)
-            ?: ServiceLoader.load(clazz.java).firstOrNull()
-    }) ?: (if (fallbackImplementation == null) null
-    else runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull())
-    ?: throw NoSuchElementException("Could not find an implementation for service class ${clazz.qualifiedName}").apply {
-        if (suppressed != null) addSuppressed(suppressed)
-    }
+
+    var suppressed: Throwable? = null
+
+    val services = when (loaderType) {
+        LoaderType.JDK -> getJDKServices(clazz).firstOrNull() ?: getFALLBACKService(clazz)
+        LoaderType.FALLBACK -> getFALLBACKService(clazz) ?: getJDKServices(clazz).firstOrNull()
+    } ?: if (fallbackImplementation != null) {
+        runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull()
+    } else null
+
+    return services
+        ?: throw NoSuchElementException("Could not find an implementation for service class ${clazz.qualifiedName}").apply {
+            if (suppressed != null) addSuppressed(suppressed)
+        }
 }
 
 private fun <T : Any> findCreateInstance(fallbackImplementation: String): T {
@@ -51,5 +60,9 @@ public actual fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImpl
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
     val seq: Sequence<T> =
         Services.implementations(Services.qualifiedNameOrFail(clazz))?.map { it.value as T }.orEmpty().asSequence()
-    return loadDependOnProp({ ServiceLoader.load(clazz.java).asSequence().plus(seq) }, { seq })!!
+
+    return when (loaderType) {
+        LoaderType.JDK -> getJDKServices(clazz).asSequence().plus(seq)
+        LoaderType.FALLBACK -> seq
+    }
 }
