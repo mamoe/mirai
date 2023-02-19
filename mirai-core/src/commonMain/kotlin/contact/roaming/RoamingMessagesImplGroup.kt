@@ -12,12 +12,12 @@ package net.mamoe.mirai.internal.contact.roaming
 import kotlinx.coroutines.flow.*
 import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
 import net.mamoe.mirai.internal.contact.CommonGroupImpl
-import net.mamoe.mirai.internal.message.getMessageSourceKindFromC2cCmdOrNull
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetGroupMsg
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSourceKind
 
 internal class RoamingMessagesImplGroup(
     override val contact: CommonGroupImpl
@@ -56,12 +56,11 @@ internal class RoamingMessagesImplGroup(
 
                 emitAll(
                     resp.msgElem.asSequence()
-                        .filter { getMessageSourceKindFromC2cCmdOrNull(it.msgHead.c2cCmd) != null } // ignore unsupported messages
                         .filter { it.time in timeStart..timeEnd }
-                        .sortedByDescending { it.time } // Ensure caller receiver newer messages first
+                        .sortedByDescending { it.msgHead.msgSeq } // Ensure caller receiver newer messages first
                         .filter { filter.apply(it) } // Call filter after sort
                         .asFlow()
-                        .map { it.toMessageChainOnline(bot) }
+                        .map { listOf(it).toMessageChainOnline(bot, contact.id, MessageSourceKind.GROUP) }
                 )
 
                 currentSeq = resp.msgElem.minBy { it.time }.msgHead.msgSeq
