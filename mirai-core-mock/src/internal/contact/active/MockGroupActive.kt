@@ -81,21 +81,31 @@ internal class MockGroupActiveImpl(
 
     @Suppress("INVISIBLE_MEMBER")
     override suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList {
+        // for dev: b/c mock api will not sync with real group honor member record automatically
+        // honor member in mock api record
         val current = this.group.honorMembers[type]
+        // honor member in real group honor member history
         val old = honorHistories[type]
         if (current == null) {
             if (old == null) {
+                // add an empty honorList as default placeholder
                 honorHistories[type] = ActiveHonorList(type, null, emptyList())
             } else {
+                // change current honor member in honorHistories to null (as same as this.group.honorMembers)
+                // and add old honor member into record
                 honorHistories[type] = ActiveHonorList(type, null, old.current?.let {
                     old.records.plus(it)
                 } ?: old.records)
             }
         } else {
+            // use mock api data to build a honor info
             val info = ActiveHonorInfo(current.nameCard, current.id, current.avatarUrl, current, 0, 0, 0)
             if (old == null) {
+                // if not history record found, add a new one with current honor member
                 honorHistories[type] = ActiveHonorList(type, info, emptyList())
             } else {
+                // if mock api honor member different from real group honor member history,
+                // add old member into record and set current member as current in history
                 if (old.current?.memberId != info.memberId) {
                     honorHistories[type] =
                         ActiveHonorList(type, info, old.current?.let {
