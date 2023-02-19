@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.AnonymousMember
-import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
@@ -20,7 +19,6 @@ import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext.Co
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext.Companion.MESSAGE_SOURCE_KIND
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
-import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.contact
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePreprocessor
 import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.message.source.*
@@ -154,9 +152,11 @@ internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
     private class Encoder : MessageEncoder<QuoteReply> {
         override suspend fun MessageEncoderContext.process(data: QuoteReply) {
             val source = data.source as? MessageSourceInternal ?: return
+            val sourceCommon = source as MessageSource
+
             markAsConsumed()
             collect(ImMsgBody.Elem(srcMsg = source.toJceData()))
-            if (contact is Group) {
+            if (sourceCommon.kind == MessageSourceKind.GROUP) {
                 if (source is OnlineMessageSource.Incoming.FromGroup) {
                     val sender0 = source.sender
                     if (sender0 !is AnonymousMember) {
@@ -165,6 +165,9 @@ internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
                     // transformOneMessage(PlainText(" "))
                     // removed by https://github.com/mamoe/mirai/issues/524
                     // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
+                } else if (sourceCommon.fromId != 80000000L) {
+                    // https://github.com/mamoe/mirai/issues/2501 OfflineMessageSource quote replying
+                    processAlso(At(sourceCommon.fromId))
                 }
             }
         }

@@ -31,6 +31,11 @@ public actual fun ByteArray.sha1(offset: Int, length: Int): ByteArray = SHA1.cre
     return digest().bytes
 }
 
+public actual fun ByteArray.sha256(offset: Int, length: Int): ByteArray = SHA256.create().run {
+    update(this@sha256, offset, length)
+    return digest().bytes
+}
+
 /**
  * WARNING: DO NOT SET THIS BUFFER TOO SMALL, OR YOU WILL SEE COMPRESSION ERROR.
  */

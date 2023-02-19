@@ -9,6 +9,9 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
+import com.ionspin.kotlin.bignum.integer.BigInteger
+import com.ionspin.kotlin.bignum.integer.util.fromTwosComplementByteArray
+import com.ionspin.kotlin.bignum.integer.util.toTwosComplementByteArray
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.LoginExtraData
@@ -17,7 +20,6 @@ import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.protocol.packet.t145
-import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 import net.mamoe.mirai.utils.*
 
@@ -172,6 +174,126 @@ internal interface WtLoginExt { // so as not to register to global extension
         this.t150 = Tlv(t150)
     }
 
+    fun QQAndroidClient.analysisTlv546(t546: ByteArray) {
+        val version: Byte
+        val algorithmType: Byte
+        val hashType: Byte
+        val maxIndex: Short
+        val reserveBytes: ByteArray
+        val inputBigNumArr: ByteArray
+        val targetHashArr: ByteArray
+        val reserveHashArr: ByteArray
+        var resultArr: ByteArray = EMPTY_BYTE_ARRAY;
+        var costTimeMS: Int = 0;
+        var recursiveDepth: Int = 0;
+        var failed = false
+
+        fun getPadRemaining(bigNumArr: ByteArray, bound: Short): Int {
+            if (bound > 32) {
+                return 1
+            }
+            var maxLoopCount = 255
+            var index = 0
+            while (maxLoopCount >= 0 && index < bound) {
+                if (bigNumArr[maxLoopCount / 8].toInt() and (1 shl maxLoopCount) % 8 != 0) {
+                    return 2
+                }
+                maxLoopCount--
+                index++
+            }
+            return 0
+        }
+
+        fun calcType1(bigNumArrIn: ByteArray, maxLength: Short) {
+            var bigIntArrClone = bigNumArrIn.copyOf()
+            val originLength = bigIntArrClone.size
+            var bigInteger = BigInteger.fromTwosComplementByteArray(bigIntArrClone)
+            while (true) {
+                if (getPadRemaining(bigIntArrClone.sha256().copyOf(32), maxLength) == 0) {
+                    resultArr = bigIntArrClone
+                    return
+                }
+                recursiveDepth++
+                bigInteger = bigInteger.add(BigInteger.ONE)
+                bigIntArrClone = bigInteger.toTwosComplementByteArray()
+                if (bigIntArrClone.size > originLength) {
+                    failed = true
+                    return
+                }
+            }
+        }
+
+        fun calcType2(bigNumArrIn: ByteArray, hashTarget: ByteArray) {
+            var bigIntArrClone = bigNumArrIn.copyOf()
+            val originLength = bigIntArrClone.size
+            var bigInteger = BigInteger.fromTwosComplementByteArray(bigIntArrClone)
+            while (true) {
+                if (bigIntArrClone.sha256().copyOf(32).contentEquals(hashTarget)) {
+                    resultArr = bigIntArrClone
+                    return
+                }
+                recursiveDepth++
+                bigInteger = bigInteger.add(BigInteger.ONE)
+                bigIntArrClone = bigInteger.toTwosComplementByteArray()
+                if (bigIntArrClone.size > originLength) {
+                    failed = true
+                    return
+                }
+
+            }
+        }
+
+        t546.toReadPacket().apply {
+            version = readByte()
+            algorithmType = readByte()
+            hashType = readByte()
+            readByte() // Ignore resultStatus since it's useless
+            maxIndex = readShort()
+            reserveBytes = readBytes(2)
+            inputBigNumArr = readBytes(readShort().toInt())
+            targetHashArr = readBytes(readShort().toInt())
+            reserveHashArr = readBytes(readShort().toInt())
+        }
+        val startTimeMS: Long = currentTimeMillis()
+        costTimeMS = 0
+        recursiveDepth = 0
+        if (hashType == 1.toByte()) {
+            bot.logger.info("Calculating type $algorithmType PoW, it can take some time....")
+            when (algorithmType.toInt()) {
+                1 -> calcType1(inputBigNumArr, maxIndex)
+                2 -> calcType2(inputBigNumArr, targetHashArr)
+                else -> {
+                    failed = true
+                    bot.logger.warning("Unsupported tlv546 algorithm type:${algorithmType}")
+                }
+            }
+        } else {
+            failed = true
+            bot.logger.warning("Unsupported tlv546 hash type:${hashType}")
+        }
+        if (!failed) {
+            costTimeMS = (currentTimeMillis() - startTimeMS).toInt()
+            bot.logger.info("Got PoW result, cost: $costTimeMS ms")
+            this.t547 = buildPacket {
+                writeByte(version)
+                writeByte(algorithmType)
+                writeByte(hashType)
+                writeByte(1) //resultStatus
+                writeShort(maxIndex)
+                writeFully(reserveBytes)
+                writeShortLVByteArray(inputBigNumArr)
+                writeShortLVByteArray(targetHashArr)
+                writeShortLVByteArray(reserveHashArr)
+                writeShortLVByteArray(resultArr)
+                writeInt(costTimeMS)
+                writeInt(recursiveDepth)
+            }.readBytes()
+        } else {
+            bot.logger.warning("Failed to get PoW result, login may fail with error 0x6!")
+        }
+
+    }
+
     fun QQAndroidClient.analysisTlv161(t161: ByteArray) {
         val tlv = t161.toReadPacket().apply { discardExact(2) }.withUse { _readTLVMap() }
 
@@ -208,22 +330,9 @@ internal interface WtLoginExt { // so as not to register to global extension
         }
     }
 
-    fun QQAndroidClient.analyzeTlv106(t106: ByteArray) {
-        val tgtgtKey = decodeA1(t106) {
-            discardExact(51)
-            readBytes(16)
-        }
-        this.tgtgtKey = tgtgtKey
-    }
-
     fun Input.readUShortLVString(): String = String(this.readUShortLVByteArray())
 }
 
-internal inline fun <R> QQAndroidClient.decodeA1(a1: ByteArray, block: ByteReadPacket.() -> R): R {
-    val key = (account.passwordMd5 + ByteArray(4) + uin.toInt().toByteArray()).md5()
-    val v = TEA.decrypt(a1, key)
-    return v.toReadPacket().withUse(block)
-}
 
 internal fun ByteArray?.orEmpty(size: Int = 0): ByteArray {
     return this ?: if (size == 0) EMPTY_BYTE_ARRAY else ByteArray(size)

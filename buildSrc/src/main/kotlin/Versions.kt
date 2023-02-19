@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 object Versions {
     val project = System.getenv("mirai.build.project.version")?.takeIf { it.isNotBlank() }
         ?: System.getProperty("mirai.build.project.version")?.takeIf { it.isNotBlank() }
-        ?: /*PROJECT_VERSION_START*/"2.14.0"/*PROJECT_VERSION_END*/
+        ?: /*PROJECT_VERSION_START*/"2.15.0"/*PROJECT_VERSION_END*/
     // DO NOT ADD SPACE BETWEEN!
 
     val core get() = project
@@ -266,6 +266,9 @@ const val `netty-common` = "io.netty:netty-common:${Versions.netty}"
 const val `netty-transport` = "io.netty:netty-transport:${Versions.netty}"
 const val `netty-buffer` = "io.netty:netty-buffer:${Versions.netty}"
 const val `bouncycastle` = "org.bouncycastle:bcprov-jdk15on:${Versions.bouncycastle}"
+
+const val `kt-bignum` = "com.ionspin.kotlin:bignum:0.3.7"
+val `kt-bignum_relocated` = RelocatedDependency(`kt-bignum`, "com.ionspin.kotlin.bignum")
 
 const val `maven-resolver-api` = "org.apache.maven.resolver:maven-resolver-api:${Versions.mavenArtifactResolver}"
 const val `maven-resolver-impl` = "org.apache.maven.resolver:maven-resolver-impl:${Versions.mavenArtifactResolver}"

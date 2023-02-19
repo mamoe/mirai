@@ -19,6 +19,7 @@ import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.essence.Essences
 import net.mamoe.mirai.contact.file.RemoteFiles
+import net.mamoe.mirai.contact.roaming.RoamingSupported
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -61,7 +62,7 @@ import kotlin.jvm.JvmSynthetic
  * 使用 [Group.files] 获取群文件管理器后操作. 详见 [RemoteFiles].
  */
 @NotStableForInheritance
-public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported {
+public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported, RoamingSupported {
     /**
      * 群名称.
      *

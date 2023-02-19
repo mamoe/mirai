@@ -12,22 +12,20 @@ package net.mamoe.mirai.mock.test.mock
 import kotlinx.coroutines.flow.toList
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
-import net.mamoe.mirai.message.data.OnlineMessageSource
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.messageChainOf
-import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.mock.MockActions.mockFireRecalled
 import net.mamoe.mirai.mock.test.MockBotTestBase
+import net.mamoe.mirai.mock.userprofile.MockMemberInfoBuilder
 import net.mamoe.mirai.mock.utils.broadcastMockEvents
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
+import org.junit.jupiter.api.DynamicNode
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFails
-import kotlin.test.assertNull
-import kotlin.test.assertSame
+import org.junit.jupiter.api.TestFactory
+import kotlin.test.*
 
-internal class MessagingTest: MockBotTestBase() {
+internal class MessagingTest : MockBotTestBase() {
 
     @Test
     internal fun testMessageEventBroadcast() = runTest {
@@ -136,17 +134,51 @@ internal class MessagingTest: MockBotTestBase() {
     @Test
     internal fun testRoamingMessages() = runTest {
         val mockFriend = bot.addFriend(1, "1")
-        broadcastMockEvents {
-            mockFriend says { append("Testing!") }
-            mockFriend says { append("Test2!") }
+
+        val allSent = mutableListOf<MessageSource>()
+        fun MutableList<MessageSource>.add(msg: MessageChain) {
+            add(msg.source)
         }
-        mockFriend.sendMessage("Pong!")
+
+        fun MutableList<MessageSource>.convertToOffline() {
+            replaceAll { src ->
+                bot.buildMessageSource(src.kind) { allFrom(src) }
+            }
+        }
+
+        broadcastMockEvents {
+            allSent.add(mockFriend says { append("Testing!") })
+            allSent.add(mockFriend says { append("Test2!") })
+        }
+        allSent.add(mockFriend.sendMessage("Pong!").source)
+        allSent.convertToOffline()
 
         mockFriend.roamingMessages.getAllMessages().toList().let { messages ->
             assertEquals(3, messages.size)
-            assertEquals(messageChainOf(PlainText("Testing!")), messages[0])
-            assertEquals(messageChainOf(PlainText("Test2!")), messages[1])
-            assertEquals(messageChainOf(PlainText("Pong!")), messages[2])
+            assertEquals(messageChainOf(allSent[0] + PlainText("Testing!")), messages[0])
+            assertEquals(messageChainOf(allSent[1] + PlainText("Test2!")), messages[1])
+            assertEquals(messageChainOf(allSent[2] + PlainText("Pong!")), messages[2])
+        }
+
+        allSent.clear()
+
+        val mockGroup = bot.addGroup(2, "2")
+        val mockGroupMember1 = mockGroup.addMember(123, "123")
+        val mockGroupMember2 = mockGroup.addMember(124, "124")
+        val mockGroupMember3 = mockGroup.addMember(125, "125")
+
+        broadcastMockEvents {
+            allSent.add(mockGroupMember1 says { append("msg1") })
+            allSent.add(mockGroupMember2 says { append("msg2") })
+            allSent.add(mockGroupMember3 says { append("msg3") })
+        }
+        allSent.convertToOffline()
+
+        with(mockGroup.roamingMessages.getAllMessages().toList()) {
+            assertEquals(3, size)
+            assertEquals(messageChainOf(allSent[0] + PlainText("msg1")), get(0))
+            assertEquals(messageChainOf(allSent[1] + PlainText("msg2")), get(1))
+            assertEquals(messageChainOf(allSent[2] + PlainText("msg3")), get(2))
         }
     }
 
@@ -168,7 +200,7 @@ internal class MessagingTest: MockBotTestBase() {
         }.dropMsgChat().let { events ->
             assertEquals(5, events.size)
             assertIsInstance<MessageRecallEvent.GroupRecall>(events[0]) {
-                assertNull(operator)
+                assertSame(sender, operator)
                 assertSame(sender, author)
             }
             assertIsInstance<MessageRecallEvent.GroupRecall>(events[1]) {
@@ -205,4 +237,289 @@ internal class MessagingTest: MockBotTestBase() {
         }
     }
 
+
+    @Suppress("ComplexRedundantLet")
+    @Nested
+    internal inner class MessageRecalling {
+        @TestFactory
+        fun `friend messaging`(): Iterable<DynamicNode> {
+            val myFriend = bot.addFriend(1, "f")
+
+            return listOf<DynamicNode>(
+                dynamicTest("bot recalling") {
+                    val msgBot = myFriend.sendMessage("2")
+                    runAndReceiveEventBroadcast {
+                        msgBot.recall()
+                    }.let { events ->
+                        assertEquals(0, events.size)
+                    }
+                    assertMessageNotAvailable(msgBot.source)
+                },
+                dynamicTest("friend recalling") {
+                    val msgFriend = myFriend.says("1")
+                    runAndReceiveEventBroadcast {
+                        msgFriend.recalledBySender()
+                    }.let { events ->
+                        assertEquals(1, events.size)
+                        assertIsInstance<MessageRecallEvent.FriendRecall>(events[0]) {
+                            assertEquals(myFriend, this.operator)
+                            assertContentEquals(msgFriend.source.ids, this.messageIds)
+                            assertContentEquals(msgFriend.source.internalIds, this.messageInternalIds)
+                        }
+                        assertMessageNotAvailable(msgFriend.source)
+                    }
+                },
+                dynamicTest("bot recall friend msg failed") {
+                    val msg = myFriend.says("1")
+                    assertFails { msg.recall() }
+                    assertMessageAvailable(msg.source)
+                },
+            )
+        }
+
+        @TestFactory
+        fun `stranger messaging`(): Iterable<DynamicNode> {
+            val myStranger = bot.addStranger(2, "s")
+            return listOf<DynamicNode>(
+                dynamicTest("stranger recalling") {
+                    val msg = myStranger.says("1")
+                    runAndReceiveEventBroadcast {
+                        msg.recalledBySender()
+                    }.let { events ->
+                        assertEquals(0, events.size)
+                    }
+                    assertMessageNotAvailable(msg.source)
+                },
+                dynamicTest("bot recalling") {
+                    val msg = myStranger.sendMessage("1")
+                    runAndReceiveEventBroadcast {
+                        msg.recall()
+                    }.let { events ->
+                        assertEquals(0, events.size)
+                    }
+                    assertMessageNotAvailable(msg.source)
+                },
+                dynamicTest("bot recall stranger failed") {
+                    val msg = myStranger.says("1")
+                    assertFails { msg.recall() }
+                    assertMessageAvailable(msg.source)
+                },
+            )
+        }
+
+        @TestFactory
+        fun `group messaging`(): Iterable<DynamicNode> = listOf(
+            dynamicContainer("Normal messaging test") {
+
+                val group = bot.addGroup(18451444229, "owner group")
+                val owner = group.addMember(MockMemberInfoBuilder.create {
+                    uin(184554).permission(MemberPermission.OWNER)
+                })
+                val administrator = group.addMember(MockMemberInfoBuilder.create {
+                    uin(184).permission(MemberPermission.ADMINISTRATOR)
+                })
+                val member = group.addMember(7777, "wapeog")
+
+                group.botAsMember.mockApi.permission = MemberPermission.MEMBER
+
+
+                return@dynamicContainer listOf<DynamicNode>(
+                    dynamicTest("member self recalling") {
+                        val msg = member.says("1")
+                        runAndReceiveEventBroadcast { msg.recalledBySender() }.let { events ->
+                            assertEquals(1, events.size)
+                            assertIsInstance<MessageRecallEvent.GroupRecall>(events[0]) {
+                                assertSame(member, this.author)
+                                assertSame(member, operator)
+                                assertContentEquals(msg.source.ids, this.messageIds)
+                                assertContentEquals(msg.source.internalIds, this.messageInternalIds)
+                            }
+                        }
+                        assertMessageNotAvailable(msg.source)
+                    },
+
+                    dynamicTest("member msg recalled by others") {
+                        val msg = member.says("1")
+                        runAndReceiveEventBroadcast { msg.recalledBy(administrator) }.let { events ->
+                            assertEquals(1, events.size)
+                            assertIsInstance<MessageRecallEvent.GroupRecall>(events[0]) {
+                                assertSame(member, this.author)
+                                assertSame(administrator, operator)
+                                assertContentEquals(msg.source.ids, this.messageIds)
+                                assertContentEquals(msg.source.internalIds, this.messageInternalIds)
+                            }
+                        }
+                        assertMessageNotAvailable(msg.source)
+                    },
+
+                    dynamicTest("member msg forced recalled by bot") {
+                        val msg = member.says("1")
+                        runAndReceiveEventBroadcast { msg.recalledBy(group.botAsMember) }.let { events ->
+                            assertEquals(1, events.size)
+                            assertIsInstance<MessageRecallEvent.GroupRecall>(events[0]) {
+                                assertSame(member, this.author)
+                                assertSame(null, operator)
+                                assertContentEquals(msg.source.ids, this.messageIds)
+                                assertContentEquals(msg.source.internalIds, this.messageInternalIds)
+                            }
+                        }
+                        assertMessageNotAvailable(msg.source)
+                    },
+                )
+            },
+
+            dynamicContainer("bot is owner") {
+                val group = bot.addGroup(8412, "owner group")
+                val administrator = group.addMember(MockMemberInfoBuilder.create {
+                    uin(184).permission(MemberPermission.ADMINISTRATOR)
+                })
+                val member = group.addMember(7777, "wapeog")
+
+                assertEquals(group.botPermission, MemberPermission.OWNER)
+
+
+                return@dynamicContainer listOf<DynamicNode>(
+                    dynamicTest("Bot can recall itself message") {
+                        val msg = group.sendMessage("1")
+                        runAndReceiveEventBroadcast { msg.recall() }.let { events ->
+                            assertEquals(1, events.size)
+                            assertIsInstance<MessageRecallEvent.GroupRecall>(events[0]) {
+                                assertSame(group.botAsMember, this.author)
+                                assertSame(null, operator)
+                                assertContentEquals(msg.source.ids, this.messageIds)
+                                assertContentEquals(msg.source.internalIds, this.messageInternalIds)
+                            }
+                        }
+                        assertMessageNotAvailable(msg.source)
+                    },
+                    dynamicTest("Bot can recall administrator message") {
+                        val msg = administrator.says("1")
+                        runAndReceiveEventBroadcast { msg.recall() }.let { events ->
+                            assertEquals(1, events.size)
+                            assertIsInstance<MessageRecallEvent.GroupRecall>(events[0]) {
+                                assertSame(administrator, this.author)
+                                assertSame(null, operator)
+                                assertContentEquals(msg.source.ids, this.messageIds)
+                                assertContentEquals(msg.source.internalIds, this.messageInternalIds)
+                            }
+                        }
+                        assertMessageNotAvailable(msg.source)
+                    },
+                    dynamicTest("Bot can recall member message") {
+                        val msg = member.says("1")
+                        runAndReceiveEventBroadcast { msg.recall() }.let { events ->
+                            assertEquals(1, events.size)
+                            assertIsInstance<MessageRecallEvent.GroupRecall>(events[0]) {
+                                assertSame(member, this.author)
+                                assertSame(null, operator)
+                                assertContentEquals(msg.source.ids, this.messageIds)
+                                assertContentEquals(msg.source.internalIds, this.messageInternalIds)
+                            }
+                        }
+                        assertMessageNotAvailable(msg.source)
+                    },
+                )
+            },
+            dynamicContainer("bot is administrator") {
+
+                val group = bot.addGroup(7517, "owner group")
+                val owner = group.addMember(MockMemberInfoBuilder.create {
+                    uin(96451).permission(MemberPermission.OWNER)
+                })
+                val administrator = group.addMember(MockMemberInfoBuilder.create {
+                    uin(184).permission(MemberPermission.ADMINISTRATOR)
+                })
+                val member = group.addMember(7777, "wapeog")
+
+                group.botAsMember.mockApi.permission = MemberPermission.ADMINISTRATOR
+
+
+
+                return@dynamicContainer listOf<DynamicNode>(
+                    dynamicTest("Bot can recall itself message") {
+                        val msg = group.sendMessage("1")
+                        runAndReceiveEventBroadcast { msg.recall() }.let { events ->
+                            assertEquals(1, events.size)
+                            assertIsInstance<MessageRecallEvent.GroupRecall>(events[0]) {
+                                assertSame(group.botAsMember, this.author)
+                                assertSame(null, operator)
+                                assertContentEquals(msg.source.ids, this.messageIds)
+                                assertContentEquals(msg.source.internalIds, this.messageInternalIds)
+                            }
+                        }
+                        assertMessageNotAvailable(msg.source)
+                    },
+                    dynamicTest("Bot cannot recall owner message") {
+                        val msg = owner.says("1")
+                        assertFails { msg.recall() }
+                        assertMessageAvailable(msg.source)
+                    },
+                    dynamicTest("Bot cannot recall administrator message") {
+                        val msg = administrator.says("1")
+                        assertFails { msg.recall() }
+                        assertMessageAvailable(msg.source)
+                    },
+                    dynamicTest("Bot can recall member message") {
+                        val msg = member.says("1")
+                        runAndReceiveEventBroadcast { msg.recall() }.let { events ->
+                            assertEquals(1, events.size)
+                            assertIsInstance<MessageRecallEvent.GroupRecall>(events[0]) {
+                                assertSame(member, this.author)
+                                assertSame(null, operator)
+                                assertContentEquals(msg.source.ids, this.messageIds)
+                                assertContentEquals(msg.source.internalIds, this.messageInternalIds)
+                            }
+                        }
+                        assertMessageNotAvailable(msg.source)
+                    },
+                )
+            },
+            dynamicContainer("bot is member") {
+
+                val group = bot.addGroup(8441117, "owner group")
+                val owner = group.addMember(MockMemberInfoBuilder.create {
+                    uin(98171).permission(MemberPermission.OWNER)
+                })
+                val administrator = group.addMember(MockMemberInfoBuilder.create {
+                    uin(184).permission(MemberPermission.ADMINISTRATOR)
+                })
+                val member = group.addMember(7777, "wapeog")
+
+                group.botAsMember.mockApi.permission = MemberPermission.MEMBER
+
+
+                return@dynamicContainer listOf<DynamicNode>(
+                    dynamicTest("Bot can recall itself message") {
+                        val msg = group.sendMessage("1")
+                        runAndReceiveEventBroadcast { msg.recall() }.let { events ->
+                            assertEquals(1, events.size)
+                            assertIsInstance<MessageRecallEvent.GroupRecall>(events[0]) {
+                                assertSame(group.botAsMember, this.author)
+                                assertSame(null, operator)
+                                assertContentEquals(msg.source.ids, this.messageIds)
+                                assertContentEquals(msg.source.internalIds, this.messageInternalIds)
+                            }
+                        }
+                        assertMessageNotAvailable(msg.source)
+                    },
+                    dynamicTest("Bot cannot recall owner message") {
+                        val msg = owner.says("1")
+                        assertFails { msg.recall() }
+                        assertMessageAvailable(msg.source)
+                    },
+                    dynamicTest("Bot cannot recall administrator message") {
+                        val msg = administrator.says("1")
+                        assertFails { msg.recall() }
+                        assertMessageAvailable(msg.source)
+                    },
+                    dynamicTest("Bot cannot recall member message") {
+                        val msg = member.says("1")
+                        assertFails { msg.recall() }
+                        assertMessageAvailable(msg.source)
+                    },
+                )
+            },
+        )
+
+    }
 }
