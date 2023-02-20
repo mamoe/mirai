@@ -97,7 +97,11 @@ internal class PacketCodecException(
 
 internal class PacketCodecImpl : PacketCodec {
 
-    override fun decodeRaw(client: QQAndroidBot, ssoSession: SsoSession, input: ByteReadPacket): RawIncomingPacket = input.run {
+    override fun decodeRaw(
+        client: QQAndroidBot,
+        ssoSession: SsoSession,
+        input: ByteReadPacket
+    ): RawIncomingPacket = input.run {
         // packet type
         val type = readInt()
 
@@ -141,15 +145,15 @@ internal class PacketCodecImpl : PacketCodec {
                 }
             }
 
-            if (flag3 != 0) {
+            if (flag3 != 0 && flag3Exception != null) {
                 if (raw.commandName == WtLogin.TransEmp.commandName) {
                     PacketLogger.warning(
                         "unknown flag3: $flag3 in packet ${WtLogin.TransEmp.commandName}, " +
                                 "which may means protocol is updated.",
-                        flag3Exception!!
+                        flag3Exception
                     )
                 } else {
-                    throw flag3Exception!!
+                    throw flag3Exception
                 }
             }
 
@@ -166,6 +170,7 @@ internal class PacketCodecImpl : PacketCodec {
                         }
                     }
                 )
+
                 else -> error("unreachable")
             }
         }
@@ -240,6 +245,7 @@ internal class PacketCodecImpl : PacketCodec {
                         }
                     }
                 }
+
                 1 -> {
                     input.discardExact(4)
                     input.inflateAllAvailable().let { bytes ->
@@ -251,6 +257,7 @@ internal class PacketCodecImpl : PacketCodec {
                         }
                     }
                 }
+
                 8 -> input
                 else -> throw PacketCodecException("Unknown dataCompressed flag: $dataCompressed", PROTOCOL_UPDATED)
             }
@@ -290,6 +297,7 @@ internal class PacketCodecImpl : PacketCodec {
                     qqEcdh.calculateQQShareKey(Ecdh.Instance.importPublicKey(readUShortLVByteArray()))
                 TEA.decrypt(data, peerShareKey)
             }
+
             3 -> {
                 val size = (this.remaining - 1).toInt()
                 // session
@@ -299,6 +307,7 @@ internal class PacketCodecImpl : PacketCodec {
                     length = size
                 )
             }
+
             0 -> {
                 if (client.loginState == 0) {
                     val size = (this.remaining - 1).toInt()
@@ -314,6 +323,7 @@ internal class PacketCodecImpl : PacketCodec {
                     TEA.decrypt(this.readBytes(), client.randomKey, length = size)
                 }
             }
+
             else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")
         }
     }
