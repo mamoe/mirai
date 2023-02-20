@@ -59,6 +59,7 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
     override val isSliderCaptchaSupported: Boolean get() = true
     override fun createQRCodeLoginListener(bot: Bot): QRCodeLoginListener {
         return object : QRCodeLoginListener {
+
             override fun onFetchQRCode(bot: Bot, data: ByteArray) {
                 val logger = loggerSupplier(bot)
                 val tempFile: File = File.createTempFile(
