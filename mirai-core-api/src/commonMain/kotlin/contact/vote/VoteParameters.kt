@@ -21,7 +21,7 @@ import kotlin.jvm.JvmStatic
  *
  * 可通过 [VoteParametersBuilder] 构建. 默认实例为 [DEFAULT].
  *
- * @since 2.14
+ * @since 2.15
  */
 @SerialName(VoteParameters.SERIAL_NAME)
 @Serializable

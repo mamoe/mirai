@@ -20,7 +20,7 @@ import kotlin.jvm.JvmStatic
  *
  * 要发布一条带有图片的投票, 请在构造 [VoteParameters] 时提供 [VoteParameters.image] 参数. 详见 [Vote].
  *
- * @since 2.14
+ * @since 2.15
  */
 @SerialName(VoteImage.SERIAL_NAME)
 @Serializable

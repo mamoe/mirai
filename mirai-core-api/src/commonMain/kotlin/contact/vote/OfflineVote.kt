@@ -36,7 +36,7 @@ import kotlin.native.CName
  *
  * @see OnlineVote.publishTo
  *
- * @since 2.7
+ * @since 2.15
  */
 @Serializable(OfflineVote.Companion.Serializer::class)
 @SerialName(OfflineVote.SERIAL_NAME)
@@ -96,7 +96,7 @@ public sealed interface OfflineVote : Vote {
 
 /**
  * 依据 [from] 创建 [OfflineVote]. 若 [from] 类型为 [OfflineVote] 则直接返回 [from].
- * @since 2.7
+ * @since 2.15
  */
 @CName("", "OfflineVote_new")
 public inline fun OfflineVote(from: Vote): OfflineVote =
@@ -107,7 +107,7 @@ public inline fun OfflineVote(from: Vote): OfflineVote =
  * @param title 投票标题
  * @param options 投票选项
  * @param parameters 可选的附加参数
- * @since 2.14
+ * @since 2.15
  */
 @CName("", "OfflineVote_new2")
 public inline fun OfflineVote(
@@ -122,7 +122,7 @@ public inline fun OfflineVote(
  * @param options 投票选项
  * @param parameters 可选的附加参数
  * @see VoteParametersBuilder
- * @since 2.14
+ * @since 2.15
  */
 @CName("", "OfflineVote_new3")
 public inline fun OfflineVote(

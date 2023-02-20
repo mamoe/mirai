@@ -14,7 +14,7 @@ import net.mamoe.mirai.contact.Group
 
 /**
  * 表示一个群投票
- * @since 2.14
+ * @since 2.15
  */
 public sealed interface Vote {
     /**

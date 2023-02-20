@@ -26,7 +26,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  *
  * 可在 [Vote] 获取更多信息.
  *
- * @since 2.14
+ * @since 2.15
  */
 @NotStableForInheritance
 public interface OnlineVote : Vote {
@@ -109,12 +109,13 @@ public interface OnlineVote : Vote {
 
 /**
  * 投票所在群所属的 [Bot], 即 `group.bot`.
- * @since 2.14
+ * @since 2.15
  */
 public inline val OnlineVote.bot: Bot get() = group.bot
 
 /**
  * 一次投票记录
+ * @since 2.15
  */
 @NotStableForInheritance
 public interface OnlineVoteRecord {

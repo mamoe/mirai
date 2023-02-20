@@ -47,7 +47,7 @@ import kotlin.time.Duration
  *
  * @see buildVoteParameters
  *
- * @since 2.14
+ * @since 2.15
  */
 public class VoteParametersBuilder @JvmOverloads constructor(
     prototype: VoteParameters = VoteParameters.DEFAULT
