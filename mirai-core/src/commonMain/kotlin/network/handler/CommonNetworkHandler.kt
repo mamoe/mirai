@@ -139,7 +139,6 @@ internal abstract class CommonNetworkHandler<Conn>(
                 val bytes = packet.readBytes()
                 logger.verbose { "Decoding: len=${bytes.size}, value=${bytes.toUHexString()}" }
                 val raw = packetCodec.decodeRaw(
-                    context.bot,
                     ssoProcessor.ssoSession,
                     bytes.toReadPacket()
                 )
@@ -147,7 +146,6 @@ internal abstract class CommonNetworkHandler<Conn>(
                 raw
             } else {
                 packetCodec.decodeRaw(
-                    context.bot,
                     ssoProcessor.ssoSession,
                     packet
                 )

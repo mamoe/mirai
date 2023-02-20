@@ -38,7 +38,7 @@ internal interface PacketCodec {
      * @return decoded
      */
     @Throws(PacketCodecException::class)
-    fun decodeRaw(client: QQAndroidBot, ssoSession: SsoSession, input: ByteReadPacket): RawIncomingPacket
+    fun decodeRaw(client: SsoSession, input: ByteReadPacket): RawIncomingPacket
 
     /**
      * Process [RawIncomingPacket] using [IncomingPacketFactory.decode].
@@ -98,8 +98,7 @@ internal class PacketCodecException(
 internal class PacketCodecImpl : PacketCodec {
 
     override fun decodeRaw(
-        client: QQAndroidBot,
-        ssoSession: SsoSession,
+        client: SsoSession,
         input: ByteReadPacket
     ): RawIncomingPacket = input.run {
         // packet type
@@ -124,13 +123,13 @@ internal class PacketCodecImpl : PacketCodec {
             val raw = try {
                 when (encryptMethod) {
                     2 -> TEA.decrypt(buffer, DECRYPTER_16_ZERO, size)
-                    1 -> TEA.decrypt(buffer, ssoSession.wLoginSigInfo.d2Key, size)
+                    1 -> TEA.decrypt(buffer, client.wLoginSigInfo.d2Key, size)
                     0 -> buffer
                     else -> throw PacketCodecException("Unknown encrypt type=$encryptMethod", PROTOCOL_UPDATED)
                 }.let { decryptedData ->
                     when (type) {
-                        0x0A -> parseSsoFrame(ssoSession, decryptedData)
-                        0x0B -> parseSsoFrame(ssoSession, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
+                        0x0A -> parseSsoFrame(client, decryptedData)
+                        0x0B -> parseSsoFrame(client, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
                         else -> throw PacketCodecException(
                             "unknown packet type: ${type.toByte().toUHexString()}",
                             PROTOCOL_UPDATED
@@ -164,7 +163,7 @@ internal class PacketCodecImpl : PacketCodec {
                     raw.sequenceId,
                     raw.body.withUse {
                         try {
-                            parseOicqResponse(ssoSession)
+                            parseOicqResponse(client)
                         } catch (e: Throwable) {
                             throw PacketCodecException(e, PacketCodecException.Kind.OTHER)
                         }
