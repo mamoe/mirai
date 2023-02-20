@@ -659,7 +659,7 @@ internal class WtLogin {
 
     }
 
-    internal object TransEmp : OutgoingPacketFactory<TransEmp.TransEmpResponse>("wtlogin.trans_emp") {
+    internal object TransEmp : OutgoingPacketFactory<TransEmp.Response>("wtlogin.trans_emp") {
 
         fun FetchQRCode(
             client: QQAndroidClient
@@ -775,16 +775,30 @@ internal class WtLogin {
             writeByte(3)
         }
 
-        sealed class TransEmpResponse() : Packet {
-            class FetchQRCode(val imageData: ByteArray, val sig: ByteArray) : TransEmpResponse()
-            class QRCodeStatus(val state: State) : TransEmpResponse() {
+        sealed class Response() : Packet {
+            class FetchQRCode(val imageData: ByteArray, val sig: ByteArray) : Response() {
+                override fun toString(): String {
+                    return "WtLogin.TransEmp.Response.FetchQRCode" +
+                            "(imageData=${imageData.toUHexString()}, sig=${sig.toUHexString()})"
+                }
+            }
+
+            class QRCodeStatus(val state: State) : Response() {
+                override fun toString(): String {
+                    return "WtLogin.TransEmp.Response.QRCodeStatus(state=$state)"
+                }
+
                 enum class State { WAITING_FOR_SCAN, WAITING_FOR_CONFIRM, CANCELLED, TIMEOUT }
             }
 
-            class QRCodeConfirmed(val data: QRCodeLoginData) : TransEmpResponse()
+            class QRCodeConfirmed(val data: QRCodeLoginData) : Response() {
+                override fun toString(): String {
+                    return "WtLogin.TransEmp.Response.QRCodeConfirmed(data=$data)"
+                }
+            }
         }
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): TransEmpResponse {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             check(remaining >= 48) { "remaining payload is too short, current is $remaining." }
 
             discardExact(5)
@@ -812,7 +826,7 @@ internal class WtLogin {
                     val data =
                         tlv.getOrFail(0x17) { "missing tlv 0x17 while parsing wtlogin.trans_emp with command 0x31." }
 
-                    TransEmpResponse.FetchQRCode(data, sig)
+                    Response.FetchQRCode(data, sig)
                 }
 
                 0x12 -> { // qr code state
@@ -833,10 +847,10 @@ internal class WtLogin {
                     val code = readUByte().toInt()
                     if (code != 0) {
                         when (code) { // code
-                            0x30 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.WAITING_FOR_SCAN)
-                            0x35 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.WAITING_FOR_CONFIRM)
-                            0x36 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.CANCELLED)
-                            0x11 -> TransEmpResponse.QRCodeStatus(TransEmpResponse.QRCodeStatus.State.TIMEOUT)
+                            0x30 -> Response.QRCodeStatus(Response.QRCodeStatus.State.WAITING_FOR_SCAN)
+                            0x35 -> Response.QRCodeStatus(Response.QRCodeStatus.State.WAITING_FOR_CONFIRM)
+                            0x36 -> Response.QRCodeStatus(Response.QRCodeStatus.State.CANCELLED)
+                            0x11 -> Response.QRCodeStatus(Response.QRCodeStatus.State.TIMEOUT)
                             else -> error("unknown code $code while parsing wtlogin.trans_emp with command 0x12.")
                         }
                     } else {
@@ -864,7 +878,7 @@ internal class WtLogin {
                             "missing tlv 0x1e while parsing wtlogin.trans_emp with command 0x12."
                         }
 
-                        TransEmpResponse.QRCodeConfirmed(QRCodeLoginData(tmpPwd, noPicSig, tgtQR))
+                        Response.QRCodeConfirmed(QRCodeLoginData(tmpPwd, noPicSig, tgtQR))
                     }
                 }
 

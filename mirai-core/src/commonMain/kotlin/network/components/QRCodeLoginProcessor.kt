@@ -33,7 +33,6 @@ internal interface QRCodeLoginProcessor {
     companion object : ComponentKey<QRCodeLoginProcessor> {
         internal val NOOP = object : QRCodeLoginProcessor {}
 
-        //TODO: these exception should throw in network instead here.
         fun parse(ssoContext: SsoProcessorContext, logger: MiraiLogger): QRCodeLoginProcessor {
             if (!ssoContext.bot.configuration.doQRCodeLogin) return NOOP
             check(ssoContext.bot.configuration.protocol.asInternal.canDoQRCodeLogin) {
@@ -74,10 +73,10 @@ internal class QRCodeLoginProcessorImpl(
     private suspend fun requestQRCode(
         handler: NetworkHandler,
         client: QQAndroidClient
-    ): WtLogin.TransEmp.TransEmpResponse.FetchQRCode {
+    ): WtLogin.TransEmp.Response.FetchQRCode {
         logger.debug { "requesting qrcode." }
         val resp = handler.sendAndExpect(WtLogin.TransEmp.FetchQRCode(client), attempts = 1)
-        check(resp is WtLogin.TransEmp.TransEmpResponse.FetchQRCode) { "Cannot fetch qrcode, resp=$resp" }
+        check(resp is WtLogin.TransEmp.Response.FetchQRCode) { "Cannot fetch qrcode, resp=$resp" }
         qrCodeLoginListener.onFetchQRCode(handler.context.bot, resp.imageData)
         return resp
     }
@@ -86,11 +85,11 @@ internal class QRCodeLoginProcessorImpl(
         handler: NetworkHandler,
         client: QQAndroidClient,
         sig: ByteArray
-    ): WtLogin.TransEmp.TransEmpResponse {
+    ): WtLogin.TransEmp.Response {
         logger.debug { "querying qrcode state." }
         val resp = handler.sendAndExpect(WtLogin.TransEmp.QueryQRCodeStatus(client, sig), attempts = 1, timeout = 500)
         check(
-            resp is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus || resp is WtLogin.TransEmp.TransEmpResponse.QRCodeConfirmed
+            resp is WtLogin.TransEmp.Response.QRCodeStatus || resp is WtLogin.TransEmp.Response.QRCodeConfirmed
         ) { "Cannot query qrcode status, resp=$resp" }
 
         val currentState = state.value
@@ -107,13 +106,13 @@ internal class QRCodeLoginProcessorImpl(
             val qrCodeData = requestQRCode(handler, client)
             state@ while (true) {
                 when (val status = queryQRCodeStatus(handler, client, qrCodeData.sig)) {
-                    is WtLogin.TransEmp.TransEmpResponse.QRCodeConfirmed -> {
+                    is WtLogin.TransEmp.Response.QRCodeConfirmed -> {
                         return status.data
                     }
 
-                    is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus -> when (status.state) {
-                        WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.TIMEOUT,
-                        WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.CANCELLED -> {
+                    is WtLogin.TransEmp.Response.QRCodeStatus -> when (status.state) {
+                        WtLogin.TransEmp.Response.QRCodeStatus.State.TIMEOUT,
+                        WtLogin.TransEmp.Response.QRCodeStatus.State.CANCELLED -> {
                             break@state
                         }
 
@@ -121,7 +120,7 @@ internal class QRCodeLoginProcessorImpl(
                     }
                     // status is FetchQRCode, which is unreachable.
                     else -> {
-                        error("query qrcode status packet should not be FetchQRCode.")
+                        error("query qrcode status should not be FetchQRCode.")
                     }
                 }
                 delay(5000)
@@ -129,27 +128,27 @@ internal class QRCodeLoginProcessorImpl(
         }
     }
 
-    private fun WtLogin.TransEmp.TransEmpResponse.mapProtocolState(): LoginSolver.QRCodeLoginListener.State {
+    private fun WtLogin.TransEmp.Response.mapProtocolState(): LoginSolver.QRCodeLoginListener.State {
         return when (this) {
-            is WtLogin.TransEmp.TransEmpResponse.QRCodeStatus -> when (this.state) {
-                WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.WAITING_FOR_SCAN ->
+            is WtLogin.TransEmp.Response.QRCodeStatus -> when (this.state) {
+                WtLogin.TransEmp.Response.QRCodeStatus.State.WAITING_FOR_SCAN ->
                     LoginSolver.QRCodeLoginListener.State.WAITING_FOR_SCAN
 
-                WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.WAITING_FOR_CONFIRM ->
+                WtLogin.TransEmp.Response.QRCodeStatus.State.WAITING_FOR_CONFIRM ->
                     LoginSolver.QRCodeLoginListener.State.WAITING_FOR_CONFIRM
 
-                WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.CANCELLED ->
+                WtLogin.TransEmp.Response.QRCodeStatus.State.CANCELLED ->
                     LoginSolver.QRCodeLoginListener.State.CANCELLED
 
-                WtLogin.TransEmp.TransEmpResponse.QRCodeStatus.State.TIMEOUT ->
+                WtLogin.TransEmp.Response.QRCodeStatus.State.TIMEOUT ->
                     LoginSolver.QRCodeLoginListener.State.TIMEOUT
             }
 
-            is WtLogin.TransEmp.TransEmpResponse.QRCodeConfirmed ->
+            is WtLogin.TransEmp.Response.QRCodeConfirmed ->
                 LoginSolver.QRCodeLoginListener.State.CONFIRMED
 
-            is WtLogin.TransEmp.TransEmpResponse.FetchQRCode ->
-                error("TransEmpResponse is not QRCodeStatus or QRCodeConfirmed.")
+            is WtLogin.TransEmp.Response.FetchQRCode ->
+                error("$this cannot be mapped to listener state.")
         }
     }
 }
