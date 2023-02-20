@@ -23,6 +23,7 @@ class CoreShadowRelocationTest : AbstractTest() {
         private const val KtorOkHttp = "io.ktor.client.engine.okhttp.OkHttp"
         private const val OkHttp = "okhttp3.OkHttp"
         private const val OkIO = "okio.ByteString"
+        private const val BigInteger = "com.ionspin.kotlin.bignum.integer.BigInteger"
 
         fun relocated(string: String): String {
             return "net.mamoe.mirai.internal.deps.$string"
@@ -38,6 +39,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             -both(`ktor-client-okhttp`)
             -both(`okhttp3-okhttp`)
             -both(okio)
+            -both(`kt-bignum`)
         }
         applyCodeFragment(fragment)
         buildFile.appendText(
@@ -59,6 +61,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             -both(`ktor-client-okhttp`)
             -both(`okhttp3-okhttp`)
             -both(okio)
+            -both(`kt-bignum`)
             +relocated(`ExternalResource-input`)
         }
         applyCodeFragment(fragment)
@@ -82,6 +85,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             +relocated(`okhttp3-okhttp`)
             +relocated(okio)
             +relocated(`ExternalResource-input`)
+            +relocated(`kt-bignum`)
         }
         applyCodeFragment(fragment)
         buildFile.appendText(
@@ -106,6 +110,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             +relocated(`ktor-client-okhttp`)
             +relocated(`okhttp3-okhttp`)
             +relocated(okio)
+            +relocated(`kt-bignum`)
         }
         applyCodeFragment(fragment)
         buildFile.appendText(
@@ -130,6 +135,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             -both(`ktor-client-okhttp`)
             -both(`okhttp3-okhttp`)
             -both(okio)
+            -both(`kt-bignum`)
 //            +relocated(`ExternalResource-input`) // Will fail with no class def found error because there is no runtime ktor-io
         }
         applyCodeFragment(fragment)
@@ -155,6 +161,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             +relocated(`okhttp3-okhttp`)
             +relocated(okio)
             +relocated(`ExternalResource-input`)
+            +relocated(`kt-bignum`)
         }
         applyCodeFragment(fragment)
 
@@ -231,6 +238,7 @@ class CoreShadowRelocationTest : AbstractTest() {
         val `ktor-client-okhttp` = ClassTestCase("ktor-client-core OkHttp", KtorOkHttp)
         val `okhttp3-okhttp` = ClassTestCase("okhttp3 OkHttp", OkHttp)
         val okio = ClassTestCase("okio ByteString", OkIO)
+        val `kt-bignum` = ClassTestCase("kt-bignum BigInteger", BigInteger)
         val `ExternalResource-input` =
             FunctionTestCase(
                 "ExternalResource_input",

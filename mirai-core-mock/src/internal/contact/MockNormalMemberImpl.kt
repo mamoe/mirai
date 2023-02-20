@@ -162,7 +162,7 @@ internal class MockNormalMemberImpl(
         val newPerm = if (operation) MemberPermission.ADMINISTRATOR else MemberPermission.MEMBER
         if (newPerm != permission) {
             val oldPerm = permission
-            mockApi.permission = oldPerm
+            mockApi.permission = newPerm
             MemberPermissionChangeEvent(this, oldPerm, newPerm).broadcast()
         }
     }

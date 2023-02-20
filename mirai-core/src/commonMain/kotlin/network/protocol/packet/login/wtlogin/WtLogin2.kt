@@ -26,11 +26,20 @@ internal object WtLogin2 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(2) // subCommand
-                writeShort(4) // count of TLVs
+                writeShort(
+                    if (client.t547 == null) {
+                        4
+                    } else {
+                        5
+                    }
+                ) // count of TLVs
                 t193(ticket)
                 t8(2052)
                 t104(client.t104)
                 t116(client.miscBitMap, client.subSigMap)
+                client.t547?.let {
+                    t547(it)
+                }
             }
         }
     }
@@ -43,11 +52,20 @@ internal object WtLogin2 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(2) // subCommand
-                writeShort(4) // count of TLVs
+                writeShort(
+                    if (client.t547 == null) {
+                        4
+                    } else {
+                        5
+                    }
+                ) // count of TLVs
                 t2(captchaAnswer, captchaSign, 0)
                 t8(2052)
                 t104(client.t104)
                 t116(client.miscBitMap, client.subSigMap)
+                client.t547?.let {
+                    t547(it)
+                }
             }
         }
     }

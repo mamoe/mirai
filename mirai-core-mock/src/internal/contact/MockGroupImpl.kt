@@ -109,10 +109,11 @@ internal class MockGroupImpl(
     }
 
     override suspend fun changeOwner(member: NormalMember) {
+        if (member === owner) return
         val oldOwner = owner
         val oldPerm = member.permission
-        member.mock().mockApi.permission = MemberPermission.OWNER
         oldOwner.mock().mockApi.permission = MemberPermission.MEMBER
+        member.mock().mockApi.permission = MemberPermission.OWNER
         owner = member
 
         if (member === botAsMember) {

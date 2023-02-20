@@ -526,10 +526,10 @@ Console 允许插件自行实现指令（不使用上述 `RawCommand`、`SimpleC
 
 ### 在插件执行指令
 
-若要通过字符串解析目标指令并执行，使用 `PluginManager.INSTANCE.executeCommand(CommandSender, Message)`
+若要通过字符串解析目标指令并执行，使用 `CommandManager.INSTANCE.executeCommand(CommandSender, Message)`
 ，其中 `Message` 为包含前缀（如果有必要）、指令名称、以及指令参数列表的完整消息。
 
-若要通过字符串解析目标指令并执行，使用 `PluginManager.INSTANCE.executeCommand(CommandSender, Command, Message)`
+若要通过字符串解析目标指令并执行，使用 `CommandManager.INSTANCE.executeCommand(CommandSender, Command, Message)`
 ，其中 `Message` 传递给指令的参数列表，不包含前缀或指令名称。注意，若要执行复合指令，需要包含子指令名称。
 
 ### 指令语法解析

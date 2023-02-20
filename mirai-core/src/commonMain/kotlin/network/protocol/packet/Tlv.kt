@@ -121,6 +121,15 @@ internal fun BytePacketBuilder.t106(
     )
 }
 
+internal fun BytePacketBuilder.t106(
+    encryptA1: ByteArray
+) {
+    writeShort(0x106)
+    writeShortLVPacket {
+        writeFully(encryptA1)
+    }
+}
+
 /**
  * A1
  */
@@ -263,6 +272,15 @@ internal fun BytePacketBuilder.t104(
     writeShort(0x104)
     writeShortLVPacket {
         writeFully(t104Data)
+    }
+}
+
+internal fun BytePacketBuilder.t547(
+    t547Data: ByteArray
+) {
+    writeShort(0x547)
+    writeShortLVPacket {
+        writeFully(t547Data)
     }
 }
 

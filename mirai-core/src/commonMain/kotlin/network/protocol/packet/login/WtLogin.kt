@@ -210,6 +210,7 @@ internal class WtLogin {
             tlvMap[0x161]?.let { bot.client.analysisTlv161(it) }
             tlvMap[0x403]?.let { bot.client.randSeed = it }
             tlvMap[0x402]?.let { bot.client.t402 = it }
+            tlvMap[0x546]?.let { bot.client.analysisTlv546(it) }
             // tlvMap[0x402]?.let { t402 ->
 //            bot.client.G = buildPacket {
 //                writeFully(bot.client.device.guid)
@@ -371,7 +372,9 @@ internal class WtLogin {
                         tlvMap119.smartToString().printStructure("TlvMap119")
                     }
 
-                    tlvMap119[0x106]?.let { client.analyzeTlv106(it) }
+                    tlvMap119[0x10c]?.read {
+                        client.tgtgtKey = readBytes(16)
+                    }
 
                     // ???
                     tlvMap119[0x1c]?.read {
