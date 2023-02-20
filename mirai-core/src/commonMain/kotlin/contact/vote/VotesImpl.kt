@@ -37,7 +37,8 @@ internal class VotesImpl(
             title = vote.title,
             options = vote.options,
             select = emptyList(),
-            parameters = vote.parameters
+            parameters = vote.parameters,
+            records = emptyList()
         )
     }
 
@@ -68,7 +69,7 @@ internal class VotesImpl(
         return true
     }
 
-    override suspend fun get(fid: String): OnlineVoteStatus? {
+    override suspend fun get(fid: String): OnlineVote? {
         val data = bot.getGroupVote(groupCode = group.id, fid = fid)
         if (data.detail == null) return null
 
@@ -89,20 +90,35 @@ internal class VotesImpl(
                 // XXX: 提醒时间没有返回
                 // remind = 0
                 image = data.detail.title.pictures.firstOrNull()?.toPublic()
-            }
+            },
+            records = emptyList()
         )
-        return OnlineVoteStatus(
-            vote = impl,
-            records = data.detail.results.map { result ->
-                OnlineVoteRecordImpl(
-                    vote = impl,
-                    voterId = result.uid,
-                    voter = group[result.uid],
-                    options = result.options,
-                    time = result.time
-                )
-            }
-        )
+        impl.apply(detail = data.detail)
+        return impl
+    }
+
+    override suspend fun update(vote: OnlineVote) {
+        vote as OnlineVoteImpl
+        val data = bot.getGroupVote(groupCode = group.id, fid = vote.fid)
+        if (data.detail == null) return
+
+        vote.apply(detail = data.detail)
+    }
+
+    internal fun OnlineVoteImpl.apply(detail: GroupVoteDetail): OnlineVote {
+        title = detail.title.text
+        options = detail.options.map { it.content.text }
+        select = detail.options.map { it.selected }
+        records = detail.results.map { result ->
+            OnlineVoteRecordImpl(
+                vote = this,
+                voterId = result.uid,
+                voter = group[result.uid],
+                options = result.options,
+                time = result.time
+            )
+        }
+        return this
     }
 
     override fun asFlow(): Flow<Vote> {
@@ -131,7 +147,8 @@ internal class VotesImpl(
                                 remind = info.settings.remindTs - info.published
                             }
                             image = info.detail.title.pictures.firstOrNull()?.toPublic()
-                        }
+                        },
+                        records = emptyList()
                     )
                     emit(impl)
                 }

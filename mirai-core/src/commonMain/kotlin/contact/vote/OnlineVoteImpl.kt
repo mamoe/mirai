@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.contact.vote
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.vote.OnlineVote
+import net.mamoe.mirai.contact.vote.OnlineVoteRecord
 import net.mamoe.mirai.contact.vote.VoteParameters
 
 internal class OnlineVoteImpl(
@@ -21,8 +22,12 @@ internal class OnlineVoteImpl(
     override val fid: String,
     override val publicationTime: Long,
     override val endTime: Long,
-    override val title: String,
-    override val options: List<String>,
-    override val select: List<Int>,
+    override var title: String,
+    override var options: List<String>,
+    override var select: List<Int>,
+    override var records: List<OnlineVoteRecord>,
     override val parameters: VoteParameters
-) : OnlineVote
+) : OnlineVote {
+
+    override val url: String = "https://client.qun.qq.com/qqweb/m/qun/vote/detail.html?fid=${fid}&groupuin=${group.id}"
+}

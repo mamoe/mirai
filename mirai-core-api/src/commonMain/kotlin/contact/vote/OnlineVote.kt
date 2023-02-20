@@ -71,9 +71,23 @@ public interface OnlineVote : Vote {
 
     /**
      * 各个选项的投票数
+     *
+     * 可以通过 [update] 同步内容
+     *
      * @see options
+     * @see update
      */
     public val select: List<Int>
+
+    /**
+     * 选项的投票记录
+     *
+     * 可以通过 [update] 同步内容
+     *
+     * @see options
+     * @see update
+     */
+    public val records: List<OnlineVoteRecord>
 
     /**
      * 删除这个投票. 需要管理员权限. 使用 [Votes.delete] 与此方法效果相同.
@@ -85,13 +99,12 @@ public interface OnlineVote : Vote {
     public suspend fun delete(): Boolean = group.votes.delete(fid = fid)
 
     /**
-     * 获取 选项的投票记录
-     *
-     * @return 投票记录列表
+     * 更新投票内容 [select], [records], ...
      *
      * @throws IllegalStateException 当协议异常时抛出
+     * @see Votes.update
      */
-    public suspend fun records(): List<OnlineVoteRecord> = group.votes.get(fid = fid)?.records.orEmpty()
+    public suspend fun update(): Unit = group.votes.update(vote = this)
 }
 
 /**
@@ -130,9 +143,3 @@ public interface OnlineVoteRecord {
      */
     public val time: Long
 }
-
-@NotStableForInheritance
-public data class OnlineVoteStatus(
-    val vote: OnlineVote,
-    val records: List<OnlineVoteRecord>
-)

@@ -39,6 +39,6 @@ public sealed interface Vote {
      * @throws IllegalStateException 当协议异常时抛出
      * @see Votes.publish
      */
-    public suspend fun publishTo(group: Group): OnlineVote = TODO()
+    public suspend fun publishTo(group: Group): OnlineVote = group.votes.publish(vote = this)
 
 }
