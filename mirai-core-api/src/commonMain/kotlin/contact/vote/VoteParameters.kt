@@ -33,11 +33,11 @@ public class VoteParameters internal constructor(
     public val image: VoteImage? = null,
     /** 匿名 */
     public val anonymous: Boolean = false,
-    /** 结束时间间隔，单位秒 */
+    /** 从发布到结束的时间间隔，单位秒 */
     public val end: Long = 3 * 24 * 60 * 60,
-    /** 提醒时间间隔，单位秒 */
+    /** 从发布到提醒的时间间隔，单位秒 */
     public val remind: Long = 3 * 24 * 60 * 60 - 30 * 60,
-    /** 可选选项数量 */
+    /** 用户投票时可选的选项数量 */
     public val capacity: Int = 1
 ) {
     /**
