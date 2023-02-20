@@ -449,11 +449,11 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         init {
             Runtime.getRuntime().addShutdownHook(thread(false, name = "Mirai Console Shutdown Hook") {
                 if (instanceInitialized) {
-                    try{
+                    try {
                         runBlocking {
                             shutdown()
                         }
-                    }catch (_:InterruptedException){
+                    } catch (_ : InterruptedException) {
 
                     }
                 }
