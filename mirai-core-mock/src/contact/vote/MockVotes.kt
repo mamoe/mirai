@@ -15,6 +15,9 @@ import net.mamoe.mirai.contact.vote.*
 import net.mamoe.mirai.mock.MockBotDSL
 import net.mamoe.mirai.utils.MiraiInternalApi
 
+/**
+ * @since 2.15
+ */
 public interface MockVotes : Votes {
 
     /**
