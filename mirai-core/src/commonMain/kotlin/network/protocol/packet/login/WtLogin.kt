@@ -662,7 +662,10 @@ internal class WtLogin {
     internal object TransEmp : OutgoingPacketFactory<TransEmp.Response>("wtlogin.trans_emp") {
 
         fun FetchQRCode(
-            client: QQAndroidClient
+            client: QQAndroidClient,
+            size: Int,
+            margin: Int,
+            ecLevel: Int
         ) = TransEmp.buildLoginOutgoingPacket(client, bodyType = 2, uin = "") { sequenceId ->
             writeSsoPacket(client, client.subAppId, TransEmp.commandName, sequenceId = sequenceId) {
                 writeOicqRequestPacket(client, uin = 0, commandId = 0x812) {
@@ -682,7 +685,11 @@ internal class WtLogin {
                             client.apkVersionName,
                             client.apkSignatureMd5
                         )
-                        t1b()
+                        t1b(
+                            size = size,
+                            margin = margin,
+                            ecLevel = ecLevel
+                        )
                         t1d(client.miscBitMap)
 
                         val protocol = client.bot.configuration.protocol

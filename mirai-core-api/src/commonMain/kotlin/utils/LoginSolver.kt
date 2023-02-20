@@ -28,6 +28,21 @@ import kotlin.jvm.JvmName
  */
 public abstract class LoginSolver {
     /**
+     * 使用二维码登录时获取的二维码图片大小.
+     */
+    public open val qrCodeSize: Int = 3
+
+    /**
+     * 使用二维码登录时获取的二维码边框宽度.
+     */
+    public open val qrCodeMargin: Int = 4
+
+    /**
+     * 使用二维码登录时获取的二维码校正等级，必须为 1-3 之间.
+     */
+    public open val qrCodeEcLevel: Int = 2
+
+    /**
      * 处理图片验证码, 返回图片验证码内容.
      *
      * 返回 `null` 以表示无法处理验证码, 将会刷新验证码或重试登录.
@@ -50,12 +65,13 @@ public abstract class LoginSolver {
     public open val isSliderCaptchaSupported: Boolean get() = PlatformLoginSolverImplementations.isSliderCaptchaSupported
 
     /**
-     * 二维码扫描登录监听器，当此监听器被设置时，将会进行二维码登录
+     * 当使用二维码登录时会通过此方法创建二维码登录监听器
      *
      * - 在 Android 需要手动提供监听器
      * - 在 JVM, Mirai 会根据环境支持情况选择 Swing/CLI 实现
      *
      * @see QRCodeLoginListener
+     * @see BotConfiguration.doQRCodeLogin
      * @since 2.15
      */
     public open fun createQRCodeLoginListener(bot: Bot): QRCodeLoginListener {
@@ -154,22 +170,27 @@ public abstract class LoginSolver {
              * @see QRCodeLoginListener.onFetchQRCode
              */
             WAITING_FOR_SCAN,
+
             /**
              * 二维码已扫描，等待扫描端确认登录.
              */
             WAITING_FOR_CONFIRM,
+
             /**
              * 扫描后取消了确认.
              */
             CANCELLED,
+
             /**
              * 二维码超时，必须重新获取二维码.
              */
             TIMEOUT,
+
             /**
              * 二维码已确认，将会继续登录.
              */
             CONFIRMED,
+
             /**
              * 默认状态，在登录前通常为此状态.
              */

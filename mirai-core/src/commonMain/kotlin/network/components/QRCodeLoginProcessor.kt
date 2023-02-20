@@ -59,12 +59,17 @@ internal class QRCodeLoginProcessorPreLoaded(
 
         val qrCodeLoginListener = loginSolver.createQRCodeLoginListener(client.bot)
 
-        return QRCodeLoginProcessorImpl(qrCodeLoginListener, logger)
+        return loginSolver.run {
+            QRCodeLoginProcessorImpl(qrCodeLoginListener, qrCodeSize, qrCodeMargin, qrCodeEcLevel, logger)
+        }
     }
 }
 
 internal class QRCodeLoginProcessorImpl(
     private val qrCodeLoginListener: LoginSolver.QRCodeLoginListener,
+    private val size: Int,
+    private val margin: Int,
+    private val ecLevel: Int,
     private val logger: MiraiLogger,
 ) : QRCodeLoginProcessor {
 
@@ -75,7 +80,7 @@ internal class QRCodeLoginProcessorImpl(
         client: QQAndroidClient
     ): WtLogin.TransEmp.Response.FetchQRCode {
         logger.debug { "requesting qrcode." }
-        val resp = handler.sendAndExpect(WtLogin.TransEmp.FetchQRCode(client), attempts = 1)
+        val resp = handler.sendAndExpect(WtLogin.TransEmp.FetchQRCode(client, size, margin, ecLevel), attempts = 1)
         check(resp is WtLogin.TransEmp.Response.FetchQRCode) { "Cannot fetch qrcode, resp=$resp" }
         qrCodeLoginListener.onFetchQRCode(handler.context.bot, resp.imageData)
         return resp
