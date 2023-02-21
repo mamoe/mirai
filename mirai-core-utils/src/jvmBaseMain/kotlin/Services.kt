@@ -24,18 +24,18 @@ private val loaderType = when (systemProp("mirai.service.loader", "jdk")) {
     else -> throw IllegalStateException("mirai.service.loader must be jdk or fallback, cannot find a service loader")
 }
 
-private fun <T : Any> getJDKServices(clazz: KClass<out T>): ServiceLoader<out T> = ServiceLoader.load(clazz.java)
+private fun <T : Any> getJdkServices(clazz: KClass<out T>): ServiceLoader<out T> = ServiceLoader.load(clazz.java)
 
 @Suppress("UNCHECKED_CAST")
 public actual fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementation: String?): T {
-    fun getFALLBACKService(clazz: KClass<out T>) =
+    fun getFallbackService(clazz: KClass<out T>) =
         (Services.firstImplementationOrNull(Services.qualifiedNameOrFail(clazz)) as T?)
 
     var suppressed: Throwable? = null
 
     val services = when (loaderType) {
-        LoaderType.JDK -> getJDKServices(clazz).firstOrNull() ?: getFALLBACKService(clazz)
-        LoaderType.FALLBACK -> getFALLBACKService(clazz) ?: getJDKServices(clazz).firstOrNull()
+        LoaderType.JDK -> getJdkServices(clazz).firstOrNull() ?: getFallbackService(clazz)
+        LoaderType.FALLBACK -> getFallbackService(clazz) ?: getJdkServices(clazz).firstOrNull()
     } ?: if (fallbackImplementation != null) {
         runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull()
     } else null
@@ -58,11 +58,11 @@ public actual fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImpl
 
 @Suppress("UNCHECKED_CAST")
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
-    val seq: Sequence<T> =
+    val fallBackServicesSeq: Sequence<T> =
         Services.implementations(Services.qualifiedNameOrFail(clazz))?.map { it.value as T }.orEmpty().asSequence()
 
     return when (loaderType) {
-        LoaderType.JDK -> getJDKServices(clazz).asSequence().plus(seq)
-        LoaderType.FALLBACK -> seq
+        LoaderType.JDK -> getJdkServices(clazz).asSequence().plus(fallBackServicesSeq)
+        LoaderType.FALLBACK -> fallBackServicesSeq
     }
 }
