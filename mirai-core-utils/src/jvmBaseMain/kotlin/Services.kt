@@ -15,27 +15,31 @@ import kotlin.reflect.full.createInstance
 
 private enum class LoaderType {
     JDK,
+    BOTH,
     FALLBACK,
 }
 
-private val loaderType = when (systemProp("mirai.service.loader", "jdk")) {
+private val loaderType = when (systemProp("mirai.service.loader", "both")) {
     "jdk" -> LoaderType.JDK
+    "both" -> LoaderType.BOTH
     "fallback" -> LoaderType.FALLBACK
-    else -> throw IllegalStateException("mirai.service.loader must be jdk or fallback, cannot find a service loader")
+    else -> throw IllegalStateException("cannot find a service loader, mirai.service.loader must be both, jdk or fallback (default by both)")
 }
 
-private fun <T : Any> getJdkServices(clazz: KClass<out T>): ServiceLoader<out T> = ServiceLoader.load(clazz.java)
+private fun <T : Any> loadServiceByJdk(clazz: KClass<out T>): ServiceLoader<out T> = ServiceLoader.load(clazz.java)
 
 @Suppress("UNCHECKED_CAST")
 public actual fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementation: String?): T {
-    fun getFallbackService(clazz: KClass<out T>) =
-        (Services.firstImplementationOrNull(Services.qualifiedNameOrFail(clazz)) as T?)
+    val fallbackService by lazy {
+        Services.firstImplementationOrNull(Services.qualifiedNameOrFail(clazz)) as T?
+    }
 
     var suppressed: Throwable? = null
 
     val services = when (loaderType) {
-        LoaderType.JDK -> getJdkServices(clazz).firstOrNull() ?: getFallbackService(clazz)
-        LoaderType.FALLBACK -> getFallbackService(clazz) ?: getJdkServices(clazz).firstOrNull()
+        LoaderType.JDK -> loadServiceByJdk(clazz).firstOrNull()
+        LoaderType.BOTH -> loadServiceByJdk(clazz).firstOrNull() ?: fallbackService
+        LoaderType.FALLBACK -> fallbackService
     } ?: if (fallbackImplementation != null) {
         runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull()
     } else null
@@ -58,11 +62,13 @@ public actual fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImpl
 
 @Suppress("UNCHECKED_CAST")
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
-    val fallBackServicesSeq: Sequence<T> =
+    val fallBackServicesSeq: Sequence<T> by lazy {
         Services.implementations(Services.qualifiedNameOrFail(clazz))?.map { it.value as T }.orEmpty().asSequence()
+    }
 
     return when (loaderType) {
-        LoaderType.JDK -> getJdkServices(clazz).asSequence().plus(fallBackServicesSeq)
+        LoaderType.JDK -> loadServiceByJdk(clazz).asSequence()
+        LoaderType.BOTH -> loadServiceByJdk(clazz).asSequence().plus(fallBackServicesSeq)
         LoaderType.FALLBACK -> fallBackServicesSeq
     }
 }
