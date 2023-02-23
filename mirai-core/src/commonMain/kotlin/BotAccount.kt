@@ -10,16 +10,55 @@
 
 package net.mamoe.mirai.internal
 
+import net.mamoe.mirai.utils.SecretsProtection
+import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.toUHexString
 
-internal expect class BotAccount {
-    internal val id: Long
-    val phoneNumber: String
 
-    constructor(id: Long, passwordMd5: ByteArray, phoneNumber: String = "")
-    constructor(id: Long, passwordPlainText: String, phoneNumber: String = "")
+internal data class BotAccount(
+    internal val id: Long,
 
-    val passwordMd5: ByteArray
+    val passwordMd5Buffer: SecretsProtection.EscapedByteBuffer, // md5
 
-    override fun equals(other: Any?): Boolean
-    override fun hashCode(): Int
+    val phoneNumber: String = "",
+) {
+    init {
+        check(passwordMd5Buffer.size == 16) {
+            "Invalid passwordMd5: size must be 16 but got ${passwordMd5Buffer.size}. passwordMd5=${passwordMd5.toUHexString()}"
+        }
+    }
+
+    constructor(id: Long, passwordMd5: ByteArray, phoneNumber: String = "") : this(
+        id, SecretsProtection.EscapedByteBuffer(SecretsProtection.escape(passwordMd5)), phoneNumber
+    )
+
+    constructor(id: Long, passwordPlainText: String, phoneNumber: String = "") : this(
+        id,
+        passwordPlainText.md5(),
+        phoneNumber
+    ) {
+        require(passwordPlainText.length <= 16) { "Password length must be at most 16." }
+    }
+
+    val passwordMd5: ByteArray get() = passwordMd5Buffer.asByteArray
+
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as BotAccount
+
+        if (id != other.id) return false
+        if (passwordMd5Buffer.data != other.passwordMd5Buffer.data) return false
+
+        return true
+    }
+
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + passwordMd5Buffer.hashCode()
+        return result
+    }
 }

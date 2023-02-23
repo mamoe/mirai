@@ -12,9 +12,9 @@ package net.mamoe.mirai.utils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.nio.ByteBuffer
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
-import kotlin.test.assertTrue
 
 internal class SecretsProtectionTest {
     @Test
@@ -22,7 +22,7 @@ internal class SecretsProtectionTest {
         repeat(500) {
             launch {
                 val data = ByteArray((1..255).random()) { (0..255).random().toByte() }
-                val buffer = SecretsProtection.escape(data)
+                val buffer = SecretsProtection.escape(data) as ByteBuffer
                 assertContentEquals(
                     data, buffer.duplicate().readBytes()
                 )
