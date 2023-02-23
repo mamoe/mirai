@@ -9,10 +9,8 @@
 
 package net.mamoe.mirai.auth
 
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.DeviceInfo
-import net.mamoe.mirai.utils.NotStableForInheritance
-import net.mamoe.mirai.utils.toByteArray
+import net.mamoe.mirai.utils.*
+import kotlin.jvm.JvmStatic
 
 public interface BotAuthorization {
     public suspend fun authorize(
@@ -27,6 +25,50 @@ public interface BotAuthorization {
     }
 
     public companion object {
+        @JvmStatic
+        public fun byPassword(password: String): BotAuthorization {
+            return byPassword(password.md5())
+        }
+
+        @JvmStatic
+        public fun byPassword(passwordMd5: ByteArray): BotAuthorization {
+            return byPassword(SecretsProtection.EscapedByteBuffer(passwordMd5))
+        }
+
+        private fun byPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthorization {
+            return object : MiraiInternalBotAuthorization {
+                override fun calculateSecretsKey1(bot: BotAuthInfo): SecretsProtection.EscapedByteBuffer {
+                    return passwordMd5
+                }
+
+                override suspend fun authorize(
+                    authComponent: MiraiInternalBotAuthComponent,
+                    bot: BotAuthInfo
+                ): BotAuthorizationResult {
+                    return authComponent.authByPassword(passwordMd5)
+                }
+
+                override fun toString(): String {
+                    return "BotAuthorization.byPassword(<ERASED>)"
+                }
+            }
+        }
+
+        @JvmStatic
+        public fun byQRCode(): BotAuthorization {
+            return object : BotAuthorization {
+                override suspend fun authorize(
+                    authComponent: BotAuthComponent,
+                    bot: BotAuthInfo
+                ): BotAuthorizationResult {
+                    return authComponent.authByQRCode()
+                }
+
+                override fun toString(): String {
+                    return "BotAuthorization.byQRCode()"
+                }
+            }
+        }
     }
 }
 
@@ -46,3 +88,34 @@ public interface BotAuthComponent {
     public suspend fun authByPassword(passwordMd5: ByteArray): BotAuthorizationResult
     public suspend fun authByQRCode(): BotAuthorizationResult
 }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//// Internal: for better performance
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+@NotStableForInheritance
+@MiraiInternalApi
+public interface MiraiInternalBotAuthComponent : BotAuthComponent {
+    public suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthorizationResult
+}
+
+@NotStableForInheritance
+@MiraiInternalApi
+public interface MiraiInternalBotAuthorization : BotAuthorization {
+    override fun calculateSecretsKey(bot: BotAuthInfo): ByteArray {
+        return calculateSecretsKey1(bot).asByteArray
+    }
+
+    public fun calculateSecretsKey1(
+        bot: BotAuthInfo,
+    ): SecretsProtection.EscapedByteBuffer
+
+    public suspend fun authorize(authComponent: MiraiInternalBotAuthComponent, bot: BotAuthInfo): BotAuthorizationResult
+
+    override suspend fun authorize(authComponent: BotAuthComponent, bot: BotAuthInfo): BotAuthorizationResult {
+        return authorize(authComponent as MiraiInternalBotAuthComponent, bot)
+    }
+}
+
+
