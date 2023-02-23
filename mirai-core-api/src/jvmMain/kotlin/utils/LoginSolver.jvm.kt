@@ -17,6 +17,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.auth.QRCodeLoginListener
 import net.mamoe.mirai.network.NoStandardInputForCaptchaException
 import net.mamoe.mirai.utils.StandardCharImageLoginSolver.Companion.createBlocking
 import java.awt.Image
