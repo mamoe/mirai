@@ -10,26 +10,26 @@
 
 package net.mamoe.mirai.internal
 
+import net.mamoe.mirai.auth.BotAuthorization
+import net.mamoe.mirai.internal.network.components.PacketCodec
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.SecretsProtection
 import net.mamoe.mirai.utils.md5
-import net.mamoe.mirai.utils.toUHexString
 
 
-internal data class BotAccount(
+internal class BotAccount(
     internal val id: Long,
 
-    val passwordMd5Buffer: SecretsProtection.EscapedByteBuffer, // md5
+    val authorization: BotAuthorization,
 
     val phoneNumber: String = "",
 ) {
-    init {
-        check(passwordMd5Buffer.size == 16) {
-            "Invalid passwordMd5: size must be 16 but got ${passwordMd5Buffer.size}. passwordMd5=${passwordMd5.toUHexString()}"
-        }
-    }
+    var passwordMd5Buffer: SecretsProtection.EscapedByteBuffer? = null
+    var accountSecretsKeyBuffer: SecretsProtection.EscapedByteBuffer? = null
+
 
     constructor(id: Long, passwordMd5: ByteArray, phoneNumber: String = "") : this(
-        id, SecretsProtection.EscapedByteBuffer(SecretsProtection.escape(passwordMd5)), phoneNumber
+        id, BotAuthorization.Companion.byPassword(passwordMd5), phoneNumber
     )
 
     constructor(id: Long, passwordPlainText: String, phoneNumber: String = "") : this(
@@ -40,25 +40,23 @@ internal data class BotAccount(
         require(passwordPlainText.length <= 16) { "Password length must be at most 16." }
     }
 
-    val passwordMd5: ByteArray get() = passwordMd5Buffer.asByteArray
+    val passwordMd5: ByteArray
+        get() {
+            passwordMd5Buffer?.let { return it.asByteArray }
 
+            if (PacketCodec.PacketLogger.isWarningEnabled) {
+                PacketCodec.PacketLogger.warning(
+                    Throwable("BotAccount.passwordMd5 was called but not login as password")
+                )
+            }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
+            return EMPTY_BYTE_ARRAY
+        }
 
-        other as BotAccount
+    val accountSecretsKey: ByteArray
+        get() {
+            accountSecretsKeyBuffer?.let { return it.asByteArray }
+            error("accountSecretsKey not yet available")
+        }
 
-        if (id != other.id) return false
-        if (passwordMd5Buffer.data != other.passwordMd5Buffer.data) return false
-
-        return true
-    }
-
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + passwordMd5Buffer.hashCode()
-        return result
-    }
 }

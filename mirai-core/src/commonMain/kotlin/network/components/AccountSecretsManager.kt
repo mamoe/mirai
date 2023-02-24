@@ -193,7 +193,7 @@ internal class FileCacheAccountSecretsManager(
     private fun getSecretsImpl(account: BotAccount): AccountSecrets? {
         if (!file.exists()) return null
         val loaded = kotlin.runCatching {
-            TEA.decrypt(file.readBytes(), account.passwordMd5).loadAs(AccountSecretsImpl.serializer())
+            TEA.decrypt(file.readBytes(), account.accountSecretsKey).loadAs(AccountSecretsImpl.serializer())
         }.getOrElse { e ->
             if (e.message == "Field 'ecdhInitialPublicKey' is required for type with serial name 'net.mamoe.mirai.internal.network.components.AccountSecretsImpl', but it was missing") {
                 logger.info { "Detected old account secrets, invalidating..." }
@@ -218,7 +218,7 @@ internal class FileCacheAccountSecretsManager(
             file.writeBytes(
                 TEA.encrypt(
                     AccountSecretsImpl(secrets).toByteArray(AccountSecretsImpl.serializer()),
-                    account.passwordMd5
+                    account.accountSecretsKey
                 )
             )
         }
