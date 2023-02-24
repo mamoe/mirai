@@ -53,6 +53,9 @@ public abstract interface class net/mamoe/mirai/BotFactory {
 	public fun newBot (JLjava/lang/String;)Lnet/mamoe/mirai/Bot;
 	public fun newBot (JLjava/lang/String;Lnet/mamoe/mirai/BotFactory$BotConfigurationLambda;)Lnet/mamoe/mirai/Bot;
 	public abstract fun newBot (JLjava/lang/String;Lnet/mamoe/mirai/utils/BotConfiguration;)Lnet/mamoe/mirai/Bot;
+	public fun newBot (JLnet/mamoe/mirai/auth/BotAuthorization;)Lnet/mamoe/mirai/Bot;
+	public fun newBot (JLnet/mamoe/mirai/auth/BotAuthorization;Lnet/mamoe/mirai/BotFactory$BotConfigurationLambda;)Lnet/mamoe/mirai/Bot;
+	public abstract fun newBot (JLnet/mamoe/mirai/auth/BotAuthorization;Lnet/mamoe/mirai/utils/BotConfiguration;)Lnet/mamoe/mirai/Bot;
 	public fun newBot (J[B)Lnet/mamoe/mirai/Bot;
 	public fun newBot (J[BLnet/mamoe/mirai/BotFactory$BotConfigurationLambda;)Lnet/mamoe/mirai/Bot;
 	public abstract fun newBot (J[BLnet/mamoe/mirai/utils/BotConfiguration;)Lnet/mamoe/mirai/Bot;
@@ -65,6 +68,7 @@ public abstract interface class net/mamoe/mirai/BotFactory$BotConfigurationLambd
 public final class net/mamoe/mirai/BotFactory$INSTANCE : net/mamoe/mirai/BotFactory {
 	public final synthetic fun newBot (JLjava/lang/String;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/Bot;
 	public fun newBot (JLjava/lang/String;Lnet/mamoe/mirai/utils/BotConfiguration;)Lnet/mamoe/mirai/Bot;
+	public fun newBot (JLnet/mamoe/mirai/auth/BotAuthorization;Lnet/mamoe/mirai/utils/BotConfiguration;)Lnet/mamoe/mirai/Bot;
 	public final synthetic fun newBot (J[BLkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/Bot;
 	public fun newBot (J[BLnet/mamoe/mirai/utils/BotConfiguration;)Lnet/mamoe/mirai/Bot;
 }
@@ -163,6 +167,55 @@ public final class net/mamoe/mirai/_MiraiInstance {
 	public static final field INSTANCE Lnet/mamoe/mirai/_MiraiInstance;
 	public static final fun get ()Lnet/mamoe/mirai/IMirai;
 	public static final fun set (Lnet/mamoe/mirai/IMirai;)V
+}
+
+public abstract interface class net/mamoe/mirai/auth/BotAuthComponent {
+	public abstract fun authByPassword (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun authByPassword ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun authByQRCode (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class net/mamoe/mirai/auth/BotAuthInfo {
+	public abstract fun getConfiguration ()Lnet/mamoe/mirai/utils/BotConfiguration;
+	public abstract fun getDeviceInfo ()Lnet/mamoe/mirai/utils/DeviceInfo;
+	public abstract fun getId ()J
+}
+
+public abstract interface class net/mamoe/mirai/auth/BotAuthorization {
+	public static final field Companion Lnet/mamoe/mirai/auth/BotAuthorization$Companion;
+	public abstract fun authorize (Lnet/mamoe/mirai/auth/BotAuthComponent;Lnet/mamoe/mirai/auth/BotAuthInfo;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun byPassword (Ljava/lang/String;)Lnet/mamoe/mirai/auth/BotAuthorization;
+	public static fun byPassword ([B)Lnet/mamoe/mirai/auth/BotAuthorization;
+	public static fun byQRCode ()Lnet/mamoe/mirai/auth/BotAuthorization;
+	public fun calculateSecretsKey (Lnet/mamoe/mirai/auth/BotAuthInfo;)[B
+}
+
+public final class net/mamoe/mirai/auth/BotAuthorization$Companion {
+	public final fun byPassword (Ljava/lang/String;)Lnet/mamoe/mirai/auth/BotAuthorization;
+	public final fun byPassword ([B)Lnet/mamoe/mirai/auth/BotAuthorization;
+	public final fun byQRCode ()Lnet/mamoe/mirai/auth/BotAuthorization;
+}
+
+public abstract interface class net/mamoe/mirai/auth/BotAuthorizationResult {
+}
+
+public abstract interface class net/mamoe/mirai/auth/QRCodeLoginListener {
+	public fun getQrCodeEcLevel ()I
+	public fun getQrCodeMargin ()I
+	public fun getQrCodeSize ()I
+	public abstract fun onFetchQRCode (Lnet/mamoe/mirai/Bot;[B)V
+	public abstract fun onStatusChanged (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;)V
+}
+
+public final class net/mamoe/mirai/auth/QRCodeLoginListener$State : java/lang/Enum {
+	public static final field CANCELLED Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;
+	public static final field CONFIRMED Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;
+	public static final field DEFAULT Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;
+	public static final field TIMEOUT Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;
+	public static final field WAITING_FOR_CONFIRM Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;
+	public static final field WAITING_FOR_SCAN Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;
+	public static fun values ()[Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;
 }
 
 public abstract interface class net/mamoe/mirai/contact/AnonymousMember : net/mamoe/mirai/contact/Member {
@@ -5355,6 +5408,12 @@ public final class net/mamoe/mirai/network/ForceOfflineException : java/util/con
 	public fun getMessage ()Ljava/lang/String;
 }
 
+public final class net/mamoe/mirai/network/InconsistentBotException : net/mamoe/mirai/network/LoginFailedException {
+	public synthetic fun <init> (JJLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getActual ()J
+	public final fun getExpected ()J
+}
+
 public abstract class net/mamoe/mirai/network/LoginFailedException : java/lang/RuntimeException {
 	public synthetic fun <init> (ZLjava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (ZLjava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -5825,6 +5884,7 @@ public abstract class net/mamoe/mirai/utils/LoginSolver {
 	public static final field Companion Lnet/mamoe/mirai/utils/LoginSolver$Companion;
 	public static final field Default Lnet/mamoe/mirai/utils/LoginSolver;
 	public fun <init> ()V
+	public fun createQRCodeLoginListener (Lnet/mamoe/mirai/Bot;)Lnet/mamoe/mirai/auth/QRCodeLoginListener;
 	public fun isSliderCaptchaSupported ()Z
 	public fun onSolveDeviceVerification (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/utils/DeviceVerificationRequests;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun onSolvePicCaptcha (Lnet/mamoe/mirai/Bot;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
