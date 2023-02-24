@@ -148,8 +148,27 @@ internal abstract class CommonAnnouncementsImpl(
 
     override suspend fun members(fid: String, confirmed: Boolean): List<NormalMember> {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission see announcement confirmed detail" }
-        val detail = bot.getReadDetail(groupId = group.id, fid = fid, read = confirmed)
-        return detail.users.mapNotNull { user -> group[user.uin] }
+        val flow = flow<NormalMember> {
+            var offset = 0
+            while (true) {
+                val detail = bot.getReadDetail(
+                    groupId = group.id,
+                    fid = fid,
+                    read = confirmed,
+                    offset = offset,
+                    limit = 50
+                )
+                if (detail.users.isEmpty()) break
+                for (user in detail.users) {
+                    val member = group[user.uin] ?: continue
+                    emit(member)
+                }
+                offset += detail.users.size
+                val target = if (confirmed) detail.readTotal else detail.unreadTotal
+                if (offset == target) break
+            }
+        }
+        return flow.toList()
     }
 
     override suspend fun remind(fid: String) {
@@ -318,12 +337,18 @@ internal object AnnouncementProtocol {
     private fun <T> CgiData.loadData(serializer: KSerializer<T>): T =
         defaultJson.decodeFromJsonElement(serializer, this.data)
 
-    suspend fun QQAndroidBot.getReadDetail(groupId: Long, fid: String, read: Boolean): GroupAnnouncementReadDetail {
+    suspend fun QQAndroidBot.getReadDetail(
+        groupId: Long,
+        fid: String,
+        read: Boolean,
+        offset: Int,
+        limit: Int
+    ): GroupAnnouncementReadDetail {
         val cgi = bot.components[HttpClientProvider].getHttpClient().post {
             url("https://qun.qq.com/cgi-bin/qunapp/announce_unread")
             parameter("gc", groupId)
-            parameter("start", 0)
-            parameter("num", 3000)
+            parameter("start", offset)
+            parameter("num", limit)
             parameter("feed_id", fid)
             parameter("type", if (read) 1 else 0)
             parameter("bkn", client.wLoginSigInfo.bkn)
