@@ -203,17 +203,6 @@ public actual open class BotConfiguration { // open for Java
     public actual var autoReconnectOnForceOffline: Boolean = false
 
     /**
-     * 是否进行扫码登录，默认为 `false`.
-     *
-     * 使用扫码登录则构建 [Bot] 时不需要提供密码，或者提供空密码.
-     *
-     * @since 2.15
-     * @see LoginSolver.createQRCodeLoginListener
-     * @see LoginSolver.QRCodeLoginListener
-     */
-    public actual var doQRCodeLogin: Boolean = false
-
-    /**
      * 验证码处理器
      *
      * - 在 Android 需要手动提供 [LoginSolver]
@@ -531,7 +520,6 @@ public actual open class BotConfiguration { // open for Java
             new.heartbeatStrategy = heartbeatStrategy
             new.reconnectionRetryTimes = reconnectionRetryTimes
             new.autoReconnectOnForceOffline = autoReconnectOnForceOffline
-            new.doQRCodeLogin = doQRCodeLogin
             new.loginSolver = loginSolver
             new.protocol = protocol
             new.highwayUploadCoroutineCount = highwayUploadCoroutineCount

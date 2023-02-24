@@ -199,17 +199,6 @@ public expect open class BotConfiguration() { // open for Java
     public var autoReconnectOnForceOffline: Boolean
 
     /**
-     * 是否进行扫码登录，默认为 `false`.
-     *
-     * 使用扫码登录则构建 [Bot] 时不需要提供密码，或者提供空密码.
-     *
-     * @since 2.15
-     * @see LoginSolver.createQRCodeLoginListener
-     * @see LoginSolver.QRCodeLoginListener
-     */
-    public var doQRCodeLogin: Boolean
-
-    /**
      * 验证码处理器
      *
      * - 在 Android 需要手动提供 [LoginSolver]
