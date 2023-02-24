@@ -34,11 +34,6 @@ internal interface QRCodeLoginProcessor {
         internal val NOOP = object : QRCodeLoginProcessor {}
 
         fun parse(ssoContext: SsoProcessorContext, logger: MiraiLogger): QRCodeLoginProcessor {
-            if (!ssoContext.bot.configuration.doQRCodeLogin) return NOOP
-            check(ssoContext.bot.configuration.protocol.asInternal.canDoQRCodeLogin) {
-                "The login protocol must be ANDROID_WATCH or MACOS while enabling qrcode login." +
-                        "Set it by `bot.configuration.protocol = BotConfiguration.MiraiProtocol.ANDROID_WATCH`."
-            }
             return QRCodeLoginProcessorPreLoaded(ssoContext, logger)
         }
     }
@@ -49,6 +44,11 @@ internal class QRCodeLoginProcessorPreLoaded(
     private val logger: MiraiLogger,
 ) : QRCodeLoginProcessor {
     override fun prepareProcess(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginProcessor {
+        check(ssoContext.bot.configuration.protocol.asInternal.canDoQRCodeLogin) {
+            "The login protocol must be ANDROID_WATCH or MACOS while enabling qrcode login." +
+                    "Set it by `bot.configuration.protocol = BotConfiguration.MiraiProtocol.ANDROID_WATCH`."
+        }
+
         val loginSolver = ssoContext.bot.configuration.loginSolver
             ?: throw IllegalStateException(
                 "No LoginSolver found while enabling qrcode login. " +
@@ -60,16 +60,13 @@ internal class QRCodeLoginProcessorPreLoaded(
         val qrCodeLoginListener = loginSolver.createQRCodeLoginListener(client.bot)
 
         return loginSolver.run {
-            QRCodeLoginProcessorImpl(qrCodeLoginListener, qrCodeSize, qrCodeMargin, qrCodeEcLevel, logger)
+            QRCodeLoginProcessorImpl(qrCodeLoginListener, logger)
         }
     }
 }
 
 internal class QRCodeLoginProcessorImpl(
     private val qrCodeLoginListener: QRCodeLoginListener,
-    private val size: Int,
-    private val margin: Int,
-    private val ecLevel: Int,
     private val logger: MiraiLogger,
 ) : QRCodeLoginProcessor {
 
@@ -80,7 +77,15 @@ internal class QRCodeLoginProcessorImpl(
         client: QQAndroidClient
     ): WtLogin.TransEmp.Response.FetchQRCode {
         logger.debug { "requesting qrcode." }
-        val resp = handler.sendAndExpect(WtLogin.TransEmp.FetchQRCode(client, size, margin, ecLevel), attempts = 1)
+        val resp = handler.sendAndExpect(
+            WtLogin.TransEmp.FetchQRCode(
+                client,
+                size = qrCodeLoginListener.qrCodeSize,
+                margin = qrCodeLoginListener.qrCodeMargin,
+                ecLevel = qrCodeLoginListener.qrCodeEcLevel,
+            ),
+            attempts = 1
+        )
         check(resp is WtLogin.TransEmp.Response.FetchQRCode) { "Cannot fetch qrcode, resp=$resp" }
         qrCodeLoginListener.onFetchQRCode(handler.context.bot, resp.imageData)
         return resp

@@ -15,6 +15,7 @@ package net.mamoe.mirai.internal
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
+import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 
@@ -39,4 +40,8 @@ internal object BotFactoryImpl : BotFactory {
         passwordMd5: ByteArray,
         configuration: BotConfiguration
     ): Bot = QQAndroidBot(BotAccount(qq, passwordMd5), configuration)
+
+    override fun newBot(qq: Long, authorization: BotAuthorization, configuration: BotConfiguration): Bot {
+        return QQAndroidBot(BotAccount(qq, authorization), configuration)
+    }
 }

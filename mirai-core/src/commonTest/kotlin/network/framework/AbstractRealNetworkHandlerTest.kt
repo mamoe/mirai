@@ -13,6 +13,9 @@ package net.mamoe.mirai.internal.network.framework
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import net.mamoe.mirai.auth.BotAuthInfo
+import net.mamoe.mirai.auth.BotAuthorizationResult
+import net.mamoe.mirai.auth.MiraiInternalBotAuthComponent
 import net.mamoe.mirai.internal.*
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.KeyWithCreationTime
@@ -113,6 +116,40 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
         set(SsoProcessor, object : TestSsoProcessor(bot) {
             override suspend fun login(handler: NetworkHandler) {
+                val botAuthInfo = object : BotAuthInfo {
+                    override val id: Long get() = bot.id
+                    override val deviceInfo: DeviceInfo
+                        get() = get(SsoProcessorContext).device
+                    override val configuration: BotConfiguration
+                        get() = bot.configuration
+                }
+                val rsp = object : BotAuthorizationResult {}
+
+                val botAuthComponents = object : MiraiInternalBotAuthComponent {
+                    override suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthorizationResult {
+                        bot.account.passwordMd5Buffer = passwordMd5
+                        return rsp
+                    }
+
+                    override suspend fun authByPassword(password: String): BotAuthorizationResult {
+                        return authByPassword(password.md5())
+                    }
+
+                    override suspend fun authByPassword(passwordMd5: ByteArray): BotAuthorizationResult {
+                        return authByPassword(SecretsProtection.EscapedByteBuffer(passwordMd5))
+                    }
+
+                    override suspend fun authByQRCode(): BotAuthorizationResult {
+                        TODO("Not yet implemented")
+                    }
+
+                }
+
+                bot.account.authorization.authorize(botAuthComponents, botAuthInfo)
+                bot.account.accountSecretsKeyBuffer = SecretsProtection.EscapedByteBuffer(
+                    bot.account.authorization.calculateSecretsKey(botAuthInfo)
+                )
+
                 nhEvents.add(NHEvent.Login)
                 super.login(handler)
             }
