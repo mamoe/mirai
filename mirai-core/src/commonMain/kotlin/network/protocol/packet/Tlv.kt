@@ -192,8 +192,9 @@ internal fun BytePacketBuilder.t35(
 }
 
 internal fun BytePacketBuilder.t106(
+    client: QQAndroidClient,
     appId: Long = 16L,
-    client: QQAndroidClient
+    passwordMd5: ByteArray,
 ) {
     return t106(
         appId,
@@ -201,7 +202,7 @@ internal fun BytePacketBuilder.t106(
         client.appClientVersion,
         client.uin,
         true,
-        client.account.passwordMd5,
+        passwordMd5,
         0,
         client.uin.toByteArray(),
         client.tgtgtKey,

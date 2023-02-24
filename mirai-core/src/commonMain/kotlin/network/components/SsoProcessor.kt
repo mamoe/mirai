@@ -11,7 +11,9 @@ package net.mamoe.mirai.internal.network.components
 
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.auth.BotAuthInfo
 import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.auth.BotAuthorizationResult
@@ -219,7 +221,6 @@ internal class SsoProcessorImpl(
             ssoContext.bot.components[BotClientHolder].refreshClient()
             ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyEcdh()
 
-            ssoContext.bot.account.passwordMd5Buffer = null
             when (val authw = authControl0.acquireAuth().also { nextAuthMethod = it }) {
                 is AuthMethod.DirectError -> throw authw.exception
 
@@ -227,16 +228,16 @@ internal class SsoProcessorImpl(
                     authControl = null
                     authControl0.exceptionCollector.collectThrow(authw.exception)
                 }
+
                 AuthMethod.NotAvailable -> {
                     authControl = null
                     authControl0.exceptionCollector.collectThrow(IllegalStateException("No more auth method available"))
                 }
 
                 is AuthMethod.Pwd -> {
-                    ssoContext.bot.account.passwordMd5Buffer = authw.passwordMd5
-
-                    SlowLoginImpl(handler, LoginType.Password).doLogin()
+                    SlowLoginImpl(handler, LoginType.Password(authw.passwordMd5)).doLogin()
                 }
+
                 AuthMethod.QRCode -> {
                     val rsp = ssoContext.bot.components[QRCodeLoginProcessor].prepareProcess(
                         handler, client
@@ -547,7 +548,7 @@ internal class SsoProcessorImpl(
 
             @Suppress("FunctionName")
             fun SSOWtLogin9(allowSlider: Boolean) = when (loginType) {
-                is LoginType.Password -> WtLogin9.Password(client, allowSlider)
+                is LoginType.Password -> WtLogin9.Password(client, loginType.passwordMd5.asByteArray, allowSlider)
                 is LoginType.QRCode -> WtLogin9.QRCode(client, loginType.qrCodeLoginData)
             }
 
@@ -651,7 +652,7 @@ internal class SsoProcessorImpl(
     }
 
     private sealed class LoginType {
-        object Password : LoginType()
+        class Password(val passwordMd5: SecretsProtection.EscapedByteBuffer) : LoginType()
         class QRCode(val qrCodeLoginData: QRCodeLoginData) : LoginType()
     }
 

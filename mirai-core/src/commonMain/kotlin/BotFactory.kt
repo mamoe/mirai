@@ -29,7 +29,7 @@ internal object BotFactoryImpl : BotFactory {
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
     override fun newBot(qq: Long, password: String, configuration: BotConfiguration): Bot {
-        return QQAndroidBot(BotAccount(qq, password), configuration)
+        return QQAndroidBot(BotAccount(qq, BotAuthorization.byPassword(password)), configuration)
     }
 
     /**
@@ -39,7 +39,7 @@ internal object BotFactoryImpl : BotFactory {
         qq: Long,
         passwordMd5: ByteArray,
         configuration: BotConfiguration
-    ): Bot = QQAndroidBot(BotAccount(qq, passwordMd5), configuration)
+    ): Bot = QQAndroidBot(BotAccount(qq, BotAuthorization.byPassword(passwordMd5)), configuration)
 
     override fun newBot(qq: Long, authorization: BotAuthorization, configuration: BotConfiguration): Bot {
         return QQAndroidBot(BotAccount(qq, authorization), configuration)

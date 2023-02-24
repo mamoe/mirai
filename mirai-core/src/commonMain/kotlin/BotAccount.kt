@@ -11,47 +11,19 @@
 package net.mamoe.mirai.internal
 
 import net.mamoe.mirai.auth.BotAuthorization
-import net.mamoe.mirai.internal.network.components.PacketCodec
-import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.SecretsProtection
-import net.mamoe.mirai.utils.md5
 
 
 internal class BotAccount(
     internal val id: Long,
-
     val authorization: BotAuthorization,
-
     val phoneNumber: String = "",
 ) {
-    var passwordMd5Buffer: SecretsProtection.EscapedByteBuffer? = null
+    constructor(
+        id: Long, pwd: String, phoneNumber: String = ""
+    ) : this(id, BotAuthorization.byPassword(pwd), phoneNumber)
+
     var accountSecretsKeyBuffer: SecretsProtection.EscapedByteBuffer? = null
-
-
-    constructor(id: Long, passwordMd5: ByteArray, phoneNumber: String = "") : this(
-        id, BotAuthorization.Companion.byPassword(passwordMd5), phoneNumber
-    )
-
-    constructor(id: Long, passwordPlainText: String, phoneNumber: String = "") : this(
-        id,
-        passwordPlainText.md5(),
-        phoneNumber
-    ) {
-        require(passwordPlainText.length <= 16) { "Password length must be at most 16." }
-    }
-
-    val passwordMd5: ByteArray
-        get() {
-            passwordMd5Buffer?.let { return it.asByteArray }
-
-            if (PacketCodec.PacketLogger.isWarningEnabled) {
-                PacketCodec.PacketLogger.warning(
-                    Throwable("BotAccount.passwordMd5 was called but not login as password")
-                )
-            }
-
-            return EMPTY_BYTE_ARRAY
-        }
 
     val accountSecretsKey: ByteArray
         get() {

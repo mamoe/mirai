@@ -127,7 +127,6 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
 
                 val botAuthComponents = object : MiraiInternalBotAuthComponent {
                     override suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthorizationResult {
-                        bot.account.passwordMd5Buffer = passwordMd5
                         return rsp
                     }
 

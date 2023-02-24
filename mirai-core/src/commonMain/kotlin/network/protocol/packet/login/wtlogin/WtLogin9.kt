@@ -19,6 +19,7 @@ internal object WtLogin9 : WtLoginExt {
 
     fun Password(
         client: QQAndroidClient,
+        passwordMd5: ByteArray,
         allowSlider: Boolean
     ) = WtLogin.Login.buildLoginOutgoingPacket(
         client, bodyType = 2, remark = "9:password-login"
@@ -43,7 +44,7 @@ internal object WtLogin9 : WtLoginExt {
                 if (useEncryptA1AndNoPicSig) {
                     t106(client.wLoginSigInfo.encryptA1!!)
                 } else {
-                    t106(appId, client)
+                    t106(client, appId, passwordMd5)
                 }
 
                 /* // from GetStWithPasswd
