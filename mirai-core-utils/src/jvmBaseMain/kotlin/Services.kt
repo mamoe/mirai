@@ -36,18 +36,20 @@ public actual fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementa
 
     var suppressed: Throwable? = null
 
-    val services = when (loaderType) {
-        LoaderType.JDK -> loadServiceByJdk(clazz).firstOrNull()
-        LoaderType.BOTH -> loadServiceByJdk(clazz).firstOrNull() ?: fallbackService
-        LoaderType.FALLBACK -> fallbackService
-    } ?: if (fallbackImplementation != null) {
-        runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull()
-    } else null
+    val services by lazy {
+        when (loaderType) {
+            LoaderType.JDK -> loadServiceByJdk(clazz).firstOrNull()
+            LoaderType.BOTH -> loadServiceByJdk(clazz).firstOrNull() ?: fallbackService
+            LoaderType.FALLBACK -> fallbackService
+        } ?: if (fallbackImplementation != null) {
+            runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull()
+        } else null
+    }
 
-    return services
-        ?: throw NoSuchElementException("Could not find an implementation for service class ${clazz.qualifiedName}").apply {
-            if (suppressed != null) addSuppressed(suppressed)
-        }
+    return Services.getOverrideOrNull(clazz) ?: services
+    ?: throw NoSuchElementException("Could not find an implementation for service class ${clazz.qualifiedName}").apply {
+        if (suppressed != null) addSuppressed(suppressed)
+    }
 }
 
 private fun <T : Any> findCreateInstance(fallbackImplementation: String): T {

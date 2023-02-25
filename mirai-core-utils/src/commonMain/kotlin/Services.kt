@@ -27,6 +27,20 @@ public object Services {
     )
 
     private val registered: MutableMap<String, MutableList<Implementation>> = mutableMapOf()
+    private val overrided: MutableMap<String, Implementation> = mutableMapOf()
+
+    @Suppress("UNCHECKED_CAST")
+    public fun <T : Any> getOverrideOrNull(clazz: KClass<out T>): T? {
+        lock.withLock {
+            return overrided[qualifiedNameOrFail(clazz)]?.instance?.value as T?
+        }
+    }
+
+    internal fun registerAsOverride(baseClass: String, implementationClass: String, implementation: () -> Any) {
+        lock.withLock {
+            overrided[baseClass] = Implementation(implementationClass, lazy(implementation))
+        }
+    }
 
     public fun register(baseClass: String, implementationClass: String, implementation: () -> Any) {
         lock.withLock {
