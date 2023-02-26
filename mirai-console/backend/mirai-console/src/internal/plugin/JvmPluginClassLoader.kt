@@ -146,6 +146,24 @@ internal class DynLibClassLoader : DynamicClasspathClassLoader {
             }
             return null
         }
+
+        fun tryFastOrStrictResolveResource(name: String): URL? {
+            if (name.startsWith("java/")) return JavaSystemPlatformClassLoader.getResource(name)
+
+            // All mirai-core hard-linked should use same version to avoid errors (ClassCastException).
+            if (name in AllDependenciesClassesHolder.allClassesAsResources) {
+                return AllDependenciesClassesHolder.appClassLoader.getResource(name)
+            }
+            if (
+                name.startsWith("net/mamoe/mirai/")
+                || name.startsWith("kotlin/")
+                || name.startsWith("kotlinx/")
+                || name.startsWith("org/slf4j/")
+            ) { // Avoid plugin classing cheating
+                return AllDependenciesClassesHolder.appClassLoader.getResource(name)
+            }
+            return JavaSystemPlatformClassLoader.getResource(name)
+        }
     }
 
     internal fun loadClassInThisClassLoader(name: String): Class<*>? {
@@ -459,6 +477,8 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         src.add(pluginIndependentCL.getResources(name))
 
         val resolved = mutableListOf<URL>()
+
+        DynLibClassLoader.tryFastOrStrictResolveResource(name)?.let { resolved.add(it) }
         src.forEach { nested ->
             nested.iterator().forEach { url ->
                 if (url !in resolved)
@@ -488,6 +508,8 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         // Avoid loading duplicated mirai-console plugins
         if (name.startsWith("META-INF/services/net.mamoe.mirai.console.plugin."))
             return findResource(name)
+
+        DynLibClassLoader.tryFastOrStrictResolveResource(name)?.let { return it }
 
         findResource(name)?.let { return it }
         // parent: ctx.sharedLibrariesLoader

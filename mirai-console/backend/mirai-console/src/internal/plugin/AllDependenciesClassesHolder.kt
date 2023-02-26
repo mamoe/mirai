@@ -22,5 +22,11 @@ internal object AllDependenciesClassesHolder {
         }
 
     @JvmField
+    internal val allClassesAsResources =
+        allclasses
+            .map { it.replace('.', '/') + ".class" }
+            .toHashSet()
+
+    @JvmField
     internal val appClassLoader: ClassLoader = AllDependenciesClassesHolder::class.java.classLoader
 }
