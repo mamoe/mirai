@@ -22,6 +22,7 @@ import java.net.URLClassLoader
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.ZipFile
+import kotlin.collections.LinkedHashSet
 
 /*
 Class resolving:
@@ -147,22 +148,27 @@ internal class DynLibClassLoader : DynamicClasspathClassLoader {
             return null
         }
 
-        fun tryFastOrStrictResolveResource(name: String): URL? {
-            if (name.startsWith("java/")) return JavaSystemPlatformClassLoader.getResource(name)
+        fun tryFastOrStrictResolveResources(name: String): Enumeration<URL> {
+            if (name.startsWith("java/")) return JavaSystemPlatformClassLoader.getResources(name)
 
             // All mirai-core hard-linked should use same version to avoid errors (ClassCastException).
-            if (name in AllDependenciesClassesHolder.allClassesAsResources) {
-                return AllDependenciesClassesHolder.appClassLoader.getResource(name)
-            }
-            if (
+            val fromDependencies = AllDependenciesClassesHolder.appClassLoader.getResources(name)
+
+            return if (
                 name.startsWith("net/mamoe/mirai/")
                 || name.startsWith("kotlin/")
                 || name.startsWith("kotlinx/")
                 || name.startsWith("org/slf4j/")
             ) { // Avoid plugin classing cheating
-                return AllDependenciesClassesHolder.appClassLoader.getResource(name)
+                fromDependencies
+            } else {
+                LinkedHashSet<URL>().apply {
+                    addAll(fromDependencies)
+                    addAll(JavaSystemPlatformClassLoader.getResources(name))
+                }.let {
+                    Collections.enumeration(it)
+                }
             }
-            return JavaSystemPlatformClassLoader.getResource(name)
         }
     }
 
@@ -476,15 +482,10 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         }
         src.add(pluginIndependentCL.getResources(name))
 
-        val resolved = mutableListOf<URL>()
+        val resolved = LinkedHashSet<URL>()
 
-        DynLibClassLoader.tryFastOrStrictResolveResource(name)?.let { resolved.add(it) }
-        src.forEach { nested ->
-            nested.iterator().forEach { url ->
-                if (url !in resolved)
-                    resolved.add(url)
-            }
-        }
+        DynLibClassLoader.tryFastOrStrictResolveResources(name).let { resolved.addAll(it) }
+        src.forEach { nested -> resolved.addAll(nested) }
 
         return Collections.enumeration(resolved)
     }
@@ -509,7 +510,9 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         if (name.startsWith("META-INF/services/net.mamoe.mirai.console.plugin."))
             return findResource(name)
 
-        DynLibClassLoader.tryFastOrStrictResolveResource(name)?.let { return it }
+        DynLibClassLoader.tryFastOrStrictResolveResources(name)
+            .takeIf { it.hasMoreElements() }
+            ?.let { return it.nextElement() }
 
         findResource(name)?.let { return it }
         // parent: ctx.sharedLibrariesLoader
