@@ -60,19 +60,32 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
     override val isSliderCaptchaSupported: Boolean get() = true
     override fun createQRCodeLoginListener(bot: Bot): QRCodeLoginListener {
         return object : QRCodeLoginListener {
+            private var tmpFile: File? = null
+
+            override val qrCodeMargin: Int get() = 1
+            override val qrCodeSize: Int get() = 1
 
             override fun onFetchQRCode(bot: Bot, data: ByteArray) {
                 val logger = loggerSupplier(bot)
-                val tempFile: File = File.createTempFile(
-                    "mirai-qrcode-${bot.id}-${currentTimeSeconds()}",
-                    ".png"
-                ).apply { deleteOnExit() }
 
                 logger.info { "[QRCodeLogin] 已获取登录二维码，请在手机 QQ 使用账号 ${bot.id} 扫码" }
                 logger.info { "[QRCodeLogin] Fetched login qrcode, please scan via qq android with account ${bot.id}." }
 
                 try {
-                    tempFile.createNewFile()
+                    val tempFile: File
+                    if (tmpFile == null) {
+                        tempFile = File.createTempFile(
+                            "mirai-qrcode-${bot.id}-${currentTimeSeconds()}",
+                            ".png"
+                        ).apply { deleteOnExit() }
+
+                        tempFile.createNewFile()
+
+                        tmpFile = tempFile
+                    } else {
+                        tempFile = tmpFile!!
+                    }
+
                     tempFile.writeBytes(data)
                     logger.info { "[QRCodeLogin] 将会显示二维码图片，若看不清图片，请查看文件 ${tempFile.absolutePath}" }
                     logger.info { "[QRCodeLogin] Displaying qrcode image. If not clear, view file ${tempFile.absolutePath}." }
@@ -84,16 +97,23 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
                     )
                 }
 
-                tempFile.inputStream().use { stream ->
+                data.inputStream().use { stream ->
                     try {
-                        val img = ImageIO.read(stream)
-                        if (img == null) {
-                            logger.warning { "[QRCodeLogin] 无法创建字符图片. 请查看文件" }
-                            logger.warning { "[QRCodeLogin] Failed to create char-image. Please see the file." }
-                        } else {
-                            // TODO: more clear qrcode image
-                            logger.info { "[QRCodeLogin] \n" + img.createCharImg() }
+                        val isCacheEnabled = ImageIO.getUseCache()
+
+                        try {
+                            ImageIO.setUseCache(false)
+                            val img = ImageIO.read(stream)
+                            if (img == null) {
+                                logger.warning { "[QRCodeLogin] 无法创建字符图片. 请查看文件" }
+                                logger.warning { "[QRCodeLogin] Failed to create char-image. Please see the file." }
+                            } else {
+                                logger.info { "[QRCodeLogin] \n" + img.renderQRCode() }
+                            }
+                        } finally {
+                            ImageIO.setUseCache(isCacheEnabled)
                         }
+
                     } catch (throwable: Throwable) {
                         logger.warning("[QRCodeLogin] 创建字符图片时出错. 请查看文件.", throwable)
                         logger.warning("[QRCodeLogin] Failed to create char-image. Please see the file.", throwable)
@@ -128,6 +148,10 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
                             else -> append("default state")
                         }
                     }
+                }
+
+                if (state == QRCodeLoginListener.State.CONFIRMED) {
+                    kotlin.runCatching { tmpFile?.delete() }.onFailure { logger.warning(it) }
                 }
             }
 
@@ -354,4 +378,58 @@ private fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Doub
             append(line.substring(minXPos, maxXPos)).append("\n")
         }
     }
+}
+
+private fun BufferedImage.renderQRCode(
+    blackPlaceholder: String = "   ",
+    whitePlaceholder: String = "   ",
+    doColorSwitch: Boolean = true,
+): String {
+    var lastStatus: Boolean? = null
+
+    fun isBlackBlock(rgb: Int): Boolean {
+        val r = rgb and 0xff0000 shr 16
+        val g = rgb and 0x00ff00 shr 8
+        val b = rgb and 0x0000ff
+
+        return r < 10 && g < 10 && b < 10
+    }
+
+    val sb = StringBuilder()
+    sb.append("\n")
+
+    val BLACK = "\u001b[30;40m"
+    val WHITE = "\u001b[97;107m"
+    val RESET = "\u001b[0m"
+
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            val rgbcolor = getRGB(x, y)
+            val crtStatus = isBlackBlock(rgbcolor)
+
+            if (doColorSwitch && crtStatus != lastStatus) {
+                lastStatus = crtStatus
+                sb.append(
+                    if (crtStatus) BLACK else WHITE
+                )
+            }
+
+            sb.append(
+                if (crtStatus) blackPlaceholder else whitePlaceholder
+            )
+        }
+
+        if (doColorSwitch) {
+            sb.append(RESET)
+        }
+
+        sb.append("\n")
+        lastStatus = null
+    }
+
+    if (doColorSwitch) {
+        sb.append(RESET)
+    }
+
+    return sb.toString()
 }
