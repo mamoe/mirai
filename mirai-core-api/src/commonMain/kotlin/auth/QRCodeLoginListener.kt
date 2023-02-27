@@ -13,6 +13,7 @@ import net.mamoe.mirai.Bot
 
 /**
  * 二维码扫描登录监听器
+ *
  * @since 2.15
  */
 public interface QRCodeLoginListener {
@@ -34,6 +35,8 @@ public interface QRCodeLoginListener {
 
     /**
      * 从服务器获取二维码时调用，在下级显示二维码并扫描.
+     *
+     * note: [data] 为图像数据
      */
     public fun onFetchQRCode(bot: Bot, data: ByteArray)
 

@@ -9,15 +9,55 @@
 
 package net.mamoe.mirai.auth
 
+import net.mamoe.mirai.BotFactory
+import net.mamoe.mirai.network.LoginFailedException
+import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmStatic
 
+/**
+ * Bot 的登录鉴权方式
+ *
+ * @see BotFactory.newBot
+ *
+ * @since 2.15
+ */
 public interface BotAuthorization {
+    /**
+     * 此方法控制 Bot 如何进行登录.
+     *
+     * Bot 只能使用一种登录方式, 但是可以在一种登录方式失败的时候尝试其他登录方式
+     *
+     * ## 异常类型
+     *
+     * 抛出一个 [LoginFailedException] 以正常地终止登录, 并可建议系统进行重连或停止 bot (通过 [LoginFailedException.killBot]).
+     * 例如抛出 [RetryLaterException] 可让 bot 重新进行一次登录.
+     *
+     * 抛出任意其他 [Throwable] 将视为鉴权选择器的自身错误.
+     *
+     * ## 示例代码
+     * ```kotlin
+     * override suspend fun authorize(
+     *      authComponent: BotAuthComponent,
+     *      bot: BotAuthInfo,
+     * ) {
+     *      return kotlin.runCatching {
+     *          authComponent.authByQRCode()
+     *      }.recover {
+     *          authComponent.authByPassword("...")
+     *      }.getOrThrow()
+     * }
+     * ```
+     */
     public suspend fun authorize(
         authComponent: BotAuthComponent,
         bot: BotAuthInfo,
     ): BotAuthorizationResult
 
+
+    /**
+     * 计算 `cache/account.secrets` 的加密秘钥
+     */
     public fun calculateSecretsKey(
         bot: BotAuthInfo,
     ): ByteArray {

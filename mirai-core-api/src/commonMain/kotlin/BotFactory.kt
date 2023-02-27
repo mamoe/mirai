@@ -112,10 +112,46 @@ public interface BotFactory {
      */
     public fun newBot(qq: Long, passwordMd5: ByteArray): Bot = newBot(qq, passwordMd5, BotConfiguration.Default)
 
+    ///////////////////////////////////////////////////////////////////////////
+    // BotAuthorization
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * 使用 [默认配置][BotConfiguration.Default] 构造 [Bot] 实例
+     *
+     * @since 2.15
+     */
     public fun newBot(qq: Long, authorization: BotAuthorization): Bot =
         newBot(qq, authorization, BotConfiguration.Default)
 
+    /**
+     * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+     *
+     * @since 2.15
+     */
     public fun newBot(qq: Long, authorization: BotAuthorization, configuration: BotConfiguration): Bot
+
+
+    /**
+     * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+     *
+     * Kotlin:
+     * ```
+     * newBot(123, password) {
+     *     // this: BotConfiguration
+     *     fileBasedDeviceInfo()
+     * }
+     * ```
+     *
+     * Java:
+     * ```java
+     * newBot(123, password, configuration -> {
+     *     configuration.fileBasedDeviceInfo()
+     * })
+     * ```
+     *
+     * @since 2.15
+     */
     public fun newBot(
         qq: Long,
         authorization: BotAuthorization,

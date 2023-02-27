@@ -13,6 +13,8 @@ package net.mamoe.mirai.utils
 
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.auth.BotAuthComponent
+import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.auth.QRCodeLoginListener
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.RetryLaterException
@@ -54,11 +56,10 @@ public abstract class LoginSolver {
     /**
      * 当使用二维码登录时会通过此方法创建二维码登录监听器
      *
-     * - 在 Android 需要手动提供监听器
-     * - 在 JVM, Mirai 会根据环境支持情况选择 Swing/CLI 实现
-     *
      * @see QRCodeLoginListener
-     * @see BotConfiguration.doQRCodeLogin
+     * @see BotAuthorization
+     * @see BotAuthComponent.authByQRCode
+     *
      * @since 2.15
      */
     public open fun createQRCodeLoginListener(bot: Bot): QRCodeLoginListener {
