@@ -73,15 +73,32 @@ public class NoStandardInputForCaptchaException @MiraiInternalApi constructor(
 ) : LoginFailedException(true, "no standard input for captcha")
 
 /**
+ * 当前 [LoginSolver] 不支持此验证方式
+ *
+ * @since 2.15
+ */
+public open class UnsupportedCaptchaMethodException : LoginFailedException {
+    public constructor(killBot: Boolean) : super(killBot)
+    public constructor(killBot: Boolean, message: String?) : super(killBot, message)
+    public constructor(killBot: Boolean, message: String?, cause: Throwable?) : super(killBot, message, cause)
+    public constructor(killBot: Boolean, cause: Throwable?) : super(killBot, cause = cause)
+}
+
+/**
  * 需要强制短信验证, 且当前 [LoginSolver] 不支持时抛出.
  * @since 2.13
  */
-public class UnsupportedSmsLoginException(message: String?) : LoginFailedException(true, message)
+public class UnsupportedSmsLoginException(message: String?) : UnsupportedCaptchaMethodException(true, message)
 
 /**
  * 无法完成滑块验证
  */
-public class UnsupportedSliderCaptchaException(message: String?) : LoginFailedException(true, message)
+public class UnsupportedSliderCaptchaException(message: String?) : UnsupportedCaptchaMethodException(true, message)
+
+/**
+ * 需要二维码登录, 且当前 [LoginSolver] 不支持时抛出
+ */
+public class UnsupportedQRCodeCaptchaException(message: String?) : UnsupportedCaptchaMethodException(true, message)
 
 /**
  * 非 mirai 实现的异常

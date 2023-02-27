@@ -16,6 +16,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.auth.QRCodeLoginListener
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.RetryLaterException
+import net.mamoe.mirai.network.UnsupportedQRCodeCaptchaException
 import net.mamoe.mirai.network.UnsupportedSmsLoginException
 import net.mamoe.mirai.utils.LoginSolver.Companion.Default
 import kotlin.jvm.JvmField
@@ -61,7 +62,7 @@ public abstract class LoginSolver {
      * @since 2.15
      */
     public open fun createQRCodeLoginListener(bot: Bot): QRCodeLoginListener {
-        throw UnsupportedSmsLoginException("This login session requires QRCode login, but current LoginSolver($this) does not support it. Please override `LoginSolver.createQRCodeLoginListener`.")
+        throw UnsupportedQRCodeCaptchaException("This login session requires QRCode login, but current LoginSolver($this) does not support it. Please override `LoginSolver.createQRCodeLoginListener`.")
     }
 
     /**
