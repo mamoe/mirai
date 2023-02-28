@@ -109,6 +109,19 @@ public interface BotAuthorization {
                 }
             }
         }
+
+        public operator fun invoke(
+            block: suspend (BotAuthComponent, BotAuthInfo) -> BotAuthorizationResult
+        ): BotAuthorization {
+            return object : BotAuthorization {
+                override suspend fun authorize(
+                    authComponent: BotAuthComponent,
+                    bot: BotAuthInfo
+                ): BotAuthorizationResult {
+                    return block(authComponent, bot)
+                }
+            }
+        }
     }
 }
 
