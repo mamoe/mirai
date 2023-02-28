@@ -194,6 +194,7 @@ public final class net/mamoe/mirai/auth/BotAuthorization$Companion {
 	public final fun byPassword (Ljava/lang/String;)Lnet/mamoe/mirai/auth/BotAuthorization;
 	public final fun byPassword ([B)Lnet/mamoe/mirai/auth/BotAuthorization;
 	public final fun byQRCode ()Lnet/mamoe/mirai/auth/BotAuthorization;
+	public final fun invoke (Lkotlin/jvm/functions/Function3;)Lnet/mamoe/mirai/auth/BotAuthorization;
 }
 
 public abstract interface class net/mamoe/mirai/auth/BotAuthorizationResult {
