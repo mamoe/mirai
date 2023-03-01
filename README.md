@@ -120,7 +120,7 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
   > 如果你希望快速部署一个 Mirai QQ 机器人，安装插件、并投入使用，请看这里
 - 论坛: [Mirai Forum](https://mirai.mamoe.net/)
 
-  > Mirai 只有**唯一**官方论坛 Mirai Forum
+  > Mirai 只有**唯一一个**官方论坛 Mirai Forum
 - 在线讨论: [Gitter](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ## 开发相关
