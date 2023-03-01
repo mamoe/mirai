@@ -153,6 +153,7 @@ internal class PacketCodecImpl : PacketCodec {
                             }
                         }
                     )
+
                     else -> error("unreachable")
                 }
             }
@@ -228,6 +229,7 @@ internal class PacketCodecImpl : PacketCodec {
                         }
                     }
                 }
+
                 1 -> {
                     input.discardExact(4)
                     input.inflateAllAvailable().let { bytes ->
@@ -239,6 +241,7 @@ internal class PacketCodecImpl : PacketCodec {
                         }
                     }
                 }
+
                 8 -> input
                 else -> throw PacketCodecException("Unknown dataCompressed flag: $dataCompressed", PROTOCOL_UPDATED)
             }
@@ -299,10 +302,10 @@ internal class PacketCodecImpl : PacketCodec {
             }
         }
 
-        val packetType = readByte().toInt();
+        val packetType = readByte().toInt()
         if (packetType != 2) {
             val fullPacketDump = copy().readBytes().toUHexString()
-            var decryptedData: String? = null;
+            var decryptedData: String? = null
             if (remaining > 15) {
                 discardExact(12)
                 val encryptionMethod = this.readUShort().toInt()
@@ -311,13 +314,13 @@ internal class PacketCodecImpl : PacketCodec {
                     decrypt(encryptionMethod).toUHexString()
                 }.getOrNull()
             }
-                throw PacketCodecException(
-                    "Received unknown oicq packet type = $packetType, command name = $commandName, ignoring..." +
-                            "\nPlease report this message to https://github.com/mamoe/mirai/issues/new/choose, \n" +
-                            "Full packet dump: $fullPacketDump\n" +
-                            "Decrypted data (contains your encrypted password, please change your password after reporting issue): $decryptedData",
-                    PROTOCOL_UPDATED
-                )
+            throw PacketCodecException(
+                "Received unknown oicq packet type = $packetType, command name = $commandName, ignoring..." +
+                        "\nPlease report this message to https://github.com/mamoe/mirai/issues/new/choose, \n" +
+                        "Full packet dump: $fullPacketDump\n" +
+                        "Decrypted data (contains your encrypted password, please change your password after reporting issue): $decryptedData",
+                PROTOCOL_UPDATED
+            )
         }
 
         this.discardExact(2)
@@ -328,7 +331,7 @@ internal class PacketCodecImpl : PacketCodec {
         val encryptionMethod = this.readUShort().toInt()
 
         this.discardExact(1)
-        return decrypt(encryptionMethod);
+        return decrypt(encryptionMethod)
     }
 
     /**
