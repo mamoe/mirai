@@ -564,6 +564,11 @@ internal class MarketFaceProtocolTest : AbstractMessageProtocolTest() {
         override val message: Dice
     ) : PolymorphicWrapper
 
+    @Serializable
+    data class StaticWrapperRockPaperScissors(
+        override val message: RockPaperScissors
+    ) : PolymorphicWrapper
+
     private fun <M : MarketFace> testPolymorphicInMarketFace(
         data: M,
         expectedSerialName: String,
@@ -585,6 +590,19 @@ internal class MarketFaceProtocolTest : AbstractMessageProtocolTest() {
         testPolymorphicIn(
             polySerializer = StaticWrapperDice.serializer(),
             polyConstructor = ::StaticWrapperDice,
+            data = data,
+            expectedSerialName = null,
+            expectedInstance = expectedInstance,
+        )
+    })
+
+    private fun testStaticRockPaperScissors(
+        data: RockPaperScissors,
+        expectedInstance: RockPaperScissors = data,
+    ) = listOf(dynamicTest("testStaticRockPaperScissors") {
+        testPolymorphicIn(
+            polySerializer = StaticWrapperRockPaperScissors.serializer(),
+            polyConstructor = ::StaticWrapperRockPaperScissors,
             data = data,
             expectedSerialName = null,
             expectedInstance = expectedInstance,
@@ -614,6 +632,22 @@ internal class MarketFaceProtocolTest : AbstractMessageProtocolTest() {
             testPolymorphicInSingleMessage(data, serialName),
             testInsideMessageChain(data, serialName),
             testContextual(data, serialName, targetType = MarketFace::class),
+        )
+    }
+
+    @TestFactory
+    fun `test serialization for RockPaperScissors`(): DynamicTestsResult {
+        val data = RockPaperScissors.PAPER
+
+        val serialName = RockPaperScissors.SERIAL_NAME
+        return runDynamicTests(
+            testPolymorphicInMarketFace(data, serialName),
+            testPolymorphicInMessageContent(data, serialName),
+            testPolymorphicInSingleMessage(data, serialName),
+            testInsideMessageChain(data, serialName),
+            testContextual(data, serialName),
+            testContextual(data, serialName, targetType = MarketFace::class),
+            testStaticRockPaperScissors(data),
         )
     }
 

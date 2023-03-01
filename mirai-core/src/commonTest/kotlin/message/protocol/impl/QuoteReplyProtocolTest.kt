@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
+import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.source.OfflineMessageSourceImplData
 import net.mamoe.mirai.internal.message.toMessageChainOnline
@@ -19,7 +19,6 @@ import net.mamoe.mirai.internal.testFramework.TestFactory
 import net.mamoe.mirai.internal.testFramework.dynamicTest
 import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.internal.utils.runCoroutineInPlace
-import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
@@ -93,6 +92,12 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
                         ),
                         srcMsg = EMPTY_BYTE_ARRAY
                         // mirai's OfflineMessageSource has no enough information to create 'srcMsg'
+                    ),
+                ),
+                net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
+                    text = net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Text(
+                        str = "@",
+                        attr6Buf = "00 01 00 00 00 01 00 00 12 C4 B1 00 00".hexToBytes(),
                     ),
                 ),
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
@@ -482,18 +487,13 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
     ///////////////////////////////////////////////////////////////////////////
 
 
-    // TODO: 2022/7/20 MessageSource 在 MessageMetadata 的 scope 多态序列化后会输出 'type' = 'MessageSource', 这是期望的行为.
-    //  但是在反序列化时会错误 unknown field 'type'
-    override val format: Json
-        get() = Json {
-            prettyPrint = true
-            serializersModule = MessageSerializers.serializersModule
-            ignoreUnknownKeys = true
-        }
-
-
     @Serializable
     data class PolymorphicWrapperMessageSource(
+        override val message: @Polymorphic MessageSource
+    ) : PolymorphicWrapper
+
+    @Serializable
+    data class StaticWrapperMessageSource(
         override val message: MessageSource
     ) : PolymorphicWrapper
 
@@ -504,6 +504,19 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
         testPolymorphicIn(
             polySerializer = PolymorphicWrapperMessageSource.serializer(),
             polyConstructor = ::PolymorphicWrapperMessageSource,
+            data = data,
+            expectedInstance = expectedInstance,
+            expectedSerialName = null,
+        )
+    })
+
+    private fun <M : MessageSource> testStaticInMessageSource(
+        data: M,
+        expectedInstance: M = data,
+    ) = listOf(dynamicTest("testStaticInMessageSource") {
+        testPolymorphicIn(
+            polySerializer = StaticWrapperMessageSource.serializer(),
+            polyConstructor = ::StaticWrapperMessageSource,
             data = data,
             expectedInstance = expectedInstance,
             expectedSerialName = null,
@@ -527,6 +540,7 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
             testPolymorphicInSingleMessage(data, serialName),
             testInsideMessageChain(data, serialName),
             testContextual(data, serialName),
+            testStaticInMessageSource(data),
         )
     }
 
@@ -542,6 +556,7 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
             testPolymorphicInSingleMessage(data, serialName, expectedInstance = expected),
             testInsideMessageChain(data, serialName, expectedInstance = expected),
             testContextual(data, serialName, expectedInstance = expected),
+            testStaticInMessageSource(data, expectedInstance = expected),
         )
     }
 }

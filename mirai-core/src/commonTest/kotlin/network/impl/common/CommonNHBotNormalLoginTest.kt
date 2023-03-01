@@ -12,8 +12,7 @@
 package net.mamoe.mirai.internal.network.impl.common
 
 import io.ktor.utils.io.errors.*
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.*
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.MockConfiguration
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -30,6 +29,7 @@ import net.mamoe.mirai.internal.network.handler.selector.KeepAliveNetworkHandler
 import net.mamoe.mirai.internal.network.handler.selector.NetworkChannelException
 import net.mamoe.mirai.internal.network.handler.selector.SelectorNetworkHandler
 import net.mamoe.mirai.internal.network.handler.selectorLogger
+import net.mamoe.mirai.internal.network.impl.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.network.CustomLoginFailedException
@@ -91,6 +91,19 @@ internal class CommonNHBotNormalLoginTest : AbstractCommonNHTest() {
         assertState(NetworkHandler.State.CLOSED)
     }
 
+    // #1963
+    @Test
+    fun `test first login failure with internally handled exceptions3`() = runBlockingUnit {
+        setSsoProcessor {
+            //Throw TimeoutCancellationException
+            withTimeout(1) {
+                delay(1000)
+            }
+        }
+        assertFailsWith<TimeoutCancellationException>("test TimeoutCancellationException") { bot.login() }
+        assertState(NetworkHandler.State.CLOSED)
+    }
+
     // 经过 #1963 考虑后在初次登录遇到任何错误都终止并传递异常
 //    @Test
 //    fun `test network broken`() = runBlockingUnit {
@@ -113,9 +126,36 @@ internal class CommonNHBotNormalLoginTest : AbstractCommonNHTest() {
         bot.network.close(StatSvc.ReqMSFOffline.MsfOfflineToken(0, 0, 0))
 
         eventDispatcher.joinBroadcast()
-        delay(1000L) // auto resume in BotOfflineEventMonitor
+        yield() // auto resume in BotOfflineEventMonitor
         eventDispatcher.joinBroadcast()
 
         assertState(NetworkHandler.State.OK)
     }
+
+    // #2504, #2488
+    @Test
+    fun `test resume failed with TimeoutCancellationException`() = runBlockingUnit {
+        var first = true
+        var failCount = 3
+        setSsoProcessor {
+            if (first) {
+                first = false
+            } else {
+                if (failCount > 0) {
+                    failCount--
+                    //Throw TimeoutCancellationException
+                    withTimeout(1) {
+                        delay(1000)
+                    }
+                }
+            }
+        }
+        bot.login()
+        bot.network.close(HeartbeatFailedException("Heartbeat Timeout", RuntimeException("Timeout stub"), true))
+        eventDispatcher.joinBroadcast()
+        yield() // auto resume in BotOfflineEventMonitor
+        eventDispatcher.joinBroadcast()
+        assertState(NetworkHandler.State.OK)
+    }
+
 }

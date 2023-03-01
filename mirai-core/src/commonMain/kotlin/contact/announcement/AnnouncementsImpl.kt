@@ -270,7 +270,9 @@ internal object AnnouncementProtocol {
                 })
             )
             cookie("uin", "o$id")
+            cookie("p_uin", "o$id")
             cookie("skey", sKey)
+            cookie("p_skey", psKey("qun.qq.com"))
         }.bodyAsText().loadSafelyAs(GroupAnnouncementList.serializer())
     }
 
@@ -299,6 +301,7 @@ internal object AnnouncementProtocol {
             cookie("uin", "o$id")
             cookie("p_uin", "o$id")
             cookie("skey", sKey)
+            cookie("p_skey", psKey("qun.qq.com"))
         }.bodyAsText().loadAs(GroupAnnouncement.serializer())
     }
 
