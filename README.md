@@ -56,7 +56,7 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 ### 衍生软件需声明引用
 
 - 若引用 mirai 发布的软件包而不修改 mirai，则衍生项目需在描述或应用内的任意部位提及使用 mirai。
-- 若修改 mirai 源代码再发布，**或参考 mirai 内部实现发布另一个项目**，则衍生项目必须在**文章首部**或 'mirai' 相关内容**首次出现**的位置**明确声明**来源于本仓库 (`https://github.com/mamoe/mirai`)。不得扭曲或隐藏免费且开源的事实。
+- 若修改 mirai 源代码再发布，或参考 mirai 内部实现发布另一个项目，则衍生项目必须在**文章首部**或 'mirai' 相关内容**首次出现**的位置**明确声明**来源于本仓库 (`https://github.com/mamoe/mirai`)。不得扭曲或隐藏**免费且开源的事实**。
 
 ## 协议支持
 
@@ -113,18 +113,23 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 
 **一切开发旨在学习，请勿用于非法用途**
 
-## 开始
+## 快速使用
 
 - **用户手册**: [UserManual](docs/UserManual.md)
+
+  > 如果你希望快速部署一个Mirai QQ机器人，安装插件、并投入使用，请看这里
+- 论坛: [Mirai Forum](https://mirai.mamoe.net/)
+
+  > Mirai 只有**唯一**官方论坛 Mirai Forum
+- 在线讨论: [Gitter](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
+## 开发相关
+
 - 开发文档: [在 GitHub 阅读](docs/README.md)
   或 [在 docs.mirai.mamoe.net 阅读](https://docs.mirai.mamoe.net/)
-- 帮助 mirai: [CONTRIBUTING](docs/contributing/README.md)
-- 论坛: [Mirai Forum](https://mirai.mamoe.net/)
-  > *Mirai 只有唯一一个官方论坛 Mirai Forum*
-
+- 参与贡献: [CONTRIBUTING](docs/contributing/README.md)
 - 更新日志: [release](https://github.com/mamoe/mirai/releases)
 - 开发计划: [milestones](https://github.com/mamoe/mirai/milestones)
-- 在线讨论: [Gitter](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 - mirai 开发组和官方系列项目: [project-mirai](https://github.com/project-mirai)
 - mirai 社区相关项目 (
@@ -139,7 +144,8 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 
 ## 鸣谢
 
+特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  
+
 > [IntelliJ IDEA](https://zh.wikipedia.org/zh-hans/IntelliJ_IDEA) 是一个在各个方面都最大程度地提高开发人员的生产力的 IDE，适用于 JVM 平台语言。
 
-特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  
 [<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)
