@@ -25,7 +25,6 @@ import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
-import net.mamoe.mirai.utils.copy
 import net.mamoe.mirai.utils.map
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -111,9 +110,9 @@ public expect interface FileMessage : MessageContent, ConstrainSingle, CodableMe
 }
 
 @MiraiInternalApi
-internal open class FallbackFileMessageSerializer constructor(serialName: String) :
+internal open class FallbackFileMessageSerializer :
     KSerializer<FileMessage> by Delegate.serializer().map(
-        Delegate.serializer().descriptor.copy(serialName),
+        Delegate.serializer().descriptor,
         serialize = { Delegate(id, internalId, name, size) },
         deserialize = { Mirai.createFileMessage(id, internalId, name, size) },
     ) {
