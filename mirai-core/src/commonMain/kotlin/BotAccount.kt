@@ -12,12 +12,14 @@ package net.mamoe.mirai.internal
 
 import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.utils.SecretsProtection
+import net.mamoe.mirai.utils.TestOnly
 
 
 internal class BotAccount(
     internal val id: Long,
     val authorization: BotAuthorization,
 ) {
+    @TestOnly // to be compatible with your local tests :)
     constructor(
         id: Long, pwd: String
     ) : this(id, BotAuthorization.byPassword(pwd))
