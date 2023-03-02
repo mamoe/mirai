@@ -10,6 +10,6 @@
 package net.mamoe.mirai.internal.network.handler.selector
 
 /**
- * A special exception for selector restart network connection
+ * A special exception that instructs selector to restart network connection
  */
 internal expect class SelectorRequireReconnectException() : NetworkException

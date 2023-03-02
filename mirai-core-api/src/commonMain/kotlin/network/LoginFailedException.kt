@@ -39,6 +39,7 @@ public class WrongPasswordException @MiraiInternalApi constructor(
 
 /**
  * 二维码扫码账号与 BOT 账号不一致。
+ *
  * @since 2.15
  */
 public class InconsistentBotIdException @MiraiInternalApi constructor(
@@ -99,6 +100,8 @@ public class UnsupportedSliderCaptchaException(message: String?) : UnsupportedCa
 
 /**
  * 需要二维码登录, 且当前 [LoginSolver] 不支持时抛出
+ *
+ * @since 2.15
  */
 public class UnsupportedQRCodeCaptchaException(message: String?) : UnsupportedCaptchaMethodException(true, message)
 
