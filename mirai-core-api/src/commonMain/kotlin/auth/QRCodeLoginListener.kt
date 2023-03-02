@@ -19,12 +19,12 @@ import net.mamoe.mirai.Bot
 public interface QRCodeLoginListener {
 
     /**
-     * 使用二维码登录时获取的二维码图片大小.
+     * 使用二维码登录时获取的二维码图片大小字节数.
      */
     public val qrCodeSize: Int get() = 3
 
     /**
-     * 使用二维码登录时获取的二维码边框宽度.
+     * 使用二维码登录时获取的二维码边框宽度像素.
      */
     public val qrCodeMargin: Int get() = 4
 
@@ -36,7 +36,7 @@ public interface QRCodeLoginListener {
     /**
      * 从服务器获取二维码时调用，在下级显示二维码并扫描.
      *
-     * note: [data] 为图像数据
+     * @param data 二维码图像数据 (文件)
      */
     public fun onFetchQRCode(bot: Bot, data: ByteArray)
 
@@ -44,7 +44,7 @@ public interface QRCodeLoginListener {
      * 当二维码状态变化时调用.
      * @see State
      */
-    public fun onStatusChanged(bot: Bot, state: State)
+    public fun onStateChanged(bot: Bot, state: State)
 
     public enum class State {
         /**

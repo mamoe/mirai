@@ -106,7 +106,7 @@ internal class QRCodeLoginProcessorImpl(
         val newState = resp.mapProtocolState()
         if (currentState != newState && state.compareAndSet(currentState, newState)) {
             logger.debug { "qrcode state changed: $state" }
-            qrCodeLoginListener.onStatusChanged(handler.context.bot, newState)
+            qrCodeLoginListener.onStateChanged(handler.context.bot, newState)
         }
         return resp
     }
