@@ -26,20 +26,23 @@ private val loaderType = when (systemProp("mirai.service.loader", "both")) {
     else -> throw IllegalStateException("cannot find a service loader, mirai.service.loader must be both, jdk or fallback (default by both)")
 }
 
-private fun <T : Any> loadServiceByJdk(clazz: KClass<out T>): ServiceLoader<out T> = ServiceLoader.load(clazz.java)
-
 @Suppress("UNCHECKED_CAST")
 public actual fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementation: String?): T {
     val fallbackService by lazy {
         Services.firstImplementationOrNull(Services.qualifiedNameOrFail(clazz)) as T?
     }
 
+    val jdkService by lazy {
+        ServiceLoader.load(clazz.java).firstOrNull() ?: ServiceLoader.load(clazz.java, clazz.java.classLoader)
+            .firstOrNull()
+    }
+
     var suppressed: Throwable? = null
 
     val services by lazy {
         when (loaderType) {
-            LoaderType.JDK -> loadServiceByJdk(clazz).firstOrNull()
-            LoaderType.BOTH -> loadServiceByJdk(clazz).firstOrNull() ?: fallbackService
+            LoaderType.JDK -> jdkService
+            LoaderType.BOTH -> jdkService ?: fallbackService
             LoaderType.FALLBACK -> fallbackService
         } ?: if (fallbackImplementation != null) {
             runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull()
@@ -57,9 +60,7 @@ private fun <T : Any> findCreateInstance(fallbackImplementation: String): T {
 }
 
 public actual fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImplementation: String?): T? {
-    return ServiceLoader.load(clazz.java).firstOrNull()
-        ?: if (fallbackImplementation == null) return null
-        else runCatching { findCreateInstance<T>(fallbackImplementation) }.getOrNull()
+    return runCatching { loadService(clazz, fallbackImplementation) }.getOrNull()
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -68,9 +69,20 @@ public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
         Services.implementations(Services.qualifiedNameOrFail(clazz))?.map { it.value as T }.orEmpty().asSequence()
     }
 
+    val jdkServices: Sequence<T> by lazy {
+        sequence {
+            val current = ServiceLoader.load(clazz.java).iterator()
+            if (current.hasNext()) {
+                yieldAll(current)
+            } else {
+                yieldAll(ServiceLoader.load(clazz.java, clazz.java.classLoader))
+            }
+        }
+    }
+
     return when (loaderType) {
-        LoaderType.JDK -> loadServiceByJdk(clazz).asSequence()
-        LoaderType.BOTH -> loadServiceByJdk(clazz).asSequence().plus(fallBackServicesSeq)
+        LoaderType.JDK -> jdkServices
+        LoaderType.BOTH -> jdkServices.plus(fallBackServicesSeq)
         LoaderType.FALLBACK -> fallBackServicesSeq
     }
 }
