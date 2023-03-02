@@ -24,13 +24,17 @@ internal class DefaultBotAuthorizationFactoryImpl :
     net.mamoe.mirai.auth.DefaultBotAuthorizationFactory {
     override fun byPassword(passwordMd5: ByteArray): BotAuthorization {
         val buffer = EscapedByteBuffer(passwordMd5)
+        return byPassword(buffer) // Avoid referring passwordMd5(ByteArray)
+    }
+
+    private fun byPassword(buffer: EscapedByteBuffer): BotAuthorization {
         return object : BotAuthorizationWithSecretsProtection() {
             override fun calculateSecretsKeyImpl(bot: BotAuthInfo): EscapedByteBuffer = buffer
 
             override suspend fun authorize(
                 session: BotAuthSessionInternal,
                 bot: BotAuthInfo
-            ): BotAuthResult = session.authByPassword(passwordMd5)
+            ): BotAuthResult = session.authByPassword(buffer)
 
             override fun toString(): String = "BotAuthorization.byPassword(<ERASED>)"
         }

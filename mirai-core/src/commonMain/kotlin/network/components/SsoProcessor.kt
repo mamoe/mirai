@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.QRCodeLoginData
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.auth.BotAuthSessionInternal
+import net.mamoe.mirai.internal.network.auth.BotAuthorizationWithSecretsProtection
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
@@ -182,9 +183,11 @@ internal class SsoProcessorImpl(
         if (authControl == null) {
             ssoContext.bot.account.let { account ->
                 if (account.accountSecretsKeyBuffer == null) {
-                    account.accountSecretsKeyBuffer = SecretsProtection.EscapedByteBuffer(
-                        account.authorization.calculateSecretsKey(botAuthInfo)
-                    )
+
+                    account.accountSecretsKeyBuffer = when (val authorization = account.authorization) {
+                        is BotAuthorizationWithSecretsProtection -> authorization.calculateSecretsKeyImpl(botAuthInfo)
+                        else -> SecretsProtection.EscapedByteBuffer(authorization.calculateSecretsKey(botAuthInfo))
+                    }
                 }
             }
 
@@ -248,16 +251,21 @@ internal class SsoProcessorImpl(
             authControl!!.actComplete()
             authControl = null
         } catch (exception: Throwable) {
-            authControl0.exceptionCollector.collectException(exception)
+            if (exception is SelectorRequireReconnectException) {
+
+                if (nextAuthMethod is AuthMethod.DirectError) { // @TestOnly
+                    authControl0.actResume()
+                }
+
+                throw exception
+            }
 
             ssoContext.bot.network.logger.warning({ "Failed with auth method: $nextAuthMethod" }, exception)
 
             if (nextAuthMethod is AuthMethod.DirectError) { // @TestOnly
                 authControl0.actResume()
-            } else if (nextAuthMethod !is AuthMethod.Error) {
-                if (exception !is SelectorRequireReconnectException) { // login not done
-                    authControl0.actFailed(exception)
-                }
+            } else if (nextAuthMethod !is AuthMethod.Error && nextAuthMethod != null) {
+                authControl0.actFailed(exception)
             }
 
             if (exception is NetworkException) {
