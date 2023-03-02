@@ -15,13 +15,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.auth.BotAuthInfo
 import net.mamoe.mirai.auth.BotAuthResult
-import net.mamoe.mirai.auth.MiraiInternalBotAuthComponent
 import net.mamoe.mirai.internal.*
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.KeyWithCreationTime
 import net.mamoe.mirai.internal.network.KeyWithExpiry
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.WLoginSimpleInfo
+import net.mamoe.mirai.internal.network.auth.BotAuthSessionInternal
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.setAll
@@ -125,7 +125,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
                 }
                 val rsp = object : BotAuthResult {}
 
-                val botAuthComponents = object : MiraiInternalBotAuthComponent {
+                val session = object : BotAuthSessionInternal() {
                     override suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthResult {
                         return rsp
                     }
@@ -144,7 +144,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
 
                 }
 
-                bot.account.authorization.authorize(botAuthComponents, botAuthInfo)
+                bot.account.authorization.authorize(session, botAuthInfo)
                 bot.account.accountSecretsKeyBuffer = SecretsProtection.EscapedByteBuffer(
                     bot.account.authorization.calculateSecretsKey(botAuthInfo)
                 )

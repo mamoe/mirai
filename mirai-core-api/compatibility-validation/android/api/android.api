@@ -169,21 +169,24 @@ public final class net/mamoe/mirai/_MiraiInstance {
 	public static final fun set (Lnet/mamoe/mirai/IMirai;)V
 }
 
-public abstract interface class net/mamoe/mirai/auth/BotAuthComponent {
-	public abstract fun authByPassword (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun authByPassword ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun authByQRCode (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
 public abstract interface class net/mamoe/mirai/auth/BotAuthInfo {
 	public abstract fun getConfiguration ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public abstract fun getDeviceInfo ()Lnet/mamoe/mirai/utils/DeviceInfo;
 	public abstract fun getId ()J
 }
 
+public abstract interface class net/mamoe/mirai/auth/BotAuthResult {
+}
+
+public abstract interface class net/mamoe/mirai/auth/BotAuthSession {
+	public abstract fun authByPassword (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun authByPassword ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun authByQRCode (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public abstract interface class net/mamoe/mirai/auth/BotAuthorization {
 	public static final field Companion Lnet/mamoe/mirai/auth/BotAuthorization$Companion;
-	public abstract fun authorize (Lnet/mamoe/mirai/auth/BotAuthComponent;Lnet/mamoe/mirai/auth/BotAuthInfo;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun authorize (Lnet/mamoe/mirai/auth/BotAuthSession;Lnet/mamoe/mirai/auth/BotAuthInfo;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun byPassword (Ljava/lang/String;)Lnet/mamoe/mirai/auth/BotAuthorization;
 	public static fun byPassword ([B)Lnet/mamoe/mirai/auth/BotAuthorization;
 	public static fun byQRCode ()Lnet/mamoe/mirai/auth/BotAuthorization;
@@ -197,15 +200,12 @@ public final class net/mamoe/mirai/auth/BotAuthorization$Companion {
 	public final fun invoke (Lkotlin/jvm/functions/Function3;)Lnet/mamoe/mirai/auth/BotAuthorization;
 }
 
-public abstract interface class net/mamoe/mirai/auth/BotAuthorizationResult {
-}
-
 public abstract interface class net/mamoe/mirai/auth/QRCodeLoginListener {
 	public fun getQrCodeEcLevel ()I
 	public fun getQrCodeMargin ()I
 	public fun getQrCodeSize ()I
 	public abstract fun onFetchQRCode (Lnet/mamoe/mirai/Bot;[B)V
-	public abstract fun onStatusChanged (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;)V
+	public abstract fun onStateChanged (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;)V
 }
 
 public final class net/mamoe/mirai/auth/QRCodeLoginListener$State : java/lang/Enum {
@@ -5409,7 +5409,7 @@ public final class net/mamoe/mirai/network/ForceOfflineException : java/util/con
 	public fun getMessage ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/network/InconsistentBotException : net/mamoe/mirai/network/LoginFailedException {
+public final class net/mamoe/mirai/network/InconsistentBotIdException : net/mamoe/mirai/network/LoginFailedException {
 	public synthetic fun <init> (JJLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getActual ()J
 	public final fun getExpected ()J

@@ -11,9 +11,9 @@ package net.mamoe.mirai.internal.network.component
 
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
-import net.mamoe.mirai.auth.BotAuthComponent
 import net.mamoe.mirai.auth.BotAuthInfo
 import net.mamoe.mirai.auth.BotAuthResult
+import net.mamoe.mirai.auth.BotAuthSession
 import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.internal.network.components.SsoProcessorContext
 import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
@@ -53,8 +53,8 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
     fun `auth test`() = runTest {
 
         val control = SsoProcessorImpl.AuthControl(botAuthInfo, object : BotAuthorization {
-            override suspend fun authorize(authComponent: BotAuthComponent, bot: BotAuthInfo): BotAuthResult {
-                return authComponent.authByPassword(EMPTY_BYTE_ARRAY)
+            override suspend fun authorize(session: BotAuthSession, info: BotAuthInfo): BotAuthResult {
+                return session.authByPassword(EMPTY_BYTE_ARRAY)
             }
         }, bot.logger, backgroundScope)
 
@@ -68,10 +68,10 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
     fun `test auth failed and reselect`() = runTest {
 
         val control = SsoProcessorImpl.AuthControl(botAuthInfo, object : BotAuthorization {
-            override suspend fun authorize(authComponent: BotAuthComponent, bot: BotAuthInfo): BotAuthResult {
-                assertFails { authComponent.authByPassword(EMPTY_BYTE_ARRAY); println("!") }
+            override suspend fun authorize(session: BotAuthSession, info: BotAuthInfo): BotAuthResult {
+                assertFails { session.authByPassword(EMPTY_BYTE_ARRAY); println("!") }
                 println("114514")
-                return authComponent.authByPassword(EMPTY_BYTE_ARRAY)
+                return session.authByPassword(EMPTY_BYTE_ARRAY)
             }
         }, bot.logger, backgroundScope)
 
@@ -87,11 +87,11 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
     fun `failed when login complete`() = runTest {
 
         val control = SsoProcessorImpl.AuthControl(botAuthInfo, object : BotAuthorization {
-            override suspend fun authorize(authComponent: BotAuthComponent, bot: BotAuthInfo): BotAuthResult {
-                val rsp = authComponent.authByPassword(EMPTY_BYTE_ARRAY)
-                assertFails { authComponent.authByPassword(EMPTY_BYTE_ARRAY) }
-                assertFails { authComponent.authByPassword(EMPTY_BYTE_ARRAY) }
-                assertFails { authComponent.authByPassword(EMPTY_BYTE_ARRAY) }
+            override suspend fun authorize(session: BotAuthSession, info: BotAuthInfo): BotAuthResult {
+                val rsp = session.authByPassword(EMPTY_BYTE_ARRAY)
+                assertFails { session.authByPassword(EMPTY_BYTE_ARRAY) }
+                assertFails { session.authByPassword(EMPTY_BYTE_ARRAY) }
+                assertFails { session.authByPassword(EMPTY_BYTE_ARRAY) }
                 return rsp
             }
         }, bot.logger, backgroundScope)

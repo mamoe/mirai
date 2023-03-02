@@ -14,14 +14,12 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import net.mamoe.mirai.auth.BotAuthInfo
-import net.mamoe.mirai.auth.BotAuthResult
-import net.mamoe.mirai.auth.BotAuthorization
-import net.mamoe.mirai.auth.MiraiInternalBotAuthComponent
+import net.mamoe.mirai.auth.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.QRCodeLoginData
 import net.mamoe.mirai.internal.network.WLoginSigInfo
+import net.mamoe.mirai.internal.network.auth.BotAuthSessionInternal
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.network.handler.logger
@@ -315,14 +313,15 @@ internal class SsoProcessorImpl(
 
 
     @TestOnly
-    internal interface SsoProcessorAuthComponent : MiraiInternalBotAuthComponent {
-        suspend fun emit(method: AuthMethod)
+    internal abstract class SsoProcessorAuthComponent : BotAuthSessionInternal() {
+        abstract suspend fun emit(method: AuthMethod)
+
         suspend fun emitDirectError(error: Throwable) {
             emit(AuthMethod.DirectError(error))
         }
 
 
-        val botAuthResult: BotAuthResult
+        abstract val botAuthResult: BotAuthResult
     }
 
     internal class AuthControl(
@@ -346,7 +345,7 @@ internal class SsoProcessorImpl(
 
         @Suppress("RemoveExplicitTypeArguments")
         @OptIn(TestOnly::class)
-        private val authComponent = object : SsoProcessorAuthComponent {
+        private val authComponent = object : SsoProcessorAuthComponent() {
             override val botAuthResult: BotAuthResult get() = rsp
 
             override suspend fun emit(method: AuthMethod) {
