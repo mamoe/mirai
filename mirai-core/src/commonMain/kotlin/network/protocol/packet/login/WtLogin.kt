@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -133,7 +133,8 @@ internal class WtLogin {
                         t142(client.apkId)
                         t145(client.device.guid)
                         t154(0)
-                        t112(client.account.phoneNumber.encodeToByteArray())
+                        // 需要 t112, 但在实现 QR 时删除了 phoneNumber
+//                        t112(client.account.phoneNumber.encodeToByteArray())
                         t116(client.miscBitMap, client.subSigMap)
                         t521()
                         t52c()
