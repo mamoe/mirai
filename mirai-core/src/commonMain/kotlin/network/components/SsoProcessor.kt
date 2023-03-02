@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -15,8 +15,8 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.auth.BotAuthInfo
+import net.mamoe.mirai.auth.BotAuthResult
 import net.mamoe.mirai.auth.BotAuthorization
-import net.mamoe.mirai.auth.BotAuthorizationResult
 import net.mamoe.mirai.auth.MiraiInternalBotAuthComponent
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -322,7 +322,7 @@ internal class SsoProcessorImpl(
         }
 
 
-        val botAuthorizationResult: BotAuthorizationResult
+        val botAuthResult: BotAuthResult
     }
 
     internal class AuthControl(
@@ -342,12 +342,12 @@ internal class SsoProcessorImpl(
         @Volatile
         private var isCompleted = false
 
-        private val rsp = object : BotAuthorizationResult {}
+        private val rsp = object : BotAuthResult {}
 
         @Suppress("RemoveExplicitTypeArguments")
         @OptIn(TestOnly::class)
         private val authComponent = object : SsoProcessorAuthComponent {
-            override val botAuthorizationResult: BotAuthorizationResult get() = rsp
+            override val botAuthResult: BotAuthResult get() = rsp
 
             override suspend fun emit(method: AuthMethod) {
                 logger.verbose { "[AuthControl/emit] Trying emit $method" }
@@ -370,20 +370,20 @@ internal class SsoProcessorImpl(
                 logger.verbose { "[AuthControl/emit] Authorization resumed after $method" }
             }
 
-            override suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthorizationResult {
+            override suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthResult {
                 emit(AuthMethod.Pwd(passwordMd5))
                 return rsp
             }
 
-            override suspend fun authByPassword(password: String): BotAuthorizationResult {
+            override suspend fun authByPassword(password: String): BotAuthResult {
                 return authByPassword(password.md5())
             }
 
-            override suspend fun authByPassword(passwordMd5: ByteArray): BotAuthorizationResult {
+            override suspend fun authByPassword(passwordMd5: ByteArray): BotAuthResult {
                 return authByPassword(SecretsProtection.EscapedByteBuffer(passwordMd5))
             }
 
-            override suspend fun authByQRCode(): BotAuthorizationResult {
+            override suspend fun authByQRCode(): BotAuthResult {
                 emit(AuthMethod.QRCode)
                 return rsp
             }

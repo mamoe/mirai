@@ -52,7 +52,7 @@ public interface BotAuthorization {
     public suspend fun authorize(
         authComponent: BotAuthComponent,
         bot: BotAuthInfo,
-    ): BotAuthorizationResult
+    ): BotAuthResult
 
 
     /**
@@ -84,7 +84,7 @@ public interface BotAuthorization {
                 override suspend fun authorize(
                     authComponent: MiraiInternalBotAuthComponent,
                     bot: BotAuthInfo
-                ): BotAuthorizationResult {
+                ): BotAuthResult {
                     return authComponent.authByPassword(passwordMd5)
                 }
 
@@ -100,7 +100,7 @@ public interface BotAuthorization {
                 override suspend fun authorize(
                     authComponent: BotAuthComponent,
                     bot: BotAuthInfo
-                ): BotAuthorizationResult {
+                ): BotAuthResult {
                     return authComponent.authByQRCode()
                 }
 
@@ -111,13 +111,13 @@ public interface BotAuthorization {
         }
 
         public operator fun invoke(
-            block: suspend (BotAuthComponent, BotAuthInfo) -> BotAuthorizationResult
+            block: suspend (BotAuthComponent, BotAuthInfo) -> BotAuthResult
         ): BotAuthorization {
             return object : BotAuthorization {
                 override suspend fun authorize(
                     authComponent: BotAuthComponent,
                     bot: BotAuthInfo
-                ): BotAuthorizationResult {
+                ): BotAuthResult {
                     return block(authComponent, bot)
                 }
             }
@@ -126,7 +126,7 @@ public interface BotAuthorization {
 }
 
 @NotStableForInheritance
-public interface BotAuthorizationResult
+public interface BotAuthResult
 
 @NotStableForInheritance
 public interface BotAuthInfo {
@@ -137,9 +137,9 @@ public interface BotAuthInfo {
 
 @NotStableForInheritance
 public interface BotAuthComponent {
-    public suspend fun authByPassword(password: String): BotAuthorizationResult
-    public suspend fun authByPassword(passwordMd5: ByteArray): BotAuthorizationResult
-    public suspend fun authByQRCode(): BotAuthorizationResult
+    public suspend fun authByPassword(password: String): BotAuthResult
+    public suspend fun authByPassword(passwordMd5: ByteArray): BotAuthResult
+    public suspend fun authByQRCode(): BotAuthResult
 }
 
 
@@ -150,7 +150,7 @@ public interface BotAuthComponent {
 @NotStableForInheritance
 @MiraiInternalApi
 public interface MiraiInternalBotAuthComponent : BotAuthComponent {
-    public suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthorizationResult
+    public suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthResult
 }
 
 @NotStableForInheritance
@@ -164,9 +164,9 @@ public interface MiraiInternalBotAuthorization : BotAuthorization {
         bot: BotAuthInfo,
     ): SecretsProtection.EscapedByteBuffer
 
-    public suspend fun authorize(authComponent: MiraiInternalBotAuthComponent, bot: BotAuthInfo): BotAuthorizationResult
+    public suspend fun authorize(authComponent: MiraiInternalBotAuthComponent, bot: BotAuthInfo): BotAuthResult
 
-    override suspend fun authorize(authComponent: BotAuthComponent, bot: BotAuthInfo): BotAuthorizationResult {
+    override suspend fun authorize(authComponent: BotAuthComponent, bot: BotAuthInfo): BotAuthResult {
         return authorize(authComponent as MiraiInternalBotAuthComponent, bot)
     }
 }
