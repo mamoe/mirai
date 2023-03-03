@@ -66,5 +66,8 @@ internal object PMain : KotlinPlugin(JvmPluginDescription("net.mamoe.console.ite
         )
         assertNull(javaClass.getResource("/net/mamoe/mirai/console/MiraiConsole.class"))
         assertNull(javaClass.getResource("/net/mamoe/mirai/Bot.class"))
+        this.jvmPluginClasspath.openMiraiDependenciesClassResource = true
+        assertNotNull(javaClass.getResource("/net/mamoe/mirai/console/MiraiConsole.class"))
+        assertNotNull(javaClass.getResource("/net/mamoe/mirai/Bot.class"))
     }
 }
