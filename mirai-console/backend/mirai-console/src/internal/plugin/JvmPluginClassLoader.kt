@@ -484,7 +484,9 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
 
         val resolved = LinkedHashSet<URL>()
 
-        DynLibClassLoader.tryFastOrStrictResolveResources(name).let { resolved.addAll(it) }
+        if (openaccess.openMiraiDependenciesClassResource) {
+            DynLibClassLoader.tryFastOrStrictResolveResources(name).let { resolved.addAll(it) }
+        }
         src.forEach { nested -> resolved.addAll(nested) }
 
         return Collections.enumeration(resolved)
@@ -510,9 +512,11 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
         if (name.startsWith("META-INF/services/net.mamoe.mirai.console.plugin."))
             return findResource(name)
 
-        DynLibClassLoader.tryFastOrStrictResolveResources(name)
-            .takeIf { it.hasMoreElements() }
-            ?.let { return it.nextElement() }
+        if (openaccess.openMiraiDependenciesClassResource) {
+            DynLibClassLoader.tryFastOrStrictResolveResources(name)
+                .takeIf { it.hasMoreElements() }
+                ?.let { return it.nextElement() }
+        }
 
         findResource(name)?.let { return it }
         // parent: ctx.sharedLibrariesLoader
@@ -538,6 +542,8 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
             get() = pluginSharedCL
         override val pluginIndependentLibrariesClassLoader: ClassLoader
             get() = pluginIndependentCL
+
+        override var openMiraiDependenciesClassResource: Boolean = false
 
         private val permitted by lazy {
             arrayOf(
