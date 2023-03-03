@@ -112,9 +112,11 @@ internal class QRCodeLoginProcessorImpl(
     }
 
     override suspend fun process(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginData {
-        main@ while (true) { // TODO: add new bot config property to set times of fetching qrcode
+        main@ while (true) {
             val qrCodeData = requestQRCode(handler, client)
             state@ while (true) {
+                qrCodeLoginListener.onIntervalLoop()
+
                 when (val status = queryQRCodeStatus(handler, client, qrCodeData.sig)) {
                     is WtLogin.TransEmp.Response.QRCodeConfirmed -> {
                         return status.data
@@ -133,7 +135,8 @@ internal class QRCodeLoginProcessorImpl(
                         error("query qrcode status should not be FetchQRCode.")
                     }
                 }
-                delay(5000)
+
+                delay(qrCodeLoginListener.qrCodeStateUpdateInterval.coerceAtLeast(200L))
             }
         }
     }
