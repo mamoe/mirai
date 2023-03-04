@@ -42,12 +42,12 @@ public interface JvmPluginClasspath {
     public val pluginIndependentLibrariesClassLoader: ClassLoader
 
     /**
-     * 是否允许Mirai的公共依赖（如Mirai本身、slf4j等）的字节码文件（.class）作为资源
-     * 被[pluginClassLoader]通过[ClassLoader.getResource]等方式加载
+     * 是否允许 Mirai 的公共依赖（如 Mirai 本身、SLF4J 等）的字节码文件（.class）作为资源被
+     * [pluginClassLoader] 通过 [ClassLoader.getResource] 等方式加载
      *
      * 默认为 `false`
      */
-    public var openMiraiDependenciesClassResource: Boolean
+    public var shouldResolveConsoleSystemResource: Boolean
 
     /**
      * 将 [file] 加入 [classLoader] 的搜索路径内
