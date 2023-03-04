@@ -2019,10 +2019,12 @@ public final class net/mamoe/mirai/console/plugin/jvm/JvmPlugin$Companion {
 public abstract interface class net/mamoe/mirai/console/plugin/jvm/JvmPluginClasspath {
 	public abstract fun addToPath (Ljava/lang/ClassLoader;Ljava/io/File;)V
 	public abstract fun downloadAndAddToPath (Ljava/lang/ClassLoader;Ljava/util/Collection;)V
+	public abstract fun getOpenMiraiDependenciesClassResource ()Z
 	public abstract fun getPluginClassLoader ()Ljava/lang/ClassLoader;
 	public abstract fun getPluginFile ()Ljava/io/File;
 	public abstract fun getPluginIndependentLibrariesClassLoader ()Ljava/lang/ClassLoader;
 	public abstract fun getPluginSharedLibrariesClassLoader ()Ljava/lang/ClassLoader;
+	public abstract fun setOpenMiraiDependenciesClassResource (Z)V
 }
 
 public abstract interface class net/mamoe/mirai/console/plugin/jvm/JvmPluginDescription : net/mamoe/mirai/console/plugin/description/PluginDescription {
