@@ -17,6 +17,7 @@ import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 
 internal class PS : ServiceTypedef
@@ -91,8 +92,8 @@ internal object PMain : KotlinPlugin(JvmPluginDescription("net.mamoe.console.ite
         assertNotNull(javaClass.classLoader.getResource(miraiConsoleClassPath))
         assertNotNull(javaClass.classLoader.getResource(miraiBotClassPath))
 
-        assert(javaClass.classLoader.getSizeOfResources(miraiConsoleClassPath) > miraiConsoleClassResourceCount)
-        assert(javaClass.classLoader.getSizeOfResources(allClassesPath) > allClassesResourceCount)
+        assertTrue(javaClass.classLoader.getSizeOfResources(miraiConsoleClassPath) > miraiConsoleClassResourceCount)
+        assertTrue(javaClass.classLoader.getSizeOfResources(allClassesPath) > allClassesResourceCount)
 
         jvmPluginClasspath.shouldResolveConsoleSystemResource = false
 
