@@ -64,10 +64,45 @@ internal object PMain : KotlinPlugin(JvmPluginDescription("net.mamoe.console.ite
                     println(it)
                 }.size
         )
-        assertNull(javaClass.getResource("/net/mamoe/mirai/console/MiraiConsole.class"))
-        assertNull(javaClass.getResource("/net/mamoe/mirai/Bot.class"))
-        this.jvmPluginClasspath.shouldResolveConsoleSystemResource = true
-        assertNotNull(javaClass.getResource("/net/mamoe/mirai/console/MiraiConsole.class"))
-        assertNotNull(javaClass.getResource("/net/mamoe/mirai/Bot.class"))
+
+        // ************************* resources loading tests *************************
+
+        val miraiConsoleClassPath = "net/mamoe/mirai/console/MiraiConsole.class"
+        val miraiBotClassPath = "net/mamoe/mirai/Bot.class"
+        val allClassesPath = "META-INF/mirai-console/allclasses.txt"
+
+        fun ClassLoader.getSizeOfResources(path: String): Int {
+            return this.getResources(path).toList().size
+        }
+
+        assertNull(javaClass.getResource("/$miraiConsoleClassPath"))
+        assertNull(javaClass.classLoader.getResource(miraiConsoleClassPath))
+        val miraiConsoleClassResourceCount = javaClass.classLoader.getSizeOfResources(miraiConsoleClassPath)
+            .also { assertEquals(0, it) }
+
+        assertNull(javaClass.getResource("/$miraiBotClassPath"))
+        assertNull(javaClass.classLoader.getResource(miraiBotClassPath))
+
+        val allClassesResourceCount = javaClass.classLoader.getSizeOfResources(allClassesPath)
+            .also { assertEquals(0, it) }
+
+        jvmPluginClasspath.shouldResolveConsoleSystemResource = true
+
+        assertNotNull(javaClass.classLoader.getResource(miraiConsoleClassPath))
+        assertNotNull(javaClass.classLoader.getResource(miraiBotClassPath))
+
+        assert(javaClass.classLoader.getSizeOfResources(miraiConsoleClassPath) > miraiConsoleClassResourceCount)
+        assert(javaClass.classLoader.getSizeOfResources(allClassesPath) > allClassesResourceCount)
+
+        jvmPluginClasspath.shouldResolveConsoleSystemResource = false
+
+        assertNull(javaClass.getResource("/$miraiConsoleClassPath"))
+        assertNull(javaClass.classLoader.getResource(miraiConsoleClassPath))
+        assertEquals(0, javaClass.classLoader.getSizeOfResources(miraiConsoleClassPath))
+
+        assertNull(javaClass.getResource("/$miraiBotClassPath"))
+        assertNull(javaClass.classLoader.getResource(miraiBotClassPath))
+
+        assertEquals(0, javaClass.classLoader.getSizeOfResources(allClassesPath))
     }
 }
