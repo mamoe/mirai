@@ -16,6 +16,7 @@ import kotlinx.coroutines.*
 import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
+import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.extensions.BotConfigurationAlterer
@@ -191,8 +192,31 @@ public interface MiraiConsole : CoroutineScope {
         public fun addBot(id: Long, password: ByteArray, configuration: BotConfiguration.() -> Unit = {}): Bot =
             addBotImpl(id, password, configuration)
 
+        /**
+         * 添加一个 [Bot] 实例到全局 Bot 列表, 但不登录.
+         *
+         * 调用 [Bot.login] 可登录.
+         *
+         * @see Bot.instances 获取现有 [Bot] 实例列表
+         * @see BotConfigurationAlterer ExtensionPoint
+         */
+        @ConsoleExperimentalApi("This is a low-level API and might be removed in the future.")
+        public fun addBot(
+            id: Long,
+            authorization: BotAuthorization,
+            configuration: BotConfiguration.() -> Unit = {}
+        ): Bot = addBotImpl(id, authorization, configuration)
+
         @Suppress("UNREACHABLE_CODE")
-        private fun addBotImpl(id: Long, password: Any, configuration: BotConfiguration.() -> Unit = {}): Bot {
+        private fun addBotImpl(id: Long, authorization: Any, configuration: BotConfiguration.() -> Unit = {}): Bot {
+            when (authorization) {
+                is String -> {}
+                is ByteArray -> {}
+                is BotAuthorization -> {}
+
+                else -> throw IllegalArgumentException("Bad authorization type: `${authorization.javaClass.name}`. Require String, ByteArray or BotAuthorization")
+            }
+
             var config = BotConfiguration().apply {
 
                 workingDir = MiraiConsole.rootDir
@@ -239,10 +263,11 @@ public interface MiraiConsole : CoroutineScope {
                 extension.alterConfiguration(id, acc)
             }
 
-            return when (password) {
-                is ByteArray -> BotFactory.newBot(id, password, config)
-                is String -> BotFactory.newBot(id, password, config)
-                else -> throw IllegalArgumentException("Bad password type: `${password.javaClass.name}`. Require ByteArray or String")
+            return when (authorization) {
+                is ByteArray -> BotFactory.newBot(id, authorization, config)            // pwd md5
+                is String -> BotFactory.newBot(id, authorization, config)               // pwd
+                is BotAuthorization -> BotFactory.newBot(id, authorization, config)     // authorization
+                else -> error("assert")
             }
         }
 

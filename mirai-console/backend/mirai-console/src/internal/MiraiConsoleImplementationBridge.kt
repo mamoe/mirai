@@ -33,6 +33,7 @@ import net.mamoe.mirai.console.extensions.CommandCallParserProvider
 import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PostStartupExtension
+import net.mamoe.mirai.console.internal.auth.ConsoleSecretsCalculator
 import net.mamoe.mirai.console.internal.command.CommandConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.ConfigurationKey
@@ -99,6 +100,9 @@ internal class MiraiConsoleImplementationBridge(
     // tentative workaround for https://github.com/mamoe/mirai/pull/1889#pullrequestreview-887903183
     @Volatile
     var permissionSeviceLoaded: Boolean = false
+
+    // For protect account.secrets in console with non-password login
+    lateinit var consoleSecretsCalculator: ConsoleSecretsCalculator
 
     // MiraiConsoleImplementation define: get() = LoggerControllerImpl()
     // Need to cache it or else created every call.
@@ -289,6 +293,10 @@ ___  ____           _   _____                       _
 
         phase("initialize all plugins") {
             pluginManager // init
+
+            consoleSecretsCalculator = ConsoleSecretsCalculator(
+                pluginManager.pluginsDataPath.resolve("Console/console-secrets.key")
+            ).also { it.consoleKey }
 
             mainLogger.verbose { "Loading JVM plugins..." }
             pluginManager.loadAllPluginsUsingBuiltInLoaders()
