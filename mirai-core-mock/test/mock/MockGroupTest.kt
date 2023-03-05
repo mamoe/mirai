@@ -465,10 +465,17 @@ internal class MockGroupTest : MockBotTestBase() {
         assertEquals(emptyList(), group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records)
 
         group.honorMembers[GroupHonorType.TALKATIVE] = member
+        group.active.fetchMockApi(GroupHonorType.TALKATIVE)
         assertEquals(member, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).current!!.member!!)
         assertEquals(emptyList(), group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records)
 
         group.honorMembers[GroupHonorType.TALKATIVE] = group.botAsMember
+        group.active.fetchMockApi(GroupHonorType.TALKATIVE)
+        assertEquals(group.botAsMember, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).current!!.member!!)
+        assertEquals(1, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records.size)
+        assertEquals(member, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records[0].member!!)
+
+        group.honorMembers[GroupHonorType.TALKATIVE] = member
         assertEquals(group.botAsMember, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).current!!.member!!)
         assertEquals(1, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records.size)
         assertEquals(member, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records[0].member!!)

@@ -80,11 +80,11 @@ internal class MockGroupActiveImpl(
     private var honorHistories: MutableMap<GroupHonorType, ActiveHonorList> = ConcurrentHashMap()
 
     @Suppress("INVISIBLE_MEMBER")
-    override suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList {
+    override fun fetchMockApi(type: GroupHonorType) {
         // for dev: b/c mock api will not sync with real group honor member record automatically
-        // honor member in mock api record
+        // honor member from mock api record
         val current = this.group.honorMembers[type]
-        // honor member in real group honor member history
+        // honor member from real group honor member history
         val old = honorHistories[type]
         if (current == null) {
             if (old == null) {
@@ -114,7 +114,10 @@ internal class MockGroupActiveImpl(
                 }
             }
         }
-        return honorHistories[type]!!
+    }
+
+    override suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList {
+        return honorHistories.getOrElse(type) { ActiveHonorList(type, null, listOf()) }
     }
 
     @Volatile

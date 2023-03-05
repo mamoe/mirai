@@ -39,4 +39,9 @@ public interface MockGroupActive : GroupActive {
      * @see queryActiveRank
      */
     public fun mockSetRankRecords(list: List<ActiveRankRecord>)
+
+    /**
+     * 从 MockApi 同步指定类型的群荣耀成员
+     */
+    public fun fetchMockApi(type: GroupHonorType)
 }
