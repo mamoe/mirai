@@ -12,6 +12,8 @@ package net.mamoe.mirai.contact.roaming
 import kotlinx.coroutines.flow.Flow
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.OnlineMessageSource
+import net.mamoe.mirai.utils.Streamable
 
 /**
  * 漫游消息记录管理器. 可通过 [RoamingSupported.roamingMessages] 获得.
@@ -47,6 +49,30 @@ public expect interface RoamingMessages {
         timeEnd: Long,
         filter: RoamingMessageFilter? = null
     ): Flow<MessageChain>
+
+    /**
+     * 查询指定消息之前的消息记录
+     *
+     * 返回查询到的漫游消息记录, 顺序为由新到旧. 这些 [MessageChain] 与从事件中收到的消息链相似, 属于在线消息.
+     * 可从 [MessageChain] 获取 [MessageSource] 来确定发送人等相关信息, 也可以进行引用回复或撤回.
+     *
+     * 注意, 返回的消息记录既包含机器人发送给目标用户的消息, 也包含目标用户发送给机器人的消息.
+     * 可通过 [MessageChain] 获取 [MessageSource] (用法为 `messageChain.source`), 判断 [MessageSource.fromId] (发送人).
+     * 消息的其他*元数据*信息也要通过 [MessageSource] 获取 (如 [MessageSource.time] 获取时间).
+     *
+     * 若只需要获取单向消息 (机器人发送给目标用户的消息或反之), 可使用 [RoamingMessageFilter.SENT] 或 [RoamingMessageFilter.RECEIVED] 作为 [filter] 参数传递.
+     *
+     * 性能提示: 请在 [filter] 执行筛选, 若 [filter] 返回 `false` 则不会解析消息链, 这对本函数的处理速度有决定性影响.
+     *
+     * @param source 消息源，当不为 `null` 时必须为 [OnlineMessageSource]，结果不包含当前消息;
+     * 为 `null` 时从最近一条消息开始获取且包含该消息.
+     * @param filter 过滤器.
+     * @since 2.15
+     */
+    public suspend fun getMessagesBefore(
+        source: MessageSource? = null,
+        filter: RoamingMessageFilter? = null
+    ): Streamable<MessageChain>
 
     /**
      * 查询所有漫游消息记录.
