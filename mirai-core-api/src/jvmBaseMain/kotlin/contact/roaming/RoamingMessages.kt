@@ -77,10 +77,9 @@ public actual interface RoamingMessages {
      * @param filter 过滤器.
      * @since 2.15
      */
-    @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
     public actual suspend fun getMessagesBefore(
         source: MessageSource?,
-        filter: RoamingMessageFilter? = null
+        filter: RoamingMessageFilter?
     ): Streamable<MessageChain>
 
     /**
