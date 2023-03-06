@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.contact.essence
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -22,6 +23,7 @@ import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.contact.essence.EssenceMessageRecord
 import net.mamoe.mirai.contact.essence.Essences
 import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopEssenceMsgManager
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
@@ -129,11 +131,23 @@ internal class EssencesImpl(
 
     override suspend fun remove(source: MessageSource) {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
-        group.bot.cancelDigest(
-            groupCode = group.id,
-            msgSeq = source.ids.first(),
-            msgRandom = source.internalIds.first()
-        )
+        try {
+            val result = group.bot.network.sendAndExpect(
+                TroopEssenceMsgManager.RemoveEssence(
+                    group.bot.client,
+                    group.uin,
+                    source.internalIds.first(),
+                    source.ids.first()
+                ), 5000, 2
+            )
+            check(result.success) { result.msg ?: "移除精华消息失败" }
+        } catch (_: CancellationException) {
+            group.bot.cancelDigest(
+                groupCode = group.id,
+                msgSeq = source.ids.first(),
+                msgRandom = source.internalIds.first()
+            )
+        }
     }
 
     override fun asFlow(): Flow<EssenceMessageRecord> {
