@@ -38,7 +38,7 @@ public class EssenceMessageRecord @MiraiInternalApi constructor(
     public val operatorId: Long,
     public val operatorNick: String,
     public val operatorTime: Int,
-    private val loadMessageSource: suspend () -> MessageSource
+    private val loadMessageSource: suspend (parse: Boolean) -> MessageSource
 ) {
     override fun toString(): String {
         return "EssenceMessageRecord(group=${group}, sender=${senderNick}(${senderId}), senderTime=${senderTime}, operator=${operatorNick}(${operatorId}), operatorTime=${operatorTime})"
@@ -47,10 +47,24 @@ public class EssenceMessageRecord @MiraiInternalApi constructor(
     /**
      * 获取消息源
      *
+     * 其中的 [MessageSource.originalMessage] 将会尝试以加载为原消息格式
+     *
      * **注意** 当精华消息中包含 图片 时，会尝试将其下载然后重新上传, 以保证可用性
+     *
+     * @see getSource
+     */
+    @JvmBlockingBridge
+    public suspend fun getFullSource(): MessageSource {
+        return loadMessageSource(true)
+    }
+
+    /**
+     * 获取消息源
+     *
+     * @see getFullSource
      */
     @JvmBlockingBridge
     public suspend fun getSource(): MessageSource {
-        return loadMessageSource()
+        return loadMessageSource(false)
     }
 }

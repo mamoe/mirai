@@ -66,31 +66,44 @@ internal class EssencesImpl(
         }
     }
 
-    private suspend fun source(message: DigestMessage): MessageSource {
-        return group.bot.buildMessageSource(MessageSourceKind.GROUP) {
-            ids = intArrayOf(message.msgSeq)
-            internalIds = intArrayOf(message.msgRandom)
-            time = message.senderTime
-
-            fromId = message.senderUin
-            targetId = group.id
-
-            messages(message.msgContent.map { content -> parse(content) })
+    private fun plain(content: JsonObject): String {
+        return when (content.getValue("msg_type").jsonPrimitive.intOrNull) {
+            1 -> content.getValue("text").jsonPrimitive.content
+            2 -> Face(id = content.getValue("face_index").jsonPrimitive.int).content
+            3 -> "[图片]"
+            else -> ""
         }
     }
 
-    private fun record(message: DigestMessage): EssenceMessageRecord {
+    private suspend fun source(digests: DigestMessage, parse: Boolean): MessageSource {
+        return group.bot.buildMessageSource(MessageSourceKind.GROUP) {
+            ids = intArrayOf(digests.msgSeq)
+            internalIds = intArrayOf(digests.msgRandom)
+            time = digests.senderTime
+
+            fromId = digests.senderUin
+            targetId = group.id
+
+            if (parse) {
+                messages(digests.msgContent.map { content -> parse(content) })
+            } else {
+                messages(digests.msgContent.joinToString { content -> plain(content) }.toPlainText())
+            }
+        }
+    }
+
+    private fun record(digests: DigestMessage): EssenceMessageRecord {
         return EssenceMessageRecord(
             group = group,
-            sender = group[message.senderUin],
-            senderId = message.senderUin,
-            senderNick = message.senderNick,
-            senderTime = message.senderTime,
-            operator = group[message.addDigestUin],
-            operatorId = message.addDigestUin,
-            operatorNick = message.addDigestNick,
-            operatorTime = message.addDigestTime,
-            loadMessageSource = { source(message = message) }
+            sender = group[digests.senderUin],
+            senderId = digests.senderUin,
+            senderNick = digests.senderNick,
+            senderTime = digests.senderTime,
+            operator = group[digests.addDigestUin],
+            operatorId = digests.addDigestUin,
+            operatorNick = digests.addDigestNick,
+            operatorTime = digests.addDigestTime,
+            loadMessageSource = { source(digests = digests, parse = false) }
         )
     }
 
