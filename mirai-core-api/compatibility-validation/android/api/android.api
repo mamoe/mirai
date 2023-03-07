@@ -1069,7 +1069,6 @@ public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessages 
 	public static synthetic fun getAllMessagesStream$suspendImpl (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getMessagesBefore (Lnet/mamoe/mirai/message/data/MessageSource;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Lnet/mamoe/mirai/utils/Streamable;
 	public abstract fun getMessagesBefore (Lnet/mamoe/mirai/message/data/MessageSource;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun getMessagesBefore$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/message/data/MessageSource;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/Streamable;
 	public static synthetic fun getMessagesBefore$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/message/data/MessageSource;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun getMessagesIn (JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Lkotlinx/coroutines/flow/Flow;
 	public abstract fun getMessagesIn (JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
