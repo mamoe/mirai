@@ -34,31 +34,31 @@ internal class MiraiProtocolInternal(
             protocols[protocol] ?: error("Internal Error: Missing protocol $protocol")
 
         init {
-            //Updated from MiraiGo (2023/1/12)
+            //Updated from MiraiGo (2023/3/7)
             protocols[MiraiProtocol.ANDROID_PHONE] = MiraiProtocolInternal(
                 apkId = "com.tencent.mobileqq",
-                id = 537143097,
-                ver = "8.9.23.9425",
-                sdkVer = "6.0.0.2530",
+                id = 537151682,
+                ver = "8.9.33.10335",
+                sdkVer = "6.0.0.2534",
                 miscBitMap = 150470524,
                 subSigMap = 0x10400,
                 mainSigMap = 16724722,
                 sign = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
-                buildTime = 1640921786L,
+                buildTime = 1673599898L,
                 ssoVersion = 19,
                 supportsQRLogin = false,
             )
-            //Updated from MiraiGo (2023/1/12)
+            //Updated from MiraiGo (2023/3/7)
             protocols[MiraiProtocol.ANDROID_PAD] = MiraiProtocolInternal(
                 apkId = "com.tencent.mobileqq",
-                id = 537142586,
-                ver = "8.9.23.9425",
-                sdkVer = "6.0.0.2530",
+                id = 537151218,
+                ver = "8.9.33.10335",
+                sdkVer = "6.0.0.2534",
                 miscBitMap = 150470524,
                 subSigMap = 0x10400,
                 mainSigMap = 16724722,
                 sign = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
-                buildTime = 1640921786L,
+                buildTime = 1673599898L,
                 ssoVersion = 19,
                 supportsQRLogin = false,
             )

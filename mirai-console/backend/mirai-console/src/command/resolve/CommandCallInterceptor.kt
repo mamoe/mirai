@@ -147,8 +147,8 @@ public inline fun <T, R> InterceptResult<T>.fold(
         callsInPlace(onIntercepted, InvocationKind.AT_MOST_ONCE)
         callsInPlace(otherwise, InvocationKind.AT_MOST_ONCE)
     }
-    value?.let(otherwise)
-    reason?.let(onIntercepted)
+    value?.let { return otherwise(it) }
+    reason?.let { return onIntercepted(it) }
     UNREACHABLE_CLAUSE
 }
 
