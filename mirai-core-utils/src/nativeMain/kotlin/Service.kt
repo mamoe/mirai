@@ -28,4 +28,4 @@ public actual fun <T : Any> loadService(
     ?: error("Could not load service '${clazz.qualifiedName ?: clazz}'. Current services: ${Services.print()}")
 
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> =
-    Services.implementations(qualifiedNameOrFail(clazz))?.asSequence()?.map { it.value }.orEmpty().castUp()
+    Services.implementations(qualifiedNameOrFail(clazz)).orEmpty().map { it.value }.castUp()

@@ -33,8 +33,9 @@ public actual fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementa
     }
 
     val jdkService by lazy {
-        ServiceLoader.load(clazz.java).firstOrNull() ?: ServiceLoader.load(clazz.java, clazz.java.classLoader)
-            .firstOrNull()
+        ServiceLoader.load(clazz.java).firstOrNull()?.let { return@lazy it }
+
+        ServiceLoader.load(clazz.java, clazz.java.classLoader).firstOrNull()
     }
 
     var suppressed: Throwable? = null
@@ -44,8 +45,12 @@ public actual fun <T : Any> loadService(clazz: KClass<out T>, fallbackImplementa
             LoaderType.JDK -> jdkService
             LoaderType.BOTH -> jdkService ?: fallbackService
             LoaderType.FALLBACK -> fallbackService
-        } ?: if (fallbackImplementation != null) {
-            runCatching { findCreateInstance<T>(fallbackImplementation) }.onFailure { suppressed = it }.getOrNull()
+        }?.let { return@lazy it }
+
+        if (fallbackImplementation != null) {
+            runCatching {
+                findCreateInstance<T>(fallbackImplementation)
+            }.onFailure { suppressed = it }.getOrNull()
         } else null
     }
 
@@ -65,24 +70,43 @@ public actual fun <T : Any> loadServiceOrNull(clazz: KClass<out T>, fallbackImpl
 
 @Suppress("UNCHECKED_CAST")
 public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
-    val fallBackServicesSeq: Sequence<T> by lazy {
-        Services.implementations(Services.qualifiedNameOrFail(clazz))?.map { it.value as T }.orEmpty().asSequence()
+    fun fallBackServicesSeq(): Sequence<T> {
+        return Services.implementations(Services.qualifiedNameOrFail(clazz)).orEmpty()
+            .map { it.value as T }
     }
 
-    val jdkServices: Sequence<T> by lazy {
-        sequence {
-            val current = ServiceLoader.load(clazz.java).iterator()
-            if (current.hasNext()) {
-                yieldAll(current)
-            } else {
-                yieldAll(ServiceLoader.load(clazz.java, clazz.java.classLoader))
-            }
+    fun jdkServices(): Sequence<T> = sequence {
+        val current = ServiceLoader.load(clazz.java).iterator()
+        if (current.hasNext()) {
+            yieldAll(current)
+        } else {
+            yieldAll(ServiceLoader.load(clazz.java, clazz.java.classLoader))
         }
     }
 
+    fun bothServices(): Sequence<T> = sequence {
+        Services.getOverrideOrNull(clazz)?.let { yield(it) }
+
+        var jdkServices = ServiceLoader.load(clazz.java).toList()
+        if (jdkServices.isEmpty()) {
+            jdkServices = ServiceLoader.load(clazz.java, clazz.java.classLoader).toList()
+        }
+        yieldAll(jdkServices)
+
+        Services.implementations1(Services.qualifiedNameOrFail(clazz)).asSequence()
+            .filter { impl ->
+                // Drop duplicated
+                jdkServices.none { it.javaClass.name == impl.implementationClass }
+            }
+            .forEach { yield(it.instance.value as T) }
+    }
+
+
+
+
     return when (loaderType) {
-        LoaderType.JDK -> jdkServices
-        LoaderType.BOTH -> jdkServices.plus(fallBackServicesSeq)
-        LoaderType.FALLBACK -> fallBackServicesSeq
+        LoaderType.JDK -> jdkServices()
+        LoaderType.BOTH -> bothServices()
+        LoaderType.FALLBACK -> fallBackServicesSeq()
     }
 }

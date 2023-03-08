@@ -21,7 +21,7 @@ public object Services {
     public fun <T : Any> qualifiedNameOrFail(clazz: KClass<out T>): String =
         clazz.qualifiedName ?: error("Could not find qualifiedName for $clazz")
 
-    private class Implementation(
+    internal class Implementation(
         val implementationClass: String,
         val instance: Lazy<Any>
     )
@@ -51,15 +51,28 @@ public object Services {
 
     public fun firstImplementationOrNull(baseClass: String): Any? {
         lock.withLock {
+            overrided[baseClass]?.let { return it.instance.value }
             return registered[baseClass]?.firstOrNull()?.instance?.value
         }
     }
 
-    public fun implementations(baseClass: String): List<Lazy<Any>>? {
+    public fun implementations(baseClass: String): Sequence<Lazy<Any>>? {
         lock.withLock {
-            return registered[baseClass]?.map { it.instance }
+            val reg = registered[baseClass]
+            val ove = overrided[baseClass]
+            if (ove == null && reg == null) return null
+
+            val regSnapshot = reg?.toList().orEmpty()
+
+            return sequence {
+                if (ove != null) yield(ove.instance)
+
+                regSnapshot.forEach { yield(it.instance) }
+            }
         }
     }
+
+    internal fun implementations1(baseClass: String) = lock.withLock { registered[baseClass]?.toList().orEmpty() }
 
     public fun print(): String {
         lock.withLock {
