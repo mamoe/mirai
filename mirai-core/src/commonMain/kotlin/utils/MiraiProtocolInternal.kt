@@ -33,30 +33,30 @@ internal class MiraiProtocolInternal(
             protocols[protocol] ?: error("Internal Error: Missing protocol $protocol")
 
         init {
-            //Updated from MiraiGo (2023/1/12)
+            //Updated from MiraiGo (2023/3/7)
             protocols[MiraiProtocol.ANDROID_PHONE] = MiraiProtocolInternal(
                 "com.tencent.mobileqq",
-                537143097,
-                "8.9.23.9425",
-                "6.0.0.2530",
+                537151682,
+                "8.9.33.10335",
+                "6.0.0.2534",
                 150470524,
                 0x10400,
                 16724722,
                 "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
-                1640921786L,
+                1673599898L,
                 19,
             )
-            //Updated from MiraiGo (2023/1/12)
+            //Updated from MiraiGo (2023/3/7)
             protocols[MiraiProtocol.ANDROID_PAD] = MiraiProtocolInternal(
                 "com.tencent.mobileqq",
-                537142586,
-                "8.9.23.9425",
-                "6.0.0.2530",
+                537151218,
+                "8.9.33.10335",
+                "6.0.0.2534",
                 150470524,
                 0x10400,
                 16724722,
                 "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
-                1640921786L,
+                1673599898L,
                 19,
             )
             protocols[MiraiProtocol.ANDROID_WATCH] = MiraiProtocolInternal(
