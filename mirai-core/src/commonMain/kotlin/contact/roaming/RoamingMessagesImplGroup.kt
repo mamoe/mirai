@@ -53,7 +53,7 @@ internal class RoamingMessagesImplGroup(
                         .map { it.toMessageChainOnline(bot) }
                 )
 
-                currentSeq = resp.msgElem.minBy { it.time }.msgHead.msgSeq
+                currentSeq = resp.msgElem.minBy { it.time }.msgHead.msgSeq - 1
             }
         }
     }
@@ -77,7 +77,7 @@ internal class RoamingMessagesImplGroup(
                         .map { it.toMessageChainOnline(bot) }
                 )
 
-                currentSeq = resp.msgElem.minBy { it.time }.msgHead.msgSeq
+                currentSeq = resp.msgElem.minBy { it.time }.msgHead.msgSeq - 1
             }
         }
     }
