@@ -17,8 +17,6 @@ import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetGroupMsg
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
-import net.mamoe.mirai.message.data.OnlineMessageSource
 
 internal class RoamingMessagesImplGroup(
     override val contact: CommonGroupImpl
@@ -61,15 +59,10 @@ internal class RoamingMessagesImplGroup(
     }
 
     override suspend fun getMessagesBeforeFlow(
-        source: MessageSource?,
+        messageId: Int?,
         filter: RoamingMessageFilter?
     ): Flow<MessageChain> {
-        var currentSeq = if (source != null) {
-            (source as? OnlineMessageSource) ?: error("source is not OnlineMessageSource")
-            source.ids.firstOrNull()?.minus(1) ?: return emptyFlow()
-        } else {
-            getLastMsgSeq() ?: return emptyFlow()
-        }
+        var currentSeq = messageId ?: (getLastMsgSeq() ?: return emptyFlow())
 
         return flow {
             while (true) {

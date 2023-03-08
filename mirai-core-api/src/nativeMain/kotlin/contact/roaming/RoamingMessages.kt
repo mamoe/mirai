@@ -65,13 +65,14 @@ public actual interface RoamingMessages {
      *
      * 性能提示: 请在 [filter] 执行筛选, 若 [filter] 返回 `false` 则不会解析消息链, 这对本函数的处理速度有决定性影响.
      *
-     * @param source 消息源，当不为 `null` 时必须为 [OnlineMessageSource]，结果不包含当前消息;
+     * @param messageId 消息序列号，请查看 [MessageSource.ids], 一般为 [OnlineMessageSource] 的序列号。
      * 为 `null` 时从最近一条消息开始获取且包含该消息.
      * @param filter 过滤器.
      * @since 2.15
+     * @see MessageSource
      */
     public actual suspend fun getMessagesBefore(
-        source: MessageSource?,
+        messageId: Int?,
         filter: RoamingMessageFilter?
     ): Streamable<MessageChain>
 
@@ -93,5 +94,5 @@ public actual interface RoamingMessages {
      */
     public actual suspend fun getAllMessages(
         filter: RoamingMessageFilter?
-    ): Flow<MessageChain> = getMessagesIn(0, Long.MAX_VALUE, filter)
+    ): Flow<MessageChain>
 }

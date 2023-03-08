@@ -14,7 +14,6 @@ import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.Streamable
 
 internal sealed class SequenceBasedRoamingMessagesImpl : AbstractRoamingMessages() {
@@ -28,10 +27,10 @@ internal sealed class SequenceBasedRoamingMessagesImpl : AbstractRoamingMessages
     }
 
     override suspend fun getMessagesBefore(
-        source: MessageSource?,
+        messageId: Int?,
         filter: RoamingMessageFilter?
     ): Streamable<MessageChain> {
-        val flow = getMessagesBeforeFlow(source, filter)
+        val flow = getMessagesBeforeFlow(messageId, filter)
         return object : Streamable<MessageChain> {
             override fun asFlow(): Flow<MessageChain> {
                 return flow
@@ -39,8 +38,12 @@ internal sealed class SequenceBasedRoamingMessagesImpl : AbstractRoamingMessages
         }
     }
 
+    override suspend fun getAllMessages(
+        filter: RoamingMessageFilter?
+    ): Flow<MessageChain> = getMessagesBefore().asFlow()
+
     abstract suspend fun getMessagesBeforeFlow(
-        source: MessageSource?,
+        messageId: Int?,
         filter: RoamingMessageFilter?
     ): Flow<MessageChain>
 

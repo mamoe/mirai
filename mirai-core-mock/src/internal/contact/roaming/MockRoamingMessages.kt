@@ -19,7 +19,6 @@ import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.contact.roaming.RoamingSupported
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.mock.internal.MockBotImpl
 import net.mamoe.mirai.mock.utils.mock
@@ -41,15 +40,19 @@ internal class MockRoamingMessages(
     }
 
     override suspend fun getMessagesBefore(
-        source: MessageSource?,
+        messageId: Int?,
         filter: RoamingMessageFilter?
     ): Streamable<MessageChain> {
         return object : Streamable<MessageChain> {
             override fun asFlow(): Flow<MessageChain> {
-                val sourceNotNull = source ?: return emptyFlow()
-                return getMsg(source.ids.first().toLong(), filter).asFlow()
+                messageId ?: return emptyFlow()
+                return getMsg(messageId.toLong(), filter).asFlow()
             }
         }
+    }
+
+    override suspend fun getAllMessages(filter: RoamingMessageFilter?): Flow<MessageChain> {
+        return getMsg(0, Long.MAX_VALUE, filter).asFlow()
     }
 
     private fun getMsg(
