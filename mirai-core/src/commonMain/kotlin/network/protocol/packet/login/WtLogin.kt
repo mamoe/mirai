@@ -246,8 +246,8 @@ internal class WtLogin {
             }
         }
 
-        private fun dumpTlvMap(tlvMap: TlvMap) {
-            tlvMap.entries.joinToString { "${it.key}=${it.value.toUHexString()}" }
+        private fun dumpTlvMap(tlvMap: TlvMap): String {
+            return tlvMap.entries.joinToString { "${it.key}=${it.value.toUHexString()}" }
         }
 
         private fun onDevLockLogin(
