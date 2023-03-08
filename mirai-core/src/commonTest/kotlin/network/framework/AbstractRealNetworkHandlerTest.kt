@@ -139,7 +139,7 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
                     }
 
                     override suspend fun authByQRCode(): BotAuthResult {
-                        TODO("Not yet implemented")
+                        return rsp
                     }
 
                 }
