@@ -58,16 +58,16 @@ public object Services {
 
     public fun implementations(baseClass: String): Sequence<Lazy<Any>>? {
         lock.withLock {
-            val reg = registered[baseClass]
-            val ove = overrided[baseClass]
-            if (ove == null && reg == null) return null
+            val implementations = registered[baseClass]
+            val forced = overrided[baseClass]
+            if (forced == null && implementations == null) return null
 
-            val regSnapshot = reg?.toList().orEmpty()
+            val implementationsSnapshot = implementations?.toList().orEmpty()
 
             return sequence {
-                if (ove != null) yield(ove.instance)
+                if (forced != null) yield(forced.instance)
 
-                regSnapshot.forEach { yield(it.instance) }
+                implementationsSnapshot.forEach { yield(it.instance) }
             }
         }
     }
