@@ -47,7 +47,7 @@ public interface EncryptWorkerService : BaseService {
             payLoad: ByteArray,
             vararg extraArgs: Any?
         ): ByteArray? {
-            return loader.service.doTLVEncrypt(id, tlvType, payLoad)
+            return loader.service.doTLVEncrypt(id, tlvType, payLoad, extraArgs)
         }
 
         @JvmStatic
