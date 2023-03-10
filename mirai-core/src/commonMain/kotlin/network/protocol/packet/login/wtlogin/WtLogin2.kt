@@ -10,6 +10,8 @@
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
 import io.ktor.utils.io.core.*
+ines.runBlocking
+import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.miscBitMap
 import net.mamoe.mirai.internal.network.protocol.packet.*
@@ -17,6 +19,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.subAppId
 import net.mamoe.mirai.internal.network.subSigMap
 import net.mamoe.mirai.utils._writeTlvMap
+import net.mamoe.mirai.utils.BotConfiguration
 
 
 internal object WtLogin2 : WtLoginExt {
@@ -27,14 +30,28 @@ internal object WtLogin2 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(2) // subCommand
-
+                val useAndroid = client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE ||
+                                        client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PAD
                 _writeTlvMap {
                     t193(ticket)
                     t8(2052)
                     t104(client.t104)
                     t116(client.miscBitMap, client.subSigMap)
                     client.t547?.let { t547(it) }
+                if (useAndroid) {
+                                    runBlocking {
+                                        t544ForVerify(
+                                            uin = client.uin,
+                                            guid = client.device.guid,
+                                            sdkVersion = client.sdkVersion,
+                                            subCommandId = 2,
+                                            commandStr = "810_2"
+                                        )
+                                    }
+                                }
                 }
+
+
             }
         }
     }
@@ -47,6 +64,8 @@ internal object WtLogin2 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(2) // subCommand
+                val useAndroid = client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE ||
+                        client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PAD
 
                 _writeTlvMap {
                     t2(captchaAnswer, captchaSign, 0)
@@ -54,6 +73,17 @@ internal object WtLogin2 : WtLoginExt {
                     t104(client.t104)
                     t116(client.miscBitMap, client.subSigMap)
                     client.t547?.let { t547(it) }
+                    if (useAndroid) {
+                                        runBlocking {
+                                            t544ForVerify(
+                                                uin = client.uin,
+                                                guid = client.device.guid,
+                                                sdkVersion = client.sdkVersion,
+                                                subCommandId = 2,
+                                                commandStr = "810_2"
+                                            )
+                                        }
+                                    }
                 }
             }
         }

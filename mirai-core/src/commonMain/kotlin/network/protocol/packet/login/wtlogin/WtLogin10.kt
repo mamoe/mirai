@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
 import io.ktor.utils.io.core.*
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
@@ -17,6 +18,7 @@ import net.mamoe.mirai.internal.utils.GuidSource
 import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.internal.utils.guidFlag
 import net.mamoe.mirai.utils._writeTlvMap
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.generateDeviceInfoData
 import net.mamoe.mirai.utils.md5
 import net.mamoe.mirai.utils.toReadPacket
@@ -45,6 +47,8 @@ internal object WtLogin10 : WtLoginExt {
                 0x0810
             ) {
                 writeShort(11) // subCommand
+val useAndroid = client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE ||
+                        client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PAD
 
                 _writeTlvMap(Short.SIZE_BYTES) {
                     t100(appId, subAppId, client.appClientVersion, client.ssoVersion, mainSigMap)
@@ -84,7 +88,17 @@ internal object WtLogin10 : WtLoginExt {
                     t194(client.device.imsiMd5)
                     t511()
                     t202(client.device.wifiBSSID, client.device.wifiSSID)
-                    //t544()
+                    if (useAndroid) {
+                                        runBlocking {
+                                            t544ForToken(
+                                                uin = client.uin,
+                                                guid = client.device.guid,
+                                                sdkVersion = client.sdkVersion,
+                                                subCommandId = 10,
+                                                commandStr = "810_a"
+                                            )
+                                        }
+                                    }
                 }
 
             }

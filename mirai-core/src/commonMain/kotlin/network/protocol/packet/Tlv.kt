@@ -12,6 +12,7 @@
 package net.mamoe.mirai.internal.network.protocol.packet
 
 import io.ktor.utils.io.core.*
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.LoginType
 import net.mamoe.mirai.internal.utils.GuidSource
@@ -19,6 +20,7 @@ import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.guidFlag
 import net.mamoe.mirai.internal.utils.io.*
+import net.mamoe.mirai.spi.EncryptWorkerService
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmInline
 import kotlin.random.Random
@@ -898,10 +900,48 @@ internal fun TlvMapWriter.t525(
     }
 }
 
-internal fun TlvMapWriter.t544( // 1334
+internal suspend fun BytePacketBuilder.t544ForToken( // 1348
+    uin: Long,
+    guid: ByteArray,
+    sdkVersion: String,
+    subCommandId: Int,
+    commandStr: String
 ) {
     tlv(0x544) {
-        writeFully(byteArrayOf(0, 0, 0, 11)) // means native throws exception
+    val dataIn = buildPacket {
+                writeFully(buildPacket {
+                    writeLong(uin)
+                }.readBytes(4))
+                writeShortLVByteArray(guid)
+                writeShortLVString(sdkVersion)
+                writeInt(subCommandId)
+                writeInt(0)
+            }
+            runBlocking {
+                val result = EncryptWorkerService.doTLVEncrypt(uin, 0x544, dataIn.readBytes(), commandStr)
+                writeFully(result ?: "".toByteArray()) // Empty str means native throws exception
+            }
+    }
+}
+
+internal suspend fun TlvMapWriter.t544ForVerify( // 1348
+    uin: Long,
+    guid: ByteArray,
+    sdkVersion: String,
+    subCommandId: Int,
+    commandStr: String
+) {
+    tlv(0x544) {
+        val dataIn = buildPacket {
+            writeLong(uin)
+            writeShortLVByteArray(guid)
+            writeShortLVString(sdkVersion)
+            writeInt(subCommandId)
+        }
+        runBlocking {
+            val result = EncryptWorkerService.doTLVEncrypt(uin, 0x544, dataIn.readBytes(), commandStr)
+            writeFully(result ?: "".toByteArray()) // Empty str means native throws exception
+        }
     }
 }
 
