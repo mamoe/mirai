@@ -93,7 +93,7 @@ public actual fun <T : Any> loadServices(clazz: KClass<out T>): Sequence<T> {
         }
         yieldAll(jdkServices)
 
-        Services.implementations1(Services.qualifiedNameOrFail(clazz)).asSequence()
+        Services.implementationsDirectly(Services.qualifiedNameOrFail(clazz)).asSequence()
             .filter { impl ->
                 // Drop duplicated
                 jdkServices.none { it.javaClass.name == impl.implementationClass }
