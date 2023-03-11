@@ -85,19 +85,18 @@ internal interface WtLoginExt { // so as not to register to global extension
 
         return buildPacket {
             writeByte(64)
-            writeShort(4)
 
-            // TLV
-            writeShort(0x106)
-            writeShortLVByteArray(t106)
+            _writeTlvMap {
 
-            writeShort(0x10c)
-            writeShortLVByteArray(t10c)
+                // TLV
+                tlv(0x106, t106)
 
-            writeShort(0x16a)
-            writeShortLVByteArray(t16a)
+                tlv(0x10c, t10c)
 
-            t145(device.guid)
+                tlv(0x16a, t16a)
+
+                t145(device.guid)
+            }
         }
     }
 

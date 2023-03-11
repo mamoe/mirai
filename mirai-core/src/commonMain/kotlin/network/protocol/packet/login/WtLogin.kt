@@ -122,19 +122,20 @@ internal class WtLogin {
                 ) {
                     writeOicqRequestPacket(client, commandId = 0x0810) {
                         writeShort(17) // subCommand
-                        writeShort(12)
-                        t100(16, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
-                        t108(client.ksid)
-                        t109(client.device.androidId)
-                        t8(2052)
-                        t142(client.apkId)
-                        t145(client.device.guid)
-                        t154(0)
-                        t112(client.account.phoneNumber.encodeToByteArray())
-                        t116(client.miscBitMap, client.subSigMap)
-                        t521()
-                        t52c()
-                        t52d(client.device.generateDeviceInfoData())
+                        _writeTlvMap {
+                            t100(16, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
+                            t108(client.ksid)
+                            t109(client.device.androidId)
+                            t8(2052)
+                            t142(client.apkId)
+                            t145(client.device.guid)
+                            t154(0)
+                            t112(client.account.phoneNumber.encodeToByteArray())
+                            t116(client.miscBitMap, client.subSigMap)
+                            t521()
+                            t52c()
+                            t52d(client.device.generateDeviceInfoData())
+                        }
                     }
                 }
             }

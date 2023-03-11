@@ -13,6 +13,7 @@ import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.utils._writeTlvMap
 
 internal object WtLogin9 : WtLoginExt {
     private const val appId = 16L
@@ -34,19 +35,21 @@ internal object WtLogin9 : WtLoginExt {
                 if (useEncryptA1AndNoPicSig) {
                     tlvCount++;
                 }
-                writeShort(tlvCount.toShort()) // count of TLVs, probably ignored by server?
+                // writeShort(tlvCount.toShort()) // count of TLVs, probably ignored by server?
                 //writeShort(LoginType.PASSWORD.value.toShort())
 
-                t18(appId, client.appClientVersion, client.uin)
-                t1(client.uin, client.device.ipAddress)
+                _writeTlvMap {
 
-                if (useEncryptA1AndNoPicSig) {
-                    t106(client.wLoginSigInfo.encryptA1!!)
-                } else {
-                    t106(appId, client)
-                }
+                    t18(appId, client.appClientVersion, client.uin)
+                    t1(client.uin, client.device.ipAddress)
 
-                /* // from GetStWithPasswd
+                    if (useEncryptA1AndNoPicSig) {
+                        t106(client.wLoginSigInfo.encryptA1!!)
+                    } else {
+                        t106(appId, client)
+                    }
+
+                    /* // from GetStWithPasswd
                 int mMiscBitmap = this.mMiscBitmap;
                 if (t.uinDeviceToken) {
                     mMiscBitmap = (this.mMiscBitmap | 0x2000000);
@@ -56,65 +59,66 @@ internal object WtLogin9 : WtLoginExt {
                 // defaults true
                 if (ConfigManager.get_loginWithPicSt()) appIdList = longArrayOf(1600000226L)
                 */
-                t116(client.miscBitMap, client.subSigMap)
-                t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
-                t107(0)
-                t108(client.device.imei.toByteArray())
+                    t116(client.miscBitMap, client.subSigMap)
+                    t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
+                    t107(0)
+                    t108(client.device.imei.toByteArray())
 
-                // t108(byteArrayOf())
-                // ignored: t104()
-                t142(client.apkId)
+                    // t108(byteArrayOf())
+                    // ignored: t104()
+                    t142(client.apkId)
 
-                // if login with non-number uin
-                // t112()
-                t144(client)
+                    // if login with non-number uin
+                    // t112()
+                    t144(client)
 
-                //this.build().debugPrint("傻逼")
-                t145(client.device.guid)
-                t147(appId, client.apkVersionName, client.apkSignatureMd5)
+                    //this.build().debugPrint("傻逼")
+                    t145(client.device.guid)
+                    t147(appId, client.apkVersionName, client.apkSignatureMd5)
 
-                /*
+                    /*
                 if (client.miscBitMap and 0x80 != 0) {
                     t166(1)
                 }
                 */
-                if (useEncryptA1AndNoPicSig) {
-                    t16a(client.wLoginSigInfo.noPicSig!!)
-                }
+                    if (useEncryptA1AndNoPicSig) {
+                        t16a(client.wLoginSigInfo.noPicSig!!)
+                    }
 
-                t154(sequenceId)
-                t141(client.device.simInfo, client.networkType, client.device.apn)
-                t8(2052)
+                    t154(sequenceId)
+                    t141(client.device.simInfo, client.networkType, client.device.apn)
+                    t8(2052)
 
-                t511()
+                    t511()
 
-                // ignored t172 because rollbackSig is null
-                // ignored t185 because loginType is not SMS
-                // ignored t400 because of first login
+                    // ignored t172 because rollbackSig is null
+                    // ignored t185 because loginType is not SMS
+                    // ignored t400 because of first login
 
-                t187(client.device.macAddress)
-                t188(client.device.androidId)
-                t194(client.device.imsiMd5)
-                if (allowSlider) {
-                    t191()
-                }
+                    t187(client.device.macAddress)
+                    t188(client.device.androidId)
+                    t194(client.device.imsiMd5)
+                    if (allowSlider) {
+                        t191()
+                    }
 
-                /*
+                    /*
                 t201(N = byteArrayOf())*/
 
-                t202(client.device.wifiBSSID, client.device.wifiSSID)
+                    t202(client.device.wifiBSSID, client.device.wifiSSID)
 
-                t177(
-                    buildTime = client.buildTime,
-                    buildVersion = client.sdkVersion,
-                )
-                t516()
-                t521()
+                    t177(
+                        buildTime = client.buildTime,
+                        buildVersion = client.sdkVersion,
+                    )
+                    t516()
+                    t521()
 
-                t525()
-                // this.build().debugPrint("傻逼")
+                    t525()
+                    // this.build().debugPrint("傻逼")
 
-                // ignored t318 because not logging in by QR
+                    // ignored t318 because not logging in by QR
+                }
             }
         }
     }
