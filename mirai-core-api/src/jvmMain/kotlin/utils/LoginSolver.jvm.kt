@@ -92,7 +92,7 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
                 } catch (e: Exception) {
                     logger.warning("[QRCodeLogin] 无法写出二维码图片. 请尽量关闭终端个性化样式后扫描二维码字符图片", e)
                     logger.warning(
-                        "[QRCodeLogin] Failed to export qrcode image. Please try to scan the char-image after disabling custom terminal style indeed.",
+                        "[QRCodeLogin] Failed to export qrcode image. Please try to scan the char-image after disabling custom terminal style.",
                         e
                     )
                 }
