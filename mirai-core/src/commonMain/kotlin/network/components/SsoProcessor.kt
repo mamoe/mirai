@@ -11,14 +11,12 @@ package net.mamoe.mirai.internal.network.components
 
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import net.mamoe.mirai.auth.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.QRCodeLoginData
 import net.mamoe.mirai.internal.network.WLoginSigInfo
+import net.mamoe.mirai.internal.network.auth.AuthControl
 import net.mamoe.mirai.internal.network.auth.BotAuthSessionInternal
 import net.mamoe.mirai.internal.network.auth.BotAuthorizationWithSecretsProtection
 import net.mamoe.mirai.internal.network.component.ComponentKey
@@ -40,10 +38,7 @@ import net.mamoe.mirai.network.UnsupportedSliderCaptchaException
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
-import kotlin.coroutines.Continuation
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlin.jvm.Volatile
 
 /**
@@ -330,147 +325,6 @@ internal class SsoProcessorImpl(
 
 
         abstract val botAuthResult: BotAuthResult
-    }
-
-    internal class AuthControl(
-        private val botAuthInfo: BotAuthInfo,
-        private val authorization: BotAuthorization,
-        private val logger: MiraiLogger,
-        private val scope: CoroutineScope,
-    ) {
-        internal val exceptionCollector = ExceptionCollector()
-
-        @Volatile
-        private var authorizationContinuation: Continuation<Unit>? = null
-
-        @Volatile
-        private var authRspFuture = initCompletableDeferred()
-
-        @Volatile
-        private var isCompleted = false
-
-        private val rsp = object : BotAuthResult {}
-
-        @Suppress("RemoveExplicitTypeArguments")
-        @OptIn(TestOnly::class)
-        private val authComponent = object : SsoProcessorAuthComponent() {
-            override val botAuthResult: BotAuthResult get() = rsp
-
-            override suspend fun emit(method: AuthMethod) {
-                logger.verbose { "[AuthControl/emit] Trying emit $method" }
-
-                if (isCompleted) {
-                    val msg = "[AuthControl/emit] Failed to emit $method because control completed"
-
-                    error(msg.also { logger.verbose(it) })
-                }
-                suspendCoroutine<Unit> { next ->
-                    val rspTarget = authRspFuture
-                    if (!rspTarget.complete(method)) {
-                        val msg = "[AuthControl/emit] Failed to emit $method because auth response completed"
-
-                        error(msg.also { logger.verbose(it) })
-                    }
-                    authorizationContinuation = next
-                    logger.verbose { "[AuthControl/emit] Emitted $method to $rspTarget" }
-                }
-                logger.verbose { "[AuthControl/emit] Authorization resumed after $method" }
-            }
-
-            override suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthResult {
-                emit(AuthMethod.Pwd(passwordMd5))
-                return rsp
-            }
-
-            override suspend fun authByPassword(password: String): BotAuthResult {
-                return authByPassword(password.md5())
-            }
-
-            override suspend fun authByPassword(passwordMd5: ByteArray): BotAuthResult {
-                return authByPassword(SecretsProtection.EscapedByteBuffer(passwordMd5))
-            }
-
-            override suspend fun authByQRCode(): BotAuthResult {
-                emit(AuthMethod.QRCode)
-                return rsp
-            }
-        }
-
-        init {
-            scope.launch {
-                try {
-                    logger.verbose { "[AuthControl/auth] Authorization started" }
-
-                    authorization.authorize(authComponent, botAuthInfo)
-
-                    logger.verbose { "[AuthControl/auth] Authorization exited" }
-
-                    isCompleted = true
-                    authRspFuture.complete(AuthMethod.NotAvailable)
-
-                } catch (e: Throwable) {
-                    logger.verbose({ "[AuthControl/auth] Authorization failed" }, e)
-
-                    isCompleted = true
-                    authRspFuture.complete(AuthMethod.Error(e))
-                }
-            }
-        }
-
-        private fun onSpinWait() {}
-        suspend fun acquireAuth(): AuthMethod {
-            val authTarget = authRspFuture
-            logger.verbose { "[AuthControl/acquire] Acquiring auth method with $authTarget" }
-            val rsp = authTarget.await()
-            logger.debug { "[AuthControl/acquire] Authorization responded: $authTarget, $rsp" }
-
-            while (authorizationContinuation == null && !isCompleted) {
-                onSpinWait()
-            }
-            logger.verbose { "[AuthControl/acquire] authorizationContinuation setup: $authorizationContinuation, $isCompleted" }
-
-            return rsp
-        }
-
-        fun actFailed(cause: Throwable) {
-            logger.verbose { "[AuthControl/resume] Fire auth failed with cause: $cause" }
-
-            authRspFuture = initCompletableDeferred()
-            authorizationContinuation!!.let { cont ->
-                authorizationContinuation = null
-                cont.resumeWith(Result.failure(cause))
-            }
-        }
-
-        @TestOnly // same as act failed
-        fun actResume() {
-            logger.verbose { "[AuthControl/resume] Fire auth resume" }
-
-            authRspFuture = initCompletableDeferred()
-            authorizationContinuation!!.let { cont ->
-                authorizationContinuation = null
-                cont.resume(Unit)
-            }
-        }
-
-        fun actComplete() {
-            logger.verbose { "[AuthControl/resume] Fire auth completed" }
-
-            isCompleted = true
-            authRspFuture = CompletableDeferred(AuthMethod.NotAvailable)
-            authorizationContinuation!!.let { cont ->
-                authorizationContinuation = null
-                cont.resume(Unit)
-            }
-        }
-
-        private fun initCompletableDeferred(): CompletableDeferred<AuthMethod> {
-            return CompletableDeferred<AuthMethod>().also { df ->
-                df.invokeOnCompletion {
-                    logger.debug { "[AuthControl/cd] $df completed with $it" }
-                }
-            }
-        }
     }
 
     private var authControl: AuthControl? = null
