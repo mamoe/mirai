@@ -34,7 +34,7 @@ internal class AuthControl(
     internal val exceptionCollector = ExceptionCollector()
 
     private val userDecisions: OnDemandConsumer<Throwable?, SsoProcessorImpl.AuthMethod> =
-        CoroutineOnDemandValueScope(parentCoroutineContext, logger.subLogger("AuthControl/UserDecisions")) {
+        CoroutineOnDemandValueScope(parentCoroutineContext, logger.subLogger("AuthControl/UserDecisions")) { _ ->
             /**
              * Implements [BotAuthSessionInternal] from API, to be called by the user, to receive user's decisions.
              */

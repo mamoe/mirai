@@ -34,18 +34,20 @@ internal class IllegalProducerStateException(
 internal class CoroutineOnDemandValueScope<T, V>(
     parentCoroutineContext: CoroutineContext,
     private val logger: MiraiLogger,
-    private val producerCoroutine: suspend OnDemandProducerScope<T, V>.() -> Unit,
+    private val producerCoroutine: suspend OnDemandProducerScope<T, V>.(initialTicket: T) -> Unit,
 ) : OnDemandConsumer<T, V> {
     private val coroutineScope = parentCoroutineContext.childScope("CoroutineOnDemandValueScope")
 
     private val state: AtomicRef<ProducerState<T, V>> = atomic(ProducerState.JustInitialized())
 
 
-    inner class Producer : OnDemandProducerScope<T, V> {
+    inner class Producer(
+        private val initialTicket: T,
+    ) : OnDemandProducerScope<T, V> {
         init {
             coroutineScope.launch {
                 try {
-                    producerCoroutine()
+                    producerCoroutine(initialTicket)
                 } catch (_: CancellationException) {
                     // ignored
                 } catch (e: Exception) {
@@ -155,7 +157,7 @@ internal class CoroutineOnDemandValueScope<T, V>(
         state.loop { state ->
             when (state) {
                 is ProducerState.JustInitialized -> {
-                    compareAndSetState(state, ProducerState.CreatingProducer { Producer() })
+                    compareAndSetState(state, ProducerState.CreatingProducer { Producer(ticket) })
                     // loop again
                 }
 
