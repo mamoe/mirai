@@ -55,6 +55,10 @@ internal constructor(
     @JvmField
     internal var counter: Int = 0
 
+    @PublishedApi
+    @JvmField
+    internal var isWriting: Boolean = false
+
     private fun writeKey(key: Int) {
         when (tagSize) {
             1 -> buffer.writeByte(key.toByte())
@@ -65,7 +69,18 @@ internal constructor(
         counter++
     }
 
+    @PublishedApi
+    internal fun ensureNotWriting() {
+        if (isWriting) error("Cannot write a new Tlv when writing Tlv")
+    }
+
     public fun tlv(key: Int, data: ByteArray) {
+        ensureNotWriting()
+        tlv0(key, data)
+    }
+
+
+    private fun tlv0(key: Int, data: ByteArray) {
         writeKey(key)
         buffer.writeShort(data.size.toShort())
         buffer.writeFully(data)
@@ -73,6 +88,13 @@ internal constructor(
     }
 
     public fun tlv(key: Int, data: ByteReadPacket) {
+        ensureNotWriting()
+        tlv0(key, data)
+    }
+
+
+    @PublishedApi
+    internal fun tlv0(key: Int, data: ByteReadPacket) {
         writeKey(key)
         buffer.writeShort(data.remaining.toShort())
 
@@ -87,7 +109,13 @@ internal constructor(
         key: Int,
         crossinline builder: BytePacketBuilder.() -> Unit,
     ) {
-        buildPacket(builder).use { tlv(key, it) }
+        ensureNotWriting()
+        try {
+            isWriting = true
+            buildPacket(builder).use { tlv0(key, it) }
+        } finally {
+            isWriting = false
+        }
     }
 
     public operator fun Int.invoke(data: ByteArray): Unit = tlv(this, data)
