@@ -17,7 +17,6 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.QRCodeLoginData
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.auth.AuthControl
-import net.mamoe.mirai.internal.network.auth.BotAuthSessionInternal
 import net.mamoe.mirai.internal.network.auth.BotAuthorizationWithSecretsProtection
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
@@ -165,7 +164,7 @@ internal class SsoProcessorImpl(
                 botAuthInfo,
                 ssoContext.bot.account.authorization,
                 ssoContext.bot.network.logger,
-                ssoContext.bot,
+                ssoContext.bot.coroutineContext, // do not use network context because network may restart whilst auth control should keep alive
             )
         }
 
@@ -218,8 +217,6 @@ internal class SsoProcessorImpl(
             ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyEcdh()
 
             when (val authw = authControl0.acquireAuth().also { nextAuthMethod = it }) {
-                is AuthMethod.DirectError -> throw authw.exception
-
                 is AuthMethod.Error -> {
                     authControl = null
                     authControl0.exceptionCollector.collectThrow(authw.exception)
@@ -247,20 +244,13 @@ internal class SsoProcessorImpl(
             authControl = null
         } catch (exception: Throwable) {
             if (exception is SelectorRequireReconnectException) {
-
-                if (nextAuthMethod is AuthMethod.DirectError) { // @TestOnly
-                    authControl0.actResume()
-                }
-
                 throw exception
             }
 
             ssoContext.bot.network.logger.warning({ "Failed with auth method: $nextAuthMethod" }, exception)
 
-            if (nextAuthMethod is AuthMethod.DirectError) { // @TestOnly
-                authControl0.actResume()
-            } else if (nextAuthMethod !is AuthMethod.Error && nextAuthMethod != null) {
-                authControl0.actFailed(exception)
+            if (nextAuthMethod !is AuthMethod.Error && nextAuthMethod != null) {
+                authControl0.actMethodFailed(exception)
             }
 
             if (exception is NetworkException) {
@@ -280,51 +270,24 @@ internal class SsoProcessorImpl(
 
 
     sealed class AuthMethod {
-        object NotAvailable : AuthMethod()
+        object NotAvailable : AuthMethod() {
+            override fun toString(): String = "NotAvailable"
+        }
 
         object QRCode : AuthMethod() {
-            override fun toString(): String {
-                return "QRCode"
-            }
+            override fun toString(): String = "QRCode"
         }
 
         class Pwd(val passwordMd5: SecretsProtection.EscapedByteBuffer) : AuthMethod() {
-            override fun toString(): String {
-                return "Password@${hashCode()}"
-            }
+            override fun toString(): String = "Password@${hashCode()}"
         }
 
         /**
          * Exception in [BotAuthorization]
          */
         class Error(val exception: Throwable) : AuthMethod() {
-            override fun toString(): String {
-                return "Error[$exception]@${hashCode()}"
-            }
+            override fun toString(): String = "Error[$exception]@${hashCode()}"
         }
-
-        /**
-         * For mocking a login method throw a exception
-         */
-        @TestOnly
-        class DirectError(val exception: Throwable) : AuthMethod() {
-            override fun toString(): String {
-                return "DirectError[$exception]@${hashCode()}"
-            }
-        }
-    }
-
-
-    @TestOnly
-    internal abstract class SsoProcessorAuthComponent : BotAuthSessionInternal() {
-        abstract suspend fun emit(method: AuthMethod)
-
-        suspend fun emitDirectError(error: Throwable) {
-            emit(AuthMethod.DirectError(error))
-        }
-
-
-        abstract val botAuthResult: BotAuthResult
     }
 
     private var authControl: AuthControl? = null

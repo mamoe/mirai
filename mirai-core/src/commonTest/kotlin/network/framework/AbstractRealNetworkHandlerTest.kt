@@ -130,14 +130,6 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
                         return rsp
                     }
 
-                    override suspend fun authByPassword(password: String): BotAuthResult {
-                        return authByPassword(password.md5())
-                    }
-
-                    override suspend fun authByPassword(passwordMd5: ByteArray): BotAuthResult {
-                        return authByPassword(SecretsProtection.EscapedByteBuffer(passwordMd5))
-                    }
-
                     override suspend fun authByQRCode(): BotAuthResult {
                         return rsp
                     }

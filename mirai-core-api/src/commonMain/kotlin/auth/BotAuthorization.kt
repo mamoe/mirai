@@ -102,8 +102,19 @@ public interface BotAuthInfo {
 
 @NotStableForInheritance
 public interface BotAuthSession {
+    /**
+     * @throws LoginFailedException
+     */
     public suspend fun authByPassword(password: String): BotAuthResult
+
+    /**
+     * @throws LoginFailedException
+     */
     public suspend fun authByPassword(passwordMd5: ByteArray): BotAuthResult
+
+    /**
+     * @throws LoginFailedException
+     */
     public suspend fun authByQRCode(): BotAuthResult
 }
 

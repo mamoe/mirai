@@ -14,10 +14,20 @@ import net.mamoe.mirai.auth.BotAuthResult
 import net.mamoe.mirai.auth.BotAuthSession
 import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.utils.SecretsProtection
+import net.mamoe.mirai.utils.md5
 
 
 // With SecretsProtection support
 internal abstract class BotAuthSessionInternal : BotAuthSession {
+
+    final override suspend fun authByPassword(password: String): BotAuthResult {
+        return authByPassword(password.md5())
+    }
+
+    final override suspend fun authByPassword(passwordMd5: ByteArray): BotAuthResult {
+        return authByPassword(SecretsProtection.EscapedByteBuffer(passwordMd5))
+    }
+
     abstract suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthResult
 }
 

@@ -15,19 +15,21 @@ import net.mamoe.mirai.auth.BotAuthInfo
 import net.mamoe.mirai.auth.BotAuthResult
 import net.mamoe.mirai.auth.BotAuthSession
 import net.mamoe.mirai.auth.BotAuthorization
+import net.mamoe.mirai.internal.network.auth.AuthControl
 import net.mamoe.mirai.internal.network.components.SsoProcessorContext
 import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
 import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTest
+import net.mamoe.mirai.network.CustomLoginFailedException
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DeviceInfo
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import kotlin.reflect.KClass
 import kotlin.test.Test
-import kotlin.test.assertFails
+import kotlin.test.assertFailsWith
 import kotlin.test.fail
 
 internal class BotAuthControlTest : AbstractCommonNHTest() {
-    val botAuthInfo = object : BotAuthInfo {
+    private val botAuthInfo = object : BotAuthInfo {
         override val id: Long
             get() = bot.id
         override val deviceInfo: DeviceInfo
@@ -36,7 +38,7 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
             get() = bot.configuration
     }
 
-    private suspend fun SsoProcessorImpl.AuthControl.assertRequire(exceptedType: KClass<*>) {
+    private suspend fun AuthControl.assertRequire(exceptedType: KClass<*>) {
         println("Requiring auth method")
         val nextAuth = acquireAuth()
         println("Got $nextAuth")
@@ -52,11 +54,11 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
     @Test
     fun `auth test`() = runTest {
 
-        val control = SsoProcessorImpl.AuthControl(botAuthInfo, object : BotAuthorization {
+        val control = AuthControl(botAuthInfo, object : BotAuthorization {
             override suspend fun authorize(session: BotAuthSession, info: BotAuthInfo): BotAuthResult {
                 return session.authByPassword(EMPTY_BYTE_ARRAY)
             }
-        }, bot.logger, backgroundScope)
+        }, bot.logger, backgroundScope.coroutineContext)
 
         control.assertRequire(SsoProcessorImpl.AuthMethod.Pwd::class)
         control.actComplete()
@@ -66,35 +68,37 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
 
     @Test
     fun `test auth failed and reselect`() = runTest {
+        class MyLoginFailedException : CustomLoginFailedException(killBot = false)
 
-        val control = SsoProcessorImpl.AuthControl(botAuthInfo, object : BotAuthorization {
+        val control = AuthControl(botAuthInfo, object : BotAuthorization {
             override suspend fun authorize(session: BotAuthSession, info: BotAuthInfo): BotAuthResult {
-                assertFails { session.authByPassword(EMPTY_BYTE_ARRAY); println("!") }
+                assertFailsWith<MyLoginFailedException> { session.authByPassword(EMPTY_BYTE_ARRAY); println("!") }
                 println("114514")
                 return session.authByPassword(EMPTY_BYTE_ARRAY)
             }
-        }, bot.logger, backgroundScope)
+        }, bot.logger, backgroundScope.coroutineContext)
 
         control.assertRequire(SsoProcessorImpl.AuthMethod.Pwd::class)
-        control.actFailed(Throwable())
+        control.actMethodFailed(MyLoginFailedException())
+
         control.assertRequire(SsoProcessorImpl.AuthMethod.Pwd::class)
         control.actComplete()
+
         control.assertRequire(SsoProcessorImpl.AuthMethod.NotAvailable::class)
 
     }
 
     @Test
     fun `failed when login complete`() = runTest {
-
-        val control = SsoProcessorImpl.AuthControl(botAuthInfo, object : BotAuthorization {
+        val control = AuthControl(botAuthInfo, object : BotAuthorization {
             override suspend fun authorize(session: BotAuthSession, info: BotAuthInfo): BotAuthResult {
                 val rsp = session.authByPassword(EMPTY_BYTE_ARRAY)
-                assertFails { session.authByPassword(EMPTY_BYTE_ARRAY) }
-                assertFails { session.authByPassword(EMPTY_BYTE_ARRAY) }
-                assertFails { session.authByPassword(EMPTY_BYTE_ARRAY) }
+                assertFailsWith<IllegalStateException> { session.authByPassword(EMPTY_BYTE_ARRAY) }
+                assertFailsWith<IllegalStateException> { session.authByPassword(EMPTY_BYTE_ARRAY) }
+                assertFailsWith<IllegalStateException> { session.authByPassword(EMPTY_BYTE_ARRAY) }
                 return rsp
             }
-        }, bot.logger, backgroundScope)
+        }, bot.logger, backgroundScope.coroutineContext)
 
         control.assertRequire(SsoProcessorImpl.AuthMethod.Pwd::class)
         control.actComplete()
