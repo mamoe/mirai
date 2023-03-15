@@ -10,6 +10,7 @@
 package net.mamoe.mirai.auth
 
 import net.mamoe.mirai.BotFactory
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.utils.*
@@ -85,8 +86,10 @@ public interface BotAuthorization {
             }
         }
 
-        private val factory: DefaultBotAuthorizationFactory =
-            loadService() // TODO: add services for native after #2511 merged. 
+        private val factory: DefaultBotAuthorizationFactory by lazy {
+            Mirai // Ensure services loaded
+            loadService()
+        }
     }
 }
 
