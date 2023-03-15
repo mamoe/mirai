@@ -73,7 +73,20 @@ internal class MiraiProtocolInternal(
             )
             protocols[MiraiProtocol.IPAD] = MiraiProtocolInternal(
                 "com.tencent.minihd.qq",
-                537065739,
+                537151363,
+                "8.9.33.614",
+                "6.0.0.2433",
+                150470524,
+                66560,
+                1970400,
+                "AA 39 78 F4 1F D9 6F F9 91 4A 66 9E 18 64 74 C7",
+                1640921786L,
+                12,
+            )
+            //Updated from MiraiGo (2023/3/15)
+            protocols[MiraiProtocol.MACOS] = MiraiProtocolInternal(
+                "com.tencent.qq",
+                537128930,
                 "5.8.9",
                 "6.0.0.2433",
                 150470524,
@@ -82,18 +95,6 @@ internal class MiraiProtocolInternal(
                 "AA 39 78 F4 1F D9 6F F9 91 4A 66 9E 18 64 74 C7",
                 1595836208L,
                 12,
-            )
-            protocols[MiraiProtocol.MACOS] = MiraiProtocolInternal(
-                "com.tencent.qq",
-                0x2003ca32,
-                "6.7.9",
-                "6.2.0.1023",
-                0x7ffc,
-                66560,
-                1970400,
-                "com.tencent.qq".encodeToByteArray().toUHexString(" "),
-                0L,
-                7,
             )
         }
     }
