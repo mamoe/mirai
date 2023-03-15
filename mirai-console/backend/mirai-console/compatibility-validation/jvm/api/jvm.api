@@ -2024,6 +2024,8 @@ public abstract interface class net/mamoe/mirai/console/plugin/jvm/JvmPluginClas
 	public abstract fun getPluginFile ()Ljava/io/File;
 	public abstract fun getPluginIndependentLibrariesClassLoader ()Ljava/lang/ClassLoader;
 	public abstract fun getPluginSharedLibrariesClassLoader ()Ljava/lang/ClassLoader;
+	public abstract fun getShouldResolveConsoleSystemResource ()Z
+	public abstract fun setShouldResolveConsoleSystemResource (Z)V
 }
 
 public abstract interface class net/mamoe/mirai/console/plugin/jvm/JvmPluginDescription : net/mamoe/mirai/console/plugin/description/PluginDescription {
