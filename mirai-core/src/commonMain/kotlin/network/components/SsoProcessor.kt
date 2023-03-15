@@ -219,12 +219,12 @@ internal class SsoProcessorImpl(
             when (val authw = authControl0.acquireAuth().also { nextAuthMethod = it }) {
                 is AuthMethod.Error -> {
                     authControl = null
-                    authControl0.exceptionCollector.collectThrow(authw.exception)
+                    throw authw.exception
                 }
 
                 AuthMethod.NotAvailable -> {
                     authControl = null
-                    authControl0.exceptionCollector.collectThrow(IllegalStateException("No more auth method available"))
+                    error("No more auth method available")
                 }
 
                 is AuthMethod.Pwd -> {
@@ -248,6 +248,7 @@ internal class SsoProcessorImpl(
             }
 
             ssoContext.bot.network.logger.warning({ "Failed with auth method: $nextAuthMethod" }, exception)
+            authControl0.exceptionCollector.collectException(exception)
 
             if (nextAuthMethod !is AuthMethod.Error && nextAuthMethod != null) {
                 authControl0.actMethodFailed(exception)
@@ -258,7 +259,8 @@ internal class SsoProcessorImpl(
             }
 
             if (nextAuthMethod == null || nextAuthMethod is AuthMethod.NotAvailable || nextAuthMethod is AuthMethod.Error) {
-                throw exception
+                authControl = null
+                authControl0.exceptionCollector.throwLast()
             }
 
             throw SelectorRequireReconnectException()
