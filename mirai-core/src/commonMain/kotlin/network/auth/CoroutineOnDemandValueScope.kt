@@ -147,7 +147,12 @@ internal class CoroutineOnDemandValueScope<T, V>(
                     }
                 }
 
-                is ProducerState.Finished -> return null
+                is ProducerState.Finished -> {
+                    state.exception?.let { err ->
+                        throw ProducerFailureException(cause = err)
+                    }
+                    return null
+                }
                 else -> throw IllegalProducerStateException(state)
             }
         }
