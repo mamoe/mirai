@@ -9,13 +9,10 @@
 
 package net.mamoe.mirai.internal.network.auth
 
-import kotlinx.atomicfu.locks.reentrantLock
-import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.completeWith
 import kotlin.coroutines.CoroutineContext
-import kotlin.jvm.Volatile
 
 
 internal interface Latch<T> {
@@ -39,21 +36,15 @@ internal fun <T> Latch(parentCoroutineContext: CoroutineContext): Latch<T> = Lat
 private class LatchImpl<T>(
     parentCoroutineContext: CoroutineContext
 ) : Latch<T> {
-    @Volatile
-    private var deferred: CompletableDeferred<T>? = CompletableDeferred(parentCoroutineContext[Job])
+    private val deferred: CompletableDeferred<T> = CompletableDeferred(parentCoroutineContext[Job])
 
-    private val lock = reentrantLock()
 
-    override suspend fun acquire(): T = lock.withLock {
-        val deferred = this.deferred!!
-        return deferred.await().also {
-            this.deferred = null
+    override suspend fun acquire(): T = deferred.await()
+
+    override fun resumeWith(result: Result<T>) {
+        if (!deferred.completeWith(result)) {
+            error("$this was already resumed")
         }
-    }
-
-    override fun resumeWith(result: Result<T>): Unit = lock.withLock {
-        val deferred = this.deferred ?: CompletableDeferred<T>().also { this.deferred = it }
-        deferred.completeWith(result)
     }
 
     override fun toString(): String = "LatchImpl($deferred)"
