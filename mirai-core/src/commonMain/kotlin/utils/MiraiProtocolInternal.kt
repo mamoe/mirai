@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import net.mamoe.mirai.utils.EnumMap
+import net.mamoe.mirai.utils.toUHexString
 import kotlin.jvm.JvmField
 
 internal class MiraiProtocolInternal(
@@ -87,18 +88,17 @@ internal class MiraiProtocolInternal(
                 ssoVersion = 12,
                 supportsQRLogin = false,
             )
-            //Updated from MiraiGo (2023/3/15)
             protocols[MiraiProtocol.MACOS] = MiraiProtocolInternal(
                 apkId = "com.tencent.qq",
-                id = 537128930,
-                ver = "5.8.9",
-                sdkVer = "6.0.0.2433",
-                miscBitMap = 150470524,
+                id = 0x2003ca32,
+                ver = "6.7.9",
+                sdkVer = "6.2.0.1023",
+                miscBitMap = 0x7ffc,
                 subSigMap = 66560,
                 mainSigMap = 1970400,
-                sign = "AA 39 78 F4 1F D9 6F F9 91 4A 66 9E 18 64 74 C7",
-                buildTime = 1595836208L,
-                ssoVersion = 12,
+                sign = "com.tencent.qq".encodeToByteArray().toUHexString(" "),
+                buildTime = 0L,
+                ssoVersion = 7,
                 supportsQRLogin = true,
             )
         }
