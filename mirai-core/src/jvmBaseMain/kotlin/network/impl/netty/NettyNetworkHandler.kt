@@ -113,7 +113,7 @@ internal open class NettyNetworkHandler(
                 eventLoopGroup.shutdownGracefully()
                 contextResult.cancel()
             }.getOrElse { error ->
-                throw NettyChannelException(cause = error)
+                throw NettyChannelException(cause = error, message = "$address")
             }
 
         contextResult.complete(future.channel())
