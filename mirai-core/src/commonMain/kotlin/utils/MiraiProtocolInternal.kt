@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.utils
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import net.mamoe.mirai.utils.EnumMap
 import net.mamoe.mirai.utils.toUHexString
+import kotlin.jvm.JvmField
 
 internal class MiraiProtocolInternal(
     @JvmField internal val apkId: String,
@@ -85,7 +86,7 @@ internal class MiraiProtocolInternal(
                 sign = "AA 39 78 F4 1F D9 6F F9 91 4A 66 9E 18 64 74 C7",
                 buildTime = 1640921786L,
                 ssoVersion = 12,
-                supportsQRLogin = true,
+                supportsQRLogin = false,
             )
             protocols[MiraiProtocol.MACOS] = MiraiProtocolInternal(
                 apkId = "com.tencent.qq",
