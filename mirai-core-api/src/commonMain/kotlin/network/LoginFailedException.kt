@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -38,6 +38,21 @@ public class WrongPasswordException @MiraiInternalApi constructor(
 ) : LoginFailedException(true, message)
 
 /**
+ * 二维码扫码账号与 BOT 账号不一致。
+ *
+ * @since 2.15
+ */
+public class InconsistentBotIdException @MiraiInternalApi constructor(
+    public val expected: Long,
+    public val actual: Long,
+    message: String? = null
+) : LoginFailedException(
+    true,
+    message
+        ?: "trying to logging in a bot whose id is different from the one provided to BotFactory.newBot, expected=$expected, actual=$actual."
+)
+
+/**
  * 无可用服务器
  */
 public class NoServerAvailableException @MiraiInternalApi constructor(
@@ -61,15 +76,34 @@ public class NoStandardInputForCaptchaException @MiraiInternalApi constructor(
 ) : LoginFailedException(true, "no standard input for captcha")
 
 /**
+ * 当前 [LoginSolver] 不支持此验证方式
+ *
+ * @since 2.15
+ */
+public open class UnsupportedCaptchaMethodException : LoginFailedException {
+    public constructor(killBot: Boolean) : super(killBot)
+    public constructor(killBot: Boolean, message: String?) : super(killBot, message)
+    public constructor(killBot: Boolean, message: String?, cause: Throwable?) : super(killBot, message, cause)
+    public constructor(killBot: Boolean, cause: Throwable?) : super(killBot, cause = cause)
+}
+
+/**
  * 需要强制短信验证, 且当前 [LoginSolver] 不支持时抛出.
  * @since 2.13
  */
-public class UnsupportedSmsLoginException(message: String?) : LoginFailedException(true, message)
+public class UnsupportedSmsLoginException(message: String?) : UnsupportedCaptchaMethodException(true, message)
 
 /**
  * 无法完成滑块验证
  */
-public class UnsupportedSliderCaptchaException(message: String?) : LoginFailedException(true, message)
+public class UnsupportedSliderCaptchaException(message: String?) : UnsupportedCaptchaMethodException(true, message)
+
+/**
+ * 需要二维码登录, 且当前 [LoginSolver] 不支持时抛出
+ *
+ * @since 2.15
+ */
+public class UnsupportedQRCodeCaptchaException(message: String?) : UnsupportedCaptchaMethodException(true, message)
 
 /**
  * 非 mirai 实现的异常

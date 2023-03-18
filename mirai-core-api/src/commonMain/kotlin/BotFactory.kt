@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai
 
+import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.utils.BotConfiguration
 import kotlin.jvm.JvmSynthetic
 
@@ -111,6 +112,53 @@ public interface BotFactory {
      */
     public fun newBot(qq: Long, passwordMd5: ByteArray): Bot = newBot(qq, passwordMd5, BotConfiguration.Default)
 
+    ///////////////////////////////////////////////////////////////////////////
+    // BotAuthorization
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * 使用 [默认配置][BotConfiguration.Default] 构造 [Bot] 实例
+     *
+     * @since 2.15
+     */
+    public fun newBot(qq: Long, authorization: BotAuthorization): Bot =
+        newBot(qq, authorization, BotConfiguration.Default)
+
+    /**
+     * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+     *
+     * @since 2.15
+     */
+    public fun newBot(qq: Long, authorization: BotAuthorization, configuration: BotConfiguration): Bot
+
+
+    /**
+     * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+     *
+     * Kotlin:
+     * ```
+     * newBot(123, password) {
+     *     // this: BotConfiguration
+     *     fileBasedDeviceInfo()
+     * }
+     * ```
+     *
+     * Java:
+     * ```java
+     * newBot(123, password, configuration -> {
+     *     configuration.fileBasedDeviceInfo()
+     * })
+     * ```
+     *
+     * @since 2.15
+     */
+    public fun newBot(
+        qq: Long,
+        authorization: BotAuthorization,
+        configuration: BotConfigurationLambda /* = BotConfiguration.() -> Unit */
+    ): Bot = newBot(qq, authorization, configuration.run { BotConfiguration().apply { invoke() } })
+
+
     public companion object INSTANCE : BotFactory {
         override fun newBot(qq: Long, password: String, configuration: BotConfiguration): Bot {
             return Mirai.BotFactory.newBot(qq, password, configuration)
@@ -160,5 +208,9 @@ public interface BotFactory {
             passwordMd5: ByteArray,
             configuration: BotConfiguration.() -> Unit /* = BotConfiguration.() -> Unit */
         ): Bot = newBot(qq, passwordMd5, BotConfiguration().apply(configuration))
+
+        override fun newBot(qq: Long, authorization: BotAuthorization, configuration: BotConfiguration): Bot {
+            return Mirai.BotFactory.newBot(qq, authorization, configuration)
+        }
     }
 }

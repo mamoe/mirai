@@ -19,6 +19,7 @@ public abstract interface class net/mamoe/mirai/console/MiraiConsole : kotlinx/c
 
 public final class net/mamoe/mirai/console/MiraiConsole$INSTANCE : net/mamoe/mirai/console/MiraiConsole {
 	public static synthetic fun addBot$default (Lnet/mamoe/mirai/console/MiraiConsole$INSTANCE;JLjava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/Bot;
+	public static synthetic fun addBot$default (Lnet/mamoe/mirai/console/MiraiConsole$INSTANCE;JLnet/mamoe/mirai/auth/BotAuthorization;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/Bot;
 	public static synthetic fun addBot$default (Lnet/mamoe/mirai/console/MiraiConsole$INSTANCE;J[BLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/Bot;
 	public fun getBuildDate ()Ljava/time/Instant;
 	public fun getBuiltInPluginLoaders ()Ljava/util/List;
