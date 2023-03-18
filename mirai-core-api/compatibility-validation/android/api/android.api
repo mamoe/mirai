@@ -809,7 +809,6 @@ public final class net/mamoe/mirai/contact/announcement/AnnouncementImage {
 
 public final class net/mamoe/mirai/contact/announcement/AnnouncementImage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/contact/announcement/AnnouncementImage$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
@@ -849,7 +848,6 @@ public final class net/mamoe/mirai/contact/announcement/AnnouncementParameters {
 
 public final class net/mamoe/mirai/contact/announcement/AnnouncementParameters$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/contact/announcement/AnnouncementParameters;
@@ -1198,7 +1196,6 @@ public final class net/mamoe/mirai/data/GroupHonorType {
 
 public final class net/mamoe/mirai/data/GroupHonorType$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/data/GroupHonorType$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize-NYH6FXw (Lkotlinx/serialization/encoding/Decoder;)I
@@ -1308,7 +1305,6 @@ public final class net/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequ
 
 public final class net/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequest$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequest$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/RequestEventData$BotInvitedJoinGroupRequest;
@@ -1352,7 +1348,6 @@ public final class net/mamoe/mirai/data/RequestEventData$MemberJoinRequest : net
 
 public final class net/mamoe/mirai/data/RequestEventData$MemberJoinRequest$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/data/RequestEventData$MemberJoinRequest$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/RequestEventData$MemberJoinRequest;
@@ -1383,7 +1378,6 @@ public final class net/mamoe/mirai/data/RequestEventData$NewFriendRequest : net/
 
 public final class net/mamoe/mirai/data/RequestEventData$NewFriendRequest$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/data/RequestEventData$NewFriendRequest$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/data/RequestEventData$NewFriendRequest;
@@ -3197,7 +3191,6 @@ public final class net/mamoe/mirai/message/data/At : net/mamoe/mirai/message/cod
 
 public final class net/mamoe/mirai/message/data/At$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/At$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/At;
@@ -3320,7 +3313,6 @@ public final class net/mamoe/mirai/message/data/Dice : net/mamoe/mirai/message/c
 
 public final class net/mamoe/mirai/message/data/Dice$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/Dice$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/Dice;
@@ -3882,7 +3874,6 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 
 public final class net/mamoe/mirai/message/data/Face$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/Face$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/Face;
@@ -3951,7 +3942,6 @@ public final class net/mamoe/mirai/message/data/FlashImage : net/mamoe/mirai/mes
 
 public final class net/mamoe/mirai/message/data/FlashImage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/FlashImage$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/FlashImage;
@@ -4001,7 +3991,6 @@ public final class net/mamoe/mirai/message/data/ForwardMessage : net/mamoe/mirai
 
 public final class net/mamoe/mirai/message/data/ForwardMessage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/ForwardMessage$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/ForwardMessage;
@@ -4050,7 +4039,6 @@ public final class net/mamoe/mirai/message/data/ForwardMessage$Node : net/mamoe/
 
 public final class net/mamoe/mirai/message/data/ForwardMessage$Node$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/ForwardMessage$Node$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/ForwardMessage$Node;
@@ -4293,18 +4281,6 @@ public final class net/mamoe/mirai/message/data/ImageType : java/lang/Enum {
 	public static fun values ()[Lnet/mamoe/mirai/message/data/ImageType;
 }
 
-public final class net/mamoe/mirai/message/data/ImageType$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/message/data/ImageType$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/ImageType;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/ImageType;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
 public final class net/mamoe/mirai/message/data/ImageType$Companion {
 	public final fun match (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
 	public final fun matchOrNull (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ImageType;
@@ -4328,7 +4304,6 @@ public final class net/mamoe/mirai/message/data/LightApp : net/mamoe/mirai/messa
 
 public final class net/mamoe/mirai/message/data/LightApp$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/LightApp$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/LightApp;
@@ -4503,7 +4478,6 @@ public abstract interface class net/mamoe/mirai/message/data/MessageMetadata : n
 
 public final class net/mamoe/mirai/message/data/MessageOrigin$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/MessageOrigin$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/MessageOrigin;
@@ -4524,18 +4498,6 @@ public final class net/mamoe/mirai/message/data/MessageOriginKind : java/lang/En
 	public static final field MUSIC_SHARE Lnet/mamoe/mirai/message/data/MessageOriginKind;
 	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/MessageOriginKind;
 	public static fun values ()[Lnet/mamoe/mirai/message/data/MessageOriginKind;
-}
-
-public final class net/mamoe/mirai/message/data/MessageOriginKind$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/message/data/MessageOriginKind$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/MessageOriginKind;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/MessageOriginKind;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public final class net/mamoe/mirai/message/data/MessageOriginKind$Companion {
@@ -4647,18 +4609,6 @@ public final class net/mamoe/mirai/message/data/MessageSourceKind : java/lang/En
 	public static fun values ()[Lnet/mamoe/mirai/message/data/MessageSourceKind;
 }
 
-public final class net/mamoe/mirai/message/data/MessageSourceKind$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/message/data/MessageSourceKind$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/MessageSourceKind;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/MessageSourceKind;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
-}
-
 public final class net/mamoe/mirai/message/data/MessageSourceKind$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
@@ -4766,7 +4716,6 @@ public final class net/mamoe/mirai/message/data/MusicShare : net/mamoe/mirai/mes
 
 public final class net/mamoe/mirai/message/data/MusicShare$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/MusicShare$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/MusicShare;
@@ -4986,7 +4935,6 @@ public final class net/mamoe/mirai/message/data/PlainText : net/mamoe/mirai/mess
 
 public final class net/mamoe/mirai/message/data/PlainText$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/PlainText$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/PlainText;
@@ -5039,7 +4987,6 @@ public final class net/mamoe/mirai/message/data/PokeMessage : net/mamoe/mirai/me
 
 public final class net/mamoe/mirai/message/data/PokeMessage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/PokeMessage$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/PokeMessage;
@@ -5076,7 +5023,6 @@ public final class net/mamoe/mirai/message/data/QuoteReply : net/mamoe/mirai/mes
 
 public final class net/mamoe/mirai/message/data/QuoteReply$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/QuoteReply$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/QuoteReply;
@@ -5107,7 +5053,6 @@ public final class net/mamoe/mirai/message/data/RawForwardMessage {
 
 public final class net/mamoe/mirai/message/data/RawForwardMessage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/RawForwardMessage$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/RawForwardMessage;
@@ -5155,7 +5100,6 @@ public final class net/mamoe/mirai/message/data/RichMessageOrigin : net/mamoe/mi
 
 public final class net/mamoe/mirai/message/data/RichMessageOrigin$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/RichMessageOrigin$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/RichMessageOrigin;
@@ -5214,7 +5158,6 @@ public final class net/mamoe/mirai/message/data/ShowImageFlag : net/mamoe/mirai/
 
 public final class net/mamoe/mirai/message/data/SimpleServiceMessage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/SimpleServiceMessage$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/SimpleServiceMessage;
@@ -5295,7 +5238,6 @@ public final class net/mamoe/mirai/message/data/VipFace : net/mamoe/mirai/messag
 
 public final class net/mamoe/mirai/message/data/VipFace$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/VipFace$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/VipFace;
@@ -5327,7 +5269,6 @@ public final class net/mamoe/mirai/message/data/VipFace$Kind {
 
 public final class net/mamoe/mirai/message/data/VipFace$Kind$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/VipFace$Kind$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/VipFace$Kind;
@@ -5362,7 +5303,6 @@ public class net/mamoe/mirai/message/data/Voice : net/mamoe/mirai/message/data/P
 
 public final class net/mamoe/mirai/message/data/Voice$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/message/data/Voice$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/Voice;
@@ -5636,7 +5576,6 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 
 public final class net/mamoe/mirai/utils/DeviceInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/utils/DeviceInfo$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/utils/DeviceInfo;
@@ -5672,7 +5611,6 @@ public final class net/mamoe/mirai/utils/DeviceInfo$Version {
 
 public final class net/mamoe/mirai/utils/DeviceInfo$Version$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/utils/DeviceInfo$Version$$serializer;
-	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/utils/DeviceInfo$Version;
