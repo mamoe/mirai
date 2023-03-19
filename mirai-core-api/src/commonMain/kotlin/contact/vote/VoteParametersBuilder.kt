@@ -60,30 +60,30 @@ public class VoteParametersBuilder @JvmOverloads constructor(
         @JvmSynthetic set
 
     /**
-     * @see VoteParameters.anonymous
+     * @see VoteParameters.isAnonymous
      */
-    public var anonymous: Boolean = prototype.anonymous
+    public var anonymous: Boolean = prototype.isAnonymous
         @JvmName("anonymous") get
         @JvmSynthetic set
 
     /**
-     * @see VoteParameters.end
+     * @see VoteParameters.durationSeconds
      */
-    public var end: Long = prototype.end
+    public var end: Long = prototype.durationSeconds
         @JvmName("end") get
         @JvmSynthetic set
 
     /**
-     * @see VoteParameters.remind
+     * @see VoteParameters.remindSeconds
      */
-    public var remind: Long = prototype.remind
+    public var remind: Long = prototype.remindSeconds
         @JvmName("remind") get
         @JvmSynthetic set
 
     /**
-     * @see VoteParameters.capacity
+     * @see VoteParameters.availableVotes
      */
-    public var capacity: Int = prototype.capacity
+    public var capacity: Int = prototype.availableVotes
         @JvmName("capacity") get
         @JvmSynthetic set
 
@@ -96,7 +96,7 @@ public class VoteParametersBuilder @JvmOverloads constructor(
     }
 
     /**
-     * @see VoteParameters.anonymous
+     * @see VoteParameters.isAnonymous
      */
     public fun anonymous(anonymous: Boolean): VoteParametersBuilder {
         this.anonymous = anonymous
@@ -104,7 +104,7 @@ public class VoteParametersBuilder @JvmOverloads constructor(
     }
 
     /**
-     * @see VoteParameters.end
+     * @see VoteParameters.durationSeconds
      */
     public fun end(seconds: Long): VoteParametersBuilder {
         this.end = seconds
@@ -112,7 +112,7 @@ public class VoteParametersBuilder @JvmOverloads constructor(
     }
 
     /**
-     * @see VoteParameters.end
+     * @see VoteParameters.durationSeconds
      */
     public fun end(duration: Duration): VoteParametersBuilder {
         this.end = duration.inWholeSeconds
@@ -120,7 +120,7 @@ public class VoteParametersBuilder @JvmOverloads constructor(
     }
 
     /**
-     * @see VoteParameters.remind
+     * @see VoteParameters.remindSeconds
      */
     public fun remind(seconds: Long): VoteParametersBuilder {
         this.remind = seconds
@@ -128,7 +128,7 @@ public class VoteParametersBuilder @JvmOverloads constructor(
     }
 
     /**
-     * @see VoteParameters.remind
+     * @see VoteParameters.remindSeconds
      */
     public fun remind(duration: Duration): VoteParametersBuilder {
         this.remind = duration.inWholeSeconds
@@ -136,7 +136,7 @@ public class VoteParametersBuilder @JvmOverloads constructor(
     }
 
     /**
-     * @see VoteParameters.capacity
+     * @see VoteParameters.availableVotes
      */
     public fun capacity(number: Int): VoteParametersBuilder {
         this.capacity = number

@@ -1,11 +1,13 @@
 /*
- * Copyright 2019-2023 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
+
+@file:JvmBlockingBridge
 
 package net.mamoe.mirai.contact.vote
 
@@ -44,7 +46,6 @@ public interface Votes : Streamable<Vote> {
      * @throws IllegalStateException 当协议异常时抛出
      * @see Vote.publishTo
      */
-    @JvmBlockingBridge
     public suspend fun publish(vote: Vote): OnlineVote
 
     /**
@@ -53,7 +54,6 @@ public interface Votes : Streamable<Vote> {
      * **注意**: 需要由调用方[关闭][ExternalResource.close] [resource].
      * @throws IllegalStateException 当协议异常时抛出
      */
-    @JvmBlockingBridge
     public suspend fun uploadImage(resource: ExternalResource): VoteImage
 
     /**
@@ -66,7 +66,6 @@ public interface Votes : Streamable<Vote> {
      *
      * @see OnlineVote.delete
      */
-    @JvmBlockingBridge
     public suspend fun delete(fid: String): Boolean
 
     /**
@@ -75,7 +74,6 @@ public interface Votes : Streamable<Vote> {
      * @return 返回 `null` 表示不存在该 [fid] 的群投票
      * @throws IllegalStateException 当协议异常时抛出
      */
-    @JvmBlockingBridge
     public suspend fun get(fid: String): OnlineVote?
 
     /**
@@ -88,7 +86,5 @@ public interface Votes : Streamable<Vote> {
      *
      * @see OnlineVote.update
      */
-    @JvmBlockingBridge
     public suspend fun update(vote: OnlineVote)
-
 }

@@ -1114,12 +1114,12 @@ public abstract interface class net/mamoe/mirai/contact/vote/OnlineVote : net/ma
 	public fun delete ()Z
 	public fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun delete$suspendImpl (Lnet/mamoe/mirai/contact/vote/OnlineVote;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getCounts ()Ljava/util/List;
 	public abstract fun getEndTime ()J
 	public abstract fun getFid ()Ljava/lang/String;
 	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
 	public abstract fun getPublicationTime ()J
 	public abstract fun getRecords ()Ljava/util/List;
-	public abstract fun getSelect ()Ljava/util/List;
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
 	public abstract fun getSenderId ()J
 	public fun getUrl ()Ljava/lang/String;
@@ -1188,13 +1188,13 @@ public final class net/mamoe/mirai/contact/vote/VoteParameters {
 	public synthetic fun <init> (ILnet/mamoe/mirai/contact/vote/VoteImage;ZJJILkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public final fun builder ()Lnet/mamoe/mirai/contact/vote/VoteParametersBuilder;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAnonymous ()Z
-	public final fun getCapacity ()I
+	public final fun getAvailableVotes ()I
 	public static final fun getDefault ()Lnet/mamoe/mirai/contact/vote/VoteParameters;
-	public final fun getEnd ()J
+	public final fun getDurationSeconds ()J
 	public final fun getImage ()Lnet/mamoe/mirai/contact/vote/VoteImage;
-	public final fun getRemind ()J
+	public final fun getRemindSeconds ()J
 	public fun hashCode ()I
+	public final fun isAnonymous ()Z
 	public fun toString ()Ljava/lang/String;
 	public static final fun write$Self (Lnet/mamoe/mirai/contact/vote/VoteParameters;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
@@ -1242,6 +1242,11 @@ public final class net/mamoe/mirai/contact/vote/VoteParametersBuilder {
 
 public final class net/mamoe/mirai/contact/vote/VoteParametersBuilderKt {
 	public static final fun buildVoteParameters (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/vote/VoteParameters;
+}
+
+public final class net/mamoe/mirai/contact/vote/VoteParametersKt {
+	public static final fun getDuration (Lnet/mamoe/mirai/contact/vote/VoteParameters;)J
+	public static final fun getRemind (Lnet/mamoe/mirai/contact/vote/VoteParameters;)J
 }
 
 public abstract interface class net/mamoe/mirai/contact/vote/Votes : net/mamoe/mirai/utils/Streamable {

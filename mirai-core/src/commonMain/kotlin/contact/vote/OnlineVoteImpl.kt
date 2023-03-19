@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -24,7 +24,7 @@ internal class OnlineVoteImpl(
     override val endTime: Long,
     override var title: String,
     override var options: List<String>,
-    override var select: List<Int>,
+    override var counts: List<Int>,
     override var records: List<OnlineVoteRecord>,
     override val parameters: VoteParameters
 ) : OnlineVote {

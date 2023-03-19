@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -33,10 +33,10 @@ internal class VotesImpl(
             sender = group.botAsMember,
             fid = result.fid,
             publicationTime = result.ltsm,
-            endTime = result.ltsm + vote.parameters.end,
+            endTime = result.ltsm + vote.parameters.durationSeconds,
             title = vote.title,
             options = vote.options,
-            select = emptyList(),
+            counts = emptyList(),
             parameters = vote.parameters,
             records = emptyList()
         )
@@ -82,7 +82,7 @@ internal class VotesImpl(
             endTime = data.detail.end,
             title = data.detail.title.text,
             options = data.detail.options.map { it.content.text },
-            select = data.detail.options.map { it.selected },
+            counts = data.detail.options.map { it.selected },
             parameters = buildVoteParameters {
                 capacity = data.detail.capacity
                 anonymous = data.detail.anonymous == 1
@@ -108,7 +108,7 @@ internal class VotesImpl(
     internal fun OnlineVoteImpl.apply(detail: GroupVoteDetail): OnlineVote {
         title = detail.title.text
         options = detail.options.map { it.content.text }
-        select = detail.options.map { it.selected }
+        counts = detail.options.map { it.selected }
         records = detail.results.map { result ->
             OnlineVoteRecordImpl(
                 vote = this,
@@ -138,7 +138,7 @@ internal class VotesImpl(
                         endTime = info.detail.end,
                         title = info.detail.title.text,
                         options = info.detail.options.map { it.content.text },
-                        select = info.detail.options.map { it.selected },
+                        counts = info.detail.options.map { it.selected },
                         parameters = buildVoteParameters {
                             capacity = info.detail.capacity
                             anonymous = info.detail.anonymous == 1

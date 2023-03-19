@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -57,7 +57,7 @@ public class MockOnlineVote @MiraiInternalApi public constructor(
     override val senderId: Long,
     override val fid: String,
     override val publicationTime: Long,
-    override val select: MutableList<Int>,
+    override val counts: MutableList<Int>,
     override var records: List<OnlineVoteRecord>,
     override val title: String,
     override val options: List<String>,
@@ -66,7 +66,7 @@ public class MockOnlineVote @MiraiInternalApi public constructor(
 
     override lateinit var group: Group
 
-    override val endTime: Long = publicationTime + parameters.end
+    override val endTime: Long = publicationTime + parameters.durationSeconds
 
     override val sender: NormalMember? get() = group[senderId]
 }

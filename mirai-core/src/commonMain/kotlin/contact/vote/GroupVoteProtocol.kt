@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -238,18 +238,18 @@ internal suspend fun QQAndroidBot.publishGroupVote(
                 }
 
                 // type 1 2 3
-                append("mo", vote.parameters.capacity)
+                append("mo", vote.parameters.availableVotes)
 
                 val current = currentTimeSeconds()
 
                 // end date time
-                append("dl", current + vote.parameters.end)
+                append("dl", current + vote.parameters.durationSeconds)
 
                 // remind date time
-                append("remind", current + vote.parameters.remind)
+                append("remind", current + vote.parameters.remindSeconds)
 
                 // anon 0 1
-                append("vsb", if (vote.parameters.anonymous) 0 else 1)
+                append("vsb", if (vote.parameters.isAnonymous) 0 else 1)
 
                 // image
                 val image = vote.parameters.image

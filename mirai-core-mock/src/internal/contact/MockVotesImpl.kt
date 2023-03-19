@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Mamoe Technologies and contributors.
+ * Copyright 2019-2022 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,9 +13,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.NormalMember
-import net.mamoe.mirai.contact.vote.*
-import net.mamoe.mirai.mock.contact.vote.*
-import net.mamoe.mirai.mock.utils.*
+import net.mamoe.mirai.contact.vote.OnlineVote
+import net.mamoe.mirai.contact.vote.OnlineVoteRecord
+import net.mamoe.mirai.contact.vote.Vote
+import net.mamoe.mirai.contact.vote.VoteImage
+import net.mamoe.mirai.mock.contact.vote.MockOnlineVote
+import net.mamoe.mirai.mock.contact.vote.MockOnlineVoteRecordImpl
+import net.mamoe.mirai.mock.contact.vote.MockVotes
+import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.currentTimeSeconds
 import java.util.*
@@ -33,7 +38,7 @@ internal class MockVotesImpl(
             parameters = vote.parameters,
             fid = UUID.randomUUID().toString(),
             options = emptyList(),
-            select = MutableList(vote.options.size) { 0 },
+            counts = MutableList(vote.options.size) { 0 },
             records = emptyList(),
             title = vote.title,
             publicationTime = currentTimeSeconds()
@@ -46,7 +51,7 @@ internal class MockVotesImpl(
     }
 
     override fun mockPublish(fid: String, options: List<Int>, actor: NormalMember): OnlineVoteRecord {
-        val mock = votes[fid] ?: throw IllegalStateException("投票已删除")
+        val mock = votes[fid] ?: throw IllegalStateException("Vote was delete")
         val record = MockOnlineVoteRecordImpl(
             vote = mock,
             voterId = actor.id,
@@ -54,7 +59,7 @@ internal class MockVotesImpl(
             time = currentTimeSeconds()
         )
         options.forEach { index ->
-            mock.select[index] = mock.select[index] + 1
+            mock.counts[index] = mock.counts[index] + 1
         }
 
         return record
@@ -73,7 +78,7 @@ internal class MockVotesImpl(
     }
 
     override suspend fun update(vote: OnlineVote) {
-        val mock = votes[vote.fid] ?: throw IllegalStateException("投票已删除")
+        val mock = votes[vote.fid] ?: throw IllegalStateException("Vote was delete")
         // TODO
     }
 
