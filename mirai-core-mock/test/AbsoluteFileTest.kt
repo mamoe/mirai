@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,6 +11,7 @@ package net.mamoe.mirai.mock.test
 
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
+import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
@@ -23,6 +24,7 @@ import net.mamoe.mirai.mock.utils.simpleMemberInfo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.runBIO
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.nio.file.FileSystem
@@ -128,5 +130,19 @@ internal class AbsoluteFileTest : MockBotTestBase() {
         }
         val file = files.root.resolveFileById(absFile.id, true)!!
         assertContentEquals(bytes.md5(), file.md5)
+    }
+
+    @Test
+    fun testResolveFiles() = runTest {
+        val file = runBIO {
+            kotlin.io.path.createTempFile("test", ".txt").toFile().apply {
+                writeText("test")
+                deleteOnExit()
+            }
+        }
+        file.toExternalResource().use {
+            group.files.root.uploadNewFile("/a/test.txt", it)
+        }
+        assertEquals(0, group.files.root.resolveFiles("/a").count())
     }
 }
