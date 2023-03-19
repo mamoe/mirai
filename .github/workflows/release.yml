@@ -2,12 +2,6 @@ name: Release Publish
 
 on:
   push:
-    tags:
-      - 'v*' # 正式版本
-    paths-ignore:
-      - 'docs/**'
-      - 'mirai-console/docs/**'
-      - '**/*.md'
 
 
 jobs:
