@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.toList
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.data.FileMessage
+import net.mamoe.mirai.mock.internal.contact.mockUploadAudio
 import net.mamoe.mirai.mock.internal.remotefile.absolutefile.MockRemoteFiles
 import net.mamoe.mirai.mock.internal.serverfs.MockServerFileSystemImpl
 import net.mamoe.mirai.mock.utils.simpleMemberInfo
@@ -144,5 +145,21 @@ internal class AbsoluteFileTest : MockBotTestBase() {
             group.files.root.uploadNewFile("/a/test.txt", it)
         }
         assertEquals(0, group.files.root.resolveFiles("/a").count())
+    }
+
+    @Test
+    @Suppress("INVISIBLE_REFERENCE")
+    fun testMockUploadAudio() = runTest {
+        val file = runBIO {
+            kotlin.io.path.createTempFile("test", ".txt").toFile().apply {
+                writeText("test")
+                deleteOnExit()
+            }
+        }
+
+        file.toExternalResource().use {
+            assertIsInstance<net.mamoe.mirai.internal.utils.ExternalResourceImplByFile>(it)
+            it.mockUploadAudio(bot)
+        }
     }
 }
