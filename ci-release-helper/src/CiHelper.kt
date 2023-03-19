@@ -165,7 +165,10 @@ fun main(args: Array<String>) {
                 fun execGpg(vararg cmd: String) {
                     println("::group::${cmd.joinToString(" ")}")
                     try {
-                        val exitcode = ProcessBuilder("gpg", "--homedir", "homedir", "--batch", "--no-tty", *cmd)
+                        val exitcode = ProcessBuilder(
+                            "gpg", "--homedir", "homedir", "--batch", "--no-tty", "--verbose",
+                            *cmd
+                        )
                             .directory(bgsFile)
                             .inheritIO()
                             .start()
@@ -177,6 +180,8 @@ fun main(args: Array<String>) {
                         println("::endgroup::")
                     }
                 }
+
+                println(bgsFile.absoluteFile)
 
 
                 if (!gpgHomeDir.resolve("pubring.kbx").exists()) {
@@ -201,8 +206,18 @@ fun main(args: Array<String>) {
                     keys.forEach { execGpg("--import", it) }
                 }
 
+                Files.walk(bgs).forEach { pt ->
+                    println(pt.absolute() + ", isFile = ${pt.isRegularFile()}")
+                }
 
-                println("::group::Signing artifacts")
+                runCatching {
+                    ProcessBuilder("gpg", "--version").inheritIO().start().waitFor()
+                    ProcessBuilder("ls", "-la", bgs.absolutePathString()).inheritIO().start().waitFor()
+                }.onFailure { it.printStackTrace(System.out) }
+                runCatching { execGpg("--version") }
+
+
+                println("Signing artifacts")
                 pendingFiles.toList().asSequence().filterNot { it.name == "maven-metadata.xml" }
                     .forEach { pendingFile ->
                         val pt = pendingFile.absolutePathString()
@@ -212,7 +227,6 @@ fun main(args: Array<String>) {
 
                         pendingFiles.add(ascFile)
                     }
-                println("::endgroup::")
             }
 
             run `calc msg digest`@{
