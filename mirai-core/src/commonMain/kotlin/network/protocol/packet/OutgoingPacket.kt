@@ -172,6 +172,7 @@ internal val NO_ENCRYPT: ByteArray = ByteArray(0)
 internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPacket(
     client: QQAndroidClient,
     bodyType: Byte,
+    uin: String = client.uin.toString(),
     extraData: ByteArray = EMPTY_BYTE_ARRAY,
     remark: String? = null,
     commandName: String = this.commandName,
@@ -190,7 +191,7 @@ internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPac
             }
             writeByte(0x00)
 
-            client.uin.toString().let {
+            uin.let {
                 writeInt(it.length + 4)
                 writeText(it)
             }
@@ -274,6 +275,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
 
 internal fun BytePacketBuilder.writeOicqRequestPacket(
     client: QQAndroidClient,
+    uin: Long = client.uin,
     encryptMethod: EncryptMethod = EncryptMethodEcdh(client.bot.components[EcdhInitialPublicKeyUpdater].getQQEcdh()),
     commandId: Int,
     bodyBlock: BytePacketBuilder.() -> Unit
@@ -284,7 +286,7 @@ internal fun BytePacketBuilder.writeOicqRequestPacket(
     writeShort(8001)
     writeShort(commandId.toShort())
     writeShort(1) // const??
-    writeInt(client.uin.toInt())
+    writeInt(uin.toInt())
     writeByte(3) // originally const
     writeByte(encryptMethod.id.toByte())
     writeByte(0) // const8_always_0

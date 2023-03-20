@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.internal
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import net.mamoe.mirai.Bot
@@ -26,10 +27,13 @@ import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.SpaceSeparatedCommandCallParser
 import net.mamoe.mirai.console.command.resolve.BuiltInCommandCallResolver
+import net.mamoe.mirai.console.events.AutoLoginEvent
+import net.mamoe.mirai.console.events.StartupEvent
 import net.mamoe.mirai.console.extensions.CommandCallParserProvider
 import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PostStartupExtension
+import net.mamoe.mirai.console.internal.auth.ConsoleSecretsCalculator
 import net.mamoe.mirai.console.internal.command.CommandConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.ConfigurationKey
@@ -58,6 +62,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.console.util.cast
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.utils.*
 import java.time.Instant
 import java.time.ZoneId
@@ -95,6 +100,9 @@ internal class MiraiConsoleImplementationBridge(
     // tentative workaround for https://github.com/mamoe/mirai/pull/1889#pullrequestreview-887903183
     @Volatile
     var permissionSeviceLoaded: Boolean = false
+
+    // For protect account.secrets in console with non-password login
+    lateinit var consoleSecretsCalculator: ConsoleSecretsCalculator
 
     // MiraiConsoleImplementation define: get() = LoggerControllerImpl()
     // Need to cache it or else created every call.
@@ -211,7 +219,7 @@ ___  ____           _   _____                       _
                         */
                         append("\n\n")
 
-                        val textA = """[ Mirai consosle $version ]"""
+                        val textA = """[ Mirai console $version ]"""
                         val logoLength = 94
                         lightBlue()
                         val barlength = logoLength - textA.length
@@ -285,6 +293,10 @@ ___  ____           _   _____                       _
 
         phase("initialize all plugins") {
             pluginManager // init
+
+            consoleSecretsCalculator = ConsoleSecretsCalculator(
+                pluginManager.pluginsDataPath.resolve("Console/console-secrets.key")
+            ).also { it.consoleKey }
 
             mainLogger.verbose { "Loading JVM plugins..." }
             pluginManager.loadAllPluginsUsingBuiltInLoaders()
@@ -410,16 +422,29 @@ ___  ____           _   _____                       _
                         }
                     }
 
-                    runCatching { bot.login() }.getOrElse {
+                    runCatching {
+                        bot.login()
+                    }.onSuccess {
+                        launch {
+                            AutoLoginEvent.Success(bot = bot).broadcast()
+                        }
+                    }.onFailure {
                         mainLogger.error(it)
                         bot.close()
+                        launch {
+                            AutoLoginEvent.Failure(bot = bot, cause = it).broadcast()
+                        }
                     }
                 }
 
             }
         }
 
+        val startuped = currentTimeSeconds()
         phase("finally post") {
+            launch {
+                StartupEvent(timestamp = startuped).broadcast()
+            }
             globalComponentStorage.useEachExtensions(PostStartupExtension) { it.invoke() }
         }
 

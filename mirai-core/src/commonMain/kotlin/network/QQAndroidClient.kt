@@ -169,7 +169,7 @@ internal open class QQAndroidClient(
     var t547: ByteArray? = null
 }
 
-internal val QQAndroidClient.apkId: ByteArray get() = "com.tencent.mobileqq".toByteArray()
+internal val QQAndroidClient.apkId: ByteArray get() = protocol.apkId.toByteArray()
 internal val QQAndroidClient.ssoVersion: Int get() = protocol.ssoVersion
 internal val QQAndroidClient.networkType: NetworkType get() = NetworkType.WIFI
 internal val QQAndroidClient.appClientVersion: Int get() = 0

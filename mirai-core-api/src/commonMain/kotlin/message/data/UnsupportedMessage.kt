@@ -62,7 +62,7 @@ public interface UnsupportedMessage : MessageContent {
     }
 
     public object Serializer : KSerializer<UnsupportedMessage> by Surrogate.serializer().map(
-        resultantDescriptor = Surrogate.serializer().descriptor.copy(SERIAL_NAME),
+        resultantDescriptor = Surrogate.serializer().descriptor,
         deserialize = { Mirai.createUnsupportedMessage(struct.hexToBytes()) },
         serialize = { Surrogate(struct.toUHexString("")) }
     ) {

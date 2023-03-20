@@ -16,8 +16,8 @@ import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.register
 
-fun logPublishing(message: String) {
-    println("[Publishing] Configuring $message")
+inline fun logPublishing(@Suppress("UNUSED_PARAMETER") message: () -> String) {
+//    println("[Publishing] Configuring $message")
 }
 
 fun Project.configureMppPublishing() {
@@ -42,7 +42,7 @@ fun Project.configureMppPublishing() {
 
     afterEvaluate {
         publishing {
-            logPublishing("Publications: ${publications.joinToString { it.name }}")
+            logPublishing { "Publications: ${publications.joinToString { it.name }}" }
 
             val (nonJvmPublications, jvmPublications) = publications.filterIsInstance<MavenPublication>()
                 .partition { publication -> tasks.findByName("relocate${publication.name.titlecase()}Dependencies") == null }
@@ -93,7 +93,7 @@ private fun Project.configureMultiplatformPublication(
     publication.artifact(stubJavadoc)
     publication.setupPom(project)
 
-    logPublishing(publication.name + ": moduleName = $moduleName")
+    logPublishing { publication.name + ": moduleName = $moduleName" }
     when (moduleName) {
         "kotlinMultiplatform" -> {
             publication.artifactId = project.name
@@ -103,9 +103,11 @@ private fun Project.configureMultiplatformPublication(
             // TODO: 2021/1/30 现在添加 JVM 到 root module 会导致 Gradle 依赖无法解决
             // https://github.com/mamoe/mirai/issues/932
         }
+
         "metadata" -> { // TODO: 2021/1/21 seems no use. none `type` is "metadata"
             publication.artifactId = "${project.name}-metadata"
         }
+
         else -> {
             // "jvm", "native", "js", "common"
             publication.artifactId = "${project.name}-$moduleName"
@@ -123,12 +125,13 @@ val publishPlatformArtifactsInRootModule: Project.(MavenPublication) -> Unit = {
             // mirai-core\build\libs\mirai-core-2.0.0.jar, classifier=null, ext=jar
         }
 
-        logPublishing("Existing artifacts in kotlinMultiplatform: " +
-                this.artifacts.joinToString("\n", prefix = "\n") { it.smartToString() }
-        )
+        logPublishing {
+            "Existing artifacts in kotlinMultiplatform: " +
+                    this.artifacts.joinToString("\n", prefix = "\n") { it.smartToString() }
+        }
 
         platformPublication.artifacts.forEach {
-            logPublishing("Adding artifact to kotlinMultiplatform: ${it.smartToString()}")
+            logPublishing { "Adding artifact to kotlinMultiplatform: ${it.smartToString()}" }
             artifact(it)
         }
 

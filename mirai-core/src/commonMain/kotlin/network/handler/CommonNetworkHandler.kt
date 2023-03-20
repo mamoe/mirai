@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.network.components.*
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.Companion.runUnwrapCancellationException
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.handler.selector.NetworkHandlerSelector
+import net.mamoe.mirai.internal.network.handler.selector.SelectorRequireReconnectException
 import net.mamoe.mirai.internal.network.handler.state.StateObserver
 import net.mamoe.mirai.internal.network.impl.HeartbeatFailedException
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
@@ -253,7 +254,13 @@ internal abstract class CommonNetworkHandler<Conn>(
                     this@CommonNetworkHandler.launch { resumeConnection() } // go to next state.
                 } else {
                     // failed in SSO stage
-                    context[SsoProcessor].casFirstLoginResult(null, FirstLoginResult.OTHER_FAILURE)
+                    context[SsoProcessor].casFirstLoginResult(
+                        null,
+                        when (error) {
+                            is SelectorRequireReconnectException -> null
+                            else -> FirstLoginResult.OTHER_FAILURE
+                        }
+                    )
 
                     if (error is CancellationException) {
                         // CancellationException is either caused by parent cancellation or manual `connectResult.cancel`.

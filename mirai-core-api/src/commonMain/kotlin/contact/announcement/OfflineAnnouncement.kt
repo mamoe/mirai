@@ -84,7 +84,7 @@ public sealed interface OfflineAnnouncement : Announcement {
         }
 
         internal object Serializer : KSerializer<OfflineAnnouncement> by OfflineAnnouncementImpl.serializer().map(
-            resultantDescriptor = OfflineAnnouncementImpl.serializer().descriptor.copy(SERIAL_NAME),
+            resultantDescriptor = OfflineAnnouncementImpl.serializer().descriptor,
             deserialize = { it },
             serialize = { it.safeCast<OfflineAnnouncementImpl>() ?: create(content, parameters).cast() }
         )

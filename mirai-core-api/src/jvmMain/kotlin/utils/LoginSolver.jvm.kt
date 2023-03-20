@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,6 +17,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.auth.QRCodeLoginListener
 import net.mamoe.mirai.network.NoStandardInputForCaptchaException
 import net.mamoe.mirai.utils.StandardCharImageLoginSolver.Companion.createBlocking
 import java.awt.Image
@@ -57,6 +58,105 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
     }
 
     override val isSliderCaptchaSupported: Boolean get() = true
+    override fun createQRCodeLoginListener(bot: Bot): QRCodeLoginListener {
+        return object : QRCodeLoginListener {
+            private var tmpFile: File? = null
+
+            override val qrCodeMargin: Int get() = 1
+            override val qrCodeSize: Int get() = 1
+
+            override fun onFetchQRCode(bot: Bot, data: ByteArray) {
+                val logger = loggerSupplier(bot)
+
+                logger.info { "[QRCodeLogin] 已获取登录二维码，请在手机 QQ 使用账号 ${bot.id} 扫码" }
+                logger.info { "[QRCodeLogin] Fetched login qrcode, please scan via qq android with account ${bot.id}." }
+
+                try {
+                    val tempFile: File
+                    if (tmpFile == null) {
+                        tempFile = File.createTempFile(
+                            "mirai-qrcode-${bot.id}-${currentTimeSeconds()}",
+                            ".png"
+                        ).apply { deleteOnExit() }
+
+                        tempFile.createNewFile()
+
+                        tmpFile = tempFile
+                    } else {
+                        tempFile = tmpFile!!
+                    }
+
+                    tempFile.writeBytes(data)
+                    logger.info { "[QRCodeLogin] 将会显示二维码图片，若看不清图片，请查看文件 ${tempFile.absolutePath}" }
+                    logger.info { "[QRCodeLogin] Displaying qrcode image. If not clear, view file ${tempFile.absolutePath}." }
+                } catch (e: Exception) {
+                    logger.warning("[QRCodeLogin] 无法写出二维码图片. 请尽量关闭终端个性化样式后扫描二维码字符图片", e)
+                    logger.warning(
+                        "[QRCodeLogin] Failed to export qrcode image. Please try to scan the char-image after disabling custom terminal style.",
+                        e
+                    )
+                }
+
+                data.inputStream().use { stream ->
+                    try {
+                        val isCacheEnabled = ImageIO.getUseCache()
+
+                        try {
+                            ImageIO.setUseCache(false)
+                            val img = ImageIO.read(stream)
+                            if (img == null) {
+                                logger.warning { "[QRCodeLogin] 无法创建字符图片. 请查看文件" }
+                                logger.warning { "[QRCodeLogin] Failed to create char-image. Please see the file." }
+                            } else {
+                                logger.info { "[QRCodeLogin] \n" + img.renderQRCode() }
+                            }
+                        } finally {
+                            ImageIO.setUseCache(isCacheEnabled)
+                        }
+
+                    } catch (throwable: Throwable) {
+                        logger.warning("[QRCodeLogin] 创建字符图片时出错. 请查看文件.", throwable)
+                        logger.warning("[QRCodeLogin] Failed to create char-image. Please see the file.", throwable)
+                    }
+                }
+            }
+
+            override fun onStateChanged(bot: Bot, state: QRCodeLoginListener.State) {
+                val logger = loggerSupplier(bot)
+                logger.info {
+                    buildString {
+                        append("[QRCodeLogin] ")
+                        when (state) {
+                            QRCodeLoginListener.State.WAITING_FOR_SCAN -> append("等待扫描二维码中")
+                            QRCodeLoginListener.State.WAITING_FOR_CONFIRM -> append("扫描完成，请在手机 QQ 确认登录")
+                            QRCodeLoginListener.State.CANCELLED -> append("已取消登录，将会重新获取二维码")
+                            QRCodeLoginListener.State.TIMEOUT -> append("扫描超时，将会重新获取二维码")
+                            QRCodeLoginListener.State.CONFIRMED -> append("已确认登录")
+                            else -> append("default state")
+                        }
+                    }
+                }
+                logger.info {
+                    buildString {
+                        append("[QRCodeLogin] ")
+                        when (state) {
+                            QRCodeLoginListener.State.WAITING_FOR_SCAN -> append("Waiting for scanning qrcode.")
+                            QRCodeLoginListener.State.WAITING_FOR_CONFIRM -> append("Scan complete. Please confirm login.")
+                            QRCodeLoginListener.State.CANCELLED -> append("Login cancelled, we will try to fetch qrcode again.")
+                            QRCodeLoginListener.State.TIMEOUT -> append("Timeout scanning, we will try to fetch qrcode again.")
+                            QRCodeLoginListener.State.CONFIRMED -> append("Login confirmed.")
+                            else -> append("default state")
+                        }
+                    }
+                }
+
+                if (state == QRCodeLoginListener.State.CONFIRMED) {
+                    kotlin.runCatching { tmpFile?.delete() }.onFailure { logger.warning(it) }
+                }
+            }
+
+        }
+    }
 
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? = loginSolverLock.withLock {
         val logger = loggerSupplier(bot)
@@ -68,7 +168,7 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
             try {
                 tempFile.writeBytes(data)
                 logger.info { "[PicCaptcha] 将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}" }
-                logger.info { "[PicCaptcha] Displaying char-image. If not clear, view file ${tempFile.absolutePath}" }
+                logger.info { "[PicCaptcha] Displaying char-image. If not clear, view file ${tempFile.absolutePath}." }
             } catch (e: Exception) {
                 logger.warning("[PicCaptcha] 无法写出验证码文件, 请尝试查看以上字符图片", e)
                 logger.warning("[PicCaptcha] Failed to export captcha image. Please see the char-image.", e)
@@ -105,6 +205,9 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
         logger.info { "[SliderCaptcha] @see https://docs.mirai.mamoe.net/mirai-login-solver-selenium/" }
         logger.info { "[SliderCaptcha] 或者输入 TxCaptchaHelper 来使用 TxCaptchaHelper 完成滑动验证码" }
         logger.info { "[SliderCaptcha] Or type `TxCaptchaHelper` to resolve slider captcha with TxCaptchaHelper.apk" }
+        logger.warning { "[SliderCaptcha] TxCaptchaHelper 的在线服务疑似被屏蔽，可能无法使用。TxCaptchaHelper 现已无法满足登录QQ机器人，请在以下链接下载全新的验证器" }
+        logger.warning { "[SliderCaptcha] The service of `TxCaptchaHelper` might be blocked. We recommend you to download the new login solver plugin in below link." }
+        logger.warning { "[SliderCaptcha] @see https://github.com/KasukuSakura/mirai-login-solver-sakura" }
         logger.info { "[SliderCaptcha] Captcha link: $url" }
 
         suspend fun runTxCaptchaHelper(): String {
@@ -278,4 +381,58 @@ private fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Doub
             append(line.substring(minXPos, maxXPos)).append("\n")
         }
     }
+}
+
+private fun BufferedImage.renderQRCode(
+    blackPlaceholder: String = "   ",
+    whitePlaceholder: String = "   ",
+    doColorSwitch: Boolean = true,
+): String {
+    var lastStatus: Boolean? = null
+
+    fun isBlackBlock(rgb: Int): Boolean {
+        val r = rgb and 0xff0000 shr 16
+        val g = rgb and 0x00ff00 shr 8
+        val b = rgb and 0x0000ff
+
+        return r < 10 && g < 10 && b < 10
+    }
+
+    val sb = StringBuilder()
+    sb.append("\n")
+
+    val BLACK = "\u001b[30;40m"
+    val WHITE = "\u001b[97;107m"
+    val RESET = "\u001b[0m"
+
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            val rgbcolor = getRGB(x, y)
+            val crtStatus = isBlackBlock(rgbcolor)
+
+            if (doColorSwitch && crtStatus != lastStatus) {
+                lastStatus = crtStatus
+                sb.append(
+                    if (crtStatus) BLACK else WHITE
+                )
+            }
+
+            sb.append(
+                if (crtStatus) blackPlaceholder else whitePlaceholder
+            )
+        }
+
+        if (doColorSwitch) {
+            sb.append(RESET)
+        }
+
+        sb.append("\n")
+        lastStatus = null
+    }
+
+    if (doColorSwitch) {
+        sb.append(RESET)
+    }
+
+    return sb.toString()
 }

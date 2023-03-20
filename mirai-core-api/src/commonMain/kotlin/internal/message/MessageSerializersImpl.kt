@@ -38,6 +38,12 @@ public open class MessageSourceSerializerImpl(serialName: String) :
             Mirai.constructMessageSource(botId, kind, fromId, targetId, ids, time, internalIds, originalMessage)
         }
     ) {
+
+    @MiraiInternalApi
+    public companion object {
+        public fun serialDataSerializer(): KSerializer<*> = SerialData.serializer()
+    }
+
     @SerialName(MessageSource.SERIAL_NAME)
     @Serializable
     internal class SerialData(

@@ -31,7 +31,7 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 
 ### 许可证
 
-    Copyright (C) 2019-2022 Mamoe Technologies and contributors.
+    Copyright (C) 2019-2023 Mamoe Technologies and contributors.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as

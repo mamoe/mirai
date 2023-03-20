@@ -11,13 +11,18 @@ package net.mamoe.mirai.internal.directboot
 
 import kotlinx.coroutines.Dispatchers
 import net.mamoe.mirai.BotFactory
+import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.utils.BotConfiguration
 import java.io.File
 
 internal object DebugRunHelper {
     fun newBot(id: Long, pwd: String, conf: BotConfiguration.(botid: Long) -> Unit): QQAndroidBot {
-        val bot = BotFactory.newBot(id, pwd) {
+        return newBot(id, BotAuthorization.byPassword(pwd), conf)
+    }
+
+    fun newBot(id: Long, authorization: BotAuthorization, conf: BotConfiguration.(botid: Long) -> Unit): QQAndroidBot {
+        val bot = BotFactory.newBot(id, authorization) {
             parentCoroutineContext = Dispatchers.IO
 
             workingDir = File("test/session/$id").also { it.mkdirs() }.absoluteFile

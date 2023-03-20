@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("DuplicatedCode")
@@ -128,15 +128,19 @@ internal open class ShadowMap<K, V, KR, VR>(
             mappingFunction.apply(k.let(kTransform)).let(vTransformBack)
         }.let(vTransform)
 
+    @Suppress("WRONG_TYPE_PARAMETER_NULLABILITY_FOR_JAVA_OVERRIDE")
     override fun computeIfPresent(key: KR, remappingFunction: BiFunction<in KR, in VR, out VR?>): VR? =
         originMapComputer().computeIfPresent(key.let(kTransformBack)) { k, v ->
             remappingFunction.apply(k.let(kTransform), v.let(vTransform))?.let(vTransformBack)
         }?.let(vTransform)
 
-    override fun merge(key: KR, value: VR, remappingFunction: BiFunction<in VR, in VR, out VR?>): VR? =
-        originMapComputer().merge(key.let(kTransformBack), value.let(vTransformBack)) { k, v ->
+    @Suppress("WRONG_TYPE_PARAMETER_NULLABILITY_FOR_JAVA_OVERRIDE")
+    override fun merge(key: KR, value: VR, remappingFunction: BiFunction<in VR, in VR, out VR?>): VR? {
+        @Suppress("NULLABLE_TYPE_PARAMETER_AGAINST_NOT_NULL_TYPE_PARAMETER")
+        return originMapComputer().merge(key.let(kTransformBack), value.let(vTransformBack)) { k, v ->
             remappingFunction.apply(k.let(vTransform), v.let(vTransform))?.let(vTransformBack)
         }?.let(vTransform)
+    }
 
     override fun forEach(action: BiConsumer<in KR, in VR>) {
         @Suppress("JavaMapForEach")
@@ -186,7 +190,9 @@ internal inline fun <E, R> MutableCollection<E>.shadowMap(
 
         override fun remove(element: R): Boolean = this@shadowMap.removeIf { it.let(transform) == element }
         override fun removeAll(elements: Collection<R>): Boolean = elements.all(::remove)
-        override fun retainAll(elements: Collection<R>): Boolean = this@shadowMap.retainAll(elements.map(transformBack))
+        override fun retainAll(elements: Collection<R>): Boolean =
+            this@shadowMap.retainAll(elements.mapTo(HashSet(elements.size), transformBack))
+
         override fun toString(): String = this@shadowMap.toString()
         override fun hashCode(): Int = this@shadowMap.hashCode()
     }
@@ -293,7 +299,9 @@ internal inline fun <E, R> MutableSet<E>.shadowMap(
 
         override fun remove(element: R): Boolean = this@shadowMap.removeIf { it.let(transform) == element }
         override fun removeAll(elements: Collection<R>): Boolean = elements.all(::remove)
-        override fun retainAll(elements: Collection<R>): Boolean = this@shadowMap.retainAll(elements.map(transformBack))
+        override fun retainAll(elements: Collection<R>): Boolean =
+            this@shadowMap.retainAll(elements.mapTo(HashSet(elements.size), transformBack))
+
         override fun toString(): String = this@shadowMap.toString()
         override fun hashCode(): Int = this@shadowMap.hashCode()
     }
@@ -384,7 +392,8 @@ internal inline fun <T> dynamicMutableSet(crossinline supplier: () -> MutableSet
     "ACCIDENTAL_OVERRIDE", "TYPE_MISMATCH", "NOTHING_TO_OVERRIDE",
     "MANY_IMPL_MEMBER_NOT_IMPLEMENTED", "MANY_INTERFACES_MEMBER_NOT_IMPLEMENTED",
     "UNCHECKED_CAST", "USELESS_CAST", "ACCIDENTAL_OVERRIDE",
-    "EXPLICIT_OVERRIDE_REQUIRED_IN_MIXED_MODE", "CONFLICTING_INHERITED_JVM_DECLARATIONS"
+    "EXPLICIT_OVERRIDE_REQUIRED_IN_MIXED_MODE", "CONFLICTING_INHERITED_JVM_DECLARATIONS",
+    "WRONG_TYPE_PARAMETER_NULLABILITY_FOR_JAVA_OVERRIDE", "NULLABLE_TYPE_PARAMETER_AGAINST_NOT_NULL_TYPE_PARAMETER"
 ) // type inference bug
 internal fun <K, V> MutableMap<K, V>.observable(onChanged: () -> Unit): MutableMap<K, V> {
     open class ObservableMap : MutableMap<K, V> by (this as MutableMap<K, V>) {
@@ -527,10 +536,10 @@ internal inline fun <T> MutableCollection<T>.observable(crossinline onChanged: (
         override fun clear() = this@observable.clear().also { onChanged() }
         override fun remove(element: T): Boolean = this@observable.remove(element).also { onChanged() }
         override fun removeAll(elements: Collection<T>): Boolean =
-            this@observable.removeAll(elements).also { onChanged() }
+            this@observable.removeAll(elements.toSet()).also { onChanged() }
 
         override fun retainAll(elements: Collection<T>): Boolean =
-            this@observable.retainAll(elements).also { onChanged() }
+            this@observable.retainAll(elements.toSet()).also { onChanged() }
 
         override fun toString(): String = this@observable.toString()
         override fun hashCode(): Int = this@observable.hashCode()
@@ -557,10 +566,10 @@ internal inline fun <T> MutableSet<T>.observable(crossinline onChanged: () -> Un
         override fun clear() = this@observable.clear().also { onChanged() }
         override fun remove(element: T): Boolean = this@observable.remove(element).also { onChanged() }
         override fun removeAll(elements: Collection<T>): Boolean =
-            this@observable.removeAll(elements).also { onChanged() }
+            this@observable.removeAll(elements.toSet()).also { onChanged() }
 
         override fun retainAll(elements: Collection<T>): Boolean =
-            this@observable.retainAll(elements).also { onChanged() }
+            this@observable.retainAll(elements.toSet()).also { onChanged() }
 
         override fun toString(): String = this@observable.toString()
         override fun hashCode(): Int = this@observable.hashCode()
