@@ -72,7 +72,7 @@ internal class TmpResourceServerImpl(
     override suspend fun uploadResourceAsImage(resource: ExternalResource): URI {
         val imgId = generateUUID(resource.md5)
         val resId = uploadResource(resource)
-        // Should check if the image is already uploaded?
+        // should this image be checked is uploaded before uploading in above line?
         imageHashMap[resource.md5.toUHexString()] = resource.size
 
         val imgPath = images.resolve(imgId)
