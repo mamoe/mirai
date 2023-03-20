@@ -167,7 +167,7 @@ fun main(args: Array<String>) {
                     Thread.sleep(2000)
                     try {
                         val exitcode = ProcessBuilder(
-                            "gpg", "--homedir", "homedir", "--batch", "--no-tty", "--verbose",
+                            "gpg", "--batch", "--no-tty", "--verbose",
                             *cmd
                         )
                             .directory(bgsFile)
@@ -181,6 +181,12 @@ fun main(args: Array<String>) {
                         Thread.sleep(2000)
                         println("::endgroup::")
                     }
+                }
+
+                fun execGpgNoThrow(vararg cmd: String) {
+                    runCatching {
+                        execGpg(*cmd)
+                    }.onFailure { it.printStackTrace(System.out) }
                 }
 
                 println(bgsFile.absoluteFile)
@@ -205,19 +211,24 @@ fun main(args: Array<String>) {
                         *if (isPosix) arrayOf(dirPermissions) else arrayOf(),
                     )
 
-                    keys.forEach { execGpg("--import", it) }
-                }
-
-                Files.walk(bgs).forEach { pt ->
-                    println(pt.absolute() + ", isFile = ${pt.isRegularFile()}")
+                    keys.forEach { execGpgNoThrow("--import", it) }
+                    keys.forEach { execGpgNoThrow("--homedir", "homedir", "--import", it) }
                 }
 
                 runCatching {
                     ProcessBuilder("gpg", "--version").inheritIO().start().waitFor()
                     ProcessBuilder("ls", "-la", bgs.absolutePathString()).inheritIO().start().waitFor()
+                    ProcessBuilder("ls", "-la", bgs.absolutePathString() + "/homedir").inheritIO().start().waitFor()
                 }.onFailure { it.printStackTrace(System.out) }
-                runCatching { execGpg("--version") }
 
+                execGpgNoThrow("--version")
+                execGpgNoThrow("--homedir", "homedir", "--version")
+
+                execGpgNoThrow("--list-keys")
+                execGpgNoThrow("--homedir", "homedir", "--list-keys")
+
+                execGpgNoThrow("--list-keys")
+                execGpgNoThrow("--homedir", "homedir", "--list-secret-keys")
 
                 println("Signing artifacts")
                 pendingFiles.toList().asSequence().filterNot { it.name == "maven-metadata.xml" }
