@@ -164,6 +164,7 @@ fun main(args: Array<String>) {
 
                 fun execGpg(vararg cmd: String) {
                     println("::group::${cmd.joinToString(" ")}")
+                    Thread.sleep(2000)
                     try {
                         val exitcode = ProcessBuilder(
                             "gpg", "--homedir", "homedir", "--batch", "--no-tty", "--verbose",
@@ -177,6 +178,7 @@ fun main(args: Array<String>) {
                             error("Exit code $exitcode != 0")
                         }
                     } finally {
+                        Thread.sleep(2000)
                         println("::endgroup::")
                     }
                 }
