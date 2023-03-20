@@ -48,6 +48,7 @@ internal class TmpResourceServerImpl(
 
     private val storage: Path = storageRoot.resolve("storage").mkdirsIfMissing()
     private val images: Path = storageRoot.resolve("images").mkdirsIfMissing()
+    private val imageHashMap: MutableMap<String, Long> = mutableMapOf()
 
     override suspend fun uploadResource(resource: ExternalResource): String {
         fun ByteArray.hex() = toUHexString(separator = "")
@@ -65,9 +66,14 @@ internal class TmpResourceServerImpl(
         }
     }
 
+    override fun isImageUploaded(md5: ByteArray, size: Long): Boolean =
+        imageHashMap[md5.toUHexString()]?.equals(size) ?: false
+
     override suspend fun uploadResourceAsImage(resource: ExternalResource): URI {
         val imgId = generateUUID(resource.md5)
         val resId = uploadResource(resource)
+        // Should check if the image is already uploaded?
+        imageHashMap[resource.md5.toUHexString()] = resource.size
 
         val imgPath = images.resolve(imgId)
         val storagePath = storage.resolve(resId).toAbsolutePath()
