@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.contact.essence
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -131,22 +130,25 @@ internal class EssencesImpl(
 
     override suspend fun remove(source: MessageSource) {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
-        try {
-            val result = group.bot.network.sendAndExpect(
-                TroopEssenceMsgManager.RemoveEssence(
-                    group.bot.client,
-                    group.uin,
-                    source.internalIds.first(),
-                    source.ids.first()
-                ), 5000, 2
-            )
-            check(result.success) { result.msg ?: "移除精华消息失败" }
-        } catch (_: CancellationException) {
-            group.bot.cancelDigest(
-                groupCode = group.id,
-                msgSeq = source.ids.first(),
-                msgRandom = source.internalIds.first()
-            )
+        val result = group.bot.network.sendAndExpect(
+            TroopEssenceMsgManager.RemoveEssence(
+                group.bot.client,
+                group.uin,
+                source.internalIds.first(),
+                source.ids.first()
+            ), 5000, 2
+        )
+        if (result.success.not()) {
+            try {
+                group.bot.cancelDigest(
+                    groupCode = group.id,
+                    msgSeq = source.ids.first(),
+                    msgRandom = source.internalIds.first()
+                )
+            } catch (cause: IllegalStateException) {
+                cause.addSuppressed(IllegalStateException(result.msg))
+                throw cause
+            }
         }
     }
 
