@@ -41,7 +41,7 @@ object GetNextSnapshotIndex {
                 }
                 println()
 
-                println("<SNAPSHOT_VERSION_START>${index.value}<SNAPSHOT_VERSION_END>")
+                println("<SNAPSHOT_VERSION_START>$branch-${index.value}<SNAPSHOT_VERSION_END>")
             }
         }
     }
