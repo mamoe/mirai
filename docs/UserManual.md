@@ -5,7 +5,7 @@
 
 ## 启动 Mirai
 
-想要部署并使用 Mirai QQ机器人框架，只需要启动 Mirai 控制台（即 Mirai Console ），
+想要部署并使用 Mirai QQ机器人框架，只需要启动 Mirai 控制台（即 Mirai Console），
 它自带一些基础功能，也可以加载社区提供的插件。
 
 Mirai 控制台现在有两个版本，Mirai 插件在这两个版本的 Mirai Console 上都可以运行:
