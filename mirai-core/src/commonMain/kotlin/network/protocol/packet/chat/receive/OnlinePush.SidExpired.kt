@@ -16,7 +16,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
 
-internal object OnlinePushSidExpired : IncomingPacketFactory<Packet?>("OnlinePush.SidTicketExpired") {
+internal object OnlinePushSidExpired :
+    IncomingPacketFactory<Packet?>("OnlinePush.SidTicketExpired", "OnlinePush.SidTicketExpired") {
 
     override suspend fun QQAndroidBot.handle(packet: Packet?, sequenceId: Int): OutgoingPacket {
         return buildResponseUniPacket(client, sequenceId = sequenceId)
