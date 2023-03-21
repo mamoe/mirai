@@ -45,7 +45,8 @@ internal class EssencesImpl(
                     bytes.toExternalResource().use { group.uploadImage(it) }
                 } catch (cause: Exception) {
                     logger.debug({ "essence message image $url download fail." }, cause)
-                    val (md5, ext) = IMAGE_MD5_REGEX.find(url)!!.destructured
+                    val match = IMAGE_MD5_REGEX.find(url) ?: return emptyMessageChain()
+                    val (md5, ext) = match.destructured
                     val imageId = buildString {
                         append(md5)
                         insert(8,"-")
