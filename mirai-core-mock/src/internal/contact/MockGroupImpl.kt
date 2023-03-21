@@ -31,7 +31,9 @@ import net.mamoe.mirai.mock.contact.MockGroup
 import net.mamoe.mirai.mock.contact.MockGroupControlPane
 import net.mamoe.mirai.mock.contact.MockNormalMember
 import net.mamoe.mirai.mock.contact.active.MockGroupActive
+import net.mamoe.mirai.mock.contact.essence.MockEssences
 import net.mamoe.mirai.mock.internal.contact.active.MockGroupActiveImpl
+import net.mamoe.mirai.mock.internal.contact.essence.MockEssencesImpl
 import net.mamoe.mirai.mock.internal.contact.roaming.MockRoamingMessages
 import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToGroup
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
@@ -337,8 +339,12 @@ internal class MockGroupImpl(
         resource.mockUploadVoice(bot)
 
     override suspend fun setEssenceMessage(source: MessageSource): Boolean {
+        checkBotPermission(MemberPermission.ADMINISTRATOR)
+        essences.mockSetEssences(source, this.botAsMember)
         return true
     }
+
+    override val essences: MockEssences = MockEssencesImpl(this)
 
     @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"))
     @Suppress("OverridingDeprecatedMember", "DEPRECATION", "DEPRECATION_ERROR")
