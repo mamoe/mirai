@@ -131,6 +131,7 @@ internal object KnownPacketFactories {
     object OutgoingFactories : List<OutgoingPacketFactory<*>> by mutableListOf(
         WtLogin.Login,
         WtLogin.ExchangeEmp,
+        WtLogin.TransEmp,
         StatSvc.Register,
         StatSvc.GetOnlineStatus,
         StatSvc.SimpleGet,

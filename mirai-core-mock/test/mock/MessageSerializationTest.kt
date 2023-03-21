@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,11 +9,10 @@
 
 package net.mamoe.mirai.mock.test.mock
 
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.plus
-import kotlinx.serialization.serializer
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.mock.test.MockBotTestBase
@@ -32,7 +31,7 @@ internal class MessageSerializationTest : MockBotTestBase() {
         get() = Json {
             serializersModule = module
             useArrayPolymorphism = false
-            ignoreUnknownKeys = true
+            ignoreUnknownKeys = false
         }
 
     private inline fun <reified T : Any> T.serialize(serializer: KSerializer<T> = module.serializer()): String {
@@ -66,6 +65,13 @@ internal class MessageSerializationTest : MockBotTestBase() {
             deserialized,
             msg
         )
+
+        if (t is SingleMessage) {
+            PolymorphicWrapperContent(t)
+                .serialize(PolymorphicWrapperContent.serializer())
+                .deserialize(PolymorphicWrapperContent.serializer())
+                .let { assert1(t, it.message, msg) }
+        }
     }
 
     private fun assert1(t: Any, deserialized: Any, msg: String) {
@@ -103,7 +109,7 @@ internal class MessageSerializationTest : MockBotTestBase() {
 
     @Test
     fun testSerializersModulePlus() {
-        MessageSerializers.serializersModule + EmptySerializersModule
+        MessageSerializers.serializersModule + EmptySerializersModule()
     }
 
     @Test
@@ -126,4 +132,44 @@ internal class MessageSerializationTest : MockBotTestBase() {
         }
     }
 
+    @Serializable
+    data class PolymorphicWrapperImage(
+        val message: @Polymorphic Image
+    )
+
+    @Serializable
+    data class PolymorphicWrapperContent(
+        val message: @Polymorphic SingleMessage
+    )
+
+    @Test
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "UNRESOLVED_REFERENCE")
+    fun `test serialization for MockImage`() = runTest {
+        val img = this@MessageSerializationTest.bot.uploadMockImage(
+            Image.randomImageContent().toExternalResource().toAutoCloseable()
+        )
+        PolymorphicWrapperImage(img)
+            .serialize(PolymorphicWrapperImage.serializer())
+            .also { println(it) }
+            .deserialize(PolymorphicWrapperImage.serializer())
+    }
+
+    // https://github.com/mamoe/mirai/pull/2414#issuecomment-1386253123
+    @Test
+    fun `test 2414-1386253123`() = runTest {
+        // event
+        val img = this@MessageSerializationTest.bot.uploadMockImage(
+            Image.randomImageContent().toExternalResource().toAutoCloseable()
+        )
+        val msg = buildMessageChain {
+            add("imgUploaded")
+            add(img)
+        }
+
+        val s = format.encodeToString(msg)
+        println(s)
+        println(format.decodeFromString<MessageChain>(s))
+        testSerialization(msg)
+
+    }
 }

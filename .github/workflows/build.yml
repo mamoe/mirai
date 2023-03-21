@@ -30,11 +30,11 @@ jobs:
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
 
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -58,7 +58,7 @@ jobs:
 
       - run: >
           ./gradlew updateSnapshotVersion ${{ env.gradleArgs }}
-        if: github.event.pusher
+        if: github.event.pusher && vars.RUN_MIRAI_SNAPSHOTS == 'true'
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
@@ -173,11 +173,11 @@ jobs:
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
 
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -213,7 +213,7 @@ jobs:
 
       - run: >
           ./gradlew updateSnapshotVersion ${{ env.gradleArgs }}
-        if: github.event.pusher
+        if: github.event.pusher && vars.RUN_MIRAI_SNAPSHOTS == 'true'
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
@@ -240,7 +240,7 @@ jobs:
         run: node ci-release-helper/scripts/kill-java.js
 
       - name: Publish Snapshots
-        if: ${{ github.event.pusher && env.isMac == 'true' }}
+        if: ${{ github.event.pusher && env.isMac == 'true' && vars.RUN_MIRAI_SNAPSHOTS == 'true' }}
         run: ./gradlew publishAllPublicationsToMiraiRepoRepository ${{ env.gradleArgs }}
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
@@ -280,11 +280,11 @@ jobs:
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
       VCPKG_DEFAULT_BINARY_CACHE: ${{ startsWith(matrix.os, 'windows') && 'C:\vcpkg\binary_cache' || '/usr/local/share/vcpkg/binary_cache' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
 
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v3
         with:
           distribution: 'adopt-openj9'
           java-version: '17'
@@ -356,7 +356,7 @@ jobs:
 
       - run: >
           ./gradlew updateSnapshotVersion ${{ env.gradleArgs }}
-        if: github.event.pusher
+        if: github.event.pusher && vars.RUN_MIRAI_SNAPSHOTS == 'true'
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
           SNAPSHOTS_PUBLISHING_USER: ${{ secrets.SNAPSHOTS_PUBLISHING_USER }}
@@ -388,7 +388,7 @@ jobs:
         run: node ci-release-helper/scripts/kill-java.js
 
       - name: Publish MingwX64 Snapshots
-        if: ${{ github.event.pusher && env.isWindows == 'true' }}
+        if: ${{ github.event.pusher && env.isWindows == 'true' && vars.RUN_MIRAI_SNAPSHOTS == 'true' }}
         run: ./gradlew publishMingwX64PublicationToMiraiRepoRepository ${{ env.gradleArgs }}
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
@@ -397,7 +397,7 @@ jobs:
           SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
 
       - name: Publish LinuxX64 Snapshots
-        if: ${{ github.event.pusher && env.isUbuntu == 'true' }}
+        if: ${{ github.event.pusher && env.isUbuntu == 'true' && vars.RUN_MIRAI_SNAPSHOTS == 'true' }}
         run: ./gradlew publishLinuxX64PublicationToMiraiRepoRepository ${{ env.gradleArgs }}
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true
@@ -406,7 +406,7 @@ jobs:
           SNAPSHOTS_PUBLISHING_URL: ${{ secrets.SNAPSHOTS_PUBLISHING_URL }}
 
       - name: Publish macOSX64 Snapshots
-        if: ${{ github.event.pusher && env.isMac == 'true' }}
+        if: ${{ github.event.pusher && env.isMac == 'true' && vars.RUN_MIRAI_SNAPSHOTS == 'true' }}
         run: ./gradlew publishMacosX64PublicationToMiraiRepoRepository ${{ env.gradleArgs }}
         env:
           MIRAI_IS_SNAPSHOTS_PUBLISHING: true

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -130,7 +130,7 @@ internal fun AccountSecretsImpl(
 }
 
 internal fun AccountSecretsImpl(
-    device: DeviceInfo, account: BotAccount,
+    device: DeviceInfo,
 ): AccountSecretsImpl {
     return AccountSecretsImpl(
         loginExtraData = ConcurrentSet(),
@@ -149,7 +149,7 @@ internal fun AccountSecretsImpl(
 internal fun AccountSecretsManager.getSecretsOrCreate(account: BotAccount, device: DeviceInfo): AccountSecrets {
     var secrets = getSecrets(account)
     if (secrets == null) {
-        secrets = AccountSecretsImpl(device, account)
+        secrets = AccountSecretsImpl(device)
         saveSecrets(account, secrets)
     }
     return secrets
@@ -193,7 +193,7 @@ internal class FileCacheAccountSecretsManager(
     private fun getSecretsImpl(account: BotAccount): AccountSecrets? {
         if (!file.exists()) return null
         val loaded = kotlin.runCatching {
-            TEA.decrypt(file.readBytes(), account.passwordMd5).loadAs(AccountSecretsImpl.serializer())
+            TEA.decrypt(file.readBytes(), account.accountSecretsKey).loadAs(AccountSecretsImpl.serializer())
         }.getOrElse { e ->
             if (e.message == "Field 'ecdhInitialPublicKey' is required for type with serial name 'net.mamoe.mirai.internal.network.components.AccountSecretsImpl', but it was missing") {
                 logger.info { "Detected old account secrets, invalidating..." }
@@ -218,7 +218,7 @@ internal class FileCacheAccountSecretsManager(
             file.writeBytes(
                 TEA.encrypt(
                     AccountSecretsImpl(secrets).toByteArray(AccountSecretsImpl.serializer()),
-                    account.passwordMd5
+                    account.accountSecretsKey
                 )
             )
         }

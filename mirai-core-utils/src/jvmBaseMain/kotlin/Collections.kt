@@ -55,3 +55,17 @@ public actual fun <K : Enum<K>, V> EnumMap(clazz: KClass<K>): MutableMap<K, V> {
 public actual fun <E> ConcurrentSet(): MutableSet<E> {
     return CopyOnWriteArraySet()
 }
+
+/**
+ * Same as [MutableCollection.addAll].
+ *
+ * Adds all the elements of the specified enumeration to this collection.
+ * @return true if any of the specified elements was added to the collection, false if the collection was not modified.
+ */
+public fun <T> MutableCollection<T>.addAll(enumeration: Enumeration<T>): Boolean {
+    var addResult = false
+    while (enumeration.hasMoreElements()) {
+        addResult = this.add(enumeration.nextElement())
+    }
+    return addResult
+}

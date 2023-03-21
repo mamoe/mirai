@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -277,6 +277,7 @@ public open class BuildMiraiPluginV2 : Jar() {
         duplicatesStrategy = DuplicatesStrategy.WARN
 
         val compilations = target.compilations.filter { it.name == KotlinCompilation.MAIN_COMPILATION_NAME }
+        @Suppress("DEPRECATION") // New API requires Kotlin 1.8.0, but we must support lower versions
         compilations.forEach {
             dependsOn(it.compileKotlinTask)
             from(it.output.allOutputs)
