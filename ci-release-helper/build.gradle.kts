@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -104,19 +104,19 @@ tasks.register("updateSnapshotVersion") {
         result.assertNormalExitValue()
 
         val resultString = out.toByteArray().decodeToString()
-        val index = resultString
+        val branchAndIndex = resultString
             .substringAfter("<SNAPSHOT_VERSION_START>", "")
             .substringBefore("<SNAPSHOT_VERSION_END>", "")
 
         logger.info("Exec result:")
         logger.info(resultString)
 
-        if (index.isEmpty()) {
+        if (branchAndIndex.isEmpty()) {
             throw GradleException("Failed to find version.")
         }
 
-        logger.info("Snapshot version index is '$index'")
-        val versionName = "${Versions.project}-$branch-${index}"
+        logger.info("Snapshot version index is '$branchAndIndex'")
+        val versionName = "${Versions.project}-${branchAndIndex}"
 
         // Add annotation on GitHub Actions build
         // https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-a-notice-message
