@@ -71,6 +71,7 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
                 fragmented = step == SendMessageStep.FRAGMENTED || currentMessageChain.contains(ForceAsFragmentedMessage)
             ) { source = it }
 
+            // Patch time to be actual server time
             var finalTime = bot.clock.server.currentTimeSeconds().toInt()
             val sendPacketOk = sendAllPackets(bot, step, contact, packets) { idx, rsp ->
                 if (rsp is MessageSvcPbSendMsg.Response.SUCCESS) {
@@ -102,8 +103,7 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
             packets.forEachIndexed { index, packet ->
                 if (!sendSinglePacket(
                         bot, packet, step, contact,
-                        index, packetResponseConsumer
-                    )
+                    ) { packetResponseConsumer(index, it) }
                 ) return@sendAllPackets false
             }
 
@@ -115,15 +115,14 @@ internal class GeneralMessageSenderProtocol : MessageProtocol(PRIORITY_GENERAL_S
             packet: OutgoingPacket,
             step: SendMessageStep,
             contact: Contact,
-            index: Int,
-            packetResponseConsumer: (Int, MessageSvcPbSendMsg.Response) -> Unit,
+            packetResponseConsumer: (MessageSvcPbSendMsg.Response) -> Unit,
         ): Boolean {
             val originalMessage = attributes[ORIGINAL_MESSAGE]
             val protocolStrategy = components[MessageProtocolStrategy]
             val finalMessage = currentMessageChain
 
             val resp = protocolStrategy.sendPacket(bot, packet) as MessageSvcPbSendMsg.Response
-            packetResponseConsumer(index, resp)
+            packetResponseConsumer(resp)
             if (resp is MessageSvcPbSendMsg.Response.MessageTooLarge) {
                 logger.info { "STEP $step: message too large." }
                 val next = step.nextStepOrNull()

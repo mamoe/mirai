@@ -157,22 +157,20 @@ internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
             markAsConsumed()
             collect(ImMsgBody.Elem(srcMsg = source.toJceData()))
             if (sourceCommon.kind == MessageSourceKind.GROUP) {
-
-                @Suppress("RemoveExplicitTypeArguments")
-                val needPlusAt = sequence<Boolean> {
+                fun isPlusNeed(): Boolean {
                     if (source is OnlineMessageSource.Incoming.FromGroup) {
                         try {
                             val sender0 = source.sender
-                            yield(sender0 !is AnonymousMember)
+                            return sender0 !is AnonymousMember
                         } catch (_: IllegalStateException) {
                             // Member not available now
                         }
                     }
 
-                    yield(sourceCommon.fromId != 80000000L)
+                    return sourceCommon.fromId != 80000000L // #2501
                 }
 
-                if (needPlusAt.first()) {
+                if (isPlusNeed()) {
                     processAlso(At(sourceCommon.fromId))
 
                     // transformOneMessage(PlainText(" "))

@@ -62,7 +62,7 @@ internal class RoamingMessagesImplGroup(
                     resp.msgElem.asSequence()
                         .filter { lastOfferedSeq == -1 || it.msgHead.msgSeq < lastOfferedSeq }
                         .filter { it.time in timeStart..timeEnd }
-                        .sortedByDescending { it.msgHead.msgSeq } // Ensure caller receiver newer messages first
+                        .sortedByDescending { it.msgHead.msgSeq } // Ensure caller receives newer messages first
                         .filter { filter.apply(it) } // Call filter after sort
                         .asFlow()
                         .map { listOf(it).toMessageChainOnline(bot, contact.id, MessageSourceKind.GROUP) }
