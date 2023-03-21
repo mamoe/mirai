@@ -1,3 +1,4 @@
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 /*
  * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
@@ -7,8 +8,11 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.spi
+package net.mamoe.mirai.internal.spi
 
+import net.mamoe.mirai.spi.BaseService
+
+import net.mamoe.mirai.spi.SPIServiceLoader
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.jvm.JvmStatic
@@ -19,7 +23,7 @@ import kotlin.jvm.JvmStatic
  * @since 2.15.0
  */
 @MiraiExperimentalApi
-public interface EncryptWorkerService : BaseService {
+internal interface EncryptWorkerService : BaseService {
     /**
      * implementation note:
      *
@@ -27,10 +31,10 @@ public interface EncryptWorkerService : BaseService {
      *
      */
     @Throws(IllegalStateException::class, CancellationException::class)
-    public suspend fun doTLVEncrypt(id: Long, tlvType: Int, payLoad: ByteArray, vararg extraArgs: Any?): ByteArray?
+    suspend fun doTLVEncrypt(id: Long, tlvType: Int, payLoad: ByteArray, vararg extraArgs: Any?): ByteArray?
 
     @MiraiExperimentalApi
-    public companion object : EncryptWorkerService {
+    companion object : EncryptWorkerService {
         private val loader = SPIServiceLoader(object : EncryptWorkerService {
             override suspend fun doTLVEncrypt(
                 id: Long,
@@ -51,7 +55,7 @@ public interface EncryptWorkerService : BaseService {
         }
 
         @JvmStatic
-        public fun setService(service: EncryptWorkerService) {
+        fun setService(service: EncryptWorkerService) {
             loader.service = service
         }
     }

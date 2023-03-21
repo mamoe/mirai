@@ -15,12 +15,12 @@ import io.ktor.utils.io.core.*
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.LoginType
+import net.mamoe.mirai.internal.spi.EncryptWorkerService
 import net.mamoe.mirai.internal.utils.GuidSource
 import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.guidFlag
 import net.mamoe.mirai.internal.utils.io.*
-import net.mamoe.mirai.spi.EncryptWorkerService
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmInline
 import kotlin.random.Random
