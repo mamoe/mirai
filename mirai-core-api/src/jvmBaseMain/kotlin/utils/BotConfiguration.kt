@@ -7,12 +7,6 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("unused", "DEPRECATION_ERROR", "EXPOSED_SUPER_CLASS", "MemberVisibilityCanBePrivate")
-
-@file:JvmMultifileClass
-@file:JvmName("Utils")
-
-
 package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.Bot
@@ -24,7 +18,7 @@ import java.io.InputStream
  * [BotConfiguration] 的 JVM 平台特别配置
  * @since 2.15
  */
-@Suppress("PropertyName")
+@NotStableForInheritance
 public actual abstract class AbstractBotConfiguration { // open for Java
     protected actual abstract var deviceInfo: ((Bot) -> DeviceInfo)?
     protected actual abstract var networkLoggerSupplier: ((Bot) -> MiraiLogger)

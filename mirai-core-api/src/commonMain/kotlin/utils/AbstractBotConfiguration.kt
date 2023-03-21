@@ -17,7 +17,8 @@ import kotlin.jvm.JvmOverloads
  * [BotConfiguration] 的平台特别配置
  * @since 2.15
  */
-public expect abstract class AbstractBotConfiguration protected constructor() {
+@NotStableForInheritance
+public expect abstract class AbstractBotConfiguration @MiraiInternalApi protected constructor() {
     protected abstract var deviceInfo: ((Bot) -> DeviceInfo)?
     protected abstract var networkLoggerSupplier: ((Bot) -> MiraiLogger)
     protected abstract var botLoggerSupplier: ((Bot) -> MiraiLogger)
