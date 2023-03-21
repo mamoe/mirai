@@ -5425,6 +5425,41 @@ public final class net/mamoe/mirai/network/UnsupportedSmsLoginException : net/ma
 public final class net/mamoe/mirai/network/WrongPasswordException : net/mamoe/mirai/network/LoginFailedException {
 }
 
+public abstract class net/mamoe/mirai/utils/AbstractBotConfiguration {
+	public fun <init> ()V
+	public final fun fileBasedDeviceInfo ()V
+	public final fun fileBasedDeviceInfo (Ljava/lang/String;)V
+	public static synthetic fun fileBasedDeviceInfo$default (Lnet/mamoe/mirai/utils/AbstractBotConfiguration;Ljava/lang/String;ILjava/lang/Object;)V
+	protected abstract fun getBotLoggerSupplier ()Lkotlin/jvm/functions/Function1;
+	public final fun getCacheDir ()Ljava/io/File;
+	protected abstract fun getDeviceInfo ()Lkotlin/jvm/functions/Function1;
+	protected abstract fun getNetworkLoggerSupplier ()Lkotlin/jvm/functions/Function1;
+	public final fun getWorkingDir ()Ljava/io/File;
+	public final fun redirectBotLogToDirectory ()V
+	public final fun redirectBotLogToDirectory (Ljava/io/File;)V
+	public final fun redirectBotLogToDirectory (Ljava/io/File;J)V
+	public final fun redirectBotLogToDirectory (Ljava/io/File;JLkotlin/jvm/functions/Function1;)V
+	public static synthetic fun redirectBotLogToDirectory$default (Lnet/mamoe/mirai/utils/AbstractBotConfiguration;Ljava/io/File;JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun redirectBotLogToFile ()V
+	public final fun redirectBotLogToFile (Ljava/io/File;)V
+	public final fun redirectBotLogToFile (Ljava/io/File;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun redirectBotLogToFile$default (Lnet/mamoe/mirai/utils/AbstractBotConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun redirectNetworkLogToDirectory ()V
+	public final fun redirectNetworkLogToDirectory (Ljava/io/File;)V
+	public final fun redirectNetworkLogToDirectory (Ljava/io/File;J)V
+	public final fun redirectNetworkLogToDirectory (Ljava/io/File;JLkotlin/jvm/functions/Function1;)V
+	public static synthetic fun redirectNetworkLogToDirectory$default (Lnet/mamoe/mirai/utils/AbstractBotConfiguration;Ljava/io/File;JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun redirectNetworkLogToFile ()V
+	public final fun redirectNetworkLogToFile (Ljava/io/File;)V
+	public final fun redirectNetworkLogToFile (Ljava/io/File;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun redirectNetworkLogToFile$default (Lnet/mamoe/mirai/utils/AbstractBotConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	protected abstract fun setBotLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
+	public final fun setCacheDir (Ljava/io/File;)V
+	protected abstract fun setDeviceInfo (Lkotlin/jvm/functions/Function1;)V
+	protected abstract fun setNetworkLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
+	public final fun setWorkingDir (Ljava/io/File;)V
+}
+
 public abstract class net/mamoe/mirai/utils/AbstractExternalResource : net/mamoe/mirai/utils/ExternalResource {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
@@ -5448,7 +5483,7 @@ public abstract interface class net/mamoe/mirai/utils/AbstractExternalResource$R
 	public abstract fun cleanup ()V
 }
 
-public class net/mamoe/mirai/utils/BotConfiguration {
+public class net/mamoe/mirai/utils/BotConfiguration : net/mamoe/mirai/utils/AbstractBotConfiguration {
 	public static final field Companion Lnet/mamoe/mirai/utils/BotConfiguration$Companion;
 	public fun <init> ()V
 	public final fun autoReconnectOnForceOffline ()V
@@ -5457,12 +5492,8 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun disableAccountSecretes ()V
 	public final fun disableContactCache ()V
 	public final fun enableContactCache ()V
-	public final fun fileBasedDeviceInfo ()V
-	public final fun fileBasedDeviceInfo (Ljava/lang/String;)V
-	public static synthetic fun fileBasedDeviceInfo$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/lang/String;ILjava/lang/Object;)V
 	public final fun getAutoReconnectOnForceOffline ()Z
 	public final fun getBotLoggerSupplier ()Lkotlin/jvm/functions/Function1;
-	public final fun getCacheDir ()Ljava/io/File;
 	public final fun getContactListCache ()Lnet/mamoe/mirai/utils/BotConfiguration$ContactListCache;
 	public static final fun getDefault ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public final fun getDeviceInfo ()Lkotlin/jvm/functions/Function1;
@@ -5479,7 +5510,6 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final synthetic fun getReconnectPeriodMillis ()J
 	public final fun getReconnectionRetryTimes ()I
 	public final fun getStatHeartbeatPeriodMillis ()J
-	public final fun getWorkingDir ()Ljava/io/File;
 	public final synthetic fun inheritCoroutineContext (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun isConvertLineSeparator ()Z
 	public final fun isShowingVerboseEventLog ()Z
@@ -5487,27 +5517,8 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun noBotLog ()V
 	public final fun noNetworkLog ()V
 	public final fun randomDeviceInfo ()V
-	public final fun redirectBotLogToDirectory ()V
-	public final fun redirectBotLogToDirectory (Ljava/io/File;)V
-	public final fun redirectBotLogToDirectory (Ljava/io/File;J)V
-	public final fun redirectBotLogToDirectory (Ljava/io/File;JLkotlin/jvm/functions/Function1;)V
-	public static synthetic fun redirectBotLogToDirectory$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/io/File;JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public final fun redirectBotLogToFile ()V
-	public final fun redirectBotLogToFile (Ljava/io/File;)V
-	public final fun redirectBotLogToFile (Ljava/io/File;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun redirectBotLogToFile$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public final fun redirectNetworkLogToDirectory ()V
-	public final fun redirectNetworkLogToDirectory (Ljava/io/File;)V
-	public final fun redirectNetworkLogToDirectory (Ljava/io/File;J)V
-	public final fun redirectNetworkLogToDirectory (Ljava/io/File;JLkotlin/jvm/functions/Function1;)V
-	public static synthetic fun redirectNetworkLogToDirectory$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/io/File;JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public final fun redirectNetworkLogToFile ()V
-	public final fun redirectNetworkLogToFile (Ljava/io/File;)V
-	public final fun redirectNetworkLogToFile (Ljava/io/File;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun redirectNetworkLogToFile$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun setAutoReconnectOnForceOffline (Z)V
 	public final fun setBotLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
-	public final fun setCacheDir (Ljava/io/File;)V
 	public final fun setContactListCache (Lnet/mamoe/mirai/utils/BotConfiguration$ContactListCache;)V
 	public final fun setConvertLineSeparator (Z)V
 	public final fun setDeviceInfo (Lkotlin/jvm/functions/Function1;)V
@@ -5525,7 +5536,6 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun setReconnectionRetryTimes (I)V
 	public final fun setShowingVerboseEventLog (Z)V
 	public final fun setStatHeartbeatPeriodMillis (J)V
-	public final fun setWorkingDir (Ljava/io/File;)V
 }
 
 public final class net/mamoe/mirai/utils/BotConfiguration$Companion {
