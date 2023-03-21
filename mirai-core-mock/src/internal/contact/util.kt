@@ -156,14 +156,6 @@ internal class MockImage(
 }
 
 internal object MockInternalImageProtocolImpl : InternalImageProtocol {
-    init {
-        Services.registerAsOverride(
-            Services.qualifiedNameOrFail(InternalImageProtocol::class),
-            "net.mamoe.mirai.mock.internal.contact.MockInternalImageProtocolImpl"
-        ) {
-            MockInternalImageProtocolImpl
-        }
-    }
 
     override fun createImage(
         imageId: String,
@@ -187,5 +179,10 @@ internal object MockInternalImageProtocolImpl : InternalImageProtocol {
 }
 
 internal fun registerMockServices() {
-    MockInternalImageProtocolImpl
+    Services.registerAsOverride(
+        Services.qualifiedNameOrFail(InternalImageProtocol::class),
+        "net.mamoe.mirai.mock.internal.contact.MockInternalImageProtocolImpl"
+    ) {
+        MockInternalImageProtocolImpl
+    }
 }
