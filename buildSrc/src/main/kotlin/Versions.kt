@@ -31,7 +31,7 @@ object Versions {
     val consoleIntellij get() = "223-$project-172-1" // idea-mirai-kotlin-patch
     val consoleTerminal get() = project
 
-    const val kotlinCompiler = "1.8.20-RC"
+    const val kotlinCompiler = "1.8.10"
     const val kotlinStdlib = kotlinCompiler
     const val dokka = "1.8.10"
 
