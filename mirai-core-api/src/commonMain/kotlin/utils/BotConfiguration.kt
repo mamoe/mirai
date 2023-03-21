@@ -30,7 +30,9 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * [Bot] 配置. 用于 [BotFactory.newBot]
+ * [Bot] 配置. 用于 [BotFactory.newBot].
+ *
+ * 部分平台相关配置位于 [AbstractBotConfiguration], 例如 `fileBasedDeviceInfo`.
  *
  * Kotlin 使用方法:
  * ```

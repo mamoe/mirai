@@ -16,33 +16,12 @@
 package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.utils.DeviceInfo.Companion.loadAsDeviceInfo
 import java.io.File
 import java.io.InputStream
 
 /**
- * [Bot] 配置. 用于 [BotFactory.newBot]
- *
- * Kotlin 使用方法:
- * ```
- * val bot = BotFactory.newBot(...) {
- *    // 在这里配置 Bot
- *
- *    bogLoggerSupplier = { bot -> ... }
- *    fileBasedDeviceInfo()
- *    inheritCoroutineContext() // 使用 `coroutineScope` 的 Job 作为父 Job
- * }
- * ```
- *
- * Java 使用方法:
- * ```java
- * Bot bot = BotFactory.newBot(..., new BotConfiguration() {{
- *     setBogLoggerSupplier((Bot bot) -> { ... })
- *     fileBasedDeviceInfo()
- *     ...
- * }})
- * ```
+ * [BotConfiguration] 的 JVM 平台特别配置
  */
 @Suppress("PropertyName")
 public actual abstract class AbstractBotConfiguration { // open for Java

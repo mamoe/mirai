@@ -12,8 +12,9 @@ package net.mamoe.mirai.utils
 import net.mamoe.mirai.Bot
 import kotlin.jvm.JvmOverloads
 
+
 /**
- * @since 2.15
+ * [BotConfiguration] 的平台特别配置
  */
 public expect abstract class AbstractBotConfiguration protected constructor() {
     protected abstract var deviceInfo: ((Bot) -> DeviceInfo)?
