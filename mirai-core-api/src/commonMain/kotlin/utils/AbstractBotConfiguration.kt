@@ -15,6 +15,7 @@ import kotlin.jvm.JvmOverloads
 
 /**
  * [BotConfiguration] 的平台特别配置
+ * @since 2.15
  */
 public expect abstract class AbstractBotConfiguration protected constructor() {
     protected abstract var deviceInfo: ((Bot) -> DeviceInfo)?

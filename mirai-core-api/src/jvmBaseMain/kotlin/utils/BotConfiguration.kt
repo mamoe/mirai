@@ -22,6 +22,7 @@ import java.io.InputStream
 
 /**
  * [BotConfiguration] 的 JVM 平台特别配置
+ * @since 2.15
  */
 @Suppress("PropertyName")
 public actual abstract class AbstractBotConfiguration { // open for Java

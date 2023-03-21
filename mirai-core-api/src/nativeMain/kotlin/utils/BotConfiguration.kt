@@ -17,6 +17,7 @@ import net.mamoe.mirai.Bot
 
 /**
  * [BotConfiguration] 的 Native 平台特别配置
+ * @since 2.15
  */
 @Suppress("PropertyName")
 public actual abstract class AbstractBotConfiguration { // open for Java
