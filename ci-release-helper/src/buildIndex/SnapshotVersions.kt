@@ -20,7 +20,8 @@ import kotlinx.serialization.json.Json
 object GetNextSnapshotIndex {
     @JvmStatic
     fun main(args: Array<String>) {
-        val branch = args.getOrNull(0) ?: error("Missing branch argument")
+        val branch = args.getOrNull(0)?.replace(Regex("""[/\\.,`~!@#$%^&*(){}\[\]|;]"""), "-")
+            ?: error("Missing branch argument")
         val commitRef = args.getOrNull(1) ?: error("Missing commitRef argument")
 
 
