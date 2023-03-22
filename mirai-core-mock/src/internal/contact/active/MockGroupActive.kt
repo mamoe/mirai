@@ -15,8 +15,12 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.active.*
 import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.data.GroupHonorType
+import net.mamoe.mirai.event.events.GroupTalkativeChangeEvent
+import net.mamoe.mirai.event.events.MemberHonorChangeEvent
+import net.mamoe.mirai.mock.contact.MockNormalMember
 import net.mamoe.mirai.mock.contact.active.MockGroupActive
 import net.mamoe.mirai.mock.internal.contact.MockGroupImpl
+import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.utils.ConcurrentHashMap
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.asImmutable
@@ -79,41 +83,31 @@ internal class MockGroupActiveImpl(
 
     private var honorHistories: MutableMap<GroupHonorType, ActiveHonorList> = ConcurrentHashMap()
 
-    @Suppress("INVISIBLE_MEMBER")
-    override fun fetchMockApi(type: GroupHonorType) {
-        // for dev: b/c mock api will not sync with real group honor member record automatically
-        // honor member from mock api record
-        val current = this.group.honorMembers[type]
-        // honor member from real group honor member history
-        val old = honorHistories[type]
-        if (current == null) {
-            if (old == null) {
-                // add an empty honorList as default placeholder
-                honorHistories[type] = ActiveHonorList(type, null, emptyList())
-            } else {
-                // change current honor member in honorHistories to null (as same as this.group.honorMembers)
-                // and add old honor member into record
-                honorHistories[type] = ActiveHonorList(type, null, old.current?.let {
+    @Suppress("INVISIBLE_MEMBER") // for ActiveHonorInfo
+    override fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType) {
+        val old = honorHistories[honorType]
+
+        val info = ActiveHonorInfo(member.nameCard, member.id, member.avatarUrl, member, 0, 0, 0)
+        if (old == null) {
+            // if not history record found, add a new one with current honor member
+            honorHistories[honorType] = ActiveHonorList(honorType, info, emptyList())
+        } else if (old.current?.memberId != info.memberId) {
+            honorHistories[honorType] =
+                ActiveHonorList(honorType, info, old.current?.let {
                     old.records.plus(it)
                 } ?: old.records)
-            }
-        } else {
-            // use mock api data to build a honor info
-            val info = ActiveHonorInfo(current.nameCard, current.id, current.avatarUrl, current, 0, 0, 0)
-            if (old == null) {
-                // if not history record found, add a new one with current honor member
-                honorHistories[type] = ActiveHonorList(type, info, emptyList())
-            } else {
-                // if mock api honor member different from real group honor member history,
-                // add old member into record and set current member as current in history
-                if (old.current?.memberId != info.memberId) {
-                    honorHistories[type] =
-                        ActiveHonorList(type, info, old.current?.let {
-                            old.records.plus(it)
-                        } ?: old.records)
+            if (old.current != null) {
+                if (honorType == GroupHonorType.TALKATIVE) {
+                    GroupTalkativeChangeEvent(
+                        this.group,
+                        member,
+                        old.current!!.member!!
+                    ).broadcastBlocking()
                 }
+                MemberHonorChangeEvent.Lose(old.current!!.member!!, honorType).broadcastBlocking()
             }
         }
+        MemberHonorChangeEvent.Achieve(member, honorType).broadcastBlocking()
     }
 
     override suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList {

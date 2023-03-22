@@ -17,7 +17,6 @@ import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.MemberHonorChangeEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.MockBotDSL
@@ -51,6 +50,11 @@ public interface MockGroup : Group, MockContact, MockMsgSyncSupport {
      * @see changeHonorMember
      */
     @MockBotDSL
+    @Deprecated(
+        "use active.changeHonorMember",
+        ReplaceWith(".active.changeHonorMember(member, honorType)"),
+        level = DeprecationLevel.ERROR
+    )
     public val honorMembers: MutableMap<GroupHonorType, MockNormalMember>
 
     /**
@@ -64,7 +68,13 @@ public interface MockGroup : Group, MockContact, MockMsgSyncSupport {
      * 如果不需要广播事件, 可直接更改 [MockGroup.honorMembers]
      */
     @MockBotDSL
-    public fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType)
+    @Deprecated(
+        "Use active.changeHonorMember",
+        ReplaceWith("active.changeHonorMember(member, honorType)"),
+        DeprecationLevel.ERROR,
+    )
+    public fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType) {
+    }
 
     /**
      * 获取群控制面板

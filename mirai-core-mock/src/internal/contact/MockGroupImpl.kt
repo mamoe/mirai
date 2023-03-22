@@ -50,6 +50,11 @@ internal class MockGroupImpl(
 ) : AbstractMockContact(
     parentCoroutineContext, bot, id
 ), MockGroup {
+    @Deprecated(
+        "use active.changeHonorMember",
+        replaceWith = ReplaceWith(".active.changeHonorMember(member, honorType)"),
+        level = DeprecationLevel.ERROR
+    )
     override val honorMembers: MutableMap<GroupHonorType, MockNormalMember> = ConcurrentHashMap()
     private val txFileSystem by lazy { bot.mock().tmpResourceServer.mockServerFileDisk.newFsSystem() }
 
@@ -58,17 +63,6 @@ internal class MockGroupImpl(
     }
 
     override val active: MockGroupActive by lazy { MockGroupActiveImpl(this) }
-
-    override fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType) {
-        val onm = honorMembers[honorType]
-        honorMembers[honorType] = member
-        // reference net.mamoe.mirai.internal.network.notice.group.NoticePipelineContext.processGeneralGrayTip, GroupNotificationProcessor.kt#361L
-        if (honorType == GroupHonorType.TALKATIVE) {
-            if (onm != null) GroupTalkativeChangeEvent(this, member, onm).broadcastBlocking()
-        }
-        if (onm != null) MemberHonorChangeEvent.Lose(onm, honorType).broadcastBlocking()
-        MemberHonorChangeEvent.Achieve(member, honorType).broadcastBlocking()
-    }
 
     override fun appendMember(mockMember: MemberInfo): MockGroup {
         addMember(mockMember)
