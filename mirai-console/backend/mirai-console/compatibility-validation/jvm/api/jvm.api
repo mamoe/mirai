@@ -1108,6 +1108,7 @@ public abstract interface class net/mamoe/mirai/console/data/PluginConfig : net/
 
 public abstract interface class net/mamoe/mirai/console/data/PluginData {
 	public abstract fun getSaveName ()Ljava/lang/String;
+	public fun getSaveType ()Lnet/mamoe/mirai/console/data/PluginData$SaveType;
 	public abstract fun getSerializersModule ()Lkotlinx/serialization/modules/SerializersModule;
 	public abstract fun getUpdaterSerializer ()Lkotlinx/serialization/KSerializer;
 }
