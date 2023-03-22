@@ -21,6 +21,7 @@ import java.net.ServerSocket
 import java.net.URI
 import java.net.URLDecoder
 import java.net.URLEncoder
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
 
@@ -48,7 +49,6 @@ internal class TmpResourceServerImpl(
 
     private val storage: Path = storageRoot.resolve("storage").mkdirsIfMissing()
     private val images: Path = storageRoot.resolve("images").mkdirsIfMissing()
-    private val imageHashMap: MutableMap<String, Long> = mutableMapOf()
 
     override suspend fun uploadResource(resource: ExternalResource): String {
         fun ByteArray.hex() = toUHexString(separator = "")
@@ -67,13 +67,15 @@ internal class TmpResourceServerImpl(
     }
 
     override fun isImageUploaded(md5: ByteArray, size: Long): Boolean =
-        imageHashMap[md5.toUHexString()]?.equals(size) ?: false
+        images.resolve(generateUUID(md5)).let { img ->
+            if (img.exists()) Files.size(img) == size
+            else false
+        }
+
 
     override suspend fun uploadResourceAsImage(resource: ExternalResource): URI {
         val imgId = generateUUID(resource.md5)
         val resId = uploadResource(resource)
-        // should this image be checked is uploaded before uploading in above line?
-        imageHashMap[resource.md5.toUHexString()] = resource.size
 
         val imgPath = images.resolve(imgId)
         val storagePath = storage.resolve(resId).toAbsolutePath()

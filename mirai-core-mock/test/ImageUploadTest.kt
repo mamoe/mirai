@@ -14,9 +14,9 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Image.Key.isUploaded
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.mock.MockBotFactory
-import net.mamoe.mirai.mock.internal.contact.MockImage
 import net.mamoe.mirai.mock.utils.randomImageContent
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.getRandomByteArray
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -70,6 +70,10 @@ internal class ImageUploadTest {
 
     @Test
     fun testImageIsUploadedNotTrue(): Unit = runBlocking {
-        assertFalse { MockImage("{0BA24EA5-FDDA-022F-74AC-896C73CD886D}.png", "NotARealUrl").isUploaded(bot) }
+        assertFalse { isUploaded(bot, getRandomByteArray(16), 10) }
+        val img = Image.randomImageContent().toExternalResource().use { imgData ->
+            bot.asFriend.uploadImage(imgData)
+        }
+        assertFalse { isUploaded(bot, img.md5, img.size + 5) }
     }
 }
