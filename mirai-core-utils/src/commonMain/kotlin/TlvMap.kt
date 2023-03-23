@@ -118,14 +118,6 @@ internal constructor(
         }
     }
 
-    public operator fun Int.invoke(data: ByteArray): Unit = tlv(this, data)
-
-    public inline operator fun Int.invoke(
-        crossinline builder: BytePacketBuilder.() -> Unit,
-    ): Unit = tlv(this, builder)
-
-    public operator fun Int.invoke(data: ByteReadPacket): Unit = tlv(this, data)
-
 }
 
 public fun Output._writeTlvMap(
