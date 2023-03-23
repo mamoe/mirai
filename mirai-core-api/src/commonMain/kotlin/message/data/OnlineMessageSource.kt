@@ -149,6 +149,9 @@ public sealed class OnlineMessageSource : MessageSource() {
      * 接收到的一条消息的 [MessageSource]
      */
     public sealed class Incoming : OnlineMessageSource() {
+        /**
+         * 当 [sender] 为 [bot] 自身时为 bot 的对应表示 (如: [Bot.asFriend], [Bot.asStranger], [Group.botAsMember])
+         */
         public abstract override val sender: User
 
         /// NOTE: DONT use final to avoid contact not available
@@ -160,9 +163,21 @@ public sealed class OnlineMessageSource : MessageSource() {
             public companion object Key :
                 AbstractPolymorphicMessageKey<Incoming, FromFriend>(Incoming, { it.safeCast() })
 
+            public abstract override val subject: Friend
+
+            /**
+             * 当 [sender] 为 [bot] 自身时为 [Bot.asFriend]
+             */
             public abstract override val sender: Friend
-            public final override val subject: Friend get() = sender
-            public final override val target: Bot get() = sender.bot
+            public abstract override val target: ContactOrBot
+
+            @JvmName("getTarget")
+            @Deprecated("For ABI compatibility", level = DeprecationLevel.HIDDEN)
+            public fun getTargetLegacy(): Bot {
+                if (targetId == bot.id) return subject.bot
+
+                error("Message target isn't bot; $this")
+            }
 
             final override fun toString(): String {
                 return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from friend $fromId to $targetId at $time]"
@@ -174,10 +189,23 @@ public sealed class OnlineMessageSource : MessageSource() {
             public companion object Key :
                 AbstractPolymorphicMessageKey<Incoming, FromTemp>(Incoming, { it.safeCast() })
 
+            /**
+             * 当 [sender] 为 [bot] 自身时为 [Group.botAsMember]
+             */
             public abstract override val sender: Member
-            public inline val group: Group get() = sender.group
-            public final override val subject: Member get() = sender
-            public final override val target: Bot get() = sender.bot
+            public abstract override val subject: Member
+            public abstract override val target: ContactOrBot
+
+            public inline val group: Group get() = subject.group
+
+            @JvmName("getTarget")
+            @Deprecated("For ABI compatibility", level = DeprecationLevel.HIDDEN)
+            public fun getTargetLegacy(): Bot {
+                if (targetId == bot.id) return subject.bot
+
+                error("Message target isn't bot; $this")
+            }
+
             final override fun toString(): String {
                 return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from group temp $fromId to $targetId at $time]"
             }
@@ -188,9 +216,21 @@ public sealed class OnlineMessageSource : MessageSource() {
             public companion object Key :
                 AbstractPolymorphicMessageKey<Incoming, FromStranger>(Incoming, { it.safeCast() })
 
+            /**
+             * 当 [sender] 为 [bot] 自身时为 [Bot.asStranger]
+             */
             public abstract override val sender: Stranger
-            public final override val subject: Stranger get() = sender
-            public final override val target: Bot get() = sender.bot
+
+            public abstract override val subject: Stranger
+            public abstract override val target: ContactOrBot
+
+            @JvmName("getTarget")
+            @Deprecated("For ABI compatibility", level = DeprecationLevel.HIDDEN)
+            public fun getTargetLegacy(): Bot {
+                if (targetId == bot.id) return subject.bot
+
+                error("Message target isn't bot; $this")
+            }
 
             final override fun toString(): String {
                 return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from stranger $fromId to $targetId at $time]"
@@ -202,6 +242,9 @@ public sealed class OnlineMessageSource : MessageSource() {
             public companion object Key :
                 AbstractPolymorphicMessageKey<Incoming, FromGroup>(Incoming, { it.safeCast() })
 
+            /**
+             * 当 [sender] 为 [bot] 自身时为 [Group.botAsMember]
+             */
             public abstract override val sender: Member
             public override val subject: Group get() = sender.group
             public final override val target: Group get() = subject

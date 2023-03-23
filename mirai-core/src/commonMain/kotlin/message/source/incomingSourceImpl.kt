@@ -16,6 +16,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.Stranger
@@ -44,7 +45,7 @@ import net.mamoe.mirai.utils.structureToString
 @Serializable(OnlineMessageSourceFromFriendImpl.Serializer::class)
 internal class OnlineMessageSourceFromFriendImpl(
     override val bot: Bot,
-    msg: List<MsgComm.Msg>,
+    private val msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromFriend(), IncomingMessageSourceInternal {
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromFriend")
 
@@ -65,7 +66,35 @@ internal class OnlineMessageSourceFromFriendImpl(
     override val isOriginalMessageInitialized: Boolean
         get() = originalMessageLazy.isInitialized()
 
-    override val sender: Friend = bot.getFriendOrFail(msg.first().msgHead.fromUin)
+    override val sender: Friend by lazy {
+        if (fromId == bot.id) {
+            bot.asFriend
+        } else {
+            bot.getFriendOrFail(fromId)
+        }
+    }
+
+    override val subject: Friend by lazy {
+        if (fromId == bot.id) {
+            bot.getFriendOrFail(targetId)
+        } else {
+            bot.getFriendOrFail(fromId)
+        }
+    }
+    override val fromId: Long
+        get() = msg.first().msgHead.fromUin
+
+    override val targetId: Long
+        get() = msg.first().msgHead.toUin
+
+    override val target: ContactOrBot by lazy {
+        if (fromId == bot.id) {
+            bot.getFriendOrFail(targetId)
+        } else {
+            bot
+        }
+    }
+
 
     private val jceData: ImMsgBody.SourceMsg by lazy { msg.toJceDataPrivate(internalIds) }
 
@@ -80,7 +109,7 @@ internal class OnlineMessageSourceFromFriendImpl(
 @Serializable(OnlineMessageSourceFromStrangerImpl.Serializer::class)
 internal class OnlineMessageSourceFromStrangerImpl(
     override val bot: Bot,
-    msg: List<MsgComm.Msg>,
+    private val msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromStranger(), IncomingMessageSourceInternal {
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromStranger")
 
@@ -102,7 +131,35 @@ internal class OnlineMessageSourceFromStrangerImpl(
     override val isOriginalMessageInitialized: Boolean
         get() = originalMessageLazy.isInitialized()
 
-    override val sender: Stranger = bot.getStrangerOrFail(msg.first().msgHead.fromUin)
+    override val sender: Stranger by lazy {
+        if (fromId == bot.id) {
+            bot.asStranger
+        } else {
+            bot.getStrangerOrFail(fromId)
+        }
+    }
+
+    override val subject: Stranger by lazy {
+        if (fromId == bot.id) {
+            bot.getStrangerOrFail(targetId)
+        } else {
+            bot.getStrangerOrFail(fromId)
+        }
+    }
+
+    override val fromId: Long
+        get() = msg.first().msgHead.fromUin
+
+    override val targetId: Long
+        get() = msg.first().msgHead.toUin
+
+    override val target: ContactOrBot by lazy {
+        if (fromId == bot.id) {
+            bot.getStrangerOrFail(targetId)
+        } else {
+            bot
+        }
+    }
 
     private val jceData: ImMsgBody.SourceMsg by lazy { msg.toJceDataPrivate(internalIds) }
 
@@ -166,7 +223,7 @@ internal fun MsgComm.Msg.decodeRandom(): Int {
 @Serializable(OnlineMessageSourceFromTempImpl.Serializer::class)
 internal class OnlineMessageSourceFromTempImpl(
     override val bot: Bot,
-    msg: List<MsgComm.Msg>,
+    private val msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromTemp(), IncomingMessageSourceInternal {
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromTemp")
 
@@ -188,14 +245,39 @@ internal class OnlineMessageSourceFromTempImpl(
     override val isOriginalMessageInitialized: Boolean
         get() = originalMessageLazy.isInitialized()
 
-    override val sender: Member = with(msg.first().msgHead) {
+    @Suppress("PropertyName")
+    private val _group = with(msg.first().msgHead) {
         // it must be uin, see #1410
         // corresponding test: net.mamoe.mirai.internal.notice.processors.MessageTest.group temp message test 2
 
         // search for group code also is for tests. code may be passed as uin in tests.
         // clashing is unlikely possible in real time, so it would not be a problem.
-        bot.asQQAndroidBot().getGroupByUinOrCodeOrFail(c2cTmpMsgHead!!.groupUin).getOrFail(fromUin)
+        bot.asQQAndroidBot().getGroupByUinOrCodeOrFail(c2cTmpMsgHead!!.groupUin)
     }
+
+    override val sender: Member by lazy {
+        _group.getOrFail(fromId)
+    }
+
+    override val target: ContactOrBot by lazy {
+        if (fromId == botId) {
+            _group.getOrFail(targetId)
+        } else bot
+    }
+
+    override val subject: Member by lazy {
+        if (fromId == botId) {
+            _group.getOrFail(targetId)
+        } else {
+            _group.getOrFail(fromId)
+        }
+    }
+
+    override val fromId: Long
+        get() = msg.first().msgHead.fromUin
+    override val targetId: Long
+        get() = msg.first().msgHead.toUin
+
 
     private val jceData: ImMsgBody.SourceMsg by lazy { msg.toJceDataPrivate(internalIds) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
