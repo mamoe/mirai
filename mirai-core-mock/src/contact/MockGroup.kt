@@ -65,16 +65,10 @@ public interface MockGroup : Group, MockContact, MockMsgSyncSupport {
      * 此外如果 [honorType] 是 [GroupHonorType.TALKATIVE],
      * 会额外广播 [net.mamoe.mirai.event.events.GroupTalkativeChangeEvent].
      *
-     * 如果不需要广播事件, 可直接更改 [MockGroup.honorMembers]
+     * 如果不需要广播事件, 可直接更改 [MockGroupActive.mockSetHonorHistory]
      */
-    @MockBotDSL
-    @Deprecated(
-        "Use active.changeHonorMember",
-        ReplaceWith("active.changeHonorMember(member, honorType)"),
-        DeprecationLevel.ERROR,
-    )
-    public fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType) {
-    }
+    public fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType): Unit =
+        active.changeHonorMember(member, honorType)
 
     /**
      * 获取群控制面板
