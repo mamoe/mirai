@@ -66,11 +66,11 @@ internal class TmpResourceServerImpl(
         }
     }
 
-    override fun isImageUploaded(md5: ByteArray, size: Long): Boolean =
-        images.resolve(generateUUID(md5)).let { img ->
-            if (img.exists()) Files.size(img) == size
-            else false
-        }
+    override fun isImageUploaded(md5: ByteArray, size: Long): Boolean {
+        val img = images.resolve(generateUUID(md5))
+        return if (img.exists()) Files.size(img) == size
+        else false
+    }
 
 
     override suspend fun uploadResourceAsImage(resource: ExternalResource): URI {
