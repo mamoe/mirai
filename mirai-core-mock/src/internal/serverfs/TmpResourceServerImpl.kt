@@ -68,8 +68,10 @@ internal class TmpResourceServerImpl(
 
     override fun isImageUploaded(md5: ByteArray, size: Long): Boolean {
         val img = images.resolve(generateUUID(md5))
-        return if (img.exists()) Files.size(img) == size
-        else false
+        if (img.exists()) {
+            return Files.size(img) == size
+        }
+        return false
     }
 
 
