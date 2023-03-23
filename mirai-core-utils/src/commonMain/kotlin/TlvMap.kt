@@ -146,16 +146,16 @@ public fun Output._writeTlvMap(
     }
 }
 
-public inline fun TlvMap.getOrFail(tag: Int): ByteArray {
+public fun TlvMap.getOrFail(tag: Int): ByteArray {
     return this[tag] ?: error("cannot find tlv 0x${tag.toUHexString("")}($tag)")
 }
 
-public inline fun TlvMap.getOrFail(tag: Int, lazyMessage: (tag: Int) -> String): ByteArray {
+public fun TlvMap.getOrFail(tag: Int, lazyMessage: (tag: Int) -> String): ByteArray {
     return this[tag] ?: error(lazyMessage(tag))
 }
 
 @Suppress("FunctionName")
-public inline fun Input._readTLVMap(tagSize: Int = 2, suppressDuplication: Boolean = true): TlvMap =
+public fun Input._readTLVMap(tagSize: Int = 2, suppressDuplication: Boolean = true): TlvMap =
     _readTLVMap(true, tagSize, suppressDuplication)
 
 @Suppress("DuplicatedCode", "FunctionName")
@@ -185,7 +185,6 @@ public fun Input._readTLVMap(
         }.toUByte() != UByte.MAX_VALUE) {
 
         if (map.containsKey(key)) {
-            @Suppress("ControlFlowWithEmptyBody")
 //            println("reading ${key.toUHexString()}")
 
             if (!suppressDuplication) {
