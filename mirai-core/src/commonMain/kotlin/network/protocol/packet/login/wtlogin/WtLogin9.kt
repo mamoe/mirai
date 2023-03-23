@@ -18,8 +18,9 @@ import net.mamoe.mirai.utils._writeTlvMap
 internal object WtLogin9 : WtLoginExt {
     private const val appId = 16L
 
-    operator fun invoke(
+    fun Password(
         client: QQAndroidClient,
+        passwordMd5: ByteArray,
         allowSlider: Boolean
     ) = WtLogin.Login.buildLoginOutgoingPacket(
         client, bodyType = 2, remark = "9:password-login"
@@ -46,7 +47,7 @@ internal object WtLogin9 : WtLoginExt {
                     if (useEncryptA1AndNoPicSig) {
                         t106(client.wLoginSigInfo.encryptA1!!)
                     } else {
-                        t106(appId, client)
+                        t106(client, appId, passwordMd5)
                     }
 
                     /* // from GetStWithPasswd
@@ -119,6 +120,58 @@ internal object WtLogin9 : WtLoginExt {
 
                     // ignored t318 because not logging in by QR
                 }
+            }
+        }
+    }
+
+    @Suppress("DuplicatedCode")
+    fun QRCode(
+        client: QQAndroidClient,
+        data: QRCodeLoginData,
+    ) = WtLogin.Login.buildLoginOutgoingPacket(
+        client, bodyType = 2, remark = "9:qrcode-login"
+    ) { sequenceId ->
+        writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
+            writeOicqRequestPacket(client, commandId = 0x0810) {
+                writeShort(9) // subCommand
+                writeShort(0x19) // count of TLVs, probably ignored by server?
+
+                t18(appId, client.appClientVersion, client.uin)
+                t1(client.uin, client.device.ipAddress)
+
+                t106(data.tmpPwd)
+
+                t116(client.miscBitMap, client.subSigMap)
+                t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
+                t107(0)
+                t108(client.device.imei.toByteArray())
+
+                t142(client.apkId)
+
+                t144(client)
+
+                t145(client.device.guid)
+                t147(appId, client.apkVersionName, client.apkSignatureMd5)
+
+                t16a(data.noPicSig)
+
+                t154(sequenceId)
+                t141(client.device.simInfo, client.networkType, client.device.apn)
+                t8(2052)
+
+                t511()
+
+                t187(client.device.macAddress)
+                t188(client.device.androidId)
+                t194(client.device.imsiMd5)
+                t191(0x00)
+
+                t202(client.device.wifiBSSID, client.device.wifiSSID)
+
+                t177(client.buildTime, client.sdkVersion)
+                t516()
+                t521(8)
+                t318(data.tgtQR)
             }
         }
     }

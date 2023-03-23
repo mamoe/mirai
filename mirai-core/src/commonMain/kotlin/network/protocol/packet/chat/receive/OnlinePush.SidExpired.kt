@@ -15,15 +15,15 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
-import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.WtLogin10
 
-internal object OnlinePushSidExpired : IncomingPacketFactory<Packet?>("OnlinePush.SidTicketExpired") {
+internal object OnlinePushSidExpired :
+    IncomingPacketFactory<Packet?>("OnlinePush.SidTicketExpired", "OnlinePush.SidTicketExpired") {
 
     override suspend fun QQAndroidBot.handle(packet: Packet?, sequenceId: Int): OutgoingPacket {
-        bot.network.sendAndExpect(WtLogin10(client, mainSigMap = 3554528))
-        bot.network.sendAndExpect(StatSvc.Register.online(client))
-        return buildResponseUniPacket(client, sequenceId = sequenceId)
+        return buildResponseUniPacket(client, sequenceId = sequenceId).also {
+            bot.network.sendAndExpect(WtLogin10(client, mainSigMap = 1052896, remark = "10:refresh-token"))
+        }
     }
 
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {

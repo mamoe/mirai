@@ -122,6 +122,21 @@ public interface PluginData {
     @ConsoleExperimentalApi
     public val saveName: String
 
+    /**
+     * [PluginData] 序列化时使用的格式的枚举.
+     */
+    @ConsoleExperimentalApi
+    public enum class SaveType(@ConsoleExperimentalApi public val extension: String) {
+        YAML("yml"), JSON("json")
+    }
+
+    /**
+     * 决定这个 [PluginData] 序列化时使用的格式, 默认为 YAML.
+     * 具体实现格式由 [PluginDataStorage] 决定.
+     */
+    @ConsoleExperimentalApi
+    public val saveType: SaveType get() = SaveType.YAML
+
     @ConsoleExperimentalApi
     public val updaterSerializer: KSerializer<Unit>
 

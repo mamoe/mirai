@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPI
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.TEST_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetPreset
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
@@ -159,7 +160,9 @@ fun Project.configureJvmTargetsHierarchical() {
         if (IDEA_ACTIVE) {
             jvm("jvmBase") { // dummy target for resolution, not published
                 compilations.all {
-                    this.compileKotlinTask.enabled = false // IDE complain
+                    this.compileTaskProvider.configure { // IDE complain
+                        enabled = false
+                    } 
                 }
                 attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // magic
                 attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "jvmBase") // avoid resolution
@@ -232,13 +235,13 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
 
     val nativeMainSets = mutableListOf<KotlinSourceSet>()
     val nativeTestSets = mutableListOf<KotlinSourceSet>()
-    val nativeTargets = mutableListOf<KotlinNativeTarget>()
+    val nativeTargets = mutableListOf<KotlinTarget>() // actually KotlinNativeTarget, but KotlinNativeTarget is an internal API (complained by IDEA)
 
 
     fun KotlinMultiplatformExtension.addNativeTarget(
         preset: KotlinTargetPreset<*>,
-    ): KotlinNativeTarget {
-        val target = targetFromPreset(preset, preset.name) as KotlinNativeTarget
+    ): KotlinTarget {
+        val target = targetFromPreset(preset, preset.name) 
         nativeMainSets.add(target.compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first())
         nativeTestSets.add(target.compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first())
         nativeTargets.add(target)
@@ -313,7 +316,7 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     }
 
     // Workaround from https://youtrack.jetbrains.com/issue/KT-52433/KotlinNative-Unable-to-generate-framework-with-Kotlin-1621-and-Xcode-134#focus=Comments-27-6140143.0-0
-    project.tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink>().configureEach {
+    project.tasks.withType<KotlinNativeLink>().configureEach {
         val properties = listOf(
             "ios_arm32", "watchos_arm32", "watchos_x86"
         ).joinToString(separator = ";") { "clangDebugFlags.$it=-Os" }
@@ -540,7 +543,7 @@ private fun Project.configureNativeInterop(
             }
         }
 
-        val generateKotlinBindings = tasks.register("generateKotlinBindings${compilationName.titlecase()}") {
+        tasks.register("generateKotlinBindings${compilationName.titlecase()}") {
             group = "mirai"
             description = "Generates Kotlin bindings for Rust"
             dependsOn(bindgen)

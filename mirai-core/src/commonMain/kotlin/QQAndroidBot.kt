@@ -209,6 +209,10 @@ internal open class QQAndroidBot constructor(
 
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
         set(SsoProcessor, SsoProcessorImpl(get(SsoProcessorContext)))
+        set(
+            QRCodeLoginProcessor,
+            QRCodeLoginProcessor.parse(get(SsoProcessorContext), networkLogger.subLogger("QRCodeLoginProcessor"))
+        )
 
         val cacheValidator = CacheValidatorImpl(
             get(SsoProcessorContext),
