@@ -134,44 +134,46 @@ internal object WtLogin9 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(9) // subCommand
-                writeShort(0x19) // count of TLVs, probably ignored by server?
+//                writeShort(0x19) // count of TLVs, probably ignored by server?
 
-                t18(appId, client.appClientVersion, client.uin)
-                t1(client.uin, client.device.ipAddress)
+                _writeTlvMap {
+                    t18(appId, client.appClientVersion, client.uin)
+                    t1(client.uin, client.device.ipAddress)
 
-                t106(data.tmpPwd)
+                    t106(data.tmpPwd)
 
-                t116(client.miscBitMap, client.subSigMap)
-                t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
-                t107(0)
-                t108(client.device.imei.toByteArray())
+                    t116(client.miscBitMap, client.subSigMap)
+                    t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
+                    t107(0)
+                    t108(client.device.imei.toByteArray())
 
-                t142(client.apkId)
+                    t142(client.apkId)
 
-                t144(client)
+                    t144(client)
 
-                t145(client.device.guid)
-                t147(appId, client.apkVersionName, client.apkSignatureMd5)
+                    t145(client.device.guid)
+                    t147(appId, client.apkVersionName, client.apkSignatureMd5)
 
-                t16a(data.noPicSig)
+                    t16a(data.noPicSig)
 
-                t154(sequenceId)
-                t141(client.device.simInfo, client.networkType, client.device.apn)
-                t8(2052)
+                    t154(sequenceId)
+                    t141(client.device.simInfo, client.networkType, client.device.apn)
+                    t8(2052)
 
-                t511()
+                    t511()
 
-                t187(client.device.macAddress)
-                t188(client.device.androidId)
-                t194(client.device.imsiMd5)
-                t191(0x00)
+                    t187(client.device.macAddress)
+                    t188(client.device.androidId)
+                    t194(client.device.imsiMd5)
+                    t191(0x00)
 
-                t202(client.device.wifiBSSID, client.device.wifiSSID)
+                    t202(client.device.wifiBSSID, client.device.wifiSSID)
 
-                t177(client.buildTime, client.sdkVersion)
-                t516()
-                t521(8)
-                t318(data.tgtQR)
+                    t177(client.buildTime, client.sdkVersion)
+                    t516()
+                    t521(8)
+                    t318(data.tgtQR)
+                }
             }
         }
     }

@@ -678,53 +678,54 @@ internal class WtLogin {
                         writeByte(8)
                         writeShortLVPacket { }
 
-                        writeShort(6)
-                        t16(
-                            client.ssoVersion,
-                            client.subAppId,
-                            client.device.guid,
-                            client.apkId,
-                            client.apkVersionName,
-                            client.apkSignatureMd5
-                        )
-                        t1b(
-                            size = size,
-                            margin = margin,
-                            ecLevel = ecLevel
-                        )
-                        t1d(client.miscBitMap)
-
-                        val protocol = client.bot.configuration.protocol
-                        when (protocol) {
-                            BotConfiguration.MiraiProtocol.MACOS -> t1f(
-                                false,
-                                "Mac OSX".toByteArray(),
-                                "10".toByteArray(),
-                                "mac carrier".toByteArray(),
-                                client.device.apn,
-                                2
+                        _writeTlvMap {
+                            t16(
+                                client.ssoVersion,
+                                client.subAppId,
+                                client.device.guid,
+                                client.apkId,
+                                client.apkVersionName,
+                                client.apkSignatureMd5
                             )
-
-                            BotConfiguration.MiraiProtocol.ANDROID_WATCH -> t1f(
-                                false,
-                                client.device.osType,
-                                "7.1.2".toByteArray(),
-                                "China Mobile GSM".toByteArray(),
-                                client.device.apn,
-                                2
+                            t1b(
+                                size = size,
+                                margin = margin,
+                                ecLevel = ecLevel
                             )
+                            t1d(client.miscBitMap)
 
-                            else -> error("protocol $protocol doesn't support qrcode login.")
-                        }
-
-                        t33(client.device.guid)
-                        t35(
+                            val protocol = client.bot.configuration.protocol
                             when (protocol) {
-                                BotConfiguration.MiraiProtocol.MACOS -> 5
-                                BotConfiguration.MiraiProtocol.ANDROID_WATCH -> 8
-                                else -> error("assertion")
+                                BotConfiguration.MiraiProtocol.MACOS -> t1f(
+                                    false,
+                                    "Mac OSX".toByteArray(),
+                                    "10".toByteArray(),
+                                    "mac carrier".toByteArray(),
+                                    client.device.apn,
+                                    2
+                                )
+
+                                BotConfiguration.MiraiProtocol.ANDROID_WATCH -> t1f(
+                                    false,
+                                    client.device.osType,
+                                    "7.1.2".toByteArray(),
+                                    "China Mobile GSM".toByteArray(),
+                                    client.device.apn,
+                                    2
+                                )
+
+                                else -> error("protocol $protocol doesn't support qrcode login.")
                             }
-                        )
+
+                            t33(client.device.guid)
+                            t35(
+                                when (protocol) {
+                                    BotConfiguration.MiraiProtocol.MACOS -> 5
+                                    BotConfiguration.MiraiProtocol.ANDROID_WATCH -> 8
+                                    else -> error("assertion")
+                                }
+                            )
+                        }
                     }
                     writeByte(0)
                     writeShort(code2dPacket.remaining.toShort())

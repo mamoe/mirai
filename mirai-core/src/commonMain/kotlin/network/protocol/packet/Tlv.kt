@@ -80,7 +80,7 @@ internal fun TlvMapWriter.t8(
     }
 }
 
-internal fun BytePacketBuilder.t16(
+internal fun TlvMapWriter.t16(
     ssoVersion: Int,
     subAppId: Long,
     guid: ByteArray,
@@ -88,8 +88,7 @@ internal fun BytePacketBuilder.t16(
     apkVersionName: ByteArray,
     apkSignatureMd5: ByteArray
 ) {
-    writeShort(0x16)
-    writeShortLVPacket {
+    tlv(0x16) {
         writeInt(ssoVersion)
         writeInt(16)
         writeInt(subAppId.toInt())
@@ -117,7 +116,7 @@ internal fun TlvMapWriter.t18(
     }
 }
 
-internal fun BytePacketBuilder.t1b(
+internal fun TlvMapWriter.t1b(
     micro: Int = 0,
     version: Int = 0,
     size: Int = 3,
@@ -126,8 +125,7 @@ internal fun BytePacketBuilder.t1b(
     ecLevel: Int = 2,
     hint: Int = 2
 ) {
-    writeShort(0x1b)
-    writeShortLVPacket {
+    tlv(0x1b) {
         writeInt(micro)
         writeInt(version)
         writeInt(size)
@@ -139,11 +137,10 @@ internal fun BytePacketBuilder.t1b(
     }
 }
 
-internal fun BytePacketBuilder.t1d(
+internal fun TlvMapWriter.t1d(
     miscBitmap: Int,
 ) {
-    writeShort(0x1d)
-    writeShortLVPacket {
+    tlv(0x1d) {
         writeByte(1)
         writeInt(miscBitmap)
         writeInt(0)
@@ -152,7 +149,7 @@ internal fun BytePacketBuilder.t1d(
     }
 }
 
-internal fun BytePacketBuilder.t1f(
+internal fun TlvMapWriter.t1f(
     isRoot: Boolean = false,
     osName: ByteArray,
     osVersion: ByteArray,
@@ -160,8 +157,7 @@ internal fun BytePacketBuilder.t1f(
     apn: ByteArray,
     networkType: Short = 2,
 ) {
-    writeShort(0x1f)
-    writeShortLVPacket {
+    tlv(0x1f) {
         writeByte(if (isRoot) 1 else 0)
         writeShortLVByteArray(osName)
         writeShortLVByteArray(osVersion)
@@ -172,18 +168,16 @@ internal fun BytePacketBuilder.t1f(
     }
 }
 
-internal fun BytePacketBuilder.t33(
+internal fun TlvMapWriter.t33(
     guid: ByteArray,
 ) {
-    writeShort(0x33)
-    writeShortLVByteArray(guid)
+    tlv(0x33, guid)
 }
 
-internal fun BytePacketBuilder.t35(
+internal fun TlvMapWriter.t35(
     productType: Int
 ) {
-    writeShort(0x35)
-    writeShortLVPacket {
+    tlv(0x35) {
         writeInt(productType)
     }
 }
