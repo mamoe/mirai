@@ -185,7 +185,12 @@ internal class MockBotImpl(
         val md5 = resource.md5
         val format = resource.formatName
 
-        return MockImage(generateImageId(md5, format), bot.tmpResourceServer.uploadResourceAsImage(resource).toString())
+        // todo width, height ?
+        return MockImage(
+            imageId = generateImageId(md5, format),
+            urlPath = bot.tmpResourceServer.uploadResourceAsImage(resource).toString(),
+            size = resource.size
+        )
     }
 
     override fun toString(): String {

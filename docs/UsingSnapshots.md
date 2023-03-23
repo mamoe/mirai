@@ -12,6 +12,7 @@
 ### 1. 添加 Maven 仓库
 
 ```xml
+
 <repositories>
     <repository>
         <id>miraisnapshots</id>
@@ -23,26 +24,30 @@
 
 ### 2. 修改依赖版本
 
-1. 选择需要测试的 commit, 找到其 revision id (即 SHA), 取前 8 位, 如 `3cb39c4`.
-2. 在该 commit 所属分支的 `buildSrc/src/main/kotlin/Versions.kt` 确认 mirai 主版本号如 `2.8.0-M1`.
-3. 得到开发测试版本号 `2.8.0-M1-dev-3cb39c4`.
+1. 选择需要测试的 commit, 在 GitHub 查看其构建状态, 如图所示:  
+   ![](images/snapshots-find-actions.png)
+2. 点击 "Build / JVM" 右侧的 "Details":  
+   ![](images/snapshots-build-jvm.png)
+3. 在打开的页面中点击 "Summary", 然后在 "Annotations" 栏目中找到类似 "本 commit 的预览版本号: 2.15.0-build-index-1" 的提示, 得到开发测试版本号 `2.15.0-build-index-1`. 其中, `build-index` 为此 commit 所属分支名, `2.15.0` 意为当前分支的主版本号, `1` 为此分支下的第 1 次成功构建.
+   通常在 `dev` 分支构建的预览版本号类似为 `2.15.0-dev-102`
 
 ```xml
+
 <dependencies>
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-jvm</artifactId>
-        <version>2.8.0-M1-dev-3cb39c4</version>
+        <version>2.15.0-build-index-1</version>
     </dependency>
 </dependencies>
 ```
 
 ## 在 Gradle 使用
 
-
 ### 1. 添加 Maven 仓库
 
 build.gradle(.kts)
+
 ```
 repositories {
    maven("https://repo.mirai.mamoe.net/snapshots") 
@@ -51,20 +56,25 @@ repositories {
 
 ### 2. 修改依赖版本
 
-1. 选择需要测试的 commit, 找到其 revision id (即 SHA), 取前 8 位, 如 `3cb39c4`.
-2. 在该 commit 所属分支的 `buildSrc/src/main/kotlin/Versions.kt` 确认 mirai 主版本号如 `2.8.0-M1`.
-3. 得到开发测试版本号 `2.8.0-M1-dev-3cb39c4`.
+1. 选择需要测试的 commit, 在 GitHub 查看其构建状态, 如图所示:  
+   ![](images/snapshots-find-actions.png)
+2. 点击 "Build / JVM" 右侧的 "Details":  
+   ![](images/snapshots-build-jvm.png)
+3. 在打开的页面中点击 "Summary", 然后在 "Annotations" 栏目中找到类似 "本 commit 的预览版本号: 2.15.0-build-index-1" 的提示, 得到开发测试版本号 `2.15.0-build-index-1`. 其中, `build-index` 为此 commit 所属分支名, `2.15.0` 意为当前分支的主版本号, `1` 为此分支下的第 1 次成功构建.
+   通常在 `dev` 分支构建的预览版本号类似为 `2.15.0-dev-102`
 
 build.gradle(.kts)
+
 ```
 dependencies {
-    implementation("net.mamoe:mirai-core:2.8.0-M1-dev-3cb39c4")
+    implementation("net.mamoe:mirai-core:2.15.0-build-index-1")
 }
 ```
 
 ## 使用测试版本 Mirai Console Gradle 插件
 
 settings.gradle(.kts)
+
 ```
 pluginManagement {
     repositories {
@@ -75,9 +85,10 @@ pluginManagement {
 ```
 
 plugin.gradle(.kts)
+
 ```
 plugins {
     // ...
-    id("net.mamoe.mirai-console") version "2.8.0-M1-dev-3cb39c4"
+    id("net.mamoe.mirai-console") version "2.15.0-build-index-1"
 }
 ```

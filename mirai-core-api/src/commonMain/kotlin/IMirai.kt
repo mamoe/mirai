@@ -198,6 +198,8 @@ public interface IMirai : LowLevelApiAccessor {
     /**
      * 查询某个用户的信息
      *
+     * 此函数不会缓存信息. 每次调用此函数都会向服务器查询新信息.
+     *
      * @since 2.1
      */
     public suspend fun queryProfile(bot: Bot, targetId: Long): UserProfile

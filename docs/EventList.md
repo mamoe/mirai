@@ -22,7 +22,7 @@
 - Bot 重新登录: BotReloginEvent
 - Bot 头像改变: BotAvatarChangedEvent
 - Bot 昵称改变: BotNickChangedEvent
-- Bot 被戳: BotNudgedEvent
+- Bot 被戳: NudgeEvent
 
 ### 消息
 - 被动收到消息：MessageEvent

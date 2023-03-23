@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,8 +13,12 @@ package net.mamoe.mirai.utils
 
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.auth.BotAuthSession
+import net.mamoe.mirai.auth.BotAuthorization
+import net.mamoe.mirai.auth.QRCodeLoginListener
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.RetryLaterException
+import net.mamoe.mirai.network.UnsupportedQRCodeCaptchaException
 import net.mamoe.mirai.network.UnsupportedSmsLoginException
 import net.mamoe.mirai.utils.LoginSolver.Companion.Default
 import kotlin.jvm.JvmField
@@ -48,6 +52,19 @@ public abstract class LoginSolver {
      * 否则会跳过滑动验证码并告诉服务器此客户端不支持, 有可能导致登录失败
      */
     public open val isSliderCaptchaSupported: Boolean get() = PlatformLoginSolverImplementations.isSliderCaptchaSupported
+
+    /**
+     * 当使用二维码登录时会通过此方法创建二维码登录监听器
+     *
+     * @see QRCodeLoginListener
+     * @see BotAuthorization
+     * @see BotAuthSession.authByQRCode
+     *
+     * @since 2.15
+     */
+    public open fun createQRCodeLoginListener(bot: Bot): QRCodeLoginListener {
+        throw UnsupportedQRCodeCaptchaException("This login session requires QRCode login, but current LoginSolver($this) does not support it. Please override `LoginSolver.createQRCodeLoginListener`.")
+    }
 
     /**
      * 处理滑动验证码.

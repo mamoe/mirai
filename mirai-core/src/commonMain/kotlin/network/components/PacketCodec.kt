@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.network.components.PacketCodec.Companion.PacketL
 import net.mamoe.mirai.internal.network.components.PacketCodecException.Kind.*
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.protocol.packet.*
+import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.crypto.Ecdh
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.utils.*
@@ -96,57 +97,88 @@ internal class PacketCodecException(
 
 internal class PacketCodecImpl : PacketCodec {
 
-    override fun decodeRaw(client: SsoSession, input: ByteReadPacket): RawIncomingPacket = input.run {
-        // login
-        val flag1 = readInt()
+    override fun decodeRaw(
+        client: SsoSession,
+        input: ByteReadPacket
+    ): RawIncomingPacket = input.run {
+        // packet type
+        val type = readInt()
 
         PacketLogger.verbose { "开始处理一个包" }
 
-        val flag2 = readByte().toInt()
+        val encryptMethod = readByte().toInt()
         val flag3 = readByte().toInt()
-        if (flag3 != 0) {
-            throw PacketCodecException(
-                "Illegal flag3. Expected 0, whereas got $flag3. flag1=$flag1, flag2=$flag2. " +
-                        "Remaining=${this.readBytes().toUHexString()}",
+        val flag3Exception = if (flag3 != 0) {
+            PacketCodecException(
+                "Illegal flag3. Expected 0, whereas got $flag3. packet type=$type, encrypt method=$encryptMethod. ",
                 kind = PROTOCOL_UPDATED
             )
-        }
+        } else null
 
         readString(readInt() - 4)// uinAccount
 
         ByteArrayPool.useInstance(this.remaining.toInt()) { buffer ->
             val size = this.readAvailable(buffer)
 
-            when (flag2) {
-                2 -> TEA.decrypt(buffer, DECRYPTER_16_ZERO, size)
-                1 -> TEA.decrypt(buffer, client.wLoginSigInfo.d2Key, size)
-                0 -> buffer
-                else -> throw PacketCodecException("Unknown flag2=$flag2", PROTOCOL_UPDATED)
-            }.let { decryptedData ->
-                when (flag1) {
-                    0x0A -> parseSsoFrame(client, decryptedData)
-                    0x0B -> parseSsoFrame(client, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
-                    else -> throw PacketCodecException(
-                        "unknown flag1: ${flag1.toByte().toUHexString()}",
-                        PROTOCOL_UPDATED
-                    )
+            val raw = try {
+                when (encryptMethod) {
+                    2 -> TEA.decrypt(buffer, DECRYPTER_16_ZERO, size)
+                1 -> {
+                    TEA.decrypt(buffer, kotlin.runCatching { client.wLoginSigInfo.d2Key }.getOrElse {
+                        throw PacketCodecException(
+                            "Received packet needed d2Key to decrypt but d2Key doesn't existed, ignoring. Please report to https://github.com/mamoe/mirai/issues/new/choose if you see anything abnormal",
+                            PROTOCOL_UPDATED
+                        )
+                    }, size)
                 }
-            }.let { raw ->
-                when (flag2) {
-                    0, 1 -> RawIncomingPacket(raw.commandName, raw.sequenceId, raw.body.readBytes())
-                    2 -> RawIncomingPacket(
-                        raw.commandName,
-                        raw.sequenceId,
-                        raw.body.withUse {
-                            try {
-                                parseOicqResponse(client)
-                            } catch (e: Throwable) {
-                                throw PacketCodecException(e, PacketCodecException.Kind.OTHER)
-                            }
+
+                    0 -> buffer
+                    else -> throw PacketCodecException("Unknown encrypt type=$encryptMethod", PROTOCOL_UPDATED)
+                }.let { decryptedData ->
+                    when (type) {
+                        0x0A -> parseSsoFrame(client, decryptedData)
+                        0x0B -> parseSsoFrame(client, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
+                        else -> throw PacketCodecException(
+                            "unknown packet type: ${type.toByte().toUHexString()}",
+                            PROTOCOL_UPDATED
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                throw e.also {
+                    if (flag3Exception != null) {
+                        it.addSuppressed(flag3Exception)
+                    }
+                }
+            }
+
+            if (flag3 != 0 && flag3Exception != null) {
+                if (raw.commandName == WtLogin.TransEmp.commandName) {
+                    PacketLogger.warning(
+                        "unknown flag3: $flag3 in packet ${WtLogin.TransEmp.commandName}, " +
+                                "which may means protocol is updated.",
+                        flag3Exception
+                    )
+                } else {
+                    throw flag3Exception
+                }
+            }
+
+            when (encryptMethod) {
+                0, 1 -> RawIncomingPacket(raw.commandName, raw.sequenceId, raw.body.readBytes())
+                2 -> RawIncomingPacket(
+                    raw.commandName,
+                    raw.sequenceId,
+                    raw.body.withUse {
+                        try {
+                                parseOicqResponse(client, raw.commandName)
+                        } catch (e: Throwable) {
+                            throw PacketCodecException(e, PacketCodecException.Kind.OTHER)
                         }
-                    )
-                    else -> error("unreachable")
-                }
+                    }
+                )
+
+                else -> error("unreachable")
             }
         }
     }
@@ -220,6 +252,7 @@ internal class PacketCodecImpl : PacketCodec {
                         }
                     }
                 }
+
                 1 -> {
                     input.discardExact(4)
                     input.inflateAllAvailable().let { bytes ->
@@ -231,6 +264,7 @@ internal class PacketCodecImpl : PacketCodec {
                         }
                     }
                 }
+
                 8 -> input
                 else -> throw PacketCodecException("Unknown dataCompressed flag: $dataCompressed", PROTOCOL_UPDATED)
             }
@@ -242,10 +276,76 @@ internal class PacketCodecImpl : PacketCodec {
 
     private fun ByteReadPacket.parseOicqResponse(
         client: SsoSession,
+        commandName: String
     ): ByteArray {
-        readByte().toInt().let {
-            check(it == 2) { "$it" }
+        val qqEcdh = (client as QQAndroidClient).bot.components[EcdhInitialPublicKeyUpdater].getQQEcdh()
+        fun decrypt(encryptionMethod: Int): ByteArray {
+            return when (encryptionMethod) {
+                4 -> {
+                    val size = (this.remaining - 1).toInt()
+                    val data =
+                        TEA.decrypt(
+                            this.readBytes(),
+                            qqEcdh.initialQQShareKey,
+                            length = size
+                        )
+
+                    val peerShareKey =
+                        qqEcdh.calculateQQShareKey(Ecdh.Instance.importPublicKey(readUShortLVByteArray()))
+                    TEA.decrypt(data, peerShareKey)
+                }
+
+                3 -> {
+                    val size = (this.remaining - 1).toInt()
+                    // session
+                    TEA.decrypt(
+                        this.readBytes(),
+                        client.wLoginSigInfo.wtSessionTicketKey,
+                        length = size
+                    )
+                }
+
+                0 -> {
+                    if (client.loginState == 0) {
+                        val size = (this.remaining - 1).toInt()
+                        val byteArrayBuffer = this.readBytes(size)
+
+                        runCatching {
+                            TEA.decrypt(byteArrayBuffer, qqEcdh.initialQQShareKey, length = size)
+                        }.getOrElse {
+                            TEA.decrypt(byteArrayBuffer, client.randomKey, length = size)
+                        }
+                    } else {
+                        val size = (this.remaining - 1).toInt()
+                        TEA.decrypt(this.readBytes(), client.randomKey, length = size)
+                    }
+                }
+
+                else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")
+            }
         }
+
+        val packetType = readByte().toInt()
+        if (packetType != 2) {
+            val fullPacketDump = copy().readBytes().toUHexString()
+            var decryptedData: String? = null
+            if (remaining > 15) {
+                discardExact(12)
+                val encryptionMethod = this.readUShort().toInt()
+                discardExact(1)
+                decryptedData = kotlin.runCatching {
+                    decrypt(encryptionMethod).toUHexString()
+                }.getOrNull()
+            }
+            throw PacketCodecException(
+                "Received unknown oicq packet type = $packetType, command name = $commandName, ignoring..." +
+                        "\nPlease report this message to https://github.com/mamoe/mirai/issues/new/choose, \n" +
+                        "Full packet dump: $fullPacketDump\n" +
+                        "Decrypted data (contains your encrypted password, please change your password after reporting issue): $decryptedData",
+                PROTOCOL_UPDATED
+            )
+        }
+
         this.discardExact(2)
         this.discardExact(2)
         this.readUShort()
@@ -254,48 +354,7 @@ internal class PacketCodecImpl : PacketCodec {
         val encryptionMethod = this.readUShort().toInt()
 
         this.discardExact(1)
-        val qqEcdh =
-            (client as QQAndroidClient).bot.components[EcdhInitialPublicKeyUpdater].getQQEcdh()
-        return when (encryptionMethod) {
-            4 -> {
-                val size = (this.remaining - 1).toInt()
-                val data =
-                    TEA.decrypt(
-                        this.readBytes(),
-                        qqEcdh.initialQQShareKey,
-                        length = size
-                    )
-
-                val peerShareKey =
-                    qqEcdh.calculateQQShareKey(Ecdh.Instance.importPublicKey(readUShortLVByteArray()))
-                TEA.decrypt(data, peerShareKey)
-            }
-            3 -> {
-                val size = (this.remaining - 1).toInt()
-                // session
-                TEA.decrypt(
-                    this.readBytes(),
-                    client.wLoginSigInfo.wtSessionTicketKey,
-                    length = size
-                )
-            }
-            0 -> {
-                if (client.loginState == 0) {
-                    val size = (this.remaining - 1).toInt()
-                    val byteArrayBuffer = this.readBytes(size)
-
-                    runCatching {
-                        TEA.decrypt(byteArrayBuffer, qqEcdh.initialQQShareKey, length = size)
-                    }.getOrElse {
-                        TEA.decrypt(byteArrayBuffer, client.randomKey, length = size)
-                    }
-                } else {
-                    val size = (this.remaining - 1).toInt()
-                    TEA.decrypt(this.readBytes(), client.randomKey, length = size)
-                }
-            }
-            else -> error("Illegal encryption method. expected 0 or 4, got $encryptionMethod")
-        }
+        return decrypt(encryptionMethod)
     }
 
     /**

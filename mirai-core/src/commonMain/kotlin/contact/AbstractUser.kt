@@ -260,7 +260,7 @@ internal suspend fun <C : AbstractContact> C.sendMessageImpl(
     val chain = broadcastMessagePreSendEvent(message, skipEvent, preSendEventConstructor)
 
     val result = kotlin.runCatching {
-        MessageProtocolFacade.preprocessAndSendOutgoing(this, message, buildComponentStorage {
+        MessageProtocolFacade.preprocessAndSendOutgoing(this, chain, buildComponentStorage {
             set(MessageProtocolStrategy, messageProtocolStrategy)
             set(HighwayUploader, HighwayUploader.Default)
             set(ClockHolder, bot.components[ClockHolder])

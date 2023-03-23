@@ -158,6 +158,13 @@ internal abstract class AbstractKeepAliveNetworkHandlerSelector<H : NetworkHandl
                         // 不可挽救
                         exceptionCollector.throwLast()
                     }
+                } catch (e: TimeoutCancellationException) {
+                    logIfEnabled { "... failed with TimeoutCancellationException: $e" }
+                    exceptionCollector.collect(e)
+                    close(e) // close H
+                    logIfEnabled { "CLOSED instance" }
+                    // 发包超时 可挽救
+                    return false
                 } catch (e: Throwable) {
                     // 不可挽救
                     logIfEnabled { "... failed with unexpected: $e" }

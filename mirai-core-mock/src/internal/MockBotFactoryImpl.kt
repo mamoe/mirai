@@ -10,6 +10,7 @@
 package net.mamoe.mirai.mock.internal
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.MockBotFactory
@@ -110,6 +111,13 @@ internal class MockBotFactoryImpl : MockBotFactory {
     }
 
     override fun newBot(qq: Long, passwordMd5: ByteArray, configuration: BotConfiguration): Bot {
+        return newMockBotBuilder()
+            .id(qq)
+            .configuration(configuration)
+            .create()
+    }
+
+    override fun newBot(qq: Long, authorization: BotAuthorization, configuration: BotConfiguration): Bot {
         return newMockBotBuilder()
             .id(qq)
             .configuration(configuration)

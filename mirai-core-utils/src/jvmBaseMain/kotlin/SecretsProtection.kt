@@ -10,39 +10,15 @@
 package net.mamoe.mirai.utils
 
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.builtins.serializer
 import java.nio.ByteBuffer
-import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 
-/**
- * 核心数据保护器
- *
- * ### Why
- *
- * 有时候可能会发生 `OutOfMemoryError`, 如果存在 `-XX:+HeapDumpOnOutOfMemoryError`, 则 JVM 会生成一份系统内存打印以供 debug.
- * 该报告包含全部内存信息, 包括各种数据, 核心数据以及, 机密数据 (如密码)
- *
- * 该内存报告唯一没有包含的数据就是 Native层数据, 包括且不限于
- *
- * - `sun.misc.Unsafe.allocate()`
- * - `java.nio.ByteBuffer.allocateDirect()` (Named `DirectByteBuffer`)
- * - C/C++ (或其他语言) 的数据
- *
- * *试验数据来源 `openjdk version "17" 2021-09-14, 64-Bit Server VM (build 17+35-2724, mixed mode, sharing)`*
- *
- * ### How it works
- *
- * 因为 Heap Dump 不存在 `DirectByteBuffer` 的实际数据, 所以可以通过该类隐藏关键数据. 等需要的时候在读取出来.
- * 因为数据并没有直接存在于某个类字段中, 缺少数据关联, 也很难分析相关数据是什么数据
- */
-@Suppress("NOTHING_TO_INLINE", "UsePropertyAccessSyntax")
-//@MiraiExperimentalApi
-public object SecretsProtection {
+internal actual object SecretsProtectionPlatform {
+
     private class NativeBufferWithLock(
         @JvmField val buffer: ByteBuffer,
         val lock: Lock = ReentrantLock(),
@@ -106,7 +82,7 @@ public object SecretsProtection {
 
      */
     @JvmStatic
-    public fun allocate(size: Int): ByteBuffer {
+    fun allocate(size: Int): ByteBuffer {
         if (size >= bufferSize) {
             return ByteBuffer.allocateDirect(size)
         }
@@ -171,39 +147,40 @@ public object SecretsProtection {
     }
 
     @JvmStatic
-    public fun escape(data: ByteArray): ByteBuffer {
+    actual fun escape(data: ByteArray): Any {
         return allocate(data.size).also {
             it.put(data)
             it.pos = 0
         }
     }
 
-    @JvmInline
-    @Serializable(EscapedStringSerializer::class)
-    public value class EscapedString(
-        public val data: ByteBuffer,
-    ) {
-        public val asString: String
-            get() = data.duplicate().readString()
+    actual fun impl_asString(data: Any): String {
+        data as ByteBuffer
+
+        return data.duplicate().readString()
     }
 
-    @JvmInline
-    @Serializable(EscapedByteBufferSerializer::class)
-    public value class EscapedByteBuffer(
-        public val data: ByteBuffer,
-    )
+    actual fun impl_asByteArray(data: Any): ByteArray {
+        data as ByteBuffer
+        return data.duplicate().readBytes()
+    }
 
-    public object EscapedStringSerializer : KSerializer<EscapedString> by String.serializer().map(
+    actual fun impl_getSize(data: Any): Int {
+        return (data as ByteBuffer).remaining
+    }
+
+    actual object EscapedStringSerializer : KSerializer<SecretsProtection.EscapedString> by String.serializer().map(
         String.serializer().descriptor.copy("EscapedString"),
-        deserialize = { EscapedString(escape(it.toByteArray())) },
-        serialize = { it.data.duplicate().readString() }
+        deserialize = { SecretsProtection.EscapedString(escape(it.toByteArray())) },
+        serialize = { it.data.cast<ByteBuffer>().duplicate().readString() }
     )
 
-    public object EscapedByteBufferSerializer : KSerializer<EscapedByteBuffer> by ByteArraySerializer().map(
-        ByteArraySerializer().descriptor.copy("EscapedByteBuffer"),
-        deserialize = { EscapedByteBuffer(escape(it)) },
-        serialize = { it.data.duplicate().readBytes() }
-    )
+    actual object EscapedByteBufferSerializer :
+        KSerializer<SecretsProtection.EscapedByteBuffer> by ByteArraySerializer().map(
+            ByteArraySerializer().descriptor.copy("EscapedByteBuffer"),
+            deserialize = { SecretsProtection.EscapedByteBuffer(escape(it)) },
+            serialize = { it.data.cast<ByteBuffer>().duplicate().readBytes() }
+        )
 
 
 }

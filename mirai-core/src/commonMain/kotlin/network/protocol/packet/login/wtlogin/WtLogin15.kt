@@ -29,11 +29,11 @@ internal object WtLogin15 : WtLoginExt {
 //        writeSsoPacket(client, client.subAppId, WtLogin.ExchangeEmp.commandName, sequenceId = sequenceId) {
         writeOicqRequestPacket(
             client,
-            EncryptMethodSessionKeyNew(
+            encryptMethod = EncryptMethodSessionKeyNew(
                 client.wLoginSigInfo.wtSessionTicket.data,
                 client.wLoginSigInfo.wtSessionTicketKey
             ),
-            0x0810
+            commandId = 0x0810
         ) {
             writeShort(subCommand) // subCommand
             writeShort(24)
