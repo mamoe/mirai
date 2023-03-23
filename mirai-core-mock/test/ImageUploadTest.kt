@@ -69,11 +69,12 @@ internal class ImageUploadTest {
     }
 
     @Test
+    @Suppress("RemoveRedundantQualifierName")
     fun testImageIsUploadedNotTrue(): Unit = runBlocking {
-        assertFalse { isUploaded(bot, getRandomByteArray(16), 10) }
+        assertFalse { Image.isUploaded(bot, getRandomByteArray(16), 10) }
         val img = Image.randomImageContent().toExternalResource().use { imgData ->
             bot.asFriend.uploadImage(imgData)
         }
-        assertFalse { isUploaded(bot, img.md5, img.size + 5) }
+        assertFalse { Image.isUploaded(bot, img.md5, img.size + 5) }
     }
 }
