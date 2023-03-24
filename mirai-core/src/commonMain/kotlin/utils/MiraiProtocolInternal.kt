@@ -62,14 +62,15 @@ internal class MiraiProtocolInternal(
                 ssoVersion = 19,
                 supportsQRLogin = false,
             )
+            //Updated from MiraiGo (2023/3/24)
             protocols[MiraiProtocol.ANDROID_WATCH] = MiraiProtocolInternal(
                 apkId = "com.tencent.qqlite",
-                id = 537064446,
-                ver = "2.0.5",
-                sdkVer = "6.0.0.236",
+                id = 537065138,
+                ver = "2.0.8",
+                sdkVer = "6.0.0.2365",
                 miscBitMap = 16252796,
                 subSigMap = 0x10400,
-                mainSigMap = 34869472,
+                mainSigMap = 16724722,
                 sign = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
                 buildTime = 1559564731L,
                 ssoVersion = 5,
