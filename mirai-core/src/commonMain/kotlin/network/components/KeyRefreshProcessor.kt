@@ -67,5 +67,8 @@ internal class KeyRefreshProcessorImpl(
 
     override suspend fun refreshKeysNow(handler: NetworkHandler) {
         handler.sendAndExpect(WtLogin15(handler.context[SsoProcessor].client))
+        handler.context[SsoProcessor].client.bot.apply {
+            components[AccountSecretsManager].saveSecrets(account, AccountSecretsImpl(client))
+        }
     }
 }
