@@ -4540,6 +4540,7 @@ public abstract class net/mamoe/mirai/message/data/MessageSource : net/mamoe/mir
 	public abstract fun getIds ()[I
 	public abstract fun getInternalIds ()[I
 	public final fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
+	public abstract fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public abstract fun getOriginalMessage ()Lnet/mamoe/mirai/message/data/MessageChain;
 	public abstract fun getTargetId ()J
 	public abstract fun getTime ()I
@@ -4666,8 +4667,8 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final synthetic fun getContent (Lnet/mamoe/mirai/message/data/Message;)Ljava/lang/String;
 	public static final synthetic fun getIds (Lnet/mamoe/mirai/message/data/MessageChain;)[I
 	public static final synthetic fun getInternalId (Lnet/mamoe/mirai/message/data/MessageChain;)[I
-	public static final fun getKind (Lnet/mamoe/mirai/message/data/MessageSource;)Lnet/mamoe/mirai/message/data/MessageSourceKind;
-	public static final fun getKind (Lnet/mamoe/mirai/message/data/OnlineMessageSource;)Lnet/mamoe/mirai/message/data/MessageSourceKind;
+	public static final synthetic fun getKind (Lnet/mamoe/mirai/message/data/MessageSource;)Lnet/mamoe/mirai/message/data/MessageSourceKind;
+	public static final synthetic fun getKind (Lnet/mamoe/mirai/message/data/OnlineMessageSource;)Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public static final synthetic fun getLengthDuration (Lnet/mamoe/mirai/message/data/OnlineAudio;)J
 	public static final synthetic fun getOrFail (Lnet/mamoe/mirai/message/data/MessageChain;Lnet/mamoe/mirai/message/data/MessageKey;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/SingleMessage;
 	public static synthetic fun getOrFail$default (Lnet/mamoe/mirai/message/data/MessageChain;Lnet/mamoe/mirai/message/data/MessageKey;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/SingleMessage;
@@ -4816,6 +4817,7 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming 
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromFriend : net/mamoe/mirai/message/data/OnlineMessageSource$Incoming {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromFriend$Key;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/Friend;
 	public abstract fun getSubject ()Lnet/mamoe/mirai/contact/Friend;
 	public final synthetic fun getTarget ()Lnet/mamoe/mirai/Bot;
@@ -4829,6 +4831,7 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$Fro
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromGroup : net/mamoe/mirai/message/data/OnlineMessageSource$Incoming {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromGroup$Key;
 	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/Member;
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public fun getSubject ()Lnet/mamoe/mirai/contact/Group;
@@ -4842,6 +4845,7 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$Fro
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromStranger : net/mamoe/mirai/message/data/OnlineMessageSource$Incoming {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromStranger$Key;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/Stranger;
 	public abstract fun getSubject ()Lnet/mamoe/mirai/contact/Stranger;
 	public final synthetic fun getTarget ()Lnet/mamoe/mirai/Bot;
@@ -4855,6 +4859,7 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$Fro
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromTemp : net/mamoe/mirai/message/data/OnlineMessageSource$Incoming {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromTemp$Key;
 	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/Member;
 	public abstract fun getSubject ()Lnet/mamoe/mirai/contact/Member;
 	public final synthetic fun getTarget ()Lnet/mamoe/mirai/Bot;
@@ -4884,6 +4889,7 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$Key
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToFriend : net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToFriend$Key;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Friend;
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/Friend;
@@ -4895,6 +4901,7 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToF
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToGroup : net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToGroup$Key;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Group;
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/Group;
@@ -4906,6 +4913,7 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToG
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToStranger : net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToStranger$Key;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Stranger;
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/Stranger;
@@ -4918,6 +4926,7 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToS
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToTemp : net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToTemp$Key;
 	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Member;
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/Member;

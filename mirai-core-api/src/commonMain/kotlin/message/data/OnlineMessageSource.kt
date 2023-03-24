@@ -101,6 +101,8 @@ public sealed class OnlineMessageSource : MessageSource() {
             public abstract override val target: Friend
             public final override val subject: Friend get() = target
 
+            final override val kind: MessageSourceKind get() = MessageSourceKind.FRIEND
+
             final override fun toString(): String {
                 return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from $fromId to friend $targetId at $time]"
             }
@@ -113,6 +115,8 @@ public sealed class OnlineMessageSource : MessageSource() {
 
             public abstract override val target: Stranger
             public final override val subject: Stranger get() = target
+
+            final override val kind: MessageSourceKind get() = MessageSourceKind.STRANGER
 
             final override fun toString(): String {
                 return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from $fromId to stranger $targetId at $time]"
@@ -127,6 +131,8 @@ public sealed class OnlineMessageSource : MessageSource() {
             public val group: Group get() = target.group
             public final override val subject: Member get() = target
 
+            final override val kind: MessageSourceKind get() = MessageSourceKind.TEMP
+
             final override fun toString(): String {
                 return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from $fromId to group temp $targetId at $time]"
             }
@@ -138,6 +144,8 @@ public sealed class OnlineMessageSource : MessageSource() {
 
             public abstract override val target: Group
             public final override val subject: Group get() = target
+
+            final override val kind: MessageSourceKind get() = MessageSourceKind.GROUP
 
             final override fun toString(): String {
                 return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from $fromId to group $targetId at $time]"
@@ -179,6 +187,8 @@ public sealed class OnlineMessageSource : MessageSource() {
                 error("Message target isn't bot; $this")
             }
 
+            final override val kind: MessageSourceKind get() = MessageSourceKind.FRIEND
+
             final override fun toString(): String {
                 return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from friend $fromId to $targetId at $time]"
             }
@@ -206,6 +216,8 @@ public sealed class OnlineMessageSource : MessageSource() {
                 error("Message target isn't bot; $this")
             }
 
+            final override val kind: MessageSourceKind get() = MessageSourceKind.TEMP
+
             final override fun toString(): String {
                 return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from group temp $fromId to $targetId at $time]"
             }
@@ -232,6 +244,8 @@ public sealed class OnlineMessageSource : MessageSource() {
                 error("Message target isn't bot; $this")
             }
 
+            final override val kind: MessageSourceKind get() = MessageSourceKind.STRANGER
+
             final override fun toString(): String {
                 return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from stranger $fromId to $targetId at $time]"
             }
@@ -249,6 +263,8 @@ public sealed class OnlineMessageSource : MessageSource() {
             public override val subject: Group get() = sender.group
             public final override val target: Group get() = subject
             public inline val group: Group get() = subject
+
+            final override val kind: MessageSourceKind get() = MessageSourceKind.GROUP
 
             final override fun toString(): String {
                 return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from group $fromId to $targetId at $time]"
