@@ -100,6 +100,7 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 
 [MR-XieXuan/MiraiTravel]:https://github.com/MR-XieXuan/MiraiTravel
 
+[yuansicloud/Abp.Mirai]:https://github.com/yuansicloud/Abp.Mirai
 ### 原生接口
 
 这些接口直接在 JVM 上实现，不需要中间件，拥有更佳的性能。
@@ -134,6 +135,7 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 | `C#`                      | [AhpxChina/Mirai.Net]                |
 | `C#`                      | [Cyl18/Chaldene]                     |
 | `C#`                      | [Miyakowww/CocoaFramework2]          |
+| `C#`                      | [yuansicloud/Abp.Mirai]              |
 | `C++`                     | [cyanray/mirai-cpp]                  |
 | `C++`                     | [Chlorie/miraipp]                    |
 | `GDScript`                | [Xwdit/RainyBot-Core]                |
