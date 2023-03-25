@@ -11,15 +11,18 @@ package net.mamoe.mirai.mock.test
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.Image.Key.isUploaded
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.mock.MockBotFactory
 import net.mamoe.mirai.mock.utils.randomImageContent
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.getRandomByteArray
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.net.URL
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
@@ -55,5 +58,23 @@ internal class ImageUploadTest {
             val img2 = bot.asFriend.uploadImage(imgData)
             assertEquals(img1, img2)
         }
+    }
+
+    @Test
+    fun testImageIsUploaded(): Unit = runBlocking {
+        val img = Image.randomImageContent().toExternalResource().use { imgData ->
+            bot.asFriend.uploadImage(imgData)
+        }
+        assertTrue { img.isUploaded(bot) }
+    }
+
+    @Test
+    @Suppress("RemoveRedundantQualifierName")
+    fun testImageIsUploadedNotTrue(): Unit = runBlocking {
+        assertFalse { Image.isUploaded(bot, getRandomByteArray(16), 10) }
+        val img = Image.randomImageContent().toExternalResource().use { imgData ->
+            bot.asFriend.uploadImage(imgData)
+        }
+        assertFalse { Image.isUploaded(bot, img.md5, img.size + 5) }
     }
 }

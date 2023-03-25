@@ -21,6 +21,7 @@ import java.net.ServerSocket
 import java.net.URI
 import java.net.URLDecoder
 import java.net.URLEncoder
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
 
@@ -64,6 +65,15 @@ internal class TmpResourceServerImpl(
             return resourceId
         }
     }
+
+    override fun isImageUploaded(md5: ByteArray, size: Long): Boolean {
+        val img = images.resolve(generateUUID(md5))
+        if (img.exists()) {
+            return Files.size(img) == size
+        }
+        return false
+    }
+
 
     override suspend fun uploadResourceAsImage(resource: ExternalResource): URI {
         val imgId = generateUUID(resource.md5)

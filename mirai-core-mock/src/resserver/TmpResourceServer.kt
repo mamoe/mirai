@@ -47,6 +47,11 @@ public interface TmpResourceServer : Closeable {
      * @return 图片的 http 链接
      */
     public suspend fun uploadResourceAsImage(resource: ExternalResource): URI
+
+    /**
+     * 通过图片 md5 和 size 判断图片是否已经上传
+     */
+    public fun isImageUploaded(md5: ByteArray, size: Long): Boolean
     public suspend fun uploadResourceAndGetUrl(resource: ExternalResource): String {
         return resolveHttpUrl(uploadResource(resource)).toString()
     }
