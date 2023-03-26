@@ -112,6 +112,14 @@ internal class QRCodeLoginProcessorImpl(
     }
 
     override suspend fun process(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginData {
+        return try {
+            process0(handler, client)
+        } finally {
+            qrCodeLoginListener.onCompleted()
+        }
+    }
+
+    private suspend fun process0(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginData {
         main@ while (true) {
             val qrCodeData = requestQRCode(handler, client)
             state@ while (true) {

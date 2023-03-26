@@ -205,6 +205,7 @@ public abstract interface class net/mamoe/mirai/auth/QRCodeLoginListener {
 	public fun getQrCodeMargin ()I
 	public fun getQrCodeSize ()I
 	public fun getQrCodeStateUpdateInterval ()J
+	public fun onCompleted ()V
 	public abstract fun onFetchQRCode (Lnet/mamoe/mirai/Bot;[B)V
 	public fun onIntervalLoop ()V
 	public abstract fun onStateChanged (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;)V
