@@ -164,25 +164,6 @@ internal class MockGroupTest : MockBotTestBase() {
     }
 
     @Test
-    internal fun testMemberHonorChangeEvent() = runTest {
-        runAndReceiveEventBroadcast {
-            val group = bot.addGroup(111, "aa")
-            val member1 = group.addMember(simpleMemberInfo(222, "bb", permission = MemberPermission.MEMBER))
-            val member2 = group.addMember(simpleMemberInfo(333, "cc", permission = MemberPermission.MEMBER))
-            group.honorMembers[GroupHonorType.TALKATIVE] = member1
-            group.changeHonorMember(member2, GroupHonorType.TALKATIVE)
-        }.let { events ->
-            assertEquals(3, events.size)
-            assertIsInstance<GroupTalkativeChangeEvent>(events[0])
-            assertIsInstance<MemberHonorChangeEvent.Lose>(events[1])
-            assertEquals(222, events[1].cast<MemberHonorChangeEvent.Lose>().member.id)
-            assertIsInstance<MemberHonorChangeEvent.Achieve>(events[2])
-            assertEquals(GroupHonorType.TALKATIVE, events[2].cast<MemberHonorChangeEvent.Achieve>().honorType)
-            assertEquals(333, events[2].cast<MemberHonorChangeEvent.Achieve>().member.id)
-        }
-    }
-
-    @Test
     internal fun testGroupFileUpload() = runTest {
         val files = bot.addGroup(111, "aaa").files
         val file = files.uploadNewFile("aaa", "ccc".toByteArray().toExternalResource().toAutoCloseable())
@@ -456,5 +437,109 @@ internal class MockGroupTest : MockBotTestBase() {
                 assertEquals(1, member.group.id)
             }
         }
+    }
+
+    @Test
+    fun testHonorMember() = runTest {
+        val group = bot.addGroup(1, "")
+        val member1 = group.addMember(2, "")
+        val member2 = group.addMember(3, "")
+        assertEquals(emptyList(), group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records)
+
+        runAndReceiveEventBroadcast {
+            group.active.changeHonorMember(member1, GroupHonorType.TALKATIVE)
+        }.let { events ->
+            assertEquals(1, events.size)
+            assertIsInstance<MemberHonorChangeEvent.Achieve>(events[0]) {
+                assertEquals(GroupHonorType.TALKATIVE, this.honorType)
+                assertEquals(member1, this.member)
+                assertEquals(group, this.group)
+            }
+        }
+        assertEquals(member1, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).current!!.member!!)
+        assertEquals(emptyList(), group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records)
+
+        runAndReceiveEventBroadcast {
+            group.active.changeHonorMember(member2, GroupHonorType.TALKATIVE)
+        }.let { events ->
+            assertEquals(3, events.size)
+            assertIsInstance<GroupTalkativeChangeEvent>(events[0]) {
+                assertEquals(member2, this.now)
+                assertEquals(member1, this.previous)
+                assertEquals(group, this.group)
+            }
+            assertIsInstance<MemberHonorChangeEvent.Lose>(events[1]) {
+                assertEquals(GroupHonorType.TALKATIVE, this.honorType)
+                assertEquals(member1, this.member)
+                assertEquals(group, this.group)
+            }
+            assertIsInstance<MemberHonorChangeEvent.Achieve>(events[2]) {
+                assertEquals(GroupHonorType.TALKATIVE, this.honorType)
+                assertEquals(member2, this.member)
+                assertEquals(group, this.group)
+            }
+        }
+
+        assertEquals(member2, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).current!!.member!!)
+        // it.member must exist
+        assertEquals(
+            listOf(member1),
+            group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records.map { it.member!! })
+
+        runAndReceiveEventBroadcast {
+            group.active.changeHonorMember(member1, GroupHonorType.TALKATIVE)
+        }.let { events ->
+            assertEquals(3, events.size)
+            assertIsInstance<GroupTalkativeChangeEvent>(events[0]) {
+                assertEquals(member1, this.now)
+                assertEquals(member2, this.previous)
+                assertEquals(group, this.group)
+            }
+            assertIsInstance<MemberHonorChangeEvent.Lose>(events[1]) {
+                assertEquals(GroupHonorType.TALKATIVE, this.honorType)
+                assertEquals(member2, this.member)
+                assertEquals(group, this.group)
+            }
+            assertIsInstance<MemberHonorChangeEvent.Achieve>(events[2]) {
+                assertEquals(GroupHonorType.TALKATIVE, this.honorType)
+                assertEquals(member1, this.member)
+                assertEquals(group, this.group)
+            }
+        }
+        assertEquals(member1, group.active.queryHonorHistory(GroupHonorType.TALKATIVE).current!!.member!!)
+        assertEquals(
+            listOf(member1, member2),
+            group.active.queryHonorHistory(GroupHonorType.TALKATIVE).records.map { it.member!! })
+
+        runAndReceiveEventBroadcast {
+            group.active.changeHonorMember(member1, GroupHonorType.BRONZE)
+        }.let { events ->
+            assertEquals(1, events.size)
+            assertIsInstance<MemberHonorChangeEvent.Achieve>(events[0]) {
+                assertEquals(GroupHonorType.BRONZE, this.honorType)
+                assertEquals(member1, this.member)
+                assertEquals(group, this.group)
+            }
+        }
+        assertEquals(member1, group.active.queryHonorHistory(GroupHonorType.BRONZE).current!!.member!!)
+        assertEquals(emptyList(), group.active.queryHonorHistory(GroupHonorType.BRONZE).records)
+
+        runAndReceiveEventBroadcast {
+            group.active.changeHonorMember(member2, GroupHonorType.BRONZE)
+        }.let { events ->
+            assertEquals(2, events.size)
+            assertIsInstance<MemberHonorChangeEvent.Lose>(events[0]) {
+                assertEquals(GroupHonorType.BRONZE, this.honorType)
+                assertEquals(member1, this.member)
+                assertEquals(group, this.group)
+            }
+            assertIsInstance<MemberHonorChangeEvent.Achieve>(events[1]) {
+                assertEquals(GroupHonorType.BRONZE, this.honorType)
+                assertEquals(member2, this.member)
+                assertEquals(group, this.group)
+            }
+        }
+        assertEquals(member2, group.active.queryHonorHistory(GroupHonorType.BRONZE).current!!.member!!)
+        assertEquals(listOf(member1), group.active.queryHonorHistory(GroupHonorType.BRONZE).records.map { it.member!! })
     }
 }

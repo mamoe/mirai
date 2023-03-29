@@ -11,6 +11,9 @@ package net.mamoe.mirai.mock.contact.active
 
 import net.mamoe.mirai.contact.active.*
 import net.mamoe.mirai.data.GroupHonorType
+import net.mamoe.mirai.event.events.MemberHonorChangeEvent
+import net.mamoe.mirai.mock.MockBotDSL
+import net.mamoe.mirai.mock.contact.MockNormalMember
 
 public interface MockGroupActive : GroupActive {
     /**
@@ -39,4 +42,17 @@ public interface MockGroupActive : GroupActive {
      * @see queryActiveRank
      */
     public fun mockSetRankRecords(list: List<ActiveRankRecord>)
+
+    /**
+     * 更改拥有群荣耀的群成员.
+     *
+     * 会自动广播 [MemberHonorChangeEvent.Achieve] 和 [MemberHonorChangeEvent.Lose] 等相关事件.
+     *
+     * 此外如果 [honorType] 是 [GroupHonorType.TALKATIVE],
+     * 会额外广播 [net.mamoe.mirai.event.events.GroupTalkativeChangeEvent].
+     *
+     * 如果不需要广播事件, 可直接使用 [mockSetHonorHistory]
+     */
+    @MockBotDSL
+    public fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType)
 }
