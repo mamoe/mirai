@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -65,14 +65,15 @@ fun File.resolveMkdir(relative: String): File {
 kotlin.target.compilations.all {
     kotlinOptions {
         jvmTarget = "17"
-        apiVersion = "1.7" // bundled Kotlin is 1.7.20
+        apiVersion = "1.9" // bundled Kotlin is 1.7.20
+        languageVersion = "1.9" //  idea requires 1.9
     }
 }
 
 // https://plugins.jetbrains.com/docs/intellij/kotlin.html#kotlin-standard-library
 tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
     sinceBuild.set("223")
-    untilBuild.set("223.*")
+    untilBuild.set("231.*")
     pluginDescription.set(
         """
         Plugin development support for <a href='https://github.com/mamoe/mirai'>Mirai Console</a>

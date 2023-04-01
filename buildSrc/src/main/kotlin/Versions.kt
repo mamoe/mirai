@@ -28,14 +28,14 @@ object Versions {
 
     val core get() = project
     val console get() = project
-    val consoleIntellij get() = "223-$project-172-1" // idea-mirai-kotlin-patch
+    val consoleIntellij get() = "231-$project-182-1" // idea-mirai-kotlin-patch
     val consoleTerminal get() = project
 
     const val kotlinCompiler = "1.8.10"
     const val kotlinStdlib = kotlinCompiler
     const val dokka = "1.8.10"
 
-    const val kotlinCompilerForIdeaPlugin = "1.8.10"
+    const val kotlinCompilerForIdeaPlugin = "1.8.20-RC" // 231 bundles 1.8.20
 
     const val coroutines = "1.6.4"
     const val atomicFU = "0.20.0"
@@ -84,7 +84,7 @@ object Versions {
 
     // don't update easily unless you want your disk space -= 1000 MB
     // (700 MB for IDEA, 150 MB for sources, 150 MB for JBR)
-    const val intellij = "2022.3.1"
+    const val intellij = "2023.1"
 }
 
 @Suppress("unused")
