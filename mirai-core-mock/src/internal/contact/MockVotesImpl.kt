@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,12 +13,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.NormalMember
-import net.mamoe.mirai.contact.vote.OnlineVote
-import net.mamoe.mirai.contact.vote.OnlineVoteRecord
 import net.mamoe.mirai.contact.vote.Vote
 import net.mamoe.mirai.contact.vote.VoteImage
-import net.mamoe.mirai.mock.contact.vote.MockOnlineVote
-import net.mamoe.mirai.mock.contact.vote.MockOnlineVoteRecordImpl
+import net.mamoe.mirai.contact.vote.VoteRecord
+import net.mamoe.mirai.mock.contact.vote.MockVote
+import net.mamoe.mirai.mock.contact.vote.MockVoteRecordImpl
 import net.mamoe.mirai.mock.contact.vote.MockVotes
 import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.utils.ExternalResource
@@ -30,11 +29,11 @@ internal class MockVotesImpl(
     val group: Group
 ) : MockVotes {
 
-    val votes = ConcurrentHashMap<String, MockOnlineVote>()
+    val votes = ConcurrentHashMap<String, MockVote>()
 
-    override fun mockPublish(vote: Vote, actor: NormalMember, events: Boolean): OnlineVote {
-        val mock = MockOnlineVote(
-            senderId = actor.id,
+    override fun mockPublish(vote: Vote, actor: NormalMember, events: Boolean): Vote {
+        val mock = MockVote(
+            publisherId = actor.id,
             parameters = vote.parameters,
             fid = UUID.randomUUID().toString(),
             options = emptyList(),
@@ -50,12 +49,12 @@ internal class MockVotesImpl(
         return mock
     }
 
-    override fun mockPublish(fid: String, options: List<Int>, actor: NormalMember): OnlineVoteRecord {
+    override fun mockPublish(fid: String, options: List<Int>, actor: NormalMember): VoteRecord {
         val mock = votes[fid] ?: throw IllegalStateException("Vote was delete")
-        val record = MockOnlineVoteRecordImpl(
+        val record = MockVoteRecordImpl(
             vote = mock,
             voterId = actor.id,
-            options = options,
+            selectedOptions = options,
             time = currentTimeSeconds()
         )
         options.forEach { index ->
@@ -65,7 +64,7 @@ internal class MockVotesImpl(
         return record
     }
 
-    override suspend fun publish(vote: Vote): OnlineVote {
+    override suspend fun publish(vote: Vote): Vote {
         return mockPublish(vote = vote, actor = group.botAsMember, events = true)
     }
 
@@ -77,12 +76,12 @@ internal class MockVotesImpl(
         return votes.remove(fid) != null
     }
 
-    override suspend fun update(vote: OnlineVote) {
+    override suspend fun update(vote: Vote) {
         val mock = votes[vote.fid] ?: throw IllegalStateException("Vote was delete")
         // TODO
     }
 
-    override suspend fun get(fid: String): OnlineVote? {
+    override suspend fun get(fid: String): Vote? {
         return votes[fid]
     }
 

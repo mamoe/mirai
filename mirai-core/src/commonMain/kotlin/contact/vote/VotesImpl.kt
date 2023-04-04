@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -24,22 +24,21 @@ internal class VotesImpl(
 ) : Votes {
     private val bot = group.bot
 
-    override suspend fun publish(vote: Vote): OnlineVote {
+    override suspend fun publish(vote: VoteDescription): Vote {
         val result = group.bot.publishGroupVote(groupCode = group.id, vote = vote).check()
 
-        return OnlineVoteImpl(
+        return VoteImpl(
             group = group,
-            senderId = bot.id,
-            sender = group.botAsMember,
             fid = result.fid,
-            publicationTime = result.ltsm,
-            endTime = result.ltsm + vote.parameters.durationSeconds,
-            title = vote.title,
-            options = vote.options,
-            counts = emptyList(),
-            parameters = vote.parameters,
+        ).apply {
+            publisherId = bot.id
+            publisher = group.botAsMember
+            publicationTime = result.ltsm
+            endTime = result.ltsm + vote.durationSeconds
+            description = vote
+            options = vote.options.mapIndexed { index, s -> VoteOptionImpl(this, index, s, 0) }
             records = emptyList()
-        )
+        }
     }
 
     override suspend fun uploadImage(resource: ExternalResource): VoteImage {
@@ -50,8 +49,6 @@ internal class VotesImpl(
             ResourceKind.VOTE_IMAGE,
             ChannelKind.HTTP
         ) { _, _ ->
-            // use common logging
-
             val data = bot.uploadGroupVoteImage(groupCode = group.id, resource = resource).check()
 
             data.id.decodeHtmlEscape()
@@ -69,57 +66,7 @@ internal class VotesImpl(
         return true
     }
 
-    override suspend fun get(fid: String): OnlineVote? {
-        val data = bot.getGroupVote(groupCode = group.id, fid = fid)
-        if (data.detail == null) return null
-
-        val impl = OnlineVoteImpl(
-            group = group,
-            senderId = data.uid,
-            sender = group[data.uid],
-            fid = data.fid,
-            publicationTime = data.published,
-            endTime = data.detail.end,
-            title = data.detail.title.text,
-            options = data.detail.options.map { it.content.text },
-            counts = data.detail.options.map { it.selected },
-            parameters = buildVoteParameters {
-                capacity = data.detail.capacity
-                anonymous = data.detail.anonymous == 1
-                end = data.detail.end - data.published
-                // XXX: 提醒时间没有返回
-                // remind = 0
-                image = data.detail.title.pictures.firstOrNull()?.toPublic()
-            },
-            records = emptyList()
-        )
-        impl.apply(detail = data.detail)
-        return impl
-    }
-
-    override suspend fun update(vote: OnlineVote) {
-        vote as OnlineVoteImpl
-        val data = bot.getGroupVote(groupCode = group.id, fid = vote.fid)
-        if (data.detail == null) return
-
-        vote.apply(detail = data.detail)
-    }
-
-    internal fun OnlineVoteImpl.apply(detail: GroupVoteDetail): OnlineVote {
-        title = detail.title.text
-        options = detail.options.map { it.content.text }
-        counts = detail.options.map { it.selected }
-        records = detail.results.map { result ->
-            OnlineVoteRecordImpl(
-                vote = this,
-                voterId = result.uid,
-                voter = group[result.uid],
-                options = result.options,
-                time = result.time
-            )
-        }
-        return this
-    }
+    override suspend fun get(fid: String): Vote? = VoteImpl(group, fid).takeIf { it.refresh() }
 
     override fun asFlow(): Flow<Vote> {
         return flow {
@@ -129,27 +76,10 @@ internal class VotesImpl(
                 if (result.votes.isEmpty()) break
 
                 for (info in result.votes) {
-                    val impl = OnlineVoteImpl(
-                        group = group,
-                        senderId = info.uid,
-                        sender = group[info.uid],
-                        fid = info.fid,
-                        publicationTime = info.published,
-                        endTime = info.detail.end,
-                        title = info.detail.title.text,
-                        options = info.detail.options.map { it.content.text },
-                        counts = info.detail.options.map { it.selected },
-                        parameters = buildVoteParameters {
-                            capacity = info.detail.capacity
-                            anonymous = info.detail.anonymous == 1
-                            end = info.detail.end - info.published
-                            if (info.settings.remindTs != 0L) {
-                                remind = info.settings.remindTs - info.published
-                            }
-                            image = info.detail.title.pictures.firstOrNull()?.toPublic()
-                        },
-                        records = emptyList()
-                    )
+                    val detail = info.detail ?: continue
+                    val impl = VoteImpl(group = group, fid = info.fid).apply {
+                        updateFrom(info, detail)
+                    }
                     emit(impl)
                 }
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -46,7 +46,7 @@ public interface Votes : Streamable<Vote> {
      * @throws IllegalStateException 当协议异常时抛出
      * @see Vote.publishTo
      */
-    public suspend fun publish(vote: Vote): OnlineVote
+    public suspend fun publish(vote: VoteDescription): Vote
 
     /**
      * 上传资源作为群投票图片. 返回值可用于 [VoteParameters.image].
@@ -57,34 +57,22 @@ public interface Votes : Streamable<Vote> {
     public suspend fun uploadImage(resource: ExternalResource): VoteImage
 
     /**
-     * 删除一个群投票. 使用 [OnlineVote.delete] 与此方法效果相同.
+     * 删除一个群投票. 使用 [Vote.delete] 与此方法效果相同.
      *
-     * @param fid 公告的 [OnlineVote.fid]
+     * @param fid 公告的 [Vote.fid]
      * @return 成功返回 `true`, 群投票不存在时返回 `false`
      *
      * @throws IllegalStateException 当协议异常时抛出
      *
-     * @see OnlineVote.delete
+     * @see Vote.delete
      */
     public suspend fun delete(fid: String): Boolean
 
     /**
      * 获取一个群投票.
-     * @param fid 公告的 [OnlineVote.fid]
+     * @param fid 公告的 [Vote.fid]
      * @return 返回 `null` 表示不存在该 [fid] 的群投票
      * @throws IllegalStateException 当协议异常时抛出
      */
-    public suspend fun get(fid: String): OnlineVote?
-
-    /**
-     * 更新群投票. 使用 [OnlineVote.update] 与此方法效果相同.
-     *
-     * @param vote 在线公告
-     * @return 成功返回 `true`, 群投票不存在时返回 `false`
-     *
-     * @throws IllegalStateException 当协议异常时抛出
-     *
-     * @see OnlineVote.update
-     */
-    public suspend fun update(vote: OnlineVote)
+    public suspend fun get(fid: String): Vote?
 }

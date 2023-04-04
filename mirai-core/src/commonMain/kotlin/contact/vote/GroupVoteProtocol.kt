@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -15,7 +15,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.contact.vote.Vote
+import net.mamoe.mirai.contact.vote.VoteDescription
 import net.mamoe.mirai.contact.vote.VoteImage
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.HttpClientProvider
@@ -29,7 +29,7 @@ internal data class GroupVoteList(
     @SerialName("ad") val ad: Int = 0,
     @SerialName("ec") override val errorCode: Int = 0,
     @SerialName("em") override val errorMessage: String? = null,
-    @SerialName("feeds") val votes: List<GroupVoteInfo> = emptyList(),
+    @SerialName("feeds") val votes: List<GroupVote> = emptyList(), // 原本是 GroupVoteInfo, 但看起来 GroupVote 包含了 GroupVoteInfo
     @SerialName("gln") val gln: Int = 0,
     @SerialName("ltsm") val ltsm: Long = 0,
     @SerialName("read_only") val readOnly: Int = 0,
@@ -63,7 +63,8 @@ internal data class GroupVote(
     @SerialName("type") val type: Int = 0,
     @SerialName("u") val uid: Long = 0,
     @SerialName("ui") val ui: Map<Int, UserInfo> = emptyMap(),
-    @SerialName("vn") val vn: Int = 0
+    @SerialName("vn") val vn: Int = 0,
+    @SerialName("settings") val settings: GroupVoteSettings = GroupVoteSettings(),
 ) : CheckableResponseA(), JsonStruct {
     @Serializable
     data class Group(
@@ -218,7 +219,7 @@ internal suspend fun QQAndroidBot.getGroupVote(
 }
 
 internal suspend fun QQAndroidBot.publishGroupVote(
-    groupCode: Long, vote: Vote
+    groupCode: Long, vote: VoteDescription
 ): PublishVoteResult {
     return components[HttpClientProvider].getHttpClient().post {
         url("https://client.qun.qq.com/cgi-bin/feeds/publish_vote_client")
@@ -238,21 +239,21 @@ internal suspend fun QQAndroidBot.publishGroupVote(
                 }
 
                 // type 1 2 3
-                append("mo", vote.parameters.availableVotes)
+                append("mo", vote.availableVotes)
 
                 val current = currentTimeSeconds()
 
                 // end date time
-                append("dl", current + vote.parameters.durationSeconds)
+                append("dl", current + vote.durationSeconds)
 
                 // remind date time
-                append("remind", current + vote.parameters.remindSeconds)
+                append("remind", current + vote.remindSeconds)
 
                 // anon 0 1
-                append("vsb", if (vote.parameters.isAnonymous) 0 else 1)
+                append("vsb", if (vote.isAnonymous) 0 else 1)
 
                 // image
-                val image = vote.parameters.image
+                val image = vote.image
                 if (image != null) {
                     append("i1", image.id)
                     append("w1", image.width)

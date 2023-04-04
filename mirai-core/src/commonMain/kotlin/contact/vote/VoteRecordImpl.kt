@@ -9,14 +9,20 @@
 
 package net.mamoe.mirai.internal.contact.vote
 
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.NormalMember
-import net.mamoe.mirai.contact.vote.OnlineVoteRecord
-import net.mamoe.mirai.contact.vote.Vote
+import net.mamoe.mirai.contact.vote.VoteOption
+import net.mamoe.mirai.contact.vote.VoteRecord
 
-internal class OnlineVoteRecordImpl(
-    override val vote: Vote,
+internal class VoteRecordImpl(
+    group: Group,
     override val voterId: Long,
-    override val voter: NormalMember?,
-    override val options: List<Int>,
+    override val selectedOptions: List<VoteOption>,
     override val time: Long
-) : OnlineVoteRecord
+) : VoteRecord {
+    override val voter: NormalMember? by lazy { group[voterId] }
+
+    override fun toString(): String {
+        return "VoteRecordImpl(voterId=$voterId, voter=$voter, selectedOptions=$selectedOptions, time=$time)"
+    }
+}

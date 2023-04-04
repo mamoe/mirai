@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -31,52 +31,57 @@ public interface MockVotes : Votes {
         vote: Vote,
         actor: NormalMember,
         events: Boolean
-    ): OnlineVote
+    ): Vote
 
     @MockBotDSL
     public fun mockPublish(
         vote: Vote,
         actor: NormalMember,
-    ): OnlineVote = mockPublish(vote, actor, false)
+    ): Vote = mockPublish(vote, actor, false)
 
 
     /**
      * 直接以 [actor] 的身份做一次投票
      *
-     * @param fid 见 [OnlineVote.fid]
+     * @param fid 见 [Vote.fid]
      */
     @MockBotDSL
     public fun mockPublish(
         fid: String,
         options: List<Int>,
         actor: NormalMember
-    ): OnlineVoteRecord
+    ): VoteRecord
 }
 
-public class MockOnlineVote @MiraiInternalApi public constructor(
-    override val senderId: Long,
+public class MockVote @MiraiInternalApi public constructor(
+    override val publisherId: Long,
     override val fid: String,
     override val publicationTime: Long,
-    override val counts: MutableList<Int>,
-    override var records: List<OnlineVoteRecord>,
-    override val title: String,
-    override val options: List<String>,
-    override val parameters: VoteParameters
-) : OnlineVote {
+    override val description: VoteDescription,
+    override val options: List<VoteOption>,
+    override val records: List<VoteRecord>,
+) : Vote {
 
     override lateinit var group: Group
 
-    override val endTime: Long = publicationTime + parameters.durationSeconds
+    override val endTime: Long = publicationTime + description.durationSeconds
 
-    override val sender: NormalMember? get() = group[senderId]
+    override suspend fun refresh(): Boolean {
+        return true
+    }
+
+    override suspend fun refreshed(): Vote? {
+        return MockVote(publisherId, fid, publicationTime, description, options, records)
+    }
+
+    override val publisher: NormalMember? get() = group[publisherId]
 }
 
-public class MockOnlineVoteRecordImpl @MiraiInternalApi public constructor(
-    override val vote: MockOnlineVote,
+public class MockVoteRecordImpl @MiraiInternalApi public constructor(
+    private val vote: MockVote,
     override val voterId: Long,
-    override val options: List<Int>,
+    override val selectedOptions: List<VoteOption>,
     override val time: Long
-) : OnlineVoteRecord {
-
-    override val voter: NormalMember? get() = vote.group[voterId]
+) : VoteRecord {
+    override val voter: NormalMember? by lazy { vote.group[voterId] }
 }
