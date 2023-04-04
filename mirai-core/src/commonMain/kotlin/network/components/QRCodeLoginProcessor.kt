@@ -97,7 +97,7 @@ internal class QRCodeLoginProcessorImpl(
         sig: ByteArray
     ): WtLogin.TransEmp.Response {
         logger.debug { "querying qrcode state." }
-        val resp = handler.sendAndExpect(WtLogin.TransEmp.QueryQRCodeStatus(client, sig), attempts = 1, timeout = 500)
+        val resp = handler.sendAndExpect(WtLogin.TransEmp.QueryQRCodeStatus(client, sig))
         check(
             resp is WtLogin.TransEmp.Response.QRCodeStatus || resp is WtLogin.TransEmp.Response.QRCodeConfirmed
         ) { "Cannot query qrcode status, resp=$resp" }

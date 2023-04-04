@@ -15,6 +15,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.toUHexString
 import net.mamoe.mirai.utils.verbose
 
 internal inline val Group.uin: Long get() = this.cast<GroupImpl>().uin
@@ -96,16 +97,86 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
     }
 }
 
-internal val charMappings = mapOf(
+@Suppress("SpellCheckingInspection")
+private val charMappings = mapOf(
     '\n' to """\n""",
     '\r' to "",
-    '\u202E' to "<RTL>",
+
+    // region Control Characters https://en.wikipedia.org/wiki/Control_character https://en.wikipedia.org/wiki/Unicode_control_characters
+
+    // ASCII
+    '\u0000' to "<NUL>",
+    '\u0001' to "<SOH>",
+    '\u0002' to "<STX>",
+    '\u0003' to "<ETX>",
+    '\u0004' to "<EOT>",
+    '\u0005' to "<ENQ>",
+    '\u0006' to "<ACK>",
+    '\u0007' to "<BEL>",
+    '\u0008' to "<BS>",
+    '\u0009' to "<HT>",
+    // '\u000a' to "<LF>", // \n
+    '\u000b' to "<VT>",
+    '\u000c' to "<FF>",
+    // '\u000d' to "<CR>", // \r
+    '\u000e' to "<SO>",
+    '\u000F' to "<SI>",
+    '\u0010' to "<DLE>",
+    '\u0011' to "<DC1>",
+    '\u0012' to "<DC2>",
+    '\u0013' to "<DC3>",
+    '\u0014' to "<DC4>",
+    '\u0015' to "<NAK>",
+    '\u0016' to "<SYN>",
+    '\u0017' to "<ETB>",
+    '\u0018' to "<CAN>",
+    '\u0019' to "<EM>",
+    '\u001a' to "<SUB>",
+    '\u001b' to "<ESC>",
+    '\u001c' to "<FS>",
+    '\u001d' to "<GS>",
+    '\u001e' to "<RS>",
+    '\u001f' to "<US>",
+
+    '\u007F' to "<DEL>",
+    '\u0085' to "<NEL>",
+
+    // Unicode Control Characters - Bidirectional text control
+    // https://en.wikipedia.org/wiki/Unicode_control_characters#Bidirectional_text_control
+
+    '\u061C' to "<ALM>",
+    '\u200E' to "<LTRM>",
+    '\u200F' to "<RTLM>",
+    '\u202A' to "<LTRE>",
+    '\u202B' to "<RTLE>",
+    '\u202C' to "<PDF>",
     '\u202D' to "<LTR>",
+    '\u202E' to "<RTL>",
+    '\u2066' to "<LTRI>",
+    '\u2067' to "<RTLI>",
+    '\u2068' to "<FSI>",
+    '\u2069' to "<PDI>",
+    // endregion
+
+)
+
+private val regionMappings: Map<IntRange, StringBuilder.(Char) -> Unit> = mapOf(
+    0x0080..0x009F to { // https://en.wikipedia.org/wiki/Control_character#In_Unicode
+        append("<control-").append(it.code.toUHexString()).append(">")
+    },
 )
 
 internal fun String.applyCharMapping() = buildString(capacity = this.length) {
     this@applyCharMapping.forEach { char ->
-        append(charMappings[char] ?: char)
+
+        charMappings[char]?.let { append(char); return@forEach }
+
+        regionMappings.entries.find { char.code in it.key }?.let { mapping ->
+            mapping.value.invoke(this@buildString, char)
+            return@forEach
+        }
+
+        append(char)
     }
 }
 
