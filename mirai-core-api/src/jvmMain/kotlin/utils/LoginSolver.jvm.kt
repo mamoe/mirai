@@ -87,8 +87,8 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
                     }
 
                     tempFile.writeBytes(data)
-                    logger.info { "[QRCodeLogin] 将会显示二维码图片，若看不清图片，请查看文件 ${tempFile.absolutePath}" }
-                    logger.info { "[QRCodeLogin] Displaying qrcode image. If not clear, view file ${tempFile.absolutePath}." }
+                    logger.info { "[QRCodeLogin] 将会显示二维码图片，若看不清图片，请查看文件 file://${tempFile.absolutePath}" }
+                    logger.info { "[QRCodeLogin] Displaying qrcode image. If not clear, view file file://${tempFile.absolutePath}." }
                 } catch (e: Exception) {
                     logger.warning("[QRCodeLogin] 无法写出二维码图片. 请尽量关闭终端个性化样式后扫描二维码字符图片", e)
                     logger.warning(
@@ -167,8 +167,8 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
             logger.info { "[PicCaptcha] Picture captcha required. Captcha consists of 4 letters." }
             try {
                 tempFile.writeBytes(data)
-                logger.info { "[PicCaptcha] 将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}" }
-                logger.info { "[PicCaptcha] Displaying char-image. If not clear, view file ${tempFile.absolutePath}." }
+                logger.info { "[PicCaptcha] 将会显示字符图片. 若看不清字符图片, 请查看文件 file://${tempFile.absolutePath}" }
+                logger.info { "[PicCaptcha] Displaying char-image. If not clear, view file file://${tempFile.absolutePath}." }
             } catch (e: Exception) {
                 logger.warning("[PicCaptcha] 无法写出验证码文件, 请尝试查看以上字符图片", e)
                 logger.warning("[PicCaptcha] Failed to export captcha image. Please see the char-image.", e)
