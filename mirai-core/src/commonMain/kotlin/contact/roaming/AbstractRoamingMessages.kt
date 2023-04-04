@@ -13,6 +13,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.roaming.RoamingMessage
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.internal.contact.AbstractContact
+import net.mamoe.mirai.internal.message.source.decodeRandom
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.utils.mapToIntArray
 import net.mamoe.mirai.utils.toLongUnsigned
@@ -31,7 +32,7 @@ internal abstract class AbstractRoamingMessages : RoamingMessages {
         override val time: Long get() = message.msgHead.msgTime.toLongUnsigned()
         override val ids: IntArray by lazy { messages.mapToIntArray { it.msgHead.msgSeq } }
         override val internalIds: IntArray by lazy {
-            messages.mapToIntArray { it.msgBody.richText.attr?.random ?: 0 } // other client 消息的这个是0
+            messages.mapToIntArray { it.decodeRandom() }
         }
     }
 }

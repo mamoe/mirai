@@ -104,5 +104,5 @@ public actual interface FileMessage : MessageContent, ConstrainSingle, CodableMe
     }
 
     public actual object Serializer :
-        KSerializer<FileMessage> by FallbackFileMessageSerializer(SERIAL_NAME) // not polymorphic
+        KSerializer<FileMessage> by FallbackFileMessageSerializer()
 }

@@ -163,7 +163,7 @@ internal class OnlineAudioImpl(
     }
 
     object Serializer : KSerializer<OnlineAudioImpl> by Surrogate.serializer().map(
-        resultantDescriptor = Surrogate.serializer().descriptor.copy(OnlineAudio.SERIAL_NAME),
+        resultantDescriptor = Surrogate.serializer().descriptor,
         deserialize = {
             OnlineAudioImpl(
                 filename = filename,
@@ -251,7 +251,7 @@ internal class OfflineAudioImpl(
     }
 
     object Serializer : KSerializer<OfflineAudioImpl> by Surrogate.serializer().map(
-        resultantDescriptor = Surrogate.serializer().descriptor.copy(OfflineAudio.SERIAL_NAME),
+        resultantDescriptor = Surrogate.serializer().descriptor,
         deserialize = {
             OfflineAudioImpl(
                 filename = filename,

@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.internal.message.protocol.impl
 
+import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.source.OfflineMessageSourceImplData
 import net.mamoe.mirai.internal.message.toMessageChainOnline
@@ -19,10 +19,8 @@ import net.mamoe.mirai.internal.testFramework.TestFactory
 import net.mamoe.mirai.internal.testFramework.dynamicTest
 import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.internal.utils.runCoroutineInPlace
-import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
-import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils.hexToBytes
 import kotlin.test.Test
 
@@ -91,8 +89,9 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
                                 ),
                             ),
                         ),
-                        srcMsg = EMPTY_BYTE_ARRAY
-                        // mirai's OfflineMessageSource has no enough information to create 'srcMsg'
+                        pbReserve = "18 AE FB A2 F7 86 80 80 80 01".hexToBytes(),
+                        srcMsg = "0A 2C 08 B1 89 4B 10 DD F1 92 B7 07 18 09 20 0B 28 E7 8B FE FF FF FF FF FF FF 01 30 B2 85 AF 94 06 38 AE FB A2 F7 86 80 80 80 01 E0 01 01 1A 0D 0A 0B 12 05 0A 03 0A 01 61 12 02 4A 00".hexToBytes(),
+                        toUin = 1994701021,
                     ),
                 ),
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
@@ -193,8 +192,8 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
                                 ),
                             ),
                         ),
-                        pbReserve = "18 BA 92 F1 A4 02".hexToBytes(),
-                        srcMsg = "0A 20 08 B1 89 4B 10 B2 89 4B 18 A6 01 20 0B 28 8D F4 01 30 B0 A7 AF 94 06 38 BA 92 F1 A4 02 E0 01 01 1A 2D 0A 2B 12 05 0A 03 0A 01 61 12 00 12 1C AA 02 19 9A 01 16 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 CA 04 00 D2 05 02 08 61 12 02 4A 00".hexToBytes(),
+                        pbReserve = "18 BA 92 F1 A4 82 80 80 80 01".hexToBytes(),
+                        srcMsg = "0A 24 08 B1 89 4B 10 B2 89 4B 18 A6 01 20 0B 28 8D F4 01 30 B0 A7 AF 94 06 38 BA 92 F1 A4 82 80 80 80 01 E0 01 01 1A 2D 0A 2B 12 05 0A 03 0A 01 61 12 00 12 1C AA 02 19 9A 01 16 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 CA 04 00 D2 05 02 08 61 12 02 4A 00".hexToBytes(),
                         toUin = 1230002,
                     ),
                 ),
@@ -331,8 +330,9 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
                                 ),
                             ),
                         ),
-                        srcMsg = EMPTY_BYTE_ARRAY
-                        // mirai's OfflineMessageSource has no enough information to create 'srcMsg'
+                        pbReserve = "18 AE FB A2 F7 86 80 80 80 01".hexToBytes(),
+                        srcMsg = "0A 2C 08 B1 89 4B 10 DD F1 92 B7 07 18 09 20 0B 28 E7 8B FE FF FF FF FF FF FF 01 30 B2 85 AF 94 06 38 AE FB A2 F7 86 80 80 80 01 E0 01 01 1A 0D 0A 0B 12 05 0A 03 0A 01 61 12 02 4A 00".hexToBytes(),
+                        toUin = 1994701021,
                     ),
                 ),
                 net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem(
@@ -431,9 +431,8 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
                                 ),
                             ),
                         ),
-                        pbReserve = "18 BD F9 EF D7 06".hexToBytes(),
-                        // srcMsg is available for online source
-                        srcMsg = "0A 20 08 B1 89 4B 10 B2 89 4B 18 A6 01 20 0B 28 F6 F3 01 30 83 91 AF 94 06 38 BD F9 EF D7 06 E0 01 01 1A 2D 0A 2B 12 05 0A 03 0A 01 61 12 00 12 1C AA 02 19 9A 01 16 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 CA 04 00 D2 05 02 08 4F 12 02 4A 00".hexToBytes(),
+                        pbReserve = "18 BD F9 EF D7 86 80 80 80 01".hexToBytes(),
+                        srcMsg = "0A 24 08 B1 89 4B 10 B2 89 4B 18 A6 01 20 0B 28 F6 F3 01 30 83 91 AF 94 06 38 BD F9 EF D7 86 80 80 80 01 E0 01 01 1A 2D 0A 2B 12 05 0A 03 0A 01 61 12 00 12 1C AA 02 19 9A 01 16 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 CA 04 00 D2 05 02 08 4F 12 02 4A 00".hexToBytes(),
                         toUin = 1230002,
                     ),
                 ),
@@ -488,18 +487,13 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
     ///////////////////////////////////////////////////////////////////////////
 
 
-    // TODO: 2022/7/20 MessageSource 在 MessageMetadata 的 scope 多态序列化后会输出 'type' = 'MessageSource', 这是期望的行为.
-    //  但是在反序列化时会错误 unknown field 'type'
-    override val format: Json
-        get() = Json {
-            prettyPrint = true
-            serializersModule = MessageSerializers.serializersModule
-            ignoreUnknownKeys = true
-        }
-
-
     @Serializable
     data class PolymorphicWrapperMessageSource(
+        override val message: @Polymorphic MessageSource
+    ) : PolymorphicWrapper
+
+    @Serializable
+    data class StaticWrapperMessageSource(
         override val message: MessageSource
     ) : PolymorphicWrapper
 
@@ -510,6 +504,19 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
         testPolymorphicIn(
             polySerializer = PolymorphicWrapperMessageSource.serializer(),
             polyConstructor = ::PolymorphicWrapperMessageSource,
+            data = data,
+            expectedInstance = expectedInstance,
+            expectedSerialName = null,
+        )
+    })
+
+    private fun <M : MessageSource> testStaticInMessageSource(
+        data: M,
+        expectedInstance: M = data,
+    ) = listOf(dynamicTest("testStaticInMessageSource") {
+        testPolymorphicIn(
+            polySerializer = StaticWrapperMessageSource.serializer(),
+            polyConstructor = ::StaticWrapperMessageSource,
             data = data,
             expectedInstance = expectedInstance,
             expectedSerialName = null,
@@ -533,6 +540,7 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
             testPolymorphicInSingleMessage(data, serialName),
             testInsideMessageChain(data, serialName),
             testContextual(data, serialName),
+            testStaticInMessageSource(data),
         )
     }
 
@@ -548,6 +556,7 @@ internal class QuoteReplyProtocolTest : AbstractMessageProtocolTest() {
             testPolymorphicInSingleMessage(data, serialName, expectedInstance = expected),
             testInsideMessageChain(data, serialName, expectedInstance = expected),
             testContextual(data, serialName, expectedInstance = expected),
+            testStaticInMessageSource(data, expectedInstance = expected),
         )
     }
 }

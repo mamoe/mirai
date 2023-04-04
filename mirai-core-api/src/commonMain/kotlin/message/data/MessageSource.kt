@@ -207,6 +207,13 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      */
     public abstract val isOriginalMessageInitialized: Boolean
 
+    /**
+     * 消息种类
+     *
+     * @since 2.15
+     */
+    public abstract val kind: MessageSourceKind
+
     public abstract override fun toString(): String
 
     @MiraiInternalApi
@@ -376,26 +383,18 @@ public enum class MessageSourceKind {
     STRANGER
 }
 
-/**
- * 获取 [MessageSourceKind]
+/*
+  public static final net.mamoe.mirai.message.data.MessageSourceKind getKind(net.mamoe.mirai.message.data.MessageSource);
+  public static final net.mamoe.mirai.message.data.MessageSourceKind getKind(net.mamoe.mirai.message.data.OnlineMessageSource);
  */
-public val MessageSource.kind: MessageSourceKind
-    get() = when (this) {
-        is OnlineMessageSource -> kind
-        is OfflineMessageSource -> kind
-    }
+@JvmName("getKind")
+@Deprecated("For ABI compatibility", level = DeprecationLevel.HIDDEN)
+public fun getKindLegacy(source: MessageSource): MessageSourceKind = source.kind
 
-/**
- * 获取 [MessageSourceKind]
- */
-public val OnlineMessageSource.kind: MessageSourceKind
-    get() = when (subject) {
-        is Group -> MessageSourceKind.GROUP
-        is Friend -> MessageSourceKind.FRIEND
-        is Member -> MessageSourceKind.TEMP
-        is Stranger -> MessageSourceKind.STRANGER
-        else -> error("Internal error: OnlineMessageSource.kind reached an unexpected clause, subject=$subject")
-    }
+@JvmName("getKind")
+@Deprecated("For ABI compatibility", level = DeprecationLevel.HIDDEN)
+public fun getKindLegacy(source: OnlineMessageSource): MessageSourceKind = source.kind
+
 
 // For MessageChain, no need to expose to Java.
 

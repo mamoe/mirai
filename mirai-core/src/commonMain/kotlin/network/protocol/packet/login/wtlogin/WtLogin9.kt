@@ -13,12 +13,14 @@ import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.utils._writeTlvMap
 
 internal object WtLogin9 : WtLoginExt {
     private const val appId = 16L
 
-    operator fun invoke(
+    fun Password(
         client: QQAndroidClient,
+        passwordMd5: ByteArray,
         allowSlider: Boolean
     ) = WtLogin.Login.buildLoginOutgoingPacket(
         client, bodyType = 2, remark = "9:password-login"
@@ -34,19 +36,21 @@ internal object WtLogin9 : WtLoginExt {
                 if (useEncryptA1AndNoPicSig) {
                     tlvCount++;
                 }
-                writeShort(tlvCount.toShort()) // count of TLVs, probably ignored by server?
+                // writeShort(tlvCount.toShort()) // count of TLVs, probably ignored by server?
                 //writeShort(LoginType.PASSWORD.value.toShort())
 
-                t18(appId, client.appClientVersion, client.uin)
-                t1(client.uin, client.device.ipAddress)
+                _writeTlvMap {
 
-                if (useEncryptA1AndNoPicSig) {
-                    t106(client.wLoginSigInfo.encryptA1!!)
-                } else {
-                    t106(appId, client)
-                }
+                    t18(appId, client.appClientVersion, client.uin)
+                    t1(client.uin, client.device.ipAddress)
 
-                /* // from GetStWithPasswd
+                    if (useEncryptA1AndNoPicSig) {
+                        t106(client.wLoginSigInfo.encryptA1!!)
+                    } else {
+                        t106(client, appId, passwordMd5)
+                    }
+
+                    /* // from GetStWithPasswd
                 int mMiscBitmap = this.mMiscBitmap;
                 if (t.uinDeviceToken) {
                     mMiscBitmap = (this.mMiscBitmap | 0x2000000);
@@ -56,65 +60,120 @@ internal object WtLogin9 : WtLoginExt {
                 // defaults true
                 if (ConfigManager.get_loginWithPicSt()) appIdList = longArrayOf(1600000226L)
                 */
-                t116(client.miscBitMap, client.subSigMap)
-                t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
-                t107(0)
-                t108(client.device.imei.toByteArray())
+                    t116(client.miscBitMap, client.subSigMap)
+                    t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
+                    t107(0)
+                    t108(client.device.imei.toByteArray())
 
-                // t108(byteArrayOf())
-                // ignored: t104()
-                t142(client.apkId)
+                    // t108(byteArrayOf())
+                    // ignored: t104()
+                    t142(client.apkId)
 
-                // if login with non-number uin
-                // t112()
-                t144(client)
+                    // if login with non-number uin
+                    // t112()
+                    t144(client)
 
-                //this.build().debugPrint("傻逼")
-                t145(client.device.guid)
-                t147(appId, client.apkVersionName, client.apkSignatureMd5)
+                    //this.build().debugPrint("傻逼")
+                    t145(client.device.guid)
+                    t147(appId, client.apkVersionName, client.apkSignatureMd5)
 
-                /*
+                    /*
                 if (client.miscBitMap and 0x80 != 0) {
                     t166(1)
                 }
                 */
-                if (useEncryptA1AndNoPicSig) {
-                    t16a(client.wLoginSigInfo.noPicSig!!)
-                }
+                    if (useEncryptA1AndNoPicSig) {
+                        t16a(client.wLoginSigInfo.noPicSig!!)
+                    }
 
-                t154(sequenceId)
-                t141(client.device.simInfo, client.networkType, client.device.apn)
-                t8(2052)
+                    t154(sequenceId)
+                    t141(client.device.simInfo, client.networkType, client.device.apn)
+                    t8(2052)
 
-                t511()
+                    t511()
 
-                // ignored t172 because rollbackSig is null
-                // ignored t185 because loginType is not SMS
-                // ignored t400 because of first login
+                    // ignored t172 because rollbackSig is null
+                    // ignored t185 because loginType is not SMS
+                    // ignored t400 because of first login
 
-                t187(client.device.macAddress)
-                t188(client.device.androidId)
-                t194(client.device.imsiMd5)
-                if (allowSlider) {
-                    t191()
-                }
+                    t187(client.device.macAddress)
+                    t188(client.device.androidId)
+                    t194(client.device.imsiMd5)
+                    if (allowSlider) {
+                        t191()
+                    }
 
-                /*
+                    /*
                 t201(N = byteArrayOf())*/
 
-                t202(client.device.wifiBSSID, client.device.wifiSSID)
+                    t202(client.device.wifiBSSID, client.device.wifiSSID)
 
-                t177(
-                    buildTime = client.buildTime,
-                    buildVersion = client.sdkVersion,
-                )
-                t516()
-                t521()
+                    t177(
+                        buildTime = client.buildTime,
+                        buildVersion = client.sdkVersion,
+                    )
+                    t516()
+                    t521()
 
-                t525()
-                // this.build().debugPrint("傻逼")
+                    t525()
+                    // this.build().debugPrint("傻逼")
 
-                // ignored t318 because not logging in by QR
+                    // ignored t318 because not logging in by QR
+                }
+            }
+        }
+    }
+
+    @Suppress("DuplicatedCode")
+    fun QRCode(
+        client: QQAndroidClient,
+        data: QRCodeLoginData,
+    ) = WtLogin.Login.buildLoginOutgoingPacket(
+        client, bodyType = 2, remark = "9:qrcode-login"
+    ) { sequenceId ->
+        writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
+            writeOicqRequestPacket(client, commandId = 0x0810) {
+                writeShort(9) // subCommand
+//                writeShort(0x19) // count of TLVs, probably ignored by server?
+
+                _writeTlvMap {
+                    t18(appId, client.appClientVersion, client.uin)
+                    t1(client.uin, client.device.ipAddress)
+
+                    t106(data.tmpPwd)
+
+                    t116(client.miscBitMap, client.subSigMap)
+                    t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
+                    t107(0)
+                    t108(client.device.imei.toByteArray())
+
+                    t142(client.apkId)
+
+                    t144(client)
+
+                    t145(client.device.guid)
+                    t147(appId, client.apkVersionName, client.apkSignatureMd5)
+
+                    t16a(data.noPicSig)
+
+                    t154(sequenceId)
+                    t141(client.device.simInfo, client.networkType, client.device.apn)
+                    t8(2052)
+
+                    t511()
+
+                    t187(client.device.macAddress)
+                    t188(client.device.androidId)
+                    t194(client.device.imsiMd5)
+                    t191(0x00)
+
+                    t202(client.device.wifiBSSID, client.device.wifiSSID)
+
+                    t177(client.buildTime, client.sdkVersion)
+                    t516()
+                    t521(8)
+                    t318(data.tgtQR)
+                }
             }
         }
     }

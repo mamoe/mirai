@@ -42,6 +42,13 @@ public interface JvmPluginClasspath {
     public val pluginIndependentLibrariesClassLoader: ClassLoader
 
     /**
+     * [pluginClassLoader] 是否可以通过 [ClassLoader.getResource] 获取 Mirai Console (包括依赖) 的相关资源
+     *
+     * 默认为 `false`
+     */
+    public var shouldResolveConsoleSystemResource: Boolean
+
+    /**
      * 将 [file] 加入 [classLoader] 的搜索路径内
      *
      * @throws IllegalArgumentException 当 [classLoader] 不是 [pluginClassLoader],

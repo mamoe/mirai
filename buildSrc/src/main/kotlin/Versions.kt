@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -28,18 +28,18 @@ object Versions {
 
     val core get() = project
     val console get() = project
-    val consoleIntellij get() = "223-$project-172-1" // idea-mirai-kotlin-patch
+    val consoleIntellij get() = "231-$project-182-1" // idea-mirai-kotlin-patch
     val consoleTerminal get() = project
 
-    const val kotlinCompiler = "1.7.10"
+    const val kotlinCompiler = "1.8.10"
     const val kotlinStdlib = kotlinCompiler
-    const val dokka = "1.7.10"
+    const val dokka = "1.8.10"
 
-    const val kotlinCompilerForIdeaPlugin = "1.7.20"
+    const val kotlinCompilerForIdeaPlugin = "1.8.20-RC" // 231 bundles 1.8.20
 
     const val coroutines = "1.6.4"
-    const val atomicFU = "0.18.3"
-    const val serialization = "1.3.3"
+    const val atomicFU = "0.20.0"
+    const val serialization = "1.5.0"
 
     /**
      * 注意, 不要轻易升级 ktor 版本. 阅读 [RelocationNotes], 尤其是间接依赖部分.
@@ -50,14 +50,14 @@ object Versions {
 
     const val binaryValidator = "0.4.0"
 
-    const val blockingBridge = "2.1.0-170.1"
-    const val dynamicDelegation = "0.3.0-170.1"
-    const val mavenCentralPublish = "1.0.0-dev-3"
+    const val blockingBridge = "3.0.0-180.1"
+    const val dynamicDelegation = "0.4.0-180.1"
+    const val mavenCentralPublish = "1.0.0"
 
     const val androidGradlePlugin = "4.1.1"
     const val android = "4.1.1.4"
 
-    const val shadow = "7.1.3-mirai-modified-SNAPSHOT"
+    const val shadow = "8.1.0"
 
     const val logback = "1.3.4"
     const val slf4j = "2.0.3"
@@ -72,7 +72,7 @@ object Versions {
     const val junit = "5.7.2"
 
     const val yamlkt = "0.12.0"
-    const val intellijGradlePlugin = "1.11.0"
+    const val intellijGradlePlugin = "1.13.2"
 
     // https://github.com/google/jimfs
     // Java In Memory File System
@@ -84,7 +84,7 @@ object Versions {
 
     // don't update easily unless you want your disk space -= 1000 MB
     // (700 MB for IDEA, 150 MB for sources, 150 MB for JBR)
-    const val intellij = "2022.3.1"
+    const val intellij = "2023.1"
 }
 
 @Suppress("unused")
@@ -102,6 +102,9 @@ val `kotlinx-serialization-core` = kotlinx("serialization-core", Versions.serial
 val `kotlinx-serialization-json` = kotlinx("serialization-json", Versions.serialization)
 val `kotlinx-serialization-protobuf` = kotlinx("serialization-protobuf", Versions.serialization)
 const val `kotlinx-atomicfu` = "org.jetbrains.kotlinx:atomicfu:${Versions.atomicFU}"
+
+const val `kotlin-jvm-blocking-bridge` = "me.him188:kotlin-jvm-blocking-bridge-runtime:${Versions.blockingBridge}"
+const val `kotlin-dynamic-delegation` = "me.him188:kotlin-dynamic-delegation:${Versions.dynamicDelegation}"
 
 /**
  * @see relocateImplementation

@@ -18,6 +18,8 @@ import net.mamoe.mirai.utils.lateinitMutableProperty
 internal interface BotClientHolder {
     var client: QQAndroidClient
 
+    fun refreshClient()
+
     companion object : ComponentKey<BotClientHolder>
 }
 
@@ -26,6 +28,10 @@ internal class BotClientHolderImpl(
     private val logger: MiraiLogger,
 ) : BotClientHolder {
     override var client: QQAndroidClient by lateinitMutableProperty { createClient(bot) }
+
+    override fun refreshClient() {
+        client = createClient(bot)
+    }
 
     private fun createClient(bot: QQAndroidBot): QQAndroidClient {
         val ssoContext = bot.components[SsoProcessorContext]

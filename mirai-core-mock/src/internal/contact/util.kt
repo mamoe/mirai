@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,6 +13,7 @@ package net.mamoe.mirai.mock.internal.contact
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.PermissionDeniedException
@@ -26,6 +27,7 @@ import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.mock.utils.plusHttpSubpath
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.Services
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.toUHexString
 
@@ -50,14 +52,17 @@ internal fun MessageSource.withMessage(msg: Message): MessageChain = buildMessag
 }
 
 @Suppress("UNUSED_PARAMETER")
-internal suspend fun ExternalResource.mockUploadAudio(bot: MockBot) = inResource {
-    OfflineAudio(
-        filename = md5.toUHexString() + ".amr",
-        fileMd5 = md5,
-        fileSize = size,
-        codec = AudioCodec.SILK,
-        extraData = null,
-    )
+internal suspend fun ExternalResource.mockUploadAudio(bot: MockBot): OfflineAudio {
+    val md5 = md5 // calculate before using resource
+    return inResource {
+        OfflineAudio(
+            filename = md5.toUHexString() + ".amr",
+            fileMd5 = md5,
+            fileSize = size,
+            codec = AudioCodec.SILK,
+            extraData = null,
+        )
+    }
 }
 
 internal suspend fun ExternalResource.mockUploadVoice(bot: MockBot) = kotlin.run {
@@ -150,5 +155,37 @@ internal class MockImage(
         if (other === this) return true
         if (other !is Image) return false
         return this.imageId == other.imageId
+    }
+}
+
+internal object MockInternalImageProtocolImpl : InternalImageProtocol {
+
+    override fun createImage(
+        imageId: String,
+        size: Long,
+        type: ImageType,
+        width: Int,
+        height: Int,
+        isEmoji: Boolean
+    ): Image = MockImage(imageId, "images/" + imageId.substring(1..36), width, height, size, type)
+
+    override suspend fun isUploaded(
+        bot: Bot,
+        md5: ByteArray,
+        size: Long,
+        context: Contact?,
+        type: ImageType,
+        width: Int,
+        height: Int
+    ): Boolean = bot.cast<MockBot>().tmpResourceServer.isImageUploaded(md5, size)
+
+}
+
+internal fun registerMockServices() {
+    Services.registerAsOverride(
+        Services.qualifiedNameOrFail(InternalImageProtocol::class),
+        "net.mamoe.mirai.mock.internal.contact.MockInternalImageProtocolImpl"
+    ) {
+        MockInternalImageProtocolImpl
     }
 }

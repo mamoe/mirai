@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.message.protocol.impl
 
 import net.mamoe.mirai.contact.AnonymousMember
+import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
@@ -24,7 +25,6 @@ import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.message.source.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.copy
 import net.mamoe.mirai.utils.map
 
 internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
@@ -100,7 +100,7 @@ internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
                 MessageSerializer(
                     MessageSource::class,
                     OfflineMessageSourceImplData.serializer().map(
-                        OfflineMessageSourceImplData.serializer().descriptor.copy(MessageSource.SERIAL_NAME),
+                        MessageSourceSerializerImpl.serialDataSerializer().descriptor,
                         { it },
                         {
                             OfflineMessageSourceImplData(
@@ -157,17 +157,25 @@ internal class QuoteReplyProtocol : MessageProtocol(PRIORITY_METADATA) {
             markAsConsumed()
             collect(ImMsgBody.Elem(srcMsg = source.toJceData()))
             if (sourceCommon.kind == MessageSourceKind.GROUP) {
-                if (source is OnlineMessageSource.Incoming.FromGroup) {
-                    val sender0 = source.sender
-                    if (sender0 !is AnonymousMember) {
-                        processAlso(At(sender0))
+                fun isPlusNeed(): Boolean {
+                    if (source is OnlineMessageSource.Incoming.FromGroup) {
+                        try {
+                            val sender0 = source.sender
+                            return sender0 !is AnonymousMember
+                        } catch (_: IllegalStateException) {
+                            // Member not available now
+                        }
                     }
+
+                    return sourceCommon.fromId != 80000000L // #2501
+                }
+
+                if (isPlusNeed()) {
+                    processAlso(At(sourceCommon.fromId))
+
                     // transformOneMessage(PlainText(" "))
                     // removed by https://github.com/mamoe/mirai/issues/524
                     // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
-                } else if (sourceCommon.fromId != 80000000L) {
-                    // https://github.com/mamoe/mirai/issues/2501 OfflineMessageSource quote replying
-                    processAlso(At(sourceCommon.fromId))
                 }
             }
         }

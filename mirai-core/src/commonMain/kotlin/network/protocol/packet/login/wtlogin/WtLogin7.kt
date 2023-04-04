@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.subAppId
 import net.mamoe.mirai.internal.network.subSigMap
 import net.mamoe.mirai.utils.DeviceVerificationRequests
+import net.mamoe.mirai.utils._writeTlvMap
 
 /**
  * Submit SMS.
@@ -33,15 +34,17 @@ internal object WtLogin7 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(7) // subCommand
-                writeShort(7) // count of TLVs
 
-                t8(2052)
-                t104(client.t104)
-                t116(client.miscBitMap, client.subSigMap)
-                t174(client.t174 ?: t174)
-                t17c(code.encodeToByteArray())
-                t401(client.G)
-                t198()
+                _writeTlvMap {
+
+                    t8(2052)
+                    t104(client.t104)
+                    t116(client.miscBitMap, client.subSigMap)
+                    t174(client.t174 ?: t174)
+                    t17c(code.encodeToByteArray())
+                    t401(client.G)
+                    t198()
+                }
             }
         }
     }

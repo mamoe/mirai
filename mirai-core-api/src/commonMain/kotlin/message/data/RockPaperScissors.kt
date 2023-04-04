@@ -102,7 +102,7 @@ public enum class RockPaperScissors(
     }
 
     internal object Serializer : KSerializer<RockPaperScissors> by Surrogate.serializer().map(
-        resultantDescriptor = Surrogate.serializer().descriptor.copy(SERIAL_NAME),
+        resultantDescriptor = Surrogate.serializer().descriptor,
         deserialize = { valueOf(it.name) },
         serialize = { Surrogate(name) },
     ) {

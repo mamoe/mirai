@@ -28,15 +28,16 @@ import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
  * */
 
 internal class TroopEssenceMsgManager {
-    internal object SetEssence : OutgoingPacketFactory<SetEssence.Response>("OidbSvc.0xeac_1") {
 
-        internal data class Response(val success: Boolean, val msg: String?) : Packet
+    internal data class Response(val success: Boolean, val msg: String?) : Packet
+
+    internal object SetEssence : OutgoingPacketFactory<Response>("OidbSvc.0xeac_1") {
 
         operator fun invoke(
             client: QQAndroidClient,
             troopUin: Long,
-            msg_random: Int,
-            msg_seq: Int
+            msgRandom: Int,
+            msgSeq: Int
         ) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
                 OidbSso.OIDBSSOPkg.serializer(), OidbSso.OIDBSSOPkg(
@@ -45,8 +46,40 @@ internal class TroopEssenceMsgManager {
                     serviceType = 1,
                     bodybuffer = Oidb0xeac.ReqBody(
                         groupCode = troopUin,
-                        msgSeq = msg_seq.and(-1),
-                        msgRandom = msg_random
+                        msgSeq = msgSeq.and(-1),
+                        msgRandom = msgRandom
+                    ).toByteArray(Oidb0xeac.ReqBody.serializer()),
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            readProtoBuf(OidbSso.OIDBSSOPkg.serializer()).let { pkg ->
+                pkg.bodybuffer.loadAs(Oidb0xeac.RspBody.serializer()).let { data ->
+                    return Response(data.errorCode == 0, data.wording)
+                }
+            }
+
+        }
+    }
+
+    internal object RemoveEssence : OutgoingPacketFactory<Response>("OidbSvc.0xeac_2") {
+
+        operator fun invoke(
+            client: QQAndroidClient,
+            troopUin: Long,
+            msgRandom: Int,
+            msgSeq: Int
+        ) = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                OidbSso.OIDBSSOPkg.serializer(), OidbSso.OIDBSSOPkg(
+                    command = 3756,
+                    result = 0,
+                    serviceType = 1,
+                    bodybuffer = Oidb0xeac.ReqBody(
+                        groupCode = troopUin,
+                        msgSeq = msgSeq.and(-1),
+                        msgRandom = msgRandom
                     ).toByteArray(Oidb0xeac.ReqBody.serializer()),
                 )
             )
