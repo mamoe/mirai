@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -118,66 +118,6 @@ internal data class GroupActiveData(
 }
 
 @Serializable
-internal data class GroupHonorListData(
-    @SerialName("gc") val gc: String?,
-    @SerialName("type") val type: JsonElement,
-    @SerialName("uin") val uin: String?,
-    @SerialName("talkativeList") val talkativeList: List<Actor>? = null,
-    @SerialName("currentTalkative") val currentTalkative: Current? = null,
-    @SerialName("actorList") val actorList: List<Actor>? = null,
-    @SerialName("legendList") val legendList: List<Actor>? = null,
-    @SerialName("newbieList") val newbieList: List<Actor>? = null,
-    @SerialName("strongnewbieList") val strongNewbieList: List<Actor>? = null,
-    @SerialName("emotionList") val emotionList: List<Actor>? = null,
-    @SerialName("richerList") val richerList: List<Actor>? = null,
-    @SerialName("currentRicher") val currentRicher: Current? = null,
-    @SerialName("redpacketHonnorList") val redPacketHonorList: List<Actor>? = null,
-    @SerialName("currentRedpacketHonnor") val currentRedPacketHonor: Current? = null,
-    @SerialName("levelname") val levelName: Map<String, String>? = null,
-    @SerialName("manageList") val manageList: List<Tag>? = null, // 管理员
-    @SerialName("exclusiveList") val exclusiveList: List<Tag>? = null, // 特殊头衔
-    @SerialName("activeObj") val activeObj: Map<String, List<Tag>>? = null, // Key为活跃等级名, 如`冒泡`
-    @SerialName("showActiveObj") val showActiveObj: Map<String, Boolean>? = null,
-    @SerialName("myTitle") val myTitle: String?,
-    @SerialName("myIndex") val myIndex: Int? = 0,
-    @SerialName("myAvatar") val myAvatar: String?,
-    @SerialName("hasServerError") val hasServerError: Boolean?,
-    @SerialName("hwExcellentList") val hwExcellentList: List<Actor>? = null
-) : JsonStruct {
-
-    @Serializable
-    data class Actor(
-        @SerialName("uin") val uin: Long = 0,
-        @SerialName("avatar") val avatar: String = "",
-        @SerialName("name") val name: String = "",
-        @SerialName("desc") val desc: String = "",
-        @SerialName("btnText") val btnText: String = "",
-        @SerialName("text") val text: String = "",
-        @SerialName("icon") val icon: Int? = null
-    )
-
-    @Serializable
-    data class Current(
-        @SerialName("uin") val uin: Long = 0,
-        @SerialName("day_count") val dayCount: Int = 0,
-        @SerialName("avatar") val avatar: String = "",
-        @SerialName("avatar_size") val avatarSize: Int = 0,
-        @SerialName("nick") val nick: String = ""
-    )
-
-    @Serializable
-    data class Tag(
-        @SerialName("uin") val uin: Long = 0,
-        @SerialName("avatar") val avatar: String = "",
-        @SerialName("name") val name: String = "",
-        @SerialName("btnText") val btnText: String = "",
-        @SerialName("text") val text: String = "",
-        @SerialName("tag") val tag: String = "",  // 头衔
-        @SerialName("tagColor") val tagColor: String = ""
-    )
-}
-
-@Serializable
 internal data class CgiData(
     @SerialName("cgicode") val cgicode: Int,
     @SerialName("data") val `data`: JsonElement,
@@ -190,29 +130,28 @@ internal data class MemberMedalData(
     @SerialName("avatar") val avatar: String,
     @SerialName("face_flag") val faceFlag: Int,
     @SerialName("last_view_ts") val lastViewTs: Int,
-    @SerialName("list") val list: List<Item>, // 头衔详情
+    @SerialName("list") val list: List<MemberMedalItem>, // 头衔详情
     @SerialName("nick") val nick: String,
     @SerialName("role") val role: Int, // 身份/权限
     @SerialName("weared") val weared: String, // 目前显示头衔
     @SerialName("weared_color") val wearedColor: String // 头衔颜色
-) {
+)
 
-    @Serializable
-    data class Item(
-        @SerialName("achieve_ts") val achieveTs: Int, // 是否拥有
-        @SerialName("category_id") val categoryId: Int,
-        @SerialName("color") val color: String,
-        @SerialName("is_mystery") val isMystery: Int,
-        @SerialName("mask") val mask: Int, //  群主 300 管理员 301 特殊 302  活跃 315
-        @SerialName("medal_desc") val medalDesc: String,
-        @SerialName("name") val name: String,
-        @SerialName("order") val order: Int,
-        @SerialName("pic") val pic: String,
-        @SerialName("rule") val rule: Int,
-        @SerialName("rule_desc") val ruleDesc: String, // 来源
-        @SerialName("wear_ts") val wearTs: Int // 是否佩戴
-    )
-}
+@Serializable
+internal data class MemberMedalItem(
+    @SerialName("achieve_ts") val achieveTs: Int, // 是否拥有
+    @SerialName("category_id") val categoryId: Int,
+    @SerialName("color") val color: String,
+    @SerialName("is_mystery") val isMystery: Int,
+    @SerialName("mask") val mask: Int, //  群主 300 管理员 301 特殊 302  活跃 315
+    @SerialName("medal_desc") val medalDesc: String,
+    @SerialName("name") val name: String,
+    @SerialName("order") val order: Int,
+    @SerialName("pic") val pic: String,
+    @SerialName("rule") val rule: Int,
+    @SerialName("rule_desc") val ruleDesc: String, // 来源
+    @SerialName("wear_ts") val wearTs: Int // 是否佩戴
+)
 
 @Serializable
 internal data class MemberHonorInfo(
@@ -346,7 +285,8 @@ internal suspend fun QQAndroidBot.getRawGroupLevelInfo(
                 "cookie", "uin=o${id}; skey=${sKey}"
             )
         }
-    }.bodyAsText().loadAs(GroupLevelInfo.serializer())
+    }.bodyAsText()
+        .loadAs(GroupLevelInfo.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawMemberLevelInfo(
@@ -364,7 +304,8 @@ internal suspend fun QQAndroidBot.getRawMemberLevelInfo(
                 "cookie", "uin=o${id}; skey=${sKey}"
             )
         }
-    }.bodyAsText().loadAs(MemberLevelInfo.serializer())
+    }.bodyAsText()
+        .loadAs(MemberLevelInfo.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawMemberMedalInfo(
@@ -402,7 +343,9 @@ internal suspend fun QQAndroidBot.getRawTalkativeInfo(
                 "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberTalkativeInfo.serializer())
+    }.bodyAsText()
+        .loadAs(CgiData.serializer())
+        .loadData(MemberTalkativeInfo.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawEmotionInfo(
@@ -420,7 +363,9 @@ internal suspend fun QQAndroidBot.getRawEmotionInfo(
                 "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberEmotionInfo.serializer())
+    }.bodyAsText()
+        .loadAs(CgiData.serializer())
+        .loadData(MemberEmotionInfo.serializer())
 }
 
 @PublishedApi
@@ -451,7 +396,9 @@ internal suspend fun QQAndroidBot.getRawHomeworkExcellentInfo(
                 "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberHomeworkExcellentInfo.serializer())
+    }.bodyAsText()
+        .loadAs(CgiData.serializer())
+        .loadData(MemberHomeworkExcellentInfo.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawHomeworkActiveInfo(
@@ -469,7 +416,9 @@ internal suspend fun QQAndroidBot.getRawHomeworkActiveInfo(
                 "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberHomeworkActiveInfo.serializer())
+    }.bodyAsText()
+        .loadAs(CgiData.serializer())
+        .loadData(MemberHomeworkActiveInfo.serializer())
 }
 
 /**
@@ -491,7 +440,9 @@ internal suspend fun QQAndroidBot.getRawContinuousInfo(
                 "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberContinuousInfo.serializer())
+    }.bodyAsText()
+        .loadAs(CgiData.serializer())
+        .loadData(MemberContinuousInfo.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawRicherHonorInfo(
@@ -499,7 +450,7 @@ internal suspend fun QQAndroidBot.getRawRicherHonorInfo(
 ): MemberRicherHonorInfo {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/new_honor/list_honor/list_richer_honor")
-        parameter("gc", groupCode)
+        parameter("group_code", groupCode)
         parameter("num", 3000)
         parameter("bkn", client.wLoginSigInfo.bkn)
 
@@ -509,7 +460,9 @@ internal suspend fun QQAndroidBot.getRawRicherHonorInfo(
                 "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberRicherHonorInfo.serializer())
+    }.bodyAsText()
+        .loadAs(CgiData.serializer())
+        .loadData(MemberRicherHonorInfo.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawRedPacketInfo(
@@ -517,7 +470,7 @@ internal suspend fun QQAndroidBot.getRawRedPacketInfo(
 ): MemberRedPacketInfo {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/new_honor/list_honor/list_redpacket_honor")
-        parameter("gc", groupCode)
+        parameter("group_code", groupCode)
         parameter("num", 3000)
         parameter("bkn", client.wLoginSigInfo.bkn)
 
@@ -527,7 +480,9 @@ internal suspend fun QQAndroidBot.getRawRedPacketInfo(
                 "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberRedPacketInfo.serializer())
+    }.bodyAsText()
+        .loadAs(CgiData.serializer())
+        .loadData(MemberRedPacketInfo.serializer())
 }
 
 /**
@@ -540,7 +495,7 @@ internal suspend fun QQAndroidBot.getRawMemberTitleList(
         url("https://qun.qq.com/cgi-bin/honorv2/honor_title_list")
         parameter("group_code", groupCode)
         parameter("request_type", "2")
-        parameter("bkn", client.wLoginSigInfo.bkn)
+        parameter("g_tk", client.wLoginSigInfo.bkn)
 
         headers {
             // ktor bug
@@ -548,7 +503,8 @@ internal suspend fun QQAndroidBot.getRawMemberTitleList(
                 "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadAs(CgiData.serializer()).loadData(MemberScoreData.serializer())
+    }.bodyAsText()
+        .loadAs(MemberScoreData.serializer())
 }
 
 internal suspend fun QQAndroidBot.setGroupLevelInfo(
@@ -572,7 +528,8 @@ internal suspend fun QQAndroidBot.setGroupLevelInfo(
                 "cookie", "uin=o${id}; skey=${sKey}"
             )
         }
-    }.bodyAsText().loadAs(SetResult.serializer())
+    }.bodyAsText()
+        .loadAs(SetResult.serializer())
 }
 
 internal suspend fun QQAndroidBot.setGroupSetting(
@@ -593,7 +550,8 @@ internal suspend fun QQAndroidBot.setGroupSetting(
                 "cookie", "uin=o${id}; skey=${sKey}"
             )
         }
-    }.bodyAsText().loadAs(SetResult.serializer())
+    }.bodyAsText()
+        .loadAs(SetResult.serializer())
 }
 
 internal suspend fun QQAndroidBot.setGroupHonourFlag(
@@ -614,7 +572,8 @@ internal suspend fun QQAndroidBot.setGroupHonourFlag(
                 "cookie", "uin=o${id}; skey=${sKey}"
             )
         }
-    }.bodyAsText().loadAs(SetResult.serializer())
+    }.bodyAsText()
+        .loadAs(SetResult.serializer())
 }
 
 internal suspend fun QQAndroidBot.getRawGroupActiveData(
@@ -631,33 +590,8 @@ internal suspend fun QQAndroidBot.getRawGroupActiveData(
                 "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
             )
         }
-    }.bodyAsText().loadAs(GroupActiveData.serializer())
-}
-
-internal suspend fun QQAndroidBot.getRawGroupHonorListData(
-    groupId: Long, type: GroupHonorType
-): GroupHonorListData {
-    val html = components[HttpClientProvider].getHttpClient().get {
-        url("https://qun.qq.com/interactive/honorlist")
-        parameter("gc", groupId)
-        parameter(
-            "type", when (type) {
-                GroupHonorType.BRONZE -> "bronze"
-                GroupHonorType.SILVER -> "silver"
-                GroupHonorType.GOLDEN -> "golden"
-                GroupHonorType.WHIRLWIND -> "whirlwind"
-                else -> type.id
-            }
-        )
-        headers {
-            // ktor bug
-            append(
-                "cookie", "uin=o${id}; skey=${sKey}; p_uin=o${id}; p_skey=${psKey(host)};"
-            )
-        }
     }.bodyAsText()
-    val jsonText = html.substringAfter("window.__INITIAL_STATE__=").substringBefore("</script>")
-    return jsonText.loadAs(GroupHonorListData.serializer())
+        .loadAs(GroupActiveData.serializer())
 }
 
 @Suppress("INVISIBLE_MEMBER")
