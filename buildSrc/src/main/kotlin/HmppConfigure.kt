@@ -82,7 +82,7 @@ enum class HostArch {
 
 /// eg. "!a;!b" means to enable all targets but a or b
 /// eg. "a;b;!other" means to disable all targets but a or b
-val ENABLED_TARGETS by lazy {
+val ENABLED_TARGETS by projectLazy {
 
     val targets = getMiraiTargetFromGradle() // enable all by default
 
@@ -117,7 +117,7 @@ fun isTargetEnabled(name: String): Boolean {
 fun Set<String>.filterTargets() =
     this.filter { isTargetEnabled(it) }.toSet()
 
-val MAC_TARGETS: Set<String> by lazy {
+val MAC_TARGETS: Set<String> by projectLazy {
     setOf(
 //        "watchosX86",
         "macosX64",
@@ -142,13 +142,13 @@ val MAC_TARGETS: Set<String> by lazy {
     ).filterTargets()
 }
 
-val WIN_TARGETS by lazy { setOf("mingwX64").filterTargets() }
+val WIN_TARGETS by projectLazy { setOf("mingwX64").filterTargets() }
 
-val LINUX_TARGETS by lazy { setOf("linuxX64").filterTargets() }
+val LINUX_TARGETS by projectLazy { setOf("linuxX64").filterTargets() }
 
-val UNIX_LIKE_TARGETS by lazy { LINUX_TARGETS + MAC_TARGETS }
+val UNIX_LIKE_TARGETS by projectLazy { LINUX_TARGETS + MAC_TARGETS }
 
-val NATIVE_TARGETS by lazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
+val NATIVE_TARGETS by projectLazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
 
 private val POSSIBLE_NATIVE_TARGETS by lazy { setOf("mingwX64", "macosX64", "macosArm64", "linuxX64") }
 

@@ -45,6 +45,7 @@ plugins {
 
 osDetector = osdetector
 BuildSrcRootProjectHolder.value = rootProject
+BuildSrcRootProjectHolder.lastUpdateTime = System.currentTimeMillis()
 
 analyzes.CompiledCodeVerify.run { registerAllVerifyTasks() }
 
