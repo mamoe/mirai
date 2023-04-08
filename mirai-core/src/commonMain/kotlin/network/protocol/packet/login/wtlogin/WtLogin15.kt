@@ -53,11 +53,11 @@ internal object WtLogin15 : WtLoginExt {
 //                    "").hexToBytes())
 //            return@writeOicqRequestPacket
 
-                t18(appId, uin = client.uin)
+                t18(appId, client.appClientVersion, uin = client.uin)
                 t1(client.uin, ByteArray(4))
 
                 //  t106(client = client)
-                t106(client.wLoginSigInfo.encryptA1!!)
+                client.tgtgtKey = t106_1(client.device.guid, client.wLoginSigInfo.encryptA1!!) ?: client.tgtgtKey
 //            kotlin.run {
 //                val key = (client.account.passwordMd5 + ByteArray(4) + client.uin.toInt().toByteArray()).md5()
 //                kotlin.runCatching {
@@ -82,7 +82,10 @@ internal object WtLogin15 : WtLoginExt {
                 // }
 
                 t116(client.miscBitMap, client.subSigMap)
-                //t116(0x08F7FF7C, 0x00010400)
+                if (client.miscBitMap and 128 != 0) {
+                    t166(1)
+                    client.rollbackSig?.let { t172(it) }
+                }
 
                 //t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
                 //t100(appId, 1, client.appClientVersion, client.ssoVersion, mainSigMap = 1048768)
@@ -90,7 +93,7 @@ internal object WtLogin15 : WtLoginExt {
 
                 t107(0)
 
-                //t108(client.ksid) // 第一次 exchange 没有 108
+                //t108(client.ksid) // 第一次 exchange 没有 108，因为 wUserSigInfo._in_ksid 未加载
                 t144(client)
                 t142(client.apkId)
                 t145(client.device.guid)

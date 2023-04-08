@@ -17,6 +17,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.subAppId
 import net.mamoe.mirai.internal.network.subSigMap
 import net.mamoe.mirai.utils.DeviceVerificationRequests
+import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils._writeTlvMap
 
 /**
@@ -43,7 +44,12 @@ internal object WtLogin8 : WtLoginExt {
                     t174(t174)
                     t17a(9)
                     t197()
+                    // Lcom/tencent/mobileqq/msf/core/auth/l;a(Ljava/lang/String;JLoicq/wlogin_sdk/request/WUserSigInfo;IIILoicq/wlogin_sdk/tools/ErrMsg;)V
+                    // a2.addAttribute("smsExtraData", WtloginHelper.getLoginResultData(wUserSigInfo, 1347));
+                    // wUserSigInfo.loginResultTLVMap.get(new Integer(1347)).get_data()
 
+                    // this.mUserSigInfo.loginResultTLVMap.put(new Integer(1347), async_contextVar._t543);
+                    t542(EMPTY_BYTE_ARRAY) // toServiceMsg.getAttribute("smsExtraData"))
                 }
             }
         }

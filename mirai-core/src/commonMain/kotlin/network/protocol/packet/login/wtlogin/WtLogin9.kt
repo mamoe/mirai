@@ -14,6 +14,7 @@ import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.utils._writeTlvMap
+import net.mamoe.mirai.utils.toByteArray
 
 internal object WtLogin9 : WtLoginExt {
     private const val appId = 16L
@@ -44,6 +45,10 @@ internal object WtLogin9 : WtLoginExt {
                     t18(appId, client.appClientVersion, client.uin)
                     t1(client.uin, client.device.ipAddress)
 
+                    /*if (client::t104.isInitialized) {
+                        t104(client.t104)
+                    }*/
+
                     if (useEncryptA1AndNoPicSig) {
                         t106(client.wLoginSigInfo.encryptA1!!)
                     } else {
@@ -63,25 +68,28 @@ internal object WtLogin9 : WtLoginExt {
                     t116(client.miscBitMap, client.subSigMap)
                     t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
                     t107(0)
-                    t108(client.device.imei.toByteArray())
+                    if (client.ksid.isNotEmpty()) {
+                        t108(client.ksid)
+                    }
 
                     // t108(byteArrayOf())
-                    // ignored: t104()
                     t142(client.apkId)
 
+
                     // if login with non-number uin
-                    // t112()
+                    if (client.uin !in 10000L..4000000000L) {
+                        t112(client.uin.toByteArray())
+                    }
                     t144(client)
 
                     //this.build().debugPrint("傻逼")
                     t145(client.device.guid)
                     t147(appId, client.apkVersionName, client.apkSignatureMd5)
 
-                    /*
-                if (client.miscBitMap and 0x80 != 0) {
-                    t166(1)
-                }
-                */
+
+                    if (client.miscBitMap and 0x80 != 0) {
+                        t166(1) // com.tencent.luggage.wxa.me.e.CTRL_INDEX
+                    }
                     if (useEncryptA1AndNoPicSig) {
                         t16a(client.wLoginSigInfo.noPicSig!!)
                     }
@@ -94,7 +102,6 @@ internal object WtLogin9 : WtLoginExt {
 
                     // ignored t172 because rollbackSig is null
                     // ignored t185 because loginType is not SMS
-                    // ignored t400 because of first login
 
                     t187(client.device.macAddress)
                     t188(client.device.androidId)
@@ -103,8 +110,20 @@ internal object WtLogin9 : WtLoginExt {
                         t191()
                     }
 
-                    /*
-                t201(N = byteArrayOf())*/
+                    if (useEncryptA1AndNoPicSig) {
+                        t400(
+                            g = client.G,
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            dpwd = client.dpwd,
+                            appId = appId,
+                            subAppId = client.subAppId,
+                            randomSeed = client.randSeed,
+                        )
+                    }
+
+
+                    //t201(N = byteArrayOf())
 
                     t202(client.device.wifiBSSID, client.device.wifiSSID)
 
@@ -116,6 +135,8 @@ internal object WtLogin9 : WtLoginExt {
                     t521()
 
                     t525()
+                    t545()
+                    t548()
                     // this.build().debugPrint("傻逼")
 
                     // ignored t318 because not logging in by QR

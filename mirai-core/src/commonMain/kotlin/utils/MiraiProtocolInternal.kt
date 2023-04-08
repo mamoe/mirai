@@ -37,14 +37,14 @@ internal class MiraiProtocolInternal(
             //Updated from MiraiGo (2023/3/7)
             protocols[MiraiProtocol.ANDROID_PHONE] = MiraiProtocolInternal(
                 apkId = "com.tencent.mobileqq",
-                id = 537151682,
-                ver = "8.9.33.10335",
-                sdkVer = "6.0.0.2534",
+                id = 537153295,
+                ver = "8.9.35",
+                sdkVer = "6.0.0.2535",
                 miscBitMap = 150470524,
                 subSigMap = 0x10400,
-                mainSigMap = 16724722,
+                mainSigMap = 34869344 or 192,
                 sign = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
-                buildTime = 1673599898L,
+                buildTime = 1676531414L,
                 ssoVersion = 19,
                 supportsQRLogin = false,
             )

@@ -17,6 +17,8 @@ import net.mamoe.mirai.internal.network.protocol.LoginType
 import net.mamoe.mirai.internal.utils.GuidSource
 import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.internal.utils.NetworkType
+import net.mamoe.mirai.internal.utils.crypto.DecryptionFailedException
+import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.guidFlag
 import net.mamoe.mirai.internal.utils.io.*
 import net.mamoe.mirai.utils.*
@@ -192,6 +194,7 @@ internal fun TlvMapWriter.t106(
         client.subAppId /* maybe 1*/,
         client.appClientVersion,
         client.uin,
+        client.device.ipAddress,
         true,
         passwordMd5,
         0,
@@ -212,6 +215,52 @@ internal fun TlvMapWriter.t106(
     }
 }
 
+// Loicq/wlogin_sdk/request/oicq_request;a([B)[B
+internal fun TlvMapWriter.t106_1(
+    guid: ByteArray,
+    a1: ByteArray
+): ByteArray? {
+    var tgtgtKey: ByteArray? = null
+
+    tlv(0x106) {
+        writeShortLVPacket {
+            val key = buildPacket {
+                if (guid.size > 16) {
+                    writeFully(guid, 0, 16)
+                } else {
+                    writeFully(guid)
+                    var keyLength = guid.size
+                    while (keyLength < 16) {
+                        keyLength++
+                        writeByte(keyLength.toByte())
+                    }
+                }
+            }.readBytes()
+
+            runCatching {
+                try {
+                    TEA.decrypt(a1, key)
+                } catch (ex: DecryptionFailedException) {
+                    TEA.decrypt(a1, DEFAULT_GUID)
+                }
+            }.onSuccess { decrypted ->
+                val remainLength = decrypted.size - 16
+                if (remainLength < 0) {
+                    writeFully(a1) // treat as encryptA1
+                    return@writeShortLVPacket
+                }
+                writeFully(decrypted.copyOfRange(0, remainLength))
+                tgtgtKey = decrypted.copyOfRange(remainLength, decrypted.size)
+
+            }.onFailure {
+                writeFully(a1) // treat as encryptA1
+            }
+        }
+    }
+
+    return tgtgtKey
+}
+
 /**
  * A1
  */
@@ -220,6 +269,7 @@ internal fun TlvMapWriter.t106(
     subAppId: Long,
     appClientVersion: Int = 0,
     uin: Long,
+    ip: ByteArray,
     isSavePassword: Boolean = true,
     passwordMd5: ByteArray,
     salt: Long,
@@ -233,6 +283,7 @@ internal fun TlvMapWriter.t106(
     passwordMd5.requireSize(16)
     tgtgtKey.requireSize(16)
     guid?.requireSize(16)
+    ip.requireSize(4)
 
     tlv(0x106) {
         encryptAndWrite(
@@ -252,7 +303,7 @@ internal fun TlvMapWriter.t106(
             }
 
             writeInt(currentTimeSeconds().toInt())
-            writeFully(ByteArray(4)) // ip // no need to write actual ip
+            writeFully(ip) //
             writeByte(isSavePassword.toByte())
             writeFully(passwordMd5)
             writeFully(tgtgtKey)
@@ -368,16 +419,18 @@ internal fun TlvMapWriter.t174(
 
 
 internal fun TlvMapWriter.t17a(
-    value: Int = 0
+    smsAppId: Int = 0
 ) {
     tlv(0x17a) {
-        writeInt(value)
+        writeInt(smsAppId)
     }
 }
 
-internal fun TlvMapWriter.t197() {
+internal fun TlvMapWriter.t197(
+    devLockMobileType: Byte = 0
+) {
     tlv(0x197) {
-        writeByte(0)
+        writeByte(devLockMobileType)
     }
 }
 
@@ -895,6 +948,61 @@ internal fun TlvMapWriter.t525(
     tlv(0x525) {
         writeShort(1)
         writePacket(t536)
+    }
+}
+
+internal fun TlvMapWriter.t542(
+    value: ByteArray
+) {
+    tlv(0x542) {
+        writeFully(value)
+    }
+}
+
+internal fun TlvMapWriter.t545(
+    qiemi: ByteArray = "0c 55 fc e9 68 d4 5b 38 c7 11 ce 49 10 00 19 41 53 16".hexToBytes()
+) {
+    tlv(0x545) {
+        writeFully(qiemi)
+    }
+}
+
+internal fun TlvMapWriter.t548(
+    nativeGetTestData: ByteArray = (
+            "01 02 01 01 00 0A 00 00 00 80 5E C1 1A B0 39 A0 " +
+                    "E0 5C 67 DF 44 F8 E5 86 91 A2 A4 5D 92 2B 25 3A " +
+                    "B6 6E 2F F1 A1 E3 60 B8 36 1E 2F 6B 6F F7 2D F7 " +
+                    "F8 21 F1 0B 75 7D 2A 4F 63 B8 83 9C 41 0B AA C7 " +
+                    "C9 69 0D 70 AB F3 0F 46 28 C2 CD DB 81 CC 74 18 " +
+                    "ED 97 CD 31 3E 1A 17 F1 94 96 AB 6C 6B 25 4F 83 " +
+                    "5B 15 82 B0 8F 53 82 3F 59 FE 6E B5 EA B5 EA 7A " +
+                    "0C E7 2B 31 CA 4C FD 43 9A DB 40 7A CA 51 D7 9A " +
+                    "3C AD 6D 8F 3C C6 84 A5 4A 5F 00 20 BE FB 91 06 " +
+                    "F0 67 42 8B CC 59 27 4E BC 91 78 55 4E E4 5C 98 " +
+                    "4B 8B 0F C9 A3 83 56 06 E8 AE 5A 0D 00 AC 01 02 " +
+                    "01 02 00 0A 00 00 00 80 5E C1 1A B0 39 A0 E0 5C " +
+                    "67 DF 44 F8 E5 86 91 A2 A4 5D 92 2B 25 3A B6 6E " +
+                    "2F F1 A1 E3 60 B8 36 1E 2F 6B 6F F7 2D F7 F8 21 " +
+                    "F1 0B 75 7D 2A 4F 63 B8 83 9C 41 0B AA C7 C9 69 " +
+                    "0D 70 AB F3 0F 46 28 C2 CD DB 81 CC 74 18 ED 97 " +
+                    "CD 31 3E 1A 17 F1 94 96 AB 6C 6B 25 4F 83 5B 15 " +
+                    "82 B0 8F 53 82 3F 59 FE 6E B5 EA B5 EA 7A 0C E7 " +
+                    "2B 31 CA 4C FD 43 9A DB 40 7A CA 51 D7 9A 3C AD " +
+                    "6D 8F 3C C6 84 A5 4A 5F 00 20 BE FB 91 06 F0 67 " +
+                    "42 8B CC 59 27 4E BC 91 78 55 4E E4 5C 98 4B 8B " +
+                    "0F C9 A3 83 56 06 E8 AE 5A 0D 00 80 5E C1 1A B0 " +
+                    "39 A0 E0 5C 67 DF 44 F8 E5 86 91 A2 A4 5D 92 2B " +
+                    "25 3A B6 6E 2F F1 A1 E3 60 B8 36 1E 2F 6B 6F F7 " +
+                    "2D F7 F8 21 F1 0B 75 7D 2A 4F 63 B8 83 9C 41 0B " +
+                    "AA C7 C9 69 0D 70 AB F3 0F 46 28 C2 CD DB 81 CC " +
+                    "74 18 ED 97 CD 31 3E 1A 17 F1 94 96 AB 6C 6B 25 " +
+                    "4F 83 5B 15 82 B0 8F 53 82 3F 59 FE 6E B5 EA B5 " +
+                    "EA 7A 0C E7 2B 31 CA 4C FD 43 9A DB 40 7A CA 51 " +
+                    "D7 9A 3C AD 6D 8F 3C C6 84 A5 71 6F 00 00 00 1F " +
+                    "00 00 27 10").hexToBytes()
+) {
+    tlv(0x548) {
+        writeFully(nativeGetTestData)
     }
 }
 
