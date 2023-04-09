@@ -57,10 +57,7 @@ internal object WtLogin15 : WtLoginExt {
                 t18(appId, client.appClientVersion, uin = client.uin)
                 t1(client.uin, client.timeDifference, client.device.ipAddress)
 
-                //t106(client.wLoginSigInfo.encryptA1!!)
-                t106(client.device.guid, client.wLoginSigInfo.encryptA1!!) { key ->
-                    if (key != null) client.tgtgtKey = key
-                }
+                t106(client.wLoginSigInfo.encryptA1!!)
 //            kotlin.run {
 //                val key = (client.account.passwordMd5 + ByteArray(4) + client.uin.toInt().toByteArray()).md5()
 //                kotlin.runCatching {
