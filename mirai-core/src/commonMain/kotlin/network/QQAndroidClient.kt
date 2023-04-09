@@ -167,6 +167,7 @@ internal open class QQAndroidClient(
     var t402: ByteArray? = null
     lateinit var t104: ByteArray
     internal val t104Initialized get() = ::t104.isInitialized
+    var t543: ByteArray? = null
     var t547: ByteArray? = null
 }
 

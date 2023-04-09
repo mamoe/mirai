@@ -17,7 +17,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.subAppId
 import net.mamoe.mirai.internal.network.subSigMap
 import net.mamoe.mirai.utils.DeviceVerificationRequests
-import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.utils._writeTlvMap
 
 /**
@@ -49,7 +48,8 @@ internal object WtLogin8 : WtLoginExt {
                     // wUserSigInfo.loginResultTLVMap.get(new Integer(1347)).get_data()
 
                     // this.mUserSigInfo.loginResultTLVMap.put(new Integer(1347), async_contextVar._t543);
-                    t542(EMPTY_BYTE_ARRAY) // toServiceMsg.getAttribute("smsExtraData"))
+                    // toServiceMsg.getAttribute("smsExtraData"))
+                    client.t543?.let { t542(it) }
                 }
             }
         }
