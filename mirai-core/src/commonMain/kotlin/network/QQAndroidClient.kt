@@ -102,7 +102,7 @@ internal open class QQAndroidClient(
 
 
     val apkVersionName: ByteArray get() = protocol.ver.toByteArray() //"8.4.18".toByteArray()
-    val buildVer: String get() = "8.4.18.4810" // 8.2.0.1296 // 8.4.8.4810 // 8.2.7.4410
+    val buildVer: String get() = protocol.buildVer // 8.2.0.1296 // 8.4.8.4810 // 8.2.7.4410
 
 
     private val sequenceId: AtomicInt = atomic(getRandomUnsignedInt())

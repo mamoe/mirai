@@ -18,6 +18,7 @@ internal class MiraiProtocolInternal(
     @JvmField internal val apkId: String,
     @JvmField internal val id: Long,
     @JvmField internal val ver: String,
+    @JvmField internal val buildVer: String,
     @JvmField internal val sdkVer: String,
     @JvmField internal val miscBitMap: Int,
     @JvmField internal val subSigMap: Int,
@@ -34,11 +35,12 @@ internal class MiraiProtocolInternal(
             protocols[protocol] ?: error("Internal Error: Missing protocol $protocol")
 
         init {
-            //Updated from MiraiGo (2023/3/7)
+            //Updated from 8.9.35 (2023/4/9)
             protocols[MiraiProtocol.ANDROID_PHONE] = MiraiProtocolInternal(
                 apkId = "com.tencent.mobileqq",
                 id = 537153295,
                 ver = "8.9.35",
+                buildVer = "8.9.35.10440",
                 sdkVer = "6.0.0.2535",
                 miscBitMap = 150470524,
                 subSigMap = 0x10400,
@@ -52,7 +54,8 @@ internal class MiraiProtocolInternal(
             protocols[MiraiProtocol.ANDROID_PAD] = MiraiProtocolInternal(
                 apkId = "com.tencent.mobileqq",
                 id = 537151218,
-                ver = "8.9.33.10335",
+                ver = "8.9.33",
+                buildVer = "8.9.33.10335",
                 sdkVer = "6.0.0.2534",
                 miscBitMap = 150470524,
                 subSigMap = 0x10400,
@@ -67,6 +70,7 @@ internal class MiraiProtocolInternal(
                 apkId = "com.tencent.qqlite",
                 id = 537065138,
                 ver = "2.0.8",
+                buildVer = "2.0.8",
                 sdkVer = "6.0.0.2365",
                 miscBitMap = 16252796,
                 subSigMap = 0x10400,
@@ -79,7 +83,8 @@ internal class MiraiProtocolInternal(
             protocols[MiraiProtocol.IPAD] = MiraiProtocolInternal(
                 apkId = "com.tencent.minihd.qq",
                 id = 537151363,
-                ver = "8.9.33.614",
+                ver = "8.9.33",
+                buildVer = "8.9.33.614",
                 sdkVer = "6.0.0.2433",
                 miscBitMap = 150470524,
                 subSigMap = 66560,
@@ -93,6 +98,7 @@ internal class MiraiProtocolInternal(
                 apkId = "com.tencent.qq",
                 id = 0x2003ca32,
                 ver = "6.7.9",
+                buildVer = "6.7.9",
                 sdkVer = "6.2.0.1023",
                 miscBitMap = 0x7ffc,
                 subSigMap = 66560,
