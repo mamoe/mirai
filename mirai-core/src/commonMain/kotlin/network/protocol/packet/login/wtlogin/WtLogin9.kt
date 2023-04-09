@@ -102,14 +102,6 @@ internal object WtLogin9 : WtLoginExt {
 
                     // ignored t172 because rollbackSig is null
                     // ignored t185 because loginType is not SMS
-
-                    t187(client.device.macAddress)
-                    t188(client.device.androidId)
-                    t194(client.device.imsiMd5)
-                    if (allowSlider) {
-                        t191()
-                    }
-
                     if (useEncryptA1AndNoPicSig) {
                         t400(
                             g = client.G,
@@ -120,6 +112,13 @@ internal object WtLogin9 : WtLoginExt {
                             subAppId = client.subAppId,
                             randomSeed = client.randSeed,
                         )
+                    }
+
+                    t187(client.device.macAddress)
+                    t188(client.device.androidId)
+                    t194(client.device.imsiMd5)
+                    if (allowSlider) {
+                        t191()
                     }
 
 
@@ -136,7 +135,7 @@ internal object WtLogin9 : WtLoginExt {
 
                     t525()
                     t545()
-                    t548()
+                    // t548()
                     // this.build().debugPrint("傻逼")
 
                     // ignored t318 because not logging in by QR
