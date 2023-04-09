@@ -14,6 +14,7 @@ import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.utils._writeTlvMap
+import net.mamoe.mirai.utils.toByteArray
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -26,7 +27,7 @@ internal object WtLogin15 : WtLoginExt {
         client: QQAndroidClient,
     ) = WtLogin.ExchangeEmp.buildOutgoingUniPacket(
         client, bodyType = 2, key = ByteArray(16), remark = "15:refresh-keys"
-    ) {
+    ) { sequenceId ->
 //        writeSsoPacket(client, client.subAppId, WtLogin.ExchangeEmp.commandName, sequenceId = sequenceId) {
         writeOicqRequestPacket(
             client,
@@ -54,10 +55,12 @@ internal object WtLogin15 : WtLoginExt {
 //            return@writeOicqRequestPacket
 
                 t18(appId, client.appClientVersion, uin = client.uin)
-                t1(client.uin, ByteArray(4))
+                t1(client.uin, client.timeDifference, client.device.ipAddress)
 
-                //  t106(client = client)
-                client.tgtgtKey = t106_1(client.device.guid, client.wLoginSigInfo.encryptA1!!) ?: client.tgtgtKey
+                //t106(client.wLoginSigInfo.encryptA1!!)
+                t106(client.device.guid, client.wLoginSigInfo.encryptA1!!) { key ->
+                    if (key != null) client.tgtgtKey = key
+                }
 //            kotlin.run {
 //                val key = (client.account.passwordMd5 + ByteArray(4) + client.uin.toInt().toByteArray()).md5()
 //                kotlin.runCatching {
@@ -93,16 +96,21 @@ internal object WtLogin15 : WtLoginExt {
 
                 t107(0)
 
-                //t108(client.ksid) // 第一次 exchange 没有 108，因为 wUserSigInfo._in_ksid 未加载
+                if (client.ksid.isNotEmpty()) {
+                    t108(client.ksid)
+                }
                 t144(client)
                 t142(client.apkId)
+                if (client.uin !in 10000L..4000000000L) {
+                    t112(client.uin.toByteArray())
+                }
                 t145(client.device.guid)
 
                 val noPicSig =
                     client.wLoginSigInfo.noPicSig ?: error("Internal error: doing exchange emp 15 while noPicSig=null")
                 t16a(noPicSig)
 
-                t154(0)
+                t154(sequenceId)
                 t141(client.device.simInfo, client.networkType, client.device.apn)
                 t8(2052)
                 t511()
@@ -115,20 +123,22 @@ internal object WtLogin15 : WtLoginExt {
                     uin = client.uin,
                     guid = client.device.guid,
                     dpwd = client.dpwd,
-                    appId = 1,
-                    subAppId = 16,
+                    appId = appId,
+                    subAppId = 1,
                     randomSeed = client.randSeed
                 )
 
                 t187(client.device.macAddress)
                 t188(client.device.androidId)
                 t194(client.device.imsiMd5)
+                // ignored t201 cuz SetNeedForPayToken is never called.
                 t202(client.device.wifiBSSID, client.device.wifiSSID)
                 t516()
 
                 t521() // new
                 t525(client.loginExtraData) // new
-                //t544() // new
+                //t544() // new 810_f
+                t545()
             }
         }
 

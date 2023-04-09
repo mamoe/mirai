@@ -43,11 +43,11 @@ internal object WtLogin9 : WtLoginExt {
                 _writeTlvMap {
 
                     t18(appId, client.appClientVersion, client.uin)
-                    t1(client.uin, client.device.ipAddress)
+                    t1(client.uin, client.timeDifference, client.device.ipAddress)
 
-                    /*if (client::t104.isInitialized) {
+                    if (client.t104Initialized) {
                         t104(client.t104)
-                    }*/
+                    }
 
                     if (useEncryptA1AndNoPicSig) {
                         t106(client.wLoginSigInfo.encryptA1!!)
@@ -159,7 +159,7 @@ internal object WtLogin9 : WtLoginExt {
 
                 _writeTlvMap {
                     t18(appId, client.appClientVersion, client.uin)
-                    t1(client.uin, client.device.ipAddress)
+                    t1(client.uin, client.timeDifference, client.device.ipAddress)
 
                     t106(data.tmpPwd)
 
