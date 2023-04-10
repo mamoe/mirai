@@ -14,6 +14,7 @@ import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.utils._writeTlvMap
+import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.toByteArray
 
 internal object WtLogin9 : WtLoginExt {
@@ -43,7 +44,7 @@ internal object WtLogin9 : WtLoginExt {
                 _writeTlvMap {
 
                     t18(appId, client.appClientVersion, client.uin)
-                    t1(client.uin, client.timeDifference, client.device.ipAddress)
+                    t1(client.uin, (currentTimeSeconds() + client.timeDifference).toInt(), client.device.ipAddress)
 
                     if (client.t104Initialized) {
                         t104(client.t104)
@@ -158,7 +159,7 @@ internal object WtLogin9 : WtLoginExt {
 
                 _writeTlvMap {
                     t18(appId, client.appClientVersion, client.uin)
-                    t1(client.uin, client.timeDifference, client.device.ipAddress)
+                    t1(client.uin, (currentTimeSeconds() + client.timeDifference).toInt(), client.device.ipAddress)
 
                     t106(data.tmpPwd)
 

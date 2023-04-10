@@ -54,14 +54,14 @@ internal fun TlvMap.smartToString(leadingLineBreak: Boolean = true, sorted: Bool
 @JvmInline
 internal value class Tlv(val value: ByteArray)
 
-internal fun TlvMapWriter.t1(uin: Long, timeDifference: Long, ip: ByteArray) {
+internal fun TlvMapWriter.t1(uin: Long, timeSeconds: Int, ip: ByteArray) {
     require(ip.size == 4) { "ip.size must == 4" }
 
     tlv(0x01) {
         writeShort(1) // _ip_ver
         writeInt(Random.nextInt())
         writeInt(uin.toInt())
-        writeInt(currentTimeSeconds().toInt() + timeDifference.toInt())
+        writeInt(timeSeconds)
         writeFully(ip)
         writeShort(0)
     }

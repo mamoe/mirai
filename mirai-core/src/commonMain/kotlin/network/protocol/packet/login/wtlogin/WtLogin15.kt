@@ -14,6 +14,7 @@ import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.utils._writeTlvMap
+import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.toByteArray
 import kotlin.math.abs
 import kotlin.random.Random
@@ -55,7 +56,7 @@ internal object WtLogin15 : WtLoginExt {
 //            return@writeOicqRequestPacket
 
                 t18(appId, client.appClientVersion, uin = client.uin)
-                t1(client.uin, client.timeDifference, client.device.ipAddress)
+                t1(client.uin, (currentTimeSeconds() + client.timeDifference).toInt(), client.device.ipAddress)
 
                 t106(client.wLoginSigInfo.encryptA1!!)
 //            kotlin.run {
