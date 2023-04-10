@@ -17,8 +17,6 @@ import net.mamoe.mirai.internal.network.protocol.LoginType
 import net.mamoe.mirai.internal.utils.GuidSource
 import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.internal.utils.NetworkType
-import net.mamoe.mirai.internal.utils.crypto.DecryptionFailedException
-import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.guidFlag
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
@@ -54,15 +52,15 @@ internal fun TlvMap.smartToString(leadingLineBreak: Boolean = true, sorted: Bool
 @JvmInline
 internal value class Tlv(val value: ByteArray)
 
-internal fun TlvMapWriter.t1(uin: Long, timeSeconds: Int, ip: ByteArray) {
-    require(ip.size == 4) { "ip.size must == 4" }
+internal fun TlvMapWriter.t1(uin: Long, timeSeconds: Int, ipv4: ByteArray) {
+    require(ipv4.size == 4) { "ip.size must == 4" }
 
     tlv(0x01) {
         writeShort(1) // _ip_ver
         writeInt(Random.nextInt())
         writeInt(uin.toInt())
         writeInt(timeSeconds)
-        writeFully(ip)
+        writeFully(ipv4)
         writeShort(0)
     }
 }
@@ -218,51 +216,6 @@ internal fun TlvMapWriter.t106(
     }
 }
 
-// Loicq/wlogin_sdk/request/oicq_request;a([B)[B
-internal fun TlvMapWriter.t106(
-    guid: ByteArray,
-    a1: ByteArray,
-    onUpdateTgtgtKey: (ByteArray?) -> Unit
-) {
-    var tgtgtKey: ByteArray? = null
-
-    tlv(0x106) {
-        val key = buildPacket {
-            if (guid.size > 16) {
-                writeFully(guid, 0, 16)
-            } else {
-                writeFully(guid)
-                var keyLength = guid.size
-                while (keyLength < 16) {
-                    writeByte(keyLength.toByte())
-                    keyLength++
-                }
-            }
-        }.readBytes()
-
-        runCatching {
-            try {
-                TEA.decrypt(a1, key)
-            } catch (ex: DecryptionFailedException) {
-                TEA.decrypt(a1, DEFAULT_GUID)
-            }
-        }.onSuccess { decrypted ->
-            val remainLength = decrypted.size - 16
-            if (remainLength < 0) {
-                writeFully(a1) // treat as encryptA1
-                return@tlv
-            }
-            writeFully(decrypted.copyOfRange(0, remainLength))
-            tgtgtKey = decrypted.copyOfRange(remainLength, decrypted.size)
-
-        }.onFailure {
-            writeFully(a1) // treat as encryptA1
-        }
-    }
-
-    onUpdateTgtgtKey(tgtgtKey)
-}
-
 /**
  * A1
  */
@@ -271,7 +224,7 @@ internal fun TlvMapWriter.t106(
     subAppId: Long,
     appClientVersion: Int = 0,
     uin: Long,
-    ip: ByteArray,
+    ipv4: ByteArray,
     isSavePassword: Boolean = true,
     passwordMd5: ByteArray,
     salt: Long,
@@ -285,7 +238,7 @@ internal fun TlvMapWriter.t106(
     passwordMd5.requireSize(16)
     tgtgtKey.requireSize(16)
     guid?.requireSize(16)
-    ip.requireSize(4)
+    ipv4.requireSize(4)
 
     tlv(0x106) {
         encryptAndWrite(
@@ -305,7 +258,7 @@ internal fun TlvMapWriter.t106(
             }
 
             writeInt(currentTimeSeconds().toInt())
-            writeFully(ip) //
+            writeFully(ipv4) //
             writeByte(isSavePassword.toByte())
             writeFully(passwordMd5)
             writeFully(tgtgtKey)
