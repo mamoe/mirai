@@ -915,10 +915,10 @@ internal fun TlvMapWriter.t542(
 }
 
 internal fun TlvMapWriter.t545(
-    qiemi: ByteArray = "0c 55 fc e9 68 d4 5b 38 c7 11 ce 49 10 00 19 41 53 16".hexToBytes()
+    qimei: String
 ) {
     tlv(0x545) {
-        writeFully(qiemi)
+        writeFully(qimei.toByteArray())
     }
 }
 

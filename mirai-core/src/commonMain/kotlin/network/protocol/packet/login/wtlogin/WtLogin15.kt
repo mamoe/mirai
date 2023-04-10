@@ -136,7 +136,7 @@ internal object WtLogin15 : WtLoginExt {
                 t521() // new
                 t525(client.loginExtraData) // new
                 //t544() // new 810_f
-                t545()
+                t545(client.device.qimei16 ?: client.device.imei)
             }
         }
 

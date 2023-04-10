@@ -19,10 +19,10 @@ private val timeFormat: SimpleDateFormat by threadLocal {
     SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 }
 
-public actual fun currentTimeFormatted(format: String?): String {
+public actual fun formatTime(epochTimeMillis: Long, format: String?): String {
     return if (format == null) {
-        timeFormat.format(Date())
+        timeFormat.format(Date(epochTimeMillis))
     } else {
-        SimpleDateFormat(format, Locale.getDefault()).format(Date())
+        SimpleDateFormat(format, Locale.getDefault()).format(Date(epochTimeMillis))
     }
 }

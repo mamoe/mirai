@@ -77,6 +77,14 @@ public expect class DeviceInfo(
     @MiraiInternalApi
     public val guid: ByteArray
 
+    @Transient
+    @MiraiInternalApi
+    public var qimei16: String?
+
+    @Transient
+    @MiraiInternalApi
+    public var qimei36: String?
+
 
     // @Serializable: use DeviceInfoVersionSerializer in commonMain.
     public class Version(

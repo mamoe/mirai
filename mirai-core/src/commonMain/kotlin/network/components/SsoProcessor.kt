@@ -11,7 +11,8 @@ package net.mamoe.mirai.internal.network.components
 
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
-import net.mamoe.mirai.auth.*
+import net.mamoe.mirai.auth.BotAuthInfo
+import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.QRCodeLoginData
@@ -31,6 +32,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.UrlDeviceVerificat
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse.Captcha
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.*
+import net.mamoe.mirai.internal.utils.requestQimei
+import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.network.UnsupportedSliderCaptchaException
@@ -51,7 +54,7 @@ internal interface SsoProcessor {
     fun casFirstLoginResult(
         expect: FirstLoginResult?,
         update: FirstLoginResult?
-    ): Boolean // enable compiler optimization
+    ): Boolean // enable compiler optimization/
 
     fun setFirstLoginResult(value: FirstLoginResult?)
 
@@ -172,6 +175,14 @@ internal class SsoProcessorImpl(
             components[AccountSecretsManager].saveSecrets(ssoContext.account, AccountSecretsImpl(client))
             registerClientOnline(handler)
             ssoContext.bot.logger.info { "Login successful." }
+        }
+
+        // try to get qimei before login
+        val qimeiLogger = ssoContext.bot.network.logger.subLogger("QimeiApi")
+        try {
+            ssoContext.bot.requestQimei(qimeiLogger)
+        } catch (exception: Throwable) {
+            qimeiLogger.warning("Cannot get qimei from server.", exception)
         }
 
         if (authControl == null) {

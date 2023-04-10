@@ -36,7 +36,8 @@ public actual class DeviceInfo actual constructor(
     public actual val imei: String,
     public actual val apn: ByteArray
 ) {
-    public actual val androidId: ByteArray get() = display
+    public actual val androidId: ByteArray
+        get() = getRandomByteArray(8).toUHexString("").lowercase().encodeToByteArray()
     public actual val ipAddress: ByteArray get() = byteArrayOf(192.toByte(), 168.toByte(), 1, 123)
 
     init {
@@ -46,6 +47,14 @@ public actual class DeviceInfo actual constructor(
     @Transient
     @MiraiInternalApi
     public actual val guid: ByteArray = generateGuid(androidId, macAddress)
+
+    @MiraiInternalApi
+    @Transient
+    public actual var qimei16: String? = null
+
+    @MiraiInternalApi
+    @Transient
+    public actual var qimei36: String? = null
 
     @Serializable
     public actual class Version actual constructor(
