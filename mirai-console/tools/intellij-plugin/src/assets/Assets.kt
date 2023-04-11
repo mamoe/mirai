@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -26,6 +26,7 @@ object FT { // file template
     const val SettingsGradleKts = "Plugin settings.gradle.kts"
     const val SettingsGradle = "Plugin settings.gradle"
 
+    const val GradleWrapperProperties = "Gradle gradle-wrapper.properties"
     const val GradleProperties = "Gradle gradle.properties"
 
     const val PluginMainKt = "Plugin main class Kotlin.kt"
