@@ -10,6 +10,8 @@
 package net.mamoe.mirai.utils
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 internal class TimeUtilsTest {
@@ -23,6 +25,59 @@ internal class TimeUtilsTest {
     @Test
     fun `can get currentTimeFormatted`() {
         // 2022-28-26 18:28:28
-        assertTrue { currentTimeFormatted().matches(Regex("""\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}""")) }
+        assertTrue { currentTimeFormatted().matches(Regex("""^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$""")) }
+    }
+
+    @Test
+    fun `can parse explicit timestamp`() {
+        val epochMilli = 1681174590123 // 2023-04-11 00:56:30 GMT
+        val regex = Regex("""^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$""")
+
+        val formatted = regex.find(formatTime(epochMilli, null))
+        assertNotNull(formatted)
+
+        formatted.groupValues.run {
+            assertEquals(get(1), "2023")
+            assertEquals(get(2), "04")
+            assertTrue { get(3) == "11" || get(3) == "10" }
+            assertTrue { get(4).toInt() in 0..23 }
+            assertEquals(get(5), "56")
+            assertEquals(get(6), "30")
+        }
+    }
+
+    @Test
+    fun `can format with custom formatter`() {
+        fun formatTimeAndPrint(formatter: String?): String {
+            return formatTime(currentTimeMillis(), formatter).also { println("custom formatted time: $it") }
+        }
+
+        assertTrue {
+            formatTimeAndPrint("MmMm").matches(Regex("""^MmMm$"""))
+        }
+        assertTrue {
+            formatTimeAndPrint("MM-mm").matches(Regex("""^\d{2}-\d{2}$"""))
+        }
+        assertTrue {
+            formatTimeAndPrint("yyyyMMddHHmmss").matches(Regex("""^\d{14}$"""))
+        }
+        assertTrue {
+            formatTimeAndPrint("yyyyMMddHHmmSS").matches(Regex("""^\d{12}SS$"""))
+        }
+        assertTrue {
+            formatTimeAndPrint(null).matches(Regex("""^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$"""))
+        }
+        assertTrue {
+            formatTimeAndPrint("yyyy-MM-dd 114514").matches(Regex("""^\d{4}-\d{2}-\d{2} 114514$"""))
+        }
+        assertTrue {
+            formatTimeAndPrint("yyyyMM-114 514--mm-SS").matches(Regex("""^\d{4}\d{2}-114 514--\d{2}-SS$"""))
+        }
+        assertTrue {
+            formatTimeAndPrint("yyyy-MM-dd HH-mm-ss").matches(Regex("""^\d{4}-\d{2}-\d{2} \d{2}-\d{2}-\d{2}$"""))
+        }
+        assertTrue {
+            formatTimeAndPrint("yyyy/MM\\dd HH:mm-ss").matches(Regex("""^\d{4}/\d{2}\\\d{2} \d{2}:\d{2}-\d{2}$"""))
+        }
     }
 }

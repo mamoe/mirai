@@ -43,7 +43,7 @@ public actual fun formatTime(epochTimeMillis: Long, format: String?): String = t
         ?: "%Y-%m-%d %H:%M:%S"
     memScoped {
         val timeT = alloc<time_tVar>()
-        timeT.value = epochTimeMillis
+        timeT.value = epochTimeMillis / 1000
 
         // http://www.cplusplus.com/reference/clibrary/ctime/localtime/
         // tm returns a static pointer which doesn't need to free
