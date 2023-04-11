@@ -15,6 +15,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class JvmDeviceInfoTest {
 
@@ -36,7 +37,32 @@ class JvmDeviceInfoTest {
         val file = dir.resolve("device.json")
 
         file.writeText(Json.encodeToString(DeviceInfo.serializer(), device))
-        assertEquals(device, file.loadAsDeviceInfo())
+        val fileDeviceInfo = file.loadAsDeviceInfo()
+
+        assertTrue { isSameType(device, fileDeviceInfo) }
+
+        assertTrue { device.display.contentEquals(fileDeviceInfo.display) }
+        assertTrue { device.product.contentEquals(fileDeviceInfo.product) }
+        assertTrue { device.device.contentEquals(fileDeviceInfo.device) }
+        assertTrue { device.board.contentEquals(fileDeviceInfo.board) }
+        assertTrue { device.brand.contentEquals(fileDeviceInfo.brand) }
+        assertTrue { device.model.contentEquals(fileDeviceInfo.model) }
+        assertTrue { device.bootloader.contentEquals(fileDeviceInfo.bootloader) }
+        assertTrue { device.fingerprint.contentEquals(fileDeviceInfo.fingerprint) }
+        assertTrue { device.bootId.contentEquals(fileDeviceInfo.bootId) }
+        assertTrue { device.procVersion.contentEquals(fileDeviceInfo.procVersion) }
+        assertTrue { device.baseBand.contentEquals(fileDeviceInfo.baseBand) }
+        assertEquals(device.version, fileDeviceInfo.version)
+        assertTrue { device.simInfo.contentEquals(fileDeviceInfo.simInfo) }
+        assertTrue { device.osType.contentEquals(fileDeviceInfo.osType) }
+        assertTrue { device.macAddress.contentEquals(fileDeviceInfo.macAddress) }
+        assertTrue { device.wifiBSSID.contentEquals(fileDeviceInfo.wifiBSSID) }
+        assertTrue { device.wifiSSID.contentEquals(fileDeviceInfo.wifiSSID) }
+        assertTrue { device.imsiMd5.contentEquals(fileDeviceInfo.imsiMd5) }
+        assertEquals(device.imei, fileDeviceInfo.imei)
+        assertTrue { device.apn.contentEquals(fileDeviceInfo.apn) }
+        assertEquals(device.qimei16, fileDeviceInfo.qimei16)
+        assertEquals(device.qimei36, fileDeviceInfo.qimei36)
     }
 
 

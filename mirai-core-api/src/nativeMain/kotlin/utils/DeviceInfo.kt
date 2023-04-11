@@ -14,7 +14,7 @@ import kotlinx.serialization.Transient
 import kotlin.random.Random
 
 @Serializable
-public actual class DeviceInfo actual constructor(
+public actual class DeviceInfo public actual constructor(
     public actual val display: ByteArray,
     public actual val product: ByteArray,
     public actual val device: ByteArray,
@@ -34,10 +34,47 @@ public actual class DeviceInfo actual constructor(
     public actual val wifiSSID: ByteArray,
     public actual val imsiMd5: ByteArray,
     public actual val imei: String,
-    public actual val apn: ByteArray
+    public actual val apn: ByteArray,
+    public actual val androidId: ByteArray,
 ) {
-    public actual val androidId: ByteArray
-        get() = getRandomByteArray(8).toUHexString("").lowercase().encodeToByteArray()
+
+    @Deprecated(
+        "This DeviceInfo constructor may randomize field `androidId` without your random instance. " +
+                "It is better to specify `android` id explicitly.",
+        replaceWith = ReplaceWith(
+            "net.mamoe.mirai.utils.DeviceInfo(display, product, device, board, brand, model, " +
+                    "bootloader, fingerprint, bootId, procVersion, baseBand, version, simInfo, osType, " +
+                    "macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn, )"
+        )
+    )
+    public actual constructor(
+        display: ByteArray,
+        product: ByteArray,
+        device: ByteArray,
+        board: ByteArray,
+        brand: ByteArray,
+        model: ByteArray,
+        bootloader: ByteArray,
+        fingerprint: ByteArray,
+        bootId: ByteArray,
+        procVersion: ByteArray,
+        baseBand: ByteArray,
+        version: Version,
+        simInfo: ByteArray,
+        osType: ByteArray,
+        macAddress: ByteArray,
+        wifiBSSID: ByteArray,
+        wifiSSID: ByteArray,
+        imsiMd5: ByteArray,
+        imei: String,
+        apn: ByteArray
+    ) : this(
+        display, product, device, board, brand, model, bootloader,
+        fingerprint, bootId, procVersion, baseBand, version, simInfo,
+        osType, macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn,
+        androidId = getRandomByteArray(8).toUHexString("").lowercase().encodeToByteArray()
+    )
+
     public actual val ipAddress: ByteArray get() = byteArrayOf(192.toByte(), 168.toByte(), 1, 123)
 
     init {

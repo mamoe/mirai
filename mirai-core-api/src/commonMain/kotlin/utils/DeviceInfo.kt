@@ -46,8 +46,40 @@ public expect class DeviceInfo(
     wifiSSID: ByteArray,
     imsiMd5: ByteArray,
     imei: String,
-    apn: ByteArray
+    apn: ByteArray,
+    androidId: ByteArray,
 ) {
+    @Deprecated(
+        "This DeviceInfo constructor may randomize field `androidId` without your random instance. " +
+                "It is better to specify `androidId` explicitly.",
+        replaceWith = ReplaceWith(
+            "net.mamoe.mirai.utils.DeviceInfo(display, product, device, board, brand, model, " +
+                    "bootloader, fingerprint, bootId, procVersion, baseBand, version, simInfo, osType, " +
+                    "macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn, )"
+        )
+    )
+    public constructor(
+        display: ByteArray,
+        product: ByteArray,
+        device: ByteArray,
+        board: ByteArray,
+        brand: ByteArray,
+        model: ByteArray,
+        bootloader: ByteArray,
+        fingerprint: ByteArray,
+        bootId: ByteArray,
+        procVersion: ByteArray,
+        baseBand: ByteArray,
+        version: Version,
+        simInfo: ByteArray,
+        osType: ByteArray,
+        macAddress: ByteArray,
+        wifiBSSID: ByteArray,
+        wifiSSID: ByteArray,
+        imsiMd5: ByteArray,
+        imei: String,
+        apn: ByteArray,
+    )
 
     public val display: ByteArray
     public val product: ByteArray
@@ -69,8 +101,8 @@ public expect class DeviceInfo(
     public val imsiMd5: ByteArray
     public val imei: String
     public val apn: ByteArray
-
     public val androidId: ByteArray
+
     public val ipAddress: ByteArray
 
     @Transient
@@ -168,7 +200,8 @@ internal object DeviceInfoCommonImpl {
         wifiSSID = "<unknown ssid>".toByteArray(),
         imsiMd5 = getRandomByteArray(16, random).md5(),
         imei = "86${getRandomIntString(12, random)}".let { it + luhn(it) },
-        apn = "wifi".toByteArray()
+        apn = "wifi".toByteArray(),
+        androidId = getRandomByteArray(8, random).toUHexString("").lowercase().encodeToByteArray()
     )
 
     /**
@@ -195,6 +228,8 @@ internal object DeviceInfoCommonImpl {
         if (deviceInfo === other) return true
         if (!isSameType(this, other)) return false
 
+        // also remember to add equal compare to JvmDeviceInfoTest.`can read legacy v1`
+        // when adding new field compare here.
         if (!display.contentEquals(other.display)) return false
         if (!product.contentEquals(other.product)) return false
         if (!device.contentEquals(other.device)) return false
@@ -216,6 +251,9 @@ internal object DeviceInfoCommonImpl {
         if (imei != other.imei) return false
         if (!apn.contentEquals(other.apn)) return false
         if (!guid.contentEquals(other.guid)) return false
+        if (!androidId.contentEquals(other.androidId)) return false
+        if (qimei16 != other.qimei16) return false
+        if (qimei36 != other.qimei36) return false
 
         return true
     }
@@ -243,6 +281,9 @@ internal object DeviceInfoCommonImpl {
         result = 31 * result + imei.hashCode()
         result = 31 * result + apn.contentHashCode()
         result = 31 * result + guid.contentHashCode()
+        result = 31 * result + androidId.contentHashCode()
+        result = 31 * result + qimei16.hashCode()
+        result = 31 * result + qimei36.hashCode()
         return result
     }
 }
@@ -363,7 +404,8 @@ internal object DeviceInfoManager {
                 wifiSSID = wifiSSID,
                 imsiMd5 = imsiMd5,
                 imei = imei,
-                apn = apn
+                apn = apn,
+                androidId = getRandomByteArray(8).toUHexString("").lowercase().encodeToByteArray()
             )
         }
     }
@@ -412,7 +454,58 @@ internal object DeviceInfoManager {
             this.wifiSSID.toByteArray(),
             this.imsiMd5.data,
             this.imei,
-            this.apn.toByteArray()
+            this.apn.toByteArray(),
+            androidId = getRandomByteArray(8).toUHexString("").lowercase().encodeToByteArray()
+        )
+    }
+
+
+    @Serializable
+    class V3(
+        val display: String,
+        val product: String,
+        val device: String,
+        val board: String,
+        val brand: String,
+        val model: String,
+        val bootloader: String,
+        val fingerprint: String,
+        val bootId: String,
+        val procVersion: String,
+        val baseBand: HexString,
+        val version: Version,
+        val simInfo: String,
+        val osType: String,
+        val macAddress: String,
+        val wifiBSSID: String,
+        val wifiSSID: String,
+        val imsiMd5: HexString,
+        val imei: String,
+        val apn: String,
+        val androidId: String,
+    ) : Info {
+        override fun toDeviceInfo(): DeviceInfo = DeviceInfo(
+            this.display.toByteArray(),
+            this.product.toByteArray(),
+            this.device.toByteArray(),
+            this.board.toByteArray(),
+            this.brand.toByteArray(),
+            this.model.toByteArray(),
+            this.bootloader.toByteArray(),
+            this.fingerprint.toByteArray(),
+            this.bootId.toByteArray(),
+            this.procVersion.toByteArray(),
+            this.baseBand.data,
+            this.version.trans(),
+            this.simInfo.toByteArray(),
+            this.osType.toByteArray(),
+            this.macAddress.toByteArray(),
+            this.wifiBSSID.toByteArray(),
+            this.wifiSSID.toByteArray(),
+            this.imsiMd5.data,
+            this.imei,
+            this.apn.toByteArray(),
+            this.androidId.toByteArray()
         )
     }
 
@@ -434,7 +527,7 @@ internal object DeviceInfoManager {
         }
     }
 
-    fun DeviceInfo.toCurrentInfo(): V2 = V2(
+    fun DeviceInfo.toCurrentInfo(): V3 = V3(
         display.decodeToString(),
         product.decodeToString(),
         device.decodeToString(),
@@ -454,7 +547,8 @@ internal object DeviceInfoManager {
         wifiSSID.decodeToString(),
         HexString(imsiMd5),
         imei,
-        apn.decodeToString()
+        apn.decodeToString(),
+        androidId.decodeToString(),
     )
 
     internal val format = Json {
@@ -475,21 +569,25 @@ internal object DeviceInfoManager {
              * @since 2.9
              */
             2 -> format.decodeFromJsonElement(Wrapper.serializer(V2.serializer()), element).data
+            /**
+             * @since 2.15
+             */
+            3 -> format.decodeFromJsonElement(Wrapper.serializer(V3.serializer()), element).data
             else -> throw IllegalArgumentException("Unsupported deviceInfoVersion: $version")
         }.toDeviceInfo()
     }
 
     fun serialize(info: DeviceInfo, format: Json = this.format): String {
         return format.encodeToString(
-            Wrapper.serializer(V2.serializer()),
-            Wrapper(2, info.toCurrentInfo())
+            Wrapper.serializer(V3.serializer()),
+            Wrapper(3, info.toCurrentInfo())
         )
     }
 
     fun toJsonElement(info: DeviceInfo, format: Json = this.format): JsonElement {
         return format.encodeToJsonElement(
-            Wrapper.serializer(V2.serializer()),
-            Wrapper(2, info.toCurrentInfo())
+            Wrapper.serializer(V3.serializer()),
+            Wrapper(3, info.toCurrentInfo())
         )
     }
 }

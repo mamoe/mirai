@@ -88,7 +88,7 @@ class CommonDeviceInfoTest {
          */
 
         val element = DeviceInfoManager.toJsonElement(device)
-        assertEquals(2, element.jsonObject["deviceInfoVersion"]!!.jsonPrimitive.content.toInt())
+        assertEquals(3, element.jsonObject["deviceInfoVersion"]!!.jsonPrimitive.content.toInt())
 
         val imsiMd5 = element.jsonObject["data"]!!.jsonObject["imsiMd5"]!!.jsonPrimitive.content
         assertEquals(

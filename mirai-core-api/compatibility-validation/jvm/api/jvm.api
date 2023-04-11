@@ -5584,8 +5584,9 @@ public final class net/mamoe/mirai/utils/BotConfiguration$MiraiProtocol : java/l
 
 public final class net/mamoe/mirai/utils/DeviceInfo {
 	public static final field Companion Lnet/mamoe/mirai/utils/DeviceInfo$Companion;
-	public synthetic fun <init> (I[B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[BLkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public synthetic fun <init> (I[B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[B[BLkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public fun <init> ([B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[B)V
+	public fun <init> ([B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[B[B)V
 	public fun equals (Ljava/lang/Object;)Z
 	public static final fun from (Ljava/io/File;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static final fun from (Ljava/io/File;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/utils/DeviceInfo;
@@ -5608,6 +5609,8 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 	public final fun getOsType ()[B
 	public final fun getProcVersion ()[B
 	public final fun getProduct ()[B
+	public final fun getQimei16 ()Ljava/lang/String;
+	public final fun getQimei36 ()Ljava/lang/String;
 	public final fun getSimInfo ()[B
 	public final fun getVersion ()Lnet/mamoe/mirai/utils/DeviceInfo$Version;
 	public final fun getWifiBSSID ()[B
@@ -5615,6 +5618,8 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 	public fun hashCode ()I
 	public static final fun random ()Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static final fun random (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfo;
+	public final fun setQimei16 (Ljava/lang/String;)V
+	public final fun setQimei36 (Ljava/lang/String;)V
 	public static final fun write$Self (Lnet/mamoe/mirai/utils/DeviceInfo;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
