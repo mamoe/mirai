@@ -41,8 +41,11 @@ LQ+FLkpncClKVIrBwv6PHyUvuCb0rIarmgDnzkfQAqVufEtR64iazGDKatvJ9y6B
 """.trimIndent()
 
 internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
-    val deviceInfo = components[SsoProcessorContext].device
+    if (configuration.protocol != MiraiProtocol.ANDROID_PAD && configuration.protocol != MiraiProtocol.ANDROID_PHONE)
+        return
+
     val protocol = components[BotClientHolder].client.protocol
+    val deviceInfo = components[SsoProcessorContext].device
     val httpClient = components[HttpClientProvider].getHttpClient()
 
     val seed = deviceInfo.guid.foldRight(0x6f4L) { curr, acc -> acc + curr.toLong() }
@@ -131,7 +134,7 @@ internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
             audit = "",
             userId = "{}",
             packageId = protocol.apkId,
-            deviceType = if (protocol === MiraiProtocolInternal.protocols[MiraiProtocol.ANDROID_PAD]) "Pad" else "Phone",
+            deviceType = if (configuration.protocol == MiraiProtocol.ANDROID_PAD) "Pad" else "Phone",
             sdkName = "",
             reserved = reservedData,
         )
