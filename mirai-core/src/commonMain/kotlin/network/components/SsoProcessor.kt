@@ -145,7 +145,7 @@ internal class SsoProcessorImpl(
             ssoContext.bot.components[BotClientHolder].client = value
         }
 
-    private val qimeiLogger = ssoContext.bot.network.logger.subLogger("QimeiApi")
+    private val qimeiLogger by lazy { ssoContext.bot.network.logger.subLogger("QimeiApi") }
 
     override val ssoSession: SsoSession get() = client
     private val components get() = ssoContext.bot.components
