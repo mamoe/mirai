@@ -30,15 +30,10 @@ internal object WtLogin9 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(9) // subCommand
-                var tlvCount = if (allowSlider) 0x18 else 0x17;
                 val useEncryptA1AndNoPicSig =
                     client.wLoginSigInfoInitialized
                             && client.wLoginSigInfo.noPicSig != null
                             && client.wLoginSigInfo.encryptA1 != null
-                if (useEncryptA1AndNoPicSig) {
-                    tlvCount++;
-                }
-                // writeShort(tlvCount.toShort()) // count of TLVs, probably ignored by server?
                 //writeShort(LoginType.PASSWORD.value.toShort())
 
                 _writeTlvMap {
