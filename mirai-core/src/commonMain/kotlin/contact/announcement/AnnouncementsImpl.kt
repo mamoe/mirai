@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -48,12 +48,7 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.onLeft
 import net.mamoe.mirai.utils.Either.Companion.rightOrNull
 
-internal expect class AnnouncementsImpl(
-    group: GroupImpl,
-    logger: MiraiLogger,
-) : CommonAnnouncementsImpl
-
-internal abstract class CommonAnnouncementsImpl(
+internal class AnnouncementsImpl(
     protected val group: GroupImpl,
     protected val logger: MiraiLogger,
 ) : Announcements {
@@ -412,6 +407,7 @@ internal object AnnouncementProtocol {
                 showPopup = settings.tipWindowType == 0
                 requireConfirmation = settings.confirmRequired == 1
                 showEditCard = settings.isShowEditCard == 1
+                image = msg.images.firstOrNull()?.toPublic()
             },
             fid = fid,
             allConfirmed = isAllConfirm != 0,
