@@ -93,8 +93,8 @@ private fun MemScope.loadPKey(
 ): CPointer<RSA>? {
     val bio = BIO_new(BIO_s_mem()) ?: error("Failed to init mem BIO: ${getOpenSSLError()}")
 
-    return plainPemKey.usePinned {
-        BIO_write(bio, it.addressOf(0), it.get().length)
+    return plainPemKey.encodeToByteArray().usePinned {
+        BIO_write(bio, it.addressOf(0), it.get().size)
         reader(bio)
     }
 }
