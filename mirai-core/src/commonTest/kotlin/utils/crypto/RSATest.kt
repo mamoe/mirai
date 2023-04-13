@@ -9,45 +9,41 @@
 
 package net.mamoe.mirai.internal.utils.crypto
 
-import net.mamoe.mirai.utils.currentTimeMillis
-import net.mamoe.mirai.utils.toUHexString
-import kotlin.random.Random
+import kotlin.math.pow
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class RSATest {
     @Test
     fun `can gen rsa key pair`() {
-        val rsaKeyPair = generateRSAKeyPair(2048)
-        println(rsaKeyPair.pubPemKey.decodeToString())
-        println(rsaKeyPair.privPemKey.decodeToString())
+        repeat(4) { exp ->
+            val keySize = 2.0.pow(9 + exp).toInt()
+            val rsaKeyPair = generateRSAKeyPair(keySize)
+            println("RSA keygen test #${exp + 1}: keySize = $keySize")
+            println(rsaKeyPair.plainPubPemKey)
+            println(rsaKeyPair.plainPrivPemKey)
+        }
     }
 
     @Test
     fun `can do crypto with generated key`() {
+        val keyPair = generateRSAKeyPair(2048)
 
-        val random = Random(currentTimeMillis())
-        repeat(5) {
-            val keyPair = generateRSAKeyPair(2048)
-            val currentTime = currentTimeMillis()
-
-            val plainText = buildString {
-                append("Use of this source code is governed by the GNU AGPLv3 license ")
-                append(currentTime)
-            }
-
-            println(
-                "RSA crypto test #${it + 1}: pubKey = ${keyPair.pubPemKey.decodeToString()}, " +
-                        "privKey = ${keyPair.privPemKey.decodeToString()}, currentTimeMillis = $currentTime"
-            )
-            val enc =
-                rsaEncryptWithX509PubKey(plainText.encodeToByteArray(), keyPair.pubPemKey, random.nextLong(currentTime))
-            println("rsa encrypt: data=${enc.toUHexString()}")
-            val decrypted = rsaDecryptWithPKCS8PrivKey(enc, keyPair.privPemKey, random.nextLong(currentTime))
-            println("rsa decrypt: data=${decrypted.toUHexString()}")
-
-            assertEquals(plainText, decrypted.decodeToString())
+        val plainText = buildString {
+            append("Use of this source code is governed by the GNU AGPLv3 license ")
+            append("that can be found through the following link. ")
         }
+
+        println(
+            "RSA crypto test: plainTextLength: ${plainText.length}, " +
+                    "pubKey = ${keyPair.plainPubPemKey}, " +
+                    "privKey = ${keyPair.plainPrivPemKey}"
+        )
+        val enc = rsaEncryptWithX509PubKey(plainText.encodeToByteArray(), keyPair.plainPubPemKey, 0)
+        println("rsa encrypt: data size=${enc.size}")
+        val decrypted = rsaDecryptWithPKCS8PrivKey(enc, keyPair.plainPrivPemKey, 0)
+
+        assertEquals(plainText, decrypted.decodeToString())
     }
 
     @Test
@@ -62,7 +58,7 @@ KP1dfqZ3PrK8QBH6su0GlB8onYFtzDUckr2wCrrJ1cR4L1Dg5f2egE75l1cliAIM
 eU8vpIlLP/9W5nkdqF6CWzjE3dIx2btOH4QDDyogDSLRAvcKN5/1EIZeu2FTbw9k
 3QIDAQAB
 -----END PUBLIC KEY-----
-        """.trimIndent().encodeToByteArray()
+        """.trimIndent()
 
         val privKey = """
 -----BEGIN PRIVATE KEY-----
@@ -93,7 +89,7 @@ rz6d6RB+i1Q7ExBK7lbZxN17HmKiOewwI772zEo28IY9sIHugV7rW1vQVs3bnzgk
 ExDGjYWZSKHfs+3mvrLNRIx/IsVqqwlXt5oO9TspSh68ASvmXN51dmduxRrSuScq
 8a49uOr675SyFCJTIdF/Ag==
 -----END PRIVATE KEY-----
-""".trimIndent().encodeToByteArray()
+""".trimIndent()
 
         val plainText = buildString {
             append("Use of this source code is governed by the GNU AGPLv3 license ")

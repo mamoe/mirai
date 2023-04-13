@@ -51,8 +51,17 @@ internal actual fun generateRSAKeyPair(keySize: Int): RSAKeyPair {
         }
 
         val publicPemKey = dumpPKey(evpPKey) { b, k -> PEM_write_bio_PUBKEY(b, k) }
+            ?: kotlin.run {
+                EVP_PKEY_free(evpPKey)
+                EVP_PKEY_CTX_free(evpPkeyCtx)
+                error("Failed to dump rsa public key: ${getOpenSSLError()}")
+            }
         val privatePemKey = dumpPKey(evpPKey) { b, k ->
             PEM_write_bio_PKCS8PrivateKey(b, k, null, null, 0, null, null)
+        } ?: kotlin.run {
+            EVP_PKEY_free(evpPKey)
+            EVP_PKEY_CTX_free(evpPkeyCtx)
+            error("Failed to dump rsa public key: ${getOpenSSLError()}")
         }
 
         EVP_PKEY_free(evpPKey)
@@ -66,7 +75,7 @@ internal actual fun generateRSAKeyPair(keySize: Int): RSAKeyPair {
 private inline fun MemScope.dumpPKey(
     evpPKey: CPointer<EVP_PKEY>,
     dumper: (CPointer<BIO>, CPointer<EVP_PKEY>) -> Unit
-): ByteArray {
+): String? {
     val bio = BIO_new(BIO_s_mem()) ?: error("Failed to init mem BIO: ${getOpenSSLError()}")
 
     dumper(bio, evpPKey)
@@ -75,31 +84,29 @@ private inline fun MemScope.dumpPKey(
     val pKeyBuf = allocPointerTo<ByteVar>()
     BIO_ctrl(bio, BIO_CTRL_INFO, 0, pKeyBuf.ptr)
 
-    return pKeyBuf.value?.toKString()?.encodeToByteArray()
-        ?: error("Failed to dump pkey.")
+    return pKeyBuf.value?.toKString().also { BIO_free(bio) }
 }
 
 private fun MemScope.loadPKey(
-    plainPemKey: ByteArray,
+    plainPemKey: String,
     reader: (CPointer<BIO>) -> CPointer<RSA>?
 ): CPointer<RSA>? {
     val bio = BIO_new(BIO_s_mem()) ?: error("Failed to init mem BIO: ${getOpenSSLError()}")
 
     return plainPemKey.usePinned {
-        BIO_write(bio, it.addressOf(0), it.get().size + 1)
+        BIO_write(bio, it.addressOf(0), it.get().length)
         reader(bio)
     }
 }
 
-internal actual fun rsaEncryptWithX509PubKey(input: ByteArray, pubPemKey: ByteArray, seed: Long): ByteArray {
+internal actual fun rsaEncryptWithX509PubKey(input: ByteArray, plainPubPemKey: String, seed: Long): ByteArray {
     memScoped {
-
-        val pubPKey = loadPKey(pubPemKey) {
+        val pubPKey = loadPKey(plainPubPemKey) {
             PEM_read_bio_RSA_PUBKEY(it, null, null, null)
         } ?: error("Failed to read pem key from BIO: ${getOpenSSLError()}")
 
         val pinnedInput = input.pin()
-        val encMsg = UByteArray(4096).pin()
+        val encMsg = ByteArray(4096).pin()
 
         val encMsgLen = RSA_public_encrypt(
             flen = pinnedInput.get().size,
@@ -115,7 +122,7 @@ internal actual fun rsaEncryptWithX509PubKey(input: ByteArray, pubPemKey: ByteAr
             error("Failed to do rsa decrypt: ${getOpenSSLError()}")
         }
 
-        return encMsg.get().copyOf(encMsgLen).toByteArray().also {
+        return encMsg.get().copyOf(encMsgLen).also {
             pinnedInput.unpin()
             encMsg.unpin()
             RSA_free(pubPKey)
@@ -180,12 +187,12 @@ internal actual fun rsaEncryptWithX509PubKey(input: ByteArray, pubPemKey: ByteAr
     }
 }
 
-internal actual fun rsaDecryptWithPKCS8PrivKey(input: ByteArray, privPemKey: ByteArray, seed: Long): ByteArray {
+internal actual fun rsaDecryptWithPKCS8PrivKey(input: ByteArray, plainPrivPemKey: String, seed: Long): ByteArray {
     memScoped {
         val evpCipherCtx = EVP_CIPHER_CTX_new()
             ?: error("Failed to create evp cipher context: ${getOpenSSLError()}")
 
-        val privKey = loadPKey(privPemKey) {
+        val privKey = loadPKey(plainPrivPemKey) {
             PEM_read_bio_RSAPrivateKey(it, null, null, null)
         } ?: kotlin.run {
             EVP_CIPHER_CTX_free(evpCipherCtx)

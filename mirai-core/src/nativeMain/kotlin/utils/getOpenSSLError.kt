@@ -22,6 +22,6 @@ internal fun getOpenSSLError(): String {
         BIO_ctrl(bio, BIO_CTRL_FLUSH, 0, null)
         BIO_ctrl(bio, BIO_CTRL_INFO, 0, errBuffer.ptr)
 
-        return errBuffer.value?.toKString() ?: "openssl error: no message"
+        return errBuffer.value?.toKString()?.also { BIO_free(bio) } ?: "openssl error: no message"
     }
 }

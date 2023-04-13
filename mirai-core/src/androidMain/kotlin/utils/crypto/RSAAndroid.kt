@@ -18,8 +18,8 @@ import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
 
-internal actual fun rsaEncryptWithX509PubKey(input: ByteArray, pubPemKey: ByteArray, seed: Long): ByteArray {
-    val encodedKey = pubPemKey.decodeToString()
+internal actual fun rsaEncryptWithX509PubKey(input: ByteArray, plainPubPemKey: String, seed: Long): ByteArray {
+    val encodedKey = plainPubPemKey
         .replace("\n", "")
         .removePrefix("-----BEGIN PUBLIC KEY-----")
         .removeSuffix("-----END PUBLIC KEY-----")
@@ -36,8 +36,8 @@ internal actual fun rsaEncryptWithX509PubKey(input: ByteArray, pubPemKey: ByteAr
     return cipher.doFinal(input)
 }
 
-internal actual fun rsaDecryptWithPKCS8PrivKey(input: ByteArray, privPemKey: ByteArray, seed: Long): ByteArray {
-    val encodedKey = privPemKey.decodeToString()
+internal actual fun rsaDecryptWithPKCS8PrivKey(input: ByteArray, plainPrivPemKey: String, seed: Long): ByteArray {
+    val encodedKey = plainPrivPemKey
         .replace("\n", "")
         .removePrefix("-----BEGIN PRIVATE KEY-----")
         .removeSuffix("-----END PRIVATE KEY-----")
@@ -60,15 +60,15 @@ internal actual fun generateRSAKeyPair(keySize: Int): RSAKeyPair {
 
     val keyPair = keyGen.generateKeyPair()
     return RSAKeyPair(
-        pubPemKey = buildString {
+        plainPubPemKey = buildString {
             appendLine("-----BEGIN PUBLIC KEY-----")
             keyPair.public.encoded.encodeBase64().chunked(64).forEach(::appendLine)
             appendLine("-----END PUBLIC KEY-----")
-        }.encodeToByteArray(),
-        privPemKey = buildString {
+        },
+        plainPrivPemKey = buildString {
             appendLine("-----BEGIN PRIVATE KEY-----")
             keyPair.private.encoded.encodeBase64().chunked(64).forEach(::appendLine)
             appendLine("-----END PRIVATE KEY-----")
-        }.encodeToByteArray()
+        }
     )
 }

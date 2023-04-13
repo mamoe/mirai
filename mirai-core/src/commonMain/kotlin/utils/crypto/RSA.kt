@@ -9,29 +9,13 @@
 
 package net.mamoe.mirai.internal.utils.crypto
 
-internal data class RSAKeyPair(
-    val pubPemKey: ByteArray,
-    val privPemKey: ByteArray
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as RSAKeyPair
-
-        if (!pubPemKey.contentEquals(other.pubPemKey)) return false
-        return privPemKey.contentEquals(other.privPemKey)
-    }
-
-    override fun hashCode(): Int {
-        var result = pubPemKey.contentHashCode()
-        result = 31 * result + privPemKey.contentHashCode()
-        return result
-    }
-}
+internal class RSAKeyPair(
+    val plainPubPemKey: String,
+    val plainPrivPemKey: String
+)
 
 internal expect fun generateRSAKeyPair(keySize: Int): RSAKeyPair
 
-internal expect fun rsaEncryptWithX509PubKey(input: ByteArray, pubPemKey: ByteArray, seed: Long): ByteArray
+internal expect fun rsaEncryptWithX509PubKey(input: ByteArray, plainPubPemKey: String, seed: Long): ByteArray
 
-internal expect fun rsaDecryptWithPKCS8PrivKey(input: ByteArray, privPemKey: ByteArray, seed: Long): ByteArray
+internal expect fun rsaDecryptWithPKCS8PrivKey(input: ByteArray, plainPrivPemKey: String, seed: Long): ByteArray
