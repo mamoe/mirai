@@ -44,7 +44,7 @@ public actual class DeviceInfo public actual constructor(
         replaceWith = ReplaceWith(
             "net.mamoe.mirai.utils.DeviceInfo(display, product, device, board, brand, model, " +
                     "bootloader, fingerprint, bootId, procVersion, baseBand, version, simInfo, osType, " +
-                    "macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn, )"
+                    "macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn, androidId)"
         )
     )
     public actual constructor(
