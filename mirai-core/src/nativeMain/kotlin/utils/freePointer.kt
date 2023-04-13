@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.utils.crypto
+package net.mamoe.mirai.internal.utils
 
 import kotlinx.cinterop.CValuesRef
 import platform.posix.free
