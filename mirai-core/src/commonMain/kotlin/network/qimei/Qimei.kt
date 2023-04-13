@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.utils
+package net.mamoe.mirai.internal.network.qimei
 
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -144,7 +144,7 @@ internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
     val nonce = getRandomString(16)
     val timestamp = currentTimeSeconds() * 1000
 
-    val encodedAESKey = rsaEncryptWithX509PubKey(aesKey, rsaPubKey.encodeToByteArray(), timestamp).encodeBase64()
+    val encodedAESKey = rsaEncryptWithX509PubKey(aesKey, rsaPubKey, timestamp).encodeBase64()
     val encodedPayloadParam = aesEncrypt(payloadParam, aesKey, aesKey).encodeBase64()
 
     val payload = Json.encodeToString(

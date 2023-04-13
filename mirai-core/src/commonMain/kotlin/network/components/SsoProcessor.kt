@@ -32,7 +32,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.UrlDeviceVerificat
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse.Captcha
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.*
-import net.mamoe.mirai.internal.utils.requestQimei
+import net.mamoe.mirai.internal.network.qimei.requestQimei
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.RetryLaterException
@@ -54,7 +54,7 @@ internal interface SsoProcessor {
     fun casFirstLoginResult(
         expect: FirstLoginResult?,
         update: FirstLoginResult?
-    ): Boolean // enable compiler optimization/
+    ): Boolean // enable compiler optimization
 
     fun setFirstLoginResult(value: FirstLoginResult?)
 
@@ -145,6 +145,8 @@ internal class SsoProcessorImpl(
             ssoContext.bot.components[BotClientHolder].client = value
         }
 
+    private val qimeiLogger = ssoContext.bot.network.logger.subLogger("QimeiApi")
+
     override val ssoSession: SsoSession get() = client
     private val components get() = ssoContext.bot.components
 
@@ -178,7 +180,6 @@ internal class SsoProcessorImpl(
         }
 
         // try to get qimei before login
-        val qimeiLogger = ssoContext.bot.network.logger.subLogger("QimeiApi")
         try {
             ssoContext.bot.requestQimei(qimeiLogger)
         } catch (exception: Throwable) {
