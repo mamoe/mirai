@@ -41,10 +41,9 @@ LQ+FLkpncClKVIrBwv6PHyUvuCb0rIarmgDnzkfQAqVufEtR64iazGDKatvJ9y6B
 """.trimIndent()
 
 internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
-    if (configuration.protocol != MiraiProtocol.ANDROID_PAD && configuration.protocol != MiraiProtocol.ANDROID_PHONE)
-        return
-
     val protocol = components[BotClientHolder].client.protocol
+    if (protocol.appKey.isEmpty()) return
+
     val deviceInfo = components[SsoProcessorContext].device
     val httpClient = components[HttpClientProvider].getHttpClient()
 
@@ -110,7 +109,7 @@ internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
         DevicePayloadData(
             androidId = deviceInfo.androidId.decodeToString(),
             platformId = 1,
-            appKey = "0S200MNJT807V3GE", // TODO: move to MiraiProtocolInternal
+            appKey = protocol.appKey, // TODO: move to MiraiProtocolInternal
             appVersion = protocol.buildVer,
             beaconIdSrc = beaconId,
             brand = deviceInfo.brand.decodeToString(),
@@ -191,19 +190,20 @@ internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
 }
 
 @Serializable
-private data class OLAAndroidResp(
+private class OLAAndroidResp(
     val code: Int,
     val data: String,
 )
 
 @Serializable
-private data class QimeiData(
+private class QimeiData(
     val q16: String,
     val q36: String,
 )
 
+@Suppress("unused")
 @Serializable
-private data class ReservedData(
+private class ReservedData(
     val harmony: String,
     val clone: String,
     val containe: String,
@@ -222,8 +222,9 @@ private data class ReservedData(
     val kernel: String
 )
 
+@Suppress("unused")
 @Serializable
-private data class DevicePayloadData(
+private class DevicePayloadData(
     val androidId: String,
     val platformId: Int,
     val appKey: String,
@@ -250,8 +251,9 @@ private data class DevicePayloadData(
     val reserved: String
 )
 
+@Suppress("unused")
 @Serializable
-private data class PostData(
+private class PostData(
     val key: String,
     val params: String,
     val time: Long,

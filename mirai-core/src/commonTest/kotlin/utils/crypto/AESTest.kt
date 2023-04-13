@@ -20,7 +20,7 @@ internal class AESTest {
     @Test
     fun `can aes crypto works`() {
         val random = Random(currentTimeMillis())
-        repeat(5) {
+        repeat(5) { i ->
             val key = getRandomString(16, random).encodeToByteArray()
             val iv = getRandomString(16, random).encodeToByteArray()
             val currentTime = currentTimeMillis()
@@ -31,7 +31,7 @@ internal class AESTest {
                 append(currentTime)
             }
 
-            println("AES crypto test #${it + 1}: key = ${key.toUHexString()}, iv = ${iv.toUHexString()}, currentTimeMillis = $currentTime")
+            println("AES crypto test #${i + 1}: key = ${key.toUHexString()}, iv = ${iv.toUHexString()}, currentTimeMillis = $currentTime")
             val encrypted = aesEncrypt(plainText.encodeToByteArray(), iv, key)
             val decrypted = aesDecrypt(encrypted, iv, key)
 

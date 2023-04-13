@@ -26,6 +26,7 @@ internal class MiraiProtocolInternal(
     @JvmField internal val sign: String,
     @JvmField internal val buildTime: Long,
     @JvmField internal val ssoVersion: Int,
+    @JvmField internal val appKey: String,
     @JvmField internal val supportsQRLogin: Boolean,
 ) {
     internal companion object {
@@ -48,6 +49,7 @@ internal class MiraiProtocolInternal(
                 sign = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
                 buildTime = 1676531414L,
                 ssoVersion = 19,
+                appKey = "0S200MNJT807V3GE",
                 supportsQRLogin = false,
             )
             //Updated from MiraiGo (2023/3/7)
@@ -63,6 +65,7 @@ internal class MiraiProtocolInternal(
                 sign = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
                 buildTime = 1673599898L,
                 ssoVersion = 19,
+                appKey = "0S200MNJT807V3GE",
                 supportsQRLogin = false,
             )
             //Updated from MiraiGo (2023/3/24)
@@ -78,6 +81,7 @@ internal class MiraiProtocolInternal(
                 sign = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
                 buildTime = 1559564731L,
                 ssoVersion = 5,
+                appKey = "",
                 supportsQRLogin = true,
             )
             protocols[MiraiProtocol.IPAD] = MiraiProtocolInternal(
@@ -92,6 +96,7 @@ internal class MiraiProtocolInternal(
                 sign = "AA 39 78 F4 1F D9 6F F9 91 4A 66 9E 18 64 74 C7",
                 buildTime = 1640921786L,
                 ssoVersion = 12,
+                appKey = "",
                 supportsQRLogin = false,
             )
             protocols[MiraiProtocol.MACOS] = MiraiProtocolInternal(
@@ -106,6 +111,7 @@ internal class MiraiProtocolInternal(
                 sign = "com.tencent.qq".encodeToByteArray().toUHexString(" "),
                 buildTime = 0L,
                 ssoVersion = 7,
+                appKey = "",
                 supportsQRLogin = true,
             )
         }
