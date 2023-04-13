@@ -1,4 +1,10 @@
-headers = openssl/ec.h openssl/ecdh.h openssl/evp.h
+headers =   openssl/ec.h \
+            openssl/ecdh.h \
+            openssl/evp.h \
+            openssl/rsa.h \
+            openssl/pem.h \
+            openssl/x509.h \
+            openssl/err.h
 
 # -L/usr/local/opt/openssl@1.1/1.1.1o/lib  is for GitHub actions. See https://github.com/actions/virtual-environments/blob/main/images/macos/macos-12-Readme.md
 

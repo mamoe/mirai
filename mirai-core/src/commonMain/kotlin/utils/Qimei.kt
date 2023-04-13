@@ -25,7 +25,7 @@ import net.mamoe.mirai.internal.network.components.SsoProcessorContext
 import net.mamoe.mirai.internal.network.protocol
 import net.mamoe.mirai.internal.utils.crypto.aesDecrypt
 import net.mamoe.mirai.internal.utils.crypto.aesEncrypt
-import net.mamoe.mirai.internal.utils.crypto.rsaEncrypt
+import net.mamoe.mirai.internal.utils.crypto.rsaEncryptWithX509PubKey
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import kotlin.random.Random
@@ -144,7 +144,7 @@ internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
     val nonce = getRandomString(16)
     val timestamp = currentTimeSeconds() * 1000
 
-    val encodedAESKey = rsaEncrypt(aesKey, rsaPubKey, timestamp).encodeBase64()
+    val encodedAESKey = rsaEncryptWithX509PubKey(aesKey, rsaPubKey.encodeToByteArray(), timestamp).encodeBase64()
     val encodedPayloadParam = aesEncrypt(payloadParam, aesKey, aesKey).encodeBase64()
 
     val payload = Json.encodeToString(
