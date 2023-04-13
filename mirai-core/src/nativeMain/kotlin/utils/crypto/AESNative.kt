@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.utils.crypto
 
 import kotlinx.cinterop.*
+import net.mamoe.mirai.internal.utils.free
 import net.mamoe.mirai.internal.utils.getOpenSSLError
 import openssl.*
 
@@ -53,7 +54,7 @@ private fun doAES(input: ByteArray, iv: ByteArray, key: ByteArray, doEncrypt: Bo
         pinnedKey.unpin()
         pinnedIv.unpin()
 
-        val blockSize = EVP_CIPHER_CTX_get_block_size(evpCipherCtx)
+        val blockSize = _evpCipherCtxGetBlockSize(evpCipherCtx)
         val cipherBufferSize = pinnedInput.get().size + blockSize - (pinnedInput.get().size % blockSize)
         val pinnedCipherBuffer = ByteArray(cipherBufferSize.convert()).pin()
 
@@ -69,8 +70,6 @@ private fun doAES(input: ByteArray, iv: ByteArray, key: ByteArray, doEncrypt: Bo
                 inl = pinnedInput.get().size.convert()
             )
         ) {
-            pinnedKey.unpin()
-            pinnedIv.unpin()
             pinnedInput.unpin()
             pinnedCipherBuffer.unpin()
             free(tempLen.ptr, cipherSize.ptr)
@@ -85,8 +84,6 @@ private fun doAES(input: ByteArray, iv: ByteArray, key: ByteArray, doEncrypt: Bo
                 outl = tempLen.ptr
             )
         ) {
-            pinnedKey.unpin()
-            pinnedIv.unpin()
             pinnedInput.unpin()
             pinnedCipherBuffer.unpin()
             free(tempLen.ptr, cipherSize.ptr)

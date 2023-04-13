@@ -33,7 +33,8 @@ internal actual fun generateRSAKeyPair(keySize: Int): RSAKeyPair {
             error("Failed to init evp pkey context: ${getOpenSSLError()}")
         }
 
-        if (EVP_PKEY_CTX_set_rsa_keygen_bits(evpPkeyCtx, keySize) <= 0) {
+        // libcrypto 3 move EVP_PKEY_CTX_set_rsa_keygen_bits from macro to function
+        if (_evpPkeyCtxSetRSAKeygenBits(evpPkeyCtx, keySize) <= 0) {
             EVP_PKEY_CTX_free(evpPkeyCtx)
             error("Failed to set key bit for rsa evp pkey: ${getOpenSSLError()}")
         }
@@ -89,8 +90,6 @@ private fun MemScope.loadPKey(
         reader(bio)
     }
 }
-
-private val aes256CBC by lazy { EVP_aes_128_cbc() }
 
 internal actual fun rsaEncryptWithX509PubKey(input: ByteArray, pubPemKey: ByteArray, seed: Long): ByteArray {
     memScoped {
