@@ -15,7 +15,6 @@ import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.utils._writeTlvMap
-import net.mamoe.mirai.utils.BotConfiguration
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -39,8 +38,6 @@ internal object WtLogin15 : WtLoginExt {
             commandId = 0x0810
         ) {
             writeShort(subCommand) // subCommand
-val useAndroid = client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE ||
-                    client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PAD
 
             _writeTlvMap {
 
@@ -129,17 +126,17 @@ val useAndroid = client.bot.configuration.protocol == BotConfiguration.MiraiProt
 
                 t521() // new
                 t525(client.loginExtraData) // new
-                if (useAndroid) {
-                                runBlocking {
-                                    t544ForToken(
-                                        uin = client.uin,
-                                        guid = client.device.guid,
-                                        sdkVersion = client.sdkVersion,
-                                        subCommandId = 15,
-                                        commandStr = "810_f"
-                                    )
-                                }
-                            }
+                if (client.useAndroid) {
+                    runBlocking {
+                        t544ForToken(
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 15,
+                            commandStr = "810_f"
+                        )
+                    }
+                }
             }
         }
 

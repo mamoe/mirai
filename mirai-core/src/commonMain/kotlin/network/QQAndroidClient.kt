@@ -82,6 +82,10 @@ internal open class QQAndroidClient(
     override var outgoingPacketSessionId: ByteArray = 0x02B05B8B.toByteArray()
     override var loginState = 0
 
+    val useAndroid by lazy {
+        bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE ||
+                bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PAD
+    }
     var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
 
     var fileStoragePushFSSvcList: FileStoragePushFSSvcList? = null

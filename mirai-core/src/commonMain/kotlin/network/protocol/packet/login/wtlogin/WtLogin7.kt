@@ -12,13 +12,8 @@ package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.internal.network.*
-import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.miscBitMap
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
-import net.mamoe.mirai.internal.network.subAppId
-import net.mamoe.mirai.internal.network.subSigMap
-import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DeviceVerificationRequests
 import net.mamoe.mirai.utils._writeTlvMap
 
@@ -37,9 +32,6 @@ internal object WtLogin7 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(7) // subCommand
-val useAndroid = client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE ||
-                        client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PAD
-
                 _writeTlvMap {
 
                     t8(2052)
@@ -49,17 +41,18 @@ val useAndroid = client.bot.configuration.protocol == BotConfiguration.MiraiProt
                     t17c(code.encodeToByteArray())
                     t401(client.G)
                     t198()
-                    if (useAndroid) {
-                                        runBlocking {
-                                            t544ForVerify(
-                                                uin = client.uin,
-                                                guid = client.device.guid,
-                                                sdkVersion = client.sdkVersion,
-                                                subCommandId = 7,
-                                                commandStr = "810_7"
-                                            )
-                                        }
-                                    }
+                    if (client.useAndroid) {
+                        runBlocking {
+                            t544ForVerify(
+                                uin = client.uin,
+                                guid = client.device.guid,
+                                sdkVersion = client.sdkVersion,
+                                subCommandId = 7,
+                                commandStr = "810_7"
+                            )
+
+                        }
+                    }
                 }
             }
         }

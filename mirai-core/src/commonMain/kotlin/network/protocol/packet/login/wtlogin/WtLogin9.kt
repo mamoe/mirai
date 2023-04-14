@@ -15,29 +15,25 @@ import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.utils._writeTlvMap
-import net.mamoe.mirai.utils.BotConfiguration
 
 internal object WtLogin9 : WtLoginExt {
     private const val appId = 16L
 
-    fun Password(
-        client: QQAndroidClient,
-        passwordMd5: ByteArray,
-        allowSlider: Boolean
-    ) = WtLogin.Login.buildLoginOutgoingPacket(
-        client, bodyType = 2, remark = "9:password-login"
-    ) { sequenceId ->
-        writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
-            writeOicqRequestPacket(client, commandId = 0x0810) {
-                writeShort(9) // subCommand
-                var tlvCount = if (allowSlider) 0x18 else 0x17;
+   suspend fun Password(
+       client: QQAndroidClient,
+       passwordMd5: ByteArray,
+       allowSlider: Boolean
+   ) = WtLogin.Login.buildLoginOutgoingPacket(
+       client, bodyType = 2, remark = "9:password-login"
+   ) { sequenceId ->
+       writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
+           writeOicqRequestPacket(client, commandId = 0x0810) {
+               writeShort(9) // subCommand
+               var tlvCount = if (allowSlider) 0x18 else 0x17;
                 val useEncryptA1AndNoPicSig =
                     client.wLoginSigInfoInitialized
                             && client.wLoginSigInfo.noPicSig != null
                             && client.wLoginSigInfo.encryptA1 != null
-                val useAndroid = client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE ||
-                        client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PAD
-
                 if (useEncryptA1AndNoPicSig) {
                     tlvCount++;
                 }
@@ -124,17 +120,18 @@ internal object WtLogin9 : WtLoginExt {
                     // this.build().debugPrint("傻逼")
 
                     // ignored t318 because not logging in by QR
-                      if (useAndroid) {
-                          runBlocking {
-                              t544ForToken(
-                                  uin = client.uin,
-                                  guid = client.device.guid,
-                                  sdkVersion = client.sdkVersion,
-                                  subCommandId = 9,
-                                  commandStr = "810_9"
-                              )
-                          }
-                      }
+                    if (client.useAndroid) {
+                        runBlocking {
+                            t544ForToken(
+                                uin = client.uin,
+                                guid = client.device.guid,
+                                sdkVersion = client.sdkVersion,
+                                subCommandId = 9,
+                                commandStr = "810_9"
+                            )
+                        }
+                    }
+
                 }
             }
         }
