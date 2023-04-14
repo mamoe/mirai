@@ -19,7 +19,7 @@ import net.mamoe.mirai.utils._writeTlvMap
 internal object WtLogin9 : WtLoginExt {
     private const val appId = 16L
 
-   suspend fun Password(
+   fun Password(
        client: QQAndroidClient,
        passwordMd5: ByteArray,
        allowSlider: Boolean

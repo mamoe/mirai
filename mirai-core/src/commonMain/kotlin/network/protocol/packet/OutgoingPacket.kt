@@ -98,7 +98,7 @@ internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildOutgoingUniPacke
             }
             encryptAndWrite(key) {
                 writeUniPacket(commandName, client.outgoingPacketSessionId, extraData) {
-                   body(sequenceId)
+                    body(sequenceId)
                 }
             }
         }
@@ -169,7 +169,7 @@ internal val NO_ENCRYPT: ByteArray = ByteArray(0)
 /**
  * com.tencent.qphone.base.util.CodecWarpper#encodeRequest(int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, byte[], int, int, java.lang.String, byte, byte, byte, byte[], byte[], boolean)
  */
-internal fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPacket(
+internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPacket(
     client: QQAndroidClient,
     bodyType: Byte,
     uin: String = client.uin.toString(),
@@ -177,7 +177,7 @@ internal fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPacket(
     remark: String? = null,
     commandName: String = this.commandName,
     key: ByteArray = KEY_16_ZEROS,
-    body: BytePacketBuilder.(sequenceId: Int) -> Unit
+    crossinline body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacketWithRespType<R> {
     val sequenceId: Int = client.nextSsoSequenceId()
 
@@ -208,14 +208,14 @@ internal fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPacket(
 private inline val BRP_STUB get() = ByteReadPacket.Empty
 
 
-internal fun BytePacketBuilder.writeSsoPacket(
+internal inline fun BytePacketBuilder.writeSsoPacket(
     client: QQAndroidClient,
     subAppId: Long,
     commandName: String,
     extraData: ByteReadPacket = BRP_STUB,
     unknownHex: String = "01 00 00 00 00 00 00 00 00 00 01 00",
     sequenceId: Int,
-    body: BytePacketBuilder.() -> Unit
+    crossinline body: BytePacketBuilder.() -> Unit
 ) {
 
     /* send

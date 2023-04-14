@@ -382,7 +382,7 @@ internal open class SsoProcessorImpl(
         override suspend fun doLogin() = withExceptionCollector {
 
             @Suppress("FunctionName")
-            suspend fun SSOWtLogin9(allowSlider: Boolean) = when (loginType) {
+            fun SSOWtLogin9(allowSlider: Boolean) = when (loginType) {
                 is LoginType.Password -> WtLogin9.Password(client, loginType.passwordMd5.asByteArray, allowSlider)
                 is LoginType.QRCode -> WtLogin9.QRCode(client, loginType.qrCodeLoginData)
             }
