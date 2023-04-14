@@ -907,20 +907,18 @@ internal suspend fun TlvMapWriter.t544ForToken( // 1348
     subCommandId: Int,
     commandStr: String
 ) {
+    val dataIn = buildPacket {
+        writeFully(buildPacket {
+            writeLong(uin)
+        }.readBytes(4))
+        writeShortLVByteArray(guid)
+        writeShortLVString(sdkVersion)
+        writeInt(subCommandId)
+        writeInt(0)
+    }
+    val result = EncryptWorkerService.doTLVEncrypt(uin, 0x544, dataIn.readBytes(), commandStr)
     tlv(0x544) {
-        val dataIn = buildPacket {
-            writeFully(buildPacket {
-                writeLong(uin)
-            }.readBytes(4))
-            writeShortLVByteArray(guid)
-            writeShortLVString(sdkVersion)
-            writeInt(subCommandId)
-            writeInt(0)
-        }
-        runBlocking {
-            val result = EncryptWorkerService.doTLVEncrypt(uin, 0x544, dataIn.readBytes(), commandStr)
-            writeFully(result ?: "".toByteArray()) // Empty str means native throws exception
-        }
+        writeFully(result ?: "".toByteArray()) // Empty str means native throws exception
     }
 }
 
@@ -931,15 +929,15 @@ internal suspend fun TlvMapWriter.t544ForVerify( // 1348
     subCommandId: Int,
     commandStr: String
 ) {
+    val dataIn = buildPacket {
+        writeLong(uin)
+        writeShortLVByteArray(guid)
+        writeShortLVString(sdkVersion)
+        writeInt(subCommandId)
+    }
+    val result = EncryptWorkerService.doTLVEncrypt(uin, 0x544, dataIn.readBytes(), commandStr)
     tlv(0x544) {
-        val dataIn = buildPacket {
-            writeLong(uin)
-            writeShortLVByteArray(guid)
-            writeShortLVString(sdkVersion)
-            writeInt(subCommandId)
-        }
         runBlocking {
-            val result = EncryptWorkerService.doTLVEncrypt(uin, 0x544, dataIn.readBytes(), commandStr)
             writeFully(result ?: "".toByteArray()) // Empty str means native throws exception
         }
     }
