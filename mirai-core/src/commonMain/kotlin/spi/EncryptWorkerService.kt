@@ -11,29 +11,18 @@
 package net.mamoe.mirai.internal.spi
 
 import net.mamoe.mirai.spi.BaseService
-
 import net.mamoe.mirai.spi.SPIServiceLoader
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.jvm.JvmStatic
 
 /**
- * 处理难以直接实现的加密 SPI
- *
  * @since 2.15.0
  */
 @MiraiExperimentalApi
 internal interface EncryptWorkerService : BaseService {
-    /**
-     * implementation note:
-     *
-     * 如果出现不支持的类型，返回 null 即可
-     *
-     */
-    @Throws(IllegalStateException::class, CancellationException::class)
+
     suspend fun doTLVEncrypt(id: Long, tlvType: Int, payLoad: ByteArray, vararg extraArgs: Any?): ByteArray?
 
-    @MiraiExperimentalApi
     companion object : EncryptWorkerService {
         private val loader = SPIServiceLoader(object : EncryptWorkerService {
             override suspend fun doTLVEncrypt(
@@ -44,7 +33,6 @@ internal interface EncryptWorkerService : BaseService {
             ): ByteArray? = null
         }, EncryptWorkerService::class)
 
-        @Throws(IllegalStateException::class, CancellationException::class)
         override suspend fun doTLVEncrypt(
             id: Long,
             tlvType: Int,
