@@ -165,7 +165,19 @@ internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
 
     val resp = Json.decodeFromString<OLAAndroidResp>(
         httpClient.post("https://snowflake.qq.com/ola/android") {
-            userAgent("Dalvik/2.1.0 (Linux; U; Android 7.1.2; PCRT00 Build/N2G48H)")
+            userAgent(buildString {
+                val androidInfo = androidVersionTable[deviceInfo.version.sdk]
+                    ?: AndroidInfo("8.1", "2.1.0")
+                append("Dalvik/")
+                append(androidInfo.dalvik)
+                append(" (Linux; U; Android ")
+                append(androidInfo.version)
+                append("; ")
+                append(deviceInfo.device.decodeToString())
+                append(" Build/")
+                append(deviceInfo.display.decodeToString())
+                append(")")
+            })
             contentType(ContentType.Application.Json)
             header("Cookie", "")
             setBody(payload.toByteArray())
@@ -188,6 +200,35 @@ internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
     client.qimei36 = qimeiData.q36
     client.qimei16 = qimeiData.q16
 }
+
+private val androidVersionTable = mapOf(
+    14 to AndroidInfo("4.0.1", "1.6"),
+    15 to AndroidInfo("4.0.3", "1.6"),
+    16 to AndroidInfo("4.1", "1.6"),
+    17 to AndroidInfo("4.2", "1.6"),
+    18 to AndroidInfo("4.3", "1.6"),
+    19 to AndroidInfo("4.4", "2.0"),
+    20 to AndroidInfo("4.4W", "2.0"),
+    21 to AndroidInfo("5.0", "2.1.0"),
+    22 to AndroidInfo("5.1", "2.1.0"),
+    23 to AndroidInfo("6", "2.1.0"),
+    24 to AndroidInfo("7.0", "2.1.0"),
+    25 to AndroidInfo("7.1", "2.1.0"),
+    26 to AndroidInfo("8.0", "2.1.0"),
+    27 to AndroidInfo("8.1", "2.1.0"),
+    28 to AndroidInfo("9", "2.1.0"),
+    29 to AndroidInfo("10", "2.1.0"),
+    30 to AndroidInfo("11", "2.1.0"),
+    31 to AndroidInfo("12", "2.1.0"),
+    32 to AndroidInfo("12L", "2.1.0"),
+    33 to AndroidInfo("13", "2.1.0"),
+    34 to AndroidInfo("14", "2.1.0"),
+)
+
+private class AndroidInfo(
+    val version: String,
+    val dalvik: String,
+)
 
 @Serializable
 private class OLAAndroidResp(
