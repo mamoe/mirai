@@ -9,11 +9,12 @@
 
 package net.mamoe.mirai.internal.contact.roaming
 
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.*
 import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
-import net.mamoe.mirai.internal.contact.uin
-import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
+import net.mamoe.mirai.internal.message.toMessageChainOnline
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.Streamable
 
 internal sealed class SequenceBasedRoamingMessagesImpl : AbstractRoamingMessages() {
@@ -30,7 +31,7 @@ internal sealed class SequenceBasedRoamingMessagesImpl : AbstractRoamingMessages
         messageId: Int?,
         filter: RoamingMessageFilter?
     ): Streamable<MessageChain> {
-        val flow = getMessagesBeforeFlow(messageId, filter)
+        val flow = getMessagesImpl(messageId, preSortFilter = { true }, filter = filter)
         return object : Streamable<MessageChain> {
             override fun asFlow(): Flow<MessageChain> {
                 return flow
@@ -42,23 +43,53 @@ internal sealed class SequenceBasedRoamingMessagesImpl : AbstractRoamingMessages
         filter: RoamingMessageFilter?
     ): Flow<MessageChain> = getMessagesBefore().asFlow()
 
-    abstract suspend fun getMessagesBeforeFlow(
-        messageId: Int?,
+
+    /**
+     * get message sequences
+     * @param preFilter: filter before emitting message elements, break loop if false.
+     *  use it to predict if we fetched all messages. param1 is time of newest message.
+     * @param preSortFilter: message element filter, param is msgElem
+     * @param filter: user-defined roaming message filter
+     */
+    internal suspend fun getMessagesImpl(
+        initialSeq: Int? = null,
+        preFilter: (maxTime: Int) -> Boolean = { true },
+        preSortFilter: (msg: MsgComm.Msg) -> Boolean,
         filter: RoamingMessageFilter?
-    ): Flow<MessageChain>
+    ): Flow<MessageChain> {
+        var currentSeq: Int = initialSeq ?: getLastMsgSeq() ?: return emptyFlow()
+        var lastOfferedSeq = -1
 
-    internal suspend fun getLastMsgSeq(): Int? {
-        // Iterate from the newest message to find messages within [timeStart] and [timeEnd]
-        val lastMsgSeqResp = bot.network.sendAndExpect(
-            TroopManagement.GetGroupLastMsgSeq(
-                client = bot.client,
-                groupUin = contact.uin
-            )
-        )
+        return flow {
+            while (true) {
+                val msgElem = getMsg(currentSeq)
+                if (msgElem.isEmpty()) break
 
-        return when (lastMsgSeqResp) {
-            TroopManagement.GetGroupLastMsgSeq.Response.Failed -> null
-            is TroopManagement.GetGroupLastMsgSeq.Response.Success -> lastMsgSeqResp.seq
+                // the message may be sorted increasing by message time,
+                // if so, additional sortBy will not take cost.
+                val maxTime = msgElem.asSequence().map { it.msgHead.msgTime }.max()
+                if (!preFilter(maxTime)) break
+
+                emitAll(
+                    msgElem.asSequence()
+                        .filter { lastOfferedSeq == -1 || it.msgHead.msgSeq < lastOfferedSeq }
+                        .filter(preSortFilter)
+                        .sortedByDescending { it.msgHead.msgSeq } // Ensure caller receives newer messages first
+                        .filter { filter.apply(it) } // Call filter after sort
+                        .asFlow()
+                        .map { listOf(it).toMessageChainOnline(bot, contact.id, MessageSourceKind.GROUP) }
+                )
+
+                currentSeq = msgElem.first().msgHead.msgSeq
+                lastOfferedSeq = currentSeq
+            }
         }
     }
+
+    private fun RoamingMessageFilter?.apply(it: MsgComm.Msg) =
+        this?.invoke(createRoamingMessage(it, listOf())) != false
+
+    internal abstract suspend fun getLastMsgSeq(): Int?
+
+    internal abstract suspend fun getMsg(seq: Int): List<MsgComm.Msg>
 }
