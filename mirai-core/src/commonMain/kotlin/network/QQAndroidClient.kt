@@ -169,6 +169,12 @@ internal open class QQAndroidClient(
     internal val t104Initialized get() = ::t104.isInitialized
     var t543: ByteArray? = null
     var t547: ByteArray? = null
+
+    /**
+     * t545
+     */
+    var qimei16: String? = null
+    var qimei36: String? = null
 }
 
 internal val QQAndroidClient.apkId: ByteArray get() = protocol.apkId.toByteArray()

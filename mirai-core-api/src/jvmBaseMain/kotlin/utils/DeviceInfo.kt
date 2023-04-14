@@ -15,7 +15,7 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.random.Random
 
-@Serializable
+@Serializable(DeviceInfoDelegateSerializer::class)
 public actual class DeviceInfo public actual constructor(
     public actual val display: ByteArray,
     public actual val product: ByteArray,
@@ -85,14 +85,6 @@ public actual class DeviceInfo public actual constructor(
     @Transient
     @MiraiInternalApi
     public actual val guid: ByteArray = generateGuid(androidId, macAddress)
-
-    @MiraiInternalApi
-    @Transient
-    public actual var qimei16: String? = null
-
-    @MiraiInternalApi
-    @Transient
-    public actual var qimei36: String? = null
 
     @Serializable
     public actual class Version actual constructor(

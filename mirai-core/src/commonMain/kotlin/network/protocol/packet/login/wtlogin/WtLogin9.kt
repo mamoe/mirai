@@ -130,7 +130,7 @@ internal object WtLogin9 : WtLoginExt {
                     t521()
 
                     t525()
-                    t545(client.device.qimei16 ?: client.device.imei)
+                    t545(client.qimei16 ?: client.device.imei)
                     // t548()
                     // this.build().debugPrint("傻逼")
 

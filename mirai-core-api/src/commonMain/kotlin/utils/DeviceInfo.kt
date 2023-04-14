@@ -109,15 +109,6 @@ public expect class DeviceInfo(
     @MiraiInternalApi
     public val guid: ByteArray
 
-    @Transient
-    @MiraiInternalApi
-    public var qimei16: String?
-
-    @Transient
-    @MiraiInternalApi
-    public var qimei36: String?
-
-
     // @Serializable: use DeviceInfoVersionSerializer in commonMain.
     public class Version(
         incremental: ByteArray = "5891938".toByteArray(),
@@ -252,8 +243,6 @@ internal object DeviceInfoCommonImpl {
         if (!apn.contentEquals(other.apn)) return false
         if (!guid.contentEquals(other.guid)) return false
         if (!androidId.contentEquals(other.androidId)) return false
-        if (qimei16 != other.qimei16) return false
-        if (qimei36 != other.qimei36) return false
 
         return true
     }
@@ -282,8 +271,6 @@ internal object DeviceInfoCommonImpl {
         result = 31 * result + apn.contentHashCode()
         result = 31 * result + guid.contentHashCode()
         result = 31 * result + androidId.contentHashCode()
-        result = 31 * result + qimei16.hashCode()
-        result = 31 * result + qimei36.hashCode()
         return result
     }
 }
@@ -330,7 +317,10 @@ internal object DeviceInfoManager {
 
     object HexStringSerializer : KSerializer<HexString> by String.serializer().map(
         String.serializer().descriptor.copy("HexString"),
-        deserialize = { HexString(it.hexToBytes()) },
+        deserialize = {
+            println(it)
+            HexString(it.hexToBytes())
+        },
         serialize = { it.data.toUHexString("").lowercase() }
     )
 
@@ -341,7 +331,7 @@ internal object DeviceInfoManager {
         val data: T
     )
 
-    private object DeviceInfoVersionSerializer : KSerializer<DeviceInfo.Version> by SerialData.serializer().map(
+    internal object DeviceInfoVersionSerializer : KSerializer<DeviceInfo.Version> by SerialData.serializer().map(
         resultantDescriptor = SerialData.serializer().descriptor,
         deserialize = {
             DeviceInfo.Version(incremental, release, codename, sdk)
@@ -352,7 +342,7 @@ internal object DeviceInfoManager {
     ) {
         @SerialName("Version")
         @Serializable
-        private class SerialData(
+        internal class SerialData(
             val incremental: ByteArray = "5891938".toByteArray(),
             val release: ByteArray = "10".toByteArray(),
             val codename: ByteArray = "REL".toByteArray(),
@@ -409,7 +399,6 @@ internal object DeviceInfoManager {
             )
         }
     }
-
 
     @Serializable
     class V2(
@@ -505,7 +494,7 @@ internal object DeviceInfoManager {
             this.imsiMd5.data,
             this.imei,
             this.apn.toByteArray(),
-            this.androidId.toByteArray()
+            this.androidId!!.toByteArray()
         )
     }
 
