@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,8 +9,10 @@
 
 package net.mamoe.mirai.internal.test
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.debug.DebugProbes
+import kotlinx.coroutines.test.StandardTestDispatcher
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.internal.network.framework.SynchronizedStdoutLogger
 import net.mamoe.mirai.internal.testFramework.TestFactory
@@ -26,10 +28,13 @@ import kotlin.reflect.full.functions
 import kotlin.reflect.full.hasAnnotation
 
 @Timeout(value = 7, unit = TimeUnit.MINUTES)
-internal actual abstract class AbstractTest actual constructor() : CommonAbstractTest() {
+actual abstract class AbstractTest actual constructor() {
+    actual fun borrowSingleThreadDispatcher(): CoroutineDispatcher {
+        return StandardTestDispatcher()
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     actual companion object {
-        @OptIn(ExperimentalStdlibApi::class)
         @BeforeAll
         @JvmStatic
         fun checkTestFactories(testInfo: TestInfo) {
@@ -49,7 +54,7 @@ internal actual abstract class AbstractTest actual constructor() : CommonAbstrac
         init {
             initPlatform()
 
-            DebugProbes.install()
+            kotlin.runCatching { DebugProbes.install() }
 
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             net.mamoe.mirai.utils.MiraiLoggerFactoryImplementationBridge.wrapCurrent {

@@ -16,6 +16,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.Stranger
@@ -44,11 +45,11 @@ import net.mamoe.mirai.utils.structureToString
 @Serializable(OnlineMessageSourceFromFriendImpl.Serializer::class)
 internal class OnlineMessageSourceFromFriendImpl(
     override val bot: Bot,
-    msg: List<MsgComm.Msg>,
+    private val msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromFriend(), IncomingMessageSourceInternal {
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromFriend")
 
-    override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
+    override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq.and(0xFFFF) }
 
     private val _isRecalledOrPlanned = atomic(false)
 
@@ -56,9 +57,7 @@ internal class OnlineMessageSourceFromFriendImpl(
     override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
     override val ids: IntArray get() = sequenceIds // msg.msgBody.richText.attr!!.random
-    override val internalIds: IntArray = msg.mapToIntArray {
-        it.msgBody.richText.attr?.random ?: 0
-    } // other client 消息的这个是0
+    override val internalIds: IntArray = msg.mapToIntArray { it.decodeRandom() }
     override val time: Int = msg.first().msgHead.msgTime
     override var originalMessageLazy = lazy {
         msg.toMessageChainNoSource(bot, 0, MessageSourceKind.FRIEND)
@@ -67,7 +66,35 @@ internal class OnlineMessageSourceFromFriendImpl(
     override val isOriginalMessageInitialized: Boolean
         get() = originalMessageLazy.isInitialized()
 
-    override val sender: Friend = bot.getFriendOrFail(msg.first().msgHead.fromUin)
+    override val sender: Friend by lazy {
+        if (fromId == bot.id) {
+            bot.asFriend
+        } else {
+            bot.getFriendOrFail(fromId)
+        }
+    }
+
+    override val subject: Friend by lazy {
+        if (fromId == bot.id) {
+            bot.getFriendOrFail(targetId)
+        } else {
+            bot.getFriendOrFail(fromId)
+        }
+    }
+    override val fromId: Long
+        get() = msg.first().msgHead.fromUin
+
+    override val targetId: Long
+        get() = msg.first().msgHead.toUin
+
+    override val target: ContactOrBot by lazy {
+        if (fromId == bot.id) {
+            bot.getFriendOrFail(targetId)
+        } else {
+            bot
+        }
+    }
+
 
     private val jceData: ImMsgBody.SourceMsg by lazy { msg.toJceDataPrivate(internalIds) }
 
@@ -82,7 +109,7 @@ internal class OnlineMessageSourceFromFriendImpl(
 @Serializable(OnlineMessageSourceFromStrangerImpl.Serializer::class)
 internal class OnlineMessageSourceFromStrangerImpl(
     override val bot: Bot,
-    msg: List<MsgComm.Msg>,
+    private val msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromStranger(), IncomingMessageSourceInternal {
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromStranger")
 
@@ -95,9 +122,7 @@ internal class OnlineMessageSourceFromStrangerImpl(
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
 
     override val ids: IntArray get() = sequenceIds // msg.msgBody.richText.attr!!.random
-    override val internalIds: IntArray = msg.mapToIntArray {
-        it.msgBody.richText.attr?.random ?: 0
-    } // other client 消息的这个是0
+    override val internalIds: IntArray = msg.mapToIntArray { it.decodeRandom() }
     override val time: Int = msg.first().msgHead.msgTime
     override var originalMessageLazy = lazy {
         msg.toMessageChainNoSource(bot, 0, MessageSourceKind.STRANGER)
@@ -106,7 +131,35 @@ internal class OnlineMessageSourceFromStrangerImpl(
     override val isOriginalMessageInitialized: Boolean
         get() = originalMessageLazy.isInitialized()
 
-    override val sender: Stranger = bot.getStrangerOrFail(msg.first().msgHead.fromUin)
+    override val sender: Stranger by lazy {
+        if (fromId == bot.id) {
+            bot.asStranger
+        } else {
+            bot.getStrangerOrFail(fromId)
+        }
+    }
+
+    override val subject: Stranger by lazy {
+        if (fromId == bot.id) {
+            bot.getStrangerOrFail(targetId)
+        } else {
+            bot.getStrangerOrFail(fromId)
+        }
+    }
+
+    override val fromId: Long
+        get() = msg.first().msgHead.fromUin
+
+    override val targetId: Long
+        get() = msg.first().msgHead.toUin
+
+    override val target: ContactOrBot by lazy {
+        if (fromId == bot.id) {
+            bot.getStrangerOrFail(targetId)
+        } else {
+            bot
+        }
+    }
 
     private val jceData: ImMsgBody.SourceMsg by lazy { msg.toJceDataPrivate(internalIds) }
 
@@ -119,10 +172,12 @@ internal class OnlineMessageSourceFromStrangerImpl(
 
 private fun List<MsgComm.Msg>.toJceDataPrivate(ids: IntArray): ImMsgBody.SourceMsg {
     val elements = flatMap { it.msgBody.richText.elems }.toMutableList().also {
-        if (it.last().elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
+        if (it.lastOrNull()?.elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
     }
 
-    first().msgHead.run {
+    val firstMsgMsgHead = first().msgHead
+
+    firstMsgMsgHead.run {
         return ImMsgBody.SourceMsg(
             origSeqs = mapToIntArray { it.msgHead.msgSeq },
             senderUin = fromUin,
@@ -132,7 +187,7 @@ private fun List<MsgComm.Msg>.toJceDataPrivate(ids: IntArray): ImMsgBody.SourceM
             type = 0,
             time = msgTime,
             pbReserve = SourceMsg.ResvAttr(
-                origUids = ids.map { it.toLong() and 0xFFFF_FFFF }
+                origUids = mutableListOf(firstMsgMsgHead.msgUid)
             ).toByteArray(SourceMsg.ResvAttr.serializer()),
             srcMsg = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
@@ -142,7 +197,8 @@ private fun List<MsgComm.Msg>.toJceDataPrivate(ids: IntArray): ImMsgBody.SourceM
                     c2cCmd = c2cCmd,
                     msgSeq = msgSeq,
                     msgTime = msgTime,
-                    msgUid = ids.single().toLong() and 0xFFFF_FFFF, // ok
+                    msgUid = firstMsgMsgHead.msgUid, // ok
+//                    msgUid = ids.single().toLong() and 0xFFFF_FFFF, // ok
                     // groupInfo = MsgComm.GroupInfo(groupCode = msgHead.groupInfo.groupCode),
                     isSrcMsg = true
                 ),
@@ -156,16 +212,23 @@ private fun List<MsgComm.Msg>.toJceDataPrivate(ids: IntArray): ImMsgBody.SourceM
     }
 }
 
+internal fun MsgComm.Msg.decodeRandom(): Int {
+    msgBody.richText.attr?.random?.let { return it }
+
+    // msg uin = 0x100000000000000 or rand.toLongUnsigned()
+    return msgHead.msgUid.toInt()
+}
+
 @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
 @Serializable(OnlineMessageSourceFromTempImpl.Serializer::class)
 internal class OnlineMessageSourceFromTempImpl(
     override val bot: Bot,
-    msg: List<MsgComm.Msg>,
+    private val msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromTemp(), IncomingMessageSourceInternal {
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromTemp")
 
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
-    override val internalIds: IntArray = msg.mapToIntArray { it.msgBody.richText.attr!!.random }
+    override val internalIds: IntArray = msg.mapToIntArray { it.decodeRandom() }
 
     private val _isRecalledOrPlanned = atomic(false)
 
@@ -182,14 +245,39 @@ internal class OnlineMessageSourceFromTempImpl(
     override val isOriginalMessageInitialized: Boolean
         get() = originalMessageLazy.isInitialized()
 
-    override val sender: Member = with(msg.first().msgHead) {
+    @Suppress("PropertyName")
+    private val _group = with(msg.first().msgHead) {
         // it must be uin, see #1410
         // corresponding test: net.mamoe.mirai.internal.notice.processors.MessageTest.group temp message test 2
 
         // search for group code also is for tests. code may be passed as uin in tests.
         // clashing is unlikely possible in real time, so it would not be a problem.
-        bot.asQQAndroidBot().getGroupByUinOrCodeOrFail(c2cTmpMsgHead!!.groupUin).getOrFail(fromUin)
+        bot.asQQAndroidBot().getGroupByUinOrCodeOrFail(c2cTmpMsgHead!!.groupUin)
     }
+
+    override val sender: Member by lazy {
+        _group.getOrFail(fromId)
+    }
+
+    override val target: ContactOrBot by lazy {
+        if (fromId == botId) {
+            _group.getOrFail(targetId)
+        } else bot
+    }
+
+    override val subject: Member by lazy {
+        if (fromId == botId) {
+            _group.getOrFail(targetId)
+        } else {
+            _group.getOrFail(fromId)
+        }
+    }
+
+    override val fromId: Long
+        get() = msg.first().msgHead.fromUin
+    override val targetId: Long
+        get() = msg.first().msgHead.toUin
+
 
     private val jceData: ImMsgBody.SourceMsg by lazy { msg.toJceDataPrivate(internalIds) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
@@ -203,7 +291,7 @@ internal class OnlineMessageSourceFromTempImpl(
 @Serializable(OnlineMessageSourceFromGroupImpl.Serializer::class)
 internal class OnlineMessageSourceFromGroupImpl(
     override val bot: Bot,
-    msg: List<MsgComm.Msg>,
+    private val msg: List<MsgComm.Msg>,
 ) : OnlineMessageSource.Incoming.FromGroup(), IncomingMessageSourceInternal {
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("OnlineMessageSourceFromGroupImpl")
 
@@ -214,7 +302,7 @@ internal class OnlineMessageSourceFromGroupImpl(
     override val isRecalledOrPlanned: Boolean get() = _isRecalledOrPlanned.value
     override fun setRecalled(): Boolean = _isRecalledOrPlanned.compareAndSet(expect = false, update = true)
     override val sequenceIds: IntArray = msg.mapToIntArray { it.msgHead.msgSeq }
-    override val internalIds: IntArray = msg.mapToIntArray { it.msgBody.richText.attr!!.random }
+    override val internalIds: IntArray = msg.mapToIntArray { it.decodeRandom() }
     override val ids: IntArray get() = sequenceIds
     override val time: Int = msg.first().msgHead.msgTime
     override var originalMessageLazy = lazy {
@@ -226,11 +314,8 @@ internal class OnlineMessageSourceFromGroupImpl(
 
 
     override val subject: GroupImpl by lazy {
-        val groupCode = msg.first().msgHead.groupInfo?.groupCode
-            ?: error("cannot find groupCode for OnlineMessageSourceFromGroupImpl. msg=${msg.structureToString()}")
-
-        val group = bot.getGroup(groupCode)?.checkIsGroupImpl()
-            ?: error("cannot find group for OnlineMessageSourceFromGroupImpl. msg=${msg.structureToString()}")
+        val group = bot.getGroup(targetId)?.checkIsGroupImpl()
+            ?: error("cannot find group for OnlineMessageSourceFromGroupImpl. Use `source.targetId` to get group id. msg=${msg.structureToString()}")
 
         group
     }
@@ -242,12 +327,19 @@ internal class OnlineMessageSourceFromGroupImpl(
         if (member != null) return@lazy member
 
         val anonymousInfo = msg.first().msgBody.richText.elems.firstOrNull { it.anonGroupMsg != null }
-            ?: error("cannot find member for OnlineMessageSourceFromGroupImpl. msg=${msg.structureToString()}")
+            ?: error("cannot find member for OnlineMessageSourceFromGroupImpl. Use `source.fromId` to get sender id. msg=${msg.structureToString()}")
 
         anonymousInfo.run {
             group.newAnonymous(anonGroupMsg!!.anonNick.decodeToString(), anonGroupMsg.anonId.encodeBase64())
         }
     }
+
+    override val fromId: Long get() = msg.first().msgHead.fromUin
+    override val targetId: Long
+        get() {
+            return msg.first().msgHead.groupInfo?.groupCode
+                ?: error("cannot find groupCode for OnlineMessageSourceFromGroupImpl. msg=${msg.structureToString()}")
+        }
 
     private val jceData: ImMsgBody.SourceMsg by lazy {
         ImMsgBody.SourceMsg(

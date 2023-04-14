@@ -49,8 +49,10 @@ import kotlin.random.Random
 
 internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.Response>("MessageSvc.PbSendMsg") {
     sealed class Response : Packet {
-        object SUCCESS : Response() {
-            override fun toString(): String = "MessageSvcPbSendMsg.Response.SUCCESS"
+        class SUCCESS(
+            val sendTime: Int,
+        ) : Response() {
+            override fun toString(): String = "MessageSvcPbSendMsg.Response.SUCCESS(time=$sendTime)"
         }
 
         object MessageTooLarge : Response() {
@@ -486,7 +488,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
         val response = readProtoBuf(MsgSvc.PbSendMsgResp.serializer())
         return when (response.result) {
-            0 -> Response.SUCCESS
+            0 -> Response.SUCCESS(response.sendTime)
             10 -> Response.MessageTooLarge
             32 -> Response.ServiceUnavailable
             else -> Response.Failed(

@@ -21,9 +21,40 @@ import java.util.*
 
 object BuildSrcRootProjectHolder {
     lateinit var value: Project
+    var lastUpdateTime: Long = 0
 }
 
 val rootProject: Project get() = BuildSrcRootProjectHolder.value
+
+fun <T> projectLazy(action: () -> T): Lazy<T> {
+    val projLazy = object : Lazy<T> {
+        private lateinit var delegate: Lazy<T>
+        private var holdTime: Long = -1
+
+        override val value: T
+            get() {
+                if (holdTime != BuildSrcRootProjectHolder.lastUpdateTime) {
+                    synchronized(this) {
+                        if (holdTime != BuildSrcRootProjectHolder.lastUpdateTime) {
+                            delegate = lazy(action)
+                            holdTime = BuildSrcRootProjectHolder.lastUpdateTime
+                        }
+                    }
+                }
+                return delegate.value
+            }
+
+        override fun isInitialized(): Boolean {
+            if (!::delegate.isInitialized) return false
+
+            if (holdTime == BuildSrcRootProjectHolder.lastUpdateTime) {
+                return delegate.isInitialized()
+            }
+            return false
+        }
+    }
+    return projLazy
+}
 
 
 private lateinit var localProperties: Properties

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -101,7 +101,7 @@ private fun KotlinTarget.configureRelocationForMppTarget(project: Project) = pro
         destinationDirectory.set(buildDir.resolve("libs")) // build/libs
         archiveBaseName.set("${project.name}-${targetName.toLowerCase()}") // e.g. "mirai-core-api-jvm"
 
-        dependsOn(compilations["main"].compileKotlinTask) // e.g. compileKotlinJvm
+        dependsOn(compilations["main"].compileTaskProvider) // e.g. compileKotlinJvm
 
         from(compilations["main"].output) // Add compilation result of mirai sourcecode, not including dependencies
         configuration?.let {
@@ -257,7 +257,7 @@ fun Project.registerRegularShadowTask(
         }
 
         val compilation = target.compilations["main"]
-        dependsOn(compilation.compileKotlinTask)
+        dependsOn(compilation.compileTaskProvider)
         from(compilation.output)
 
 //        components.findByName("java")?.let { from(it) }

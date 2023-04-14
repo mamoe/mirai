@@ -12,14 +12,15 @@ package net.mamoe.mirai.mock.internal.contact.active
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.active.ActiveChart
-import net.mamoe.mirai.contact.active.ActiveHonorList
-import net.mamoe.mirai.contact.active.ActiveRankRecord
-import net.mamoe.mirai.contact.active.ActiveRecord
+import net.mamoe.mirai.contact.active.*
 import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.data.GroupHonorType
+import net.mamoe.mirai.event.events.GroupTalkativeChangeEvent
+import net.mamoe.mirai.event.events.MemberHonorChangeEvent
+import net.mamoe.mirai.mock.contact.MockNormalMember
 import net.mamoe.mirai.mock.contact.active.MockGroupActive
 import net.mamoe.mirai.mock.internal.contact.MockGroupImpl
+import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.utils.ConcurrentHashMap
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.asImmutable
@@ -81,6 +82,33 @@ internal class MockGroupActiveImpl(
     override suspend fun queryChart(): ActiveChart = activeChart
 
     private var honorHistories: MutableMap<GroupHonorType, ActiveHonorList> = ConcurrentHashMap()
+
+    @Suppress("INVISIBLE_MEMBER") // for ActiveHonorInfo
+    override fun changeHonorMember(member: MockNormalMember, honorType: GroupHonorType) {
+        val old = honorHistories[honorType]
+
+        val info = ActiveHonorInfo(member.nameCard, member.id, member.avatarUrl, member, 0, 0, 0)
+        if (old == null) {
+            // if not history record found, add a new one with current honor member
+            honorHistories[honorType] = ActiveHonorList(honorType, info, emptyList())
+        } else if (old.current?.memberId != info.memberId) {
+            honorHistories[honorType] =
+                ActiveHonorList(honorType, info, old.current?.let {
+                    old.records.plus(it)
+                } ?: old.records)
+            if (old.current != null) {
+                if (honorType == GroupHonorType.TALKATIVE) {
+                    GroupTalkativeChangeEvent(
+                        this.group,
+                        member,
+                        old.current!!.member!!
+                    ).broadcastBlocking()
+                }
+                MemberHonorChangeEvent.Lose(old.current!!.member!!, honorType).broadcastBlocking()
+            }
+        }
+        MemberHonorChangeEvent.Achieve(member, honorType).broadcastBlocking()
+    }
 
     override suspend fun queryHonorHistory(type: GroupHonorType): ActiveHonorList {
         return honorHistories.getOrElse(type) { ActiveHonorList(type, null, listOf()) }

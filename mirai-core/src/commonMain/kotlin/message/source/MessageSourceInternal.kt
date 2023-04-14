@@ -61,6 +61,11 @@ internal interface OutgoingMessageSourceInternal : MessageSourceInternal {
      * This 'overrides' [MessageSource.originalMessage].
      */
     var originalMessage: MessageChain
+
+    /**
+     * This for patch outgoing message source to real time (from server)
+     */
+    var time: Int
 }
 
 /**

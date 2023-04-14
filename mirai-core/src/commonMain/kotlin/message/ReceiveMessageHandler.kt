@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.message.source.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.structureToString
 import net.mamoe.mirai.utils.toLongUnsigned
 
 /**
@@ -99,6 +100,24 @@ internal fun List<MsgComm.Msg>.toMessageChainNoSource(
 
 
 private fun List<MsgComm.Msg>.toMessageChain(
+    bot: Bot,
+    groupIdOrZero: Long,
+    onlineSource: Boolean?,
+    messageSourceKind: MessageSourceKind,
+    facade: MessageProtocolFacade = MessageProtocolFacade,
+): MessageChain {
+    try {
+        return toMessageChainImpl(bot, groupIdOrZero, onlineSource, messageSourceKind, facade)
+    } catch (e: Exception) {
+        throw IllegalStateException(
+            "Failed to transform internal message to facade message, msg=${this@toMessageChain.structureToString()}",
+            e
+        )
+    }
+}
+
+
+private fun List<MsgComm.Msg>.toMessageChainImpl(
     bot: Bot,
     groupIdOrZero: Long,
     onlineSource: Boolean?,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -48,12 +48,7 @@ import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.onLeft
 import net.mamoe.mirai.utils.Either.Companion.rightOrNull
 
-internal expect class AnnouncementsImpl(
-    group: GroupImpl,
-    logger: MiraiLogger,
-) : CommonAnnouncementsImpl
-
-internal abstract class CommonAnnouncementsImpl(
+internal class AnnouncementsImpl(
     protected val group: GroupImpl,
     protected val logger: MiraiLogger,
 ) : Announcements {
@@ -148,8 +143,27 @@ internal abstract class CommonAnnouncementsImpl(
 
     override suspend fun members(fid: String, confirmed: Boolean): List<NormalMember> {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR) { "Only administrator have permission see announcement confirmed detail" }
-        val detail = bot.getReadDetail(groupId = group.id, fid = fid, read = confirmed)
-        return detail.users.mapNotNull { user -> group[user.uin] }
+        val flow = flow<NormalMember> {
+            var offset = 0
+            while (true) {
+                val detail = bot.getReadDetail(
+                    groupId = group.id,
+                    fid = fid,
+                    read = confirmed,
+                    offset = offset,
+                    limit = 50
+                )
+                if (detail.users.isEmpty()) break
+                for (user in detail.users) {
+                    val member = group[user.uin] ?: continue
+                    emit(member)
+                }
+                offset += detail.users.size
+                val target = if (confirmed) detail.readTotal else detail.unreadTotal
+                if (offset == target) break
+            }
+        }
+        return flow.toList()
     }
 
     override suspend fun remind(fid: String) {
@@ -318,12 +332,18 @@ internal object AnnouncementProtocol {
     private fun <T> CgiData.loadData(serializer: KSerializer<T>): T =
         defaultJson.decodeFromJsonElement(serializer, this.data)
 
-    suspend fun QQAndroidBot.getReadDetail(groupId: Long, fid: String, read: Boolean): GroupAnnouncementReadDetail {
+    suspend fun QQAndroidBot.getReadDetail(
+        groupId: Long,
+        fid: String,
+        read: Boolean,
+        offset: Int,
+        limit: Int
+    ): GroupAnnouncementReadDetail {
         val cgi = bot.components[HttpClientProvider].getHttpClient().post {
             url("https://qun.qq.com/cgi-bin/qunapp/announce_unread")
             parameter("gc", groupId)
-            parameter("start", 0)
-            parameter("num", 3000)
+            parameter("start", offset)
+            parameter("num", limit)
             parameter("feed_id", fid)
             parameter("type", if (read) 1 else 0)
             parameter("bkn", client.wLoginSigInfo.bkn)
@@ -387,6 +407,7 @@ internal object AnnouncementProtocol {
                 showPopup = settings.tipWindowType == 0
                 requireConfirmation = settings.confirmRequired == 1
                 showEditCard = settings.isShowEditCard == 1
+                image = msg.images.firstOrNull()?.toPublic()
             },
             fid = fid,
             allConfirmed = isAllConfirm != 0,

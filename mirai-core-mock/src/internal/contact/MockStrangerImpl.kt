@@ -87,7 +87,7 @@ internal class MockStrangerImpl(
 
     override suspend fun says(message: MessageChain): MessageChain {
         val src = newMsgSrc(true, message) { ids, internalIds, time ->
-            OnlineMsgSrcFromStranger(ids, internalIds, time, message, bot, this)
+            OnlineMsgSrcFromStranger(ids, internalIds, time, message, bot, this, bot)
         }
         val msg = src.withMessage(message)
         StrangerMessageEvent(this, msg, src.time).broadcast()

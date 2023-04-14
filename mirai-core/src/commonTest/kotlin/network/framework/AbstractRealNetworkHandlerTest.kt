@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,12 +13,15 @@ package net.mamoe.mirai.internal.network.framework
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import net.mamoe.mirai.auth.BotAuthInfo
+import net.mamoe.mirai.auth.BotAuthResult
 import net.mamoe.mirai.internal.*
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.KeyWithCreationTime
 import net.mamoe.mirai.internal.network.KeyWithExpiry
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.WLoginSimpleInfo
+import net.mamoe.mirai.internal.network.auth.BotAuthSessionInternal
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.setAll
@@ -113,6 +116,31 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
         set(SsoProcessor, object : TestSsoProcessor(bot) {
             override suspend fun login(handler: NetworkHandler) {
+                val botAuthInfo = object : BotAuthInfo {
+                    override val id: Long get() = bot.id
+                    override val deviceInfo: DeviceInfo
+                        get() = get(SsoProcessorContext).device
+                    override val configuration: BotConfiguration
+                        get() = bot.configuration
+                }
+                val rsp = object : BotAuthResult {}
+
+                val session = object : BotAuthSessionInternal() {
+                    override suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthResult {
+                        return rsp
+                    }
+
+                    override suspend fun authByQRCode(): BotAuthResult {
+                        return rsp
+                    }
+
+                }
+
+                bot.account.authorization.authorize(session, botAuthInfo)
+                bot.account.accountSecretsKeyBuffer = SecretsProtection.EscapedByteBuffer(
+                    bot.account.authorization.calculateSecretsKey(botAuthInfo)
+                )
+
                 nhEvents.add(NHEvent.Login)
                 super.login(handler)
             }

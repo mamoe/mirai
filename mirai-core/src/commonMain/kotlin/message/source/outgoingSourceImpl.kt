@@ -38,14 +38,15 @@ import net.mamoe.mirai.utils.loadService
 import net.mamoe.mirai.utils.toLongUnsigned
 
 
-private fun <T> T.toJceDataImpl(subject: ContactOrBot?): ImMsgBody.SourceMsg
+internal fun <T> T.toJceDataImpl(subject: ContactOrBot?): ImMsgBody.SourceMsg
         where T : MessageSourceInternal, T : MessageSource {
 
-    val elements = MessageProtocolFacade.encode(originalMessage, subject, withGeneralFlags = true)
+    val elements = MessageProtocolFacade.encode(originalMessage, subject, withGeneralFlags = false)
 
     val pdReserve = SourceMsg.ResvAttr(
-        origUids = sequenceIds.zip(internalIds)
-            .map { (seq, internal) -> seq.toLong().shl(32) or internal.toLongUnsigned() }
+        origUids = internalIds.map { 0x100000000000000 or it.toLongUnsigned() }
+//        origUids = sequenceIds.zip(internalIds)
+//            .map { (seq, internal) -> seq.toLong().shl(32) or internal.toLongUnsigned() }
     )
 
     return ImMsgBody.SourceMsg(
@@ -85,7 +86,7 @@ private fun <T> T.toJceDataImpl(subject: ContactOrBot?): ImMsgBody.SourceMsg
 internal class OnlineMessageSourceToFriendImpl(
     override val sequenceIds: IntArray,
     override val internalIds: IntArray,
-    override val time: Int,
+    override var time: Int,
     override var originalMessage: MessageChain,
     override val sender: Bot,
     override val target: Friend,
@@ -119,7 +120,7 @@ internal class OnlineMessageSourceToFriendImpl(
 internal class OnlineMessageSourceToStrangerImpl(
     override val sequenceIds: IntArray,
     override val internalIds: IntArray,
-    override val time: Int,
+    override var time: Int,
     override var originalMessage: MessageChain,
     override val sender: Bot,
     override val target: Stranger,
@@ -158,7 +159,7 @@ internal class OnlineMessageSourceToStrangerImpl(
 internal class OnlineMessageSourceToTempImpl(
     override val sequenceIds: IntArray,
     override val internalIds: IntArray,
-    override val time: Int,
+    override var time: Int,
     override var originalMessage: MessageChain,
     override val sender: Bot,
     override val target: Member,
@@ -197,7 +198,7 @@ internal class OnlineMessageSourceToTempImpl(
 internal class OnlineMessageSourceToGroupImpl(
     coroutineScope: CoroutineScope,
     override val internalIds: IntArray, // aka random
-    override val time: Int,
+    override var time: Int,
     override var originalMessage: MessageChain,
     override val sender: Bot,
     override val target: Group,

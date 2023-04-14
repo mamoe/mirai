@@ -13,6 +13,7 @@ import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.utils._writeTlvMap
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -29,14 +30,15 @@ internal object WtLogin15 : WtLoginExt {
 //        writeSsoPacket(client, client.subAppId, WtLogin.ExchangeEmp.commandName, sequenceId = sequenceId) {
         writeOicqRequestPacket(
             client,
-            EncryptMethodSessionKeyNew(
+            encryptMethod = EncryptMethodSessionKeyNew(
                 client.wLoginSigInfo.wtSessionTicket.data,
                 client.wLoginSigInfo.wtSessionTicketKey
             ),
-            0x0810
+            commandId = 0x0810
         ) {
             writeShort(subCommand) // subCommand
-            writeShort(24)
+
+            _writeTlvMap {
 
 
 //            writeFully(("00 18 00 16 00 01 00 00 06 00 00 00 00 10 00 00 00 00 76 E4 B8 DD 00 00 00 00 00 01 00 14 00 01 5A 11 60 11 76 E4 B8 DD 60 0D 44 35 90 E8 11 1B 00 00 " +
@@ -51,11 +53,11 @@ internal object WtLogin15 : WtLoginExt {
 //                    "").hexToBytes())
 //            return@writeOicqRequestPacket
 
-            t18(appId, uin = client.uin)
-            t1(client.uin, ByteArray(4))
+                t18(appId, uin = client.uin)
+                t1(client.uin, ByteArray(4))
 
-            //  t106(client = client)
-            t106(client.wLoginSigInfo.encryptA1!!)
+                //  t106(client = client)
+                t106(client.wLoginSigInfo.encryptA1!!)
 //            kotlin.run {
 //                val key = (client.account.passwordMd5 + ByteArray(4) + client.uin.toInt().toByteArray()).md5()
 //                kotlin.runCatching {
@@ -63,67 +65,68 @@ internal object WtLogin15 : WtLoginExt {
 //                }.soutv("DEC") // success
 //            }
 
-            // val a1 = kotlin.runCatching {
-            //     TEA.decrypt(encryptA1, buildPacket {
-            //         writeFully(client.device.guid)
-            //         writeFully(client.dpwd)
-            //         writeFully(client.randSeed)
-            //     }.readBytes().md5())
-            // }.recoverCatching {
-            //     client.tryDecryptOrNull(encryptA1) { it }!!
-            // }.getOrElse {
-            //     encryptA1.soutv("ENCRYPT A1")
-            //     client.soutv("CLIENT")
-            //     // exitProcess(1)
-            //     // error("Failed to decrypt A1")
-            //     encryptA1
-            // }
+                // val a1 = kotlin.runCatching {
+                //     TEA.decrypt(encryptA1, buildPacket {
+                //         writeFully(client.device.guid)
+                //         writeFully(client.dpwd)
+                //         writeFully(client.randSeed)
+                //     }.readBytes().md5())
+                // }.recoverCatching {
+                //     client.tryDecryptOrNull(encryptA1) { it }!!
+                // }.getOrElse {
+                //     encryptA1.soutv("ENCRYPT A1")
+                //     client.soutv("CLIENT")
+                //     // exitProcess(1)
+                //     // error("Failed to decrypt A1")
+                //     encryptA1
+                // }
 
-            t116(client.miscBitMap, client.subSigMap)
-            //t116(0x08F7FF7C, 0x00010400)
+                t116(client.miscBitMap, client.subSigMap)
+                //t116(0x08F7FF7C, 0x00010400)
 
-            //t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
-            //t100(appId, 1, client.appClientVersion, client.ssoVersion, mainSigMap = 1048768)
-            t100(appId, 2, client.appClientVersion, client.ssoVersion, client.mainSigMap)
+                //t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
+                //t100(appId, 1, client.appClientVersion, client.ssoVersion, mainSigMap = 1048768)
+                t100(appId, 2, client.appClientVersion, client.ssoVersion, client.mainSigMap)
 
-            t107(0)
+                t107(0)
 
-            //t108(client.ksid) // 第一次 exchange 没有 108
-            t144(client)
-            t142(client.apkId)
-            t145(client.device.guid)
+                //t108(client.ksid) // 第一次 exchange 没有 108
+                t144(client)
+                t142(client.apkId)
+                t145(client.device.guid)
 
-            val noPicSig =
-                client.wLoginSigInfo.noPicSig ?: error("Internal error: doing exchange emp 15 while noPicSig=null")
-            t16a(noPicSig)
+                val noPicSig =
+                    client.wLoginSigInfo.noPicSig ?: error("Internal error: doing exchange emp 15 while noPicSig=null")
+                t16a(noPicSig)
 
-            t154(0)
-            t141(client.device.simInfo, client.networkType, client.device.apn)
-            t8(2052)
-            t511()
-            t147(appId, client.apkVersionName, client.apkSignatureMd5)
-            t177(buildTime = client.buildTime, buildVersion = client.sdkVersion)
+                t154(0)
+                t141(client.device.simInfo, client.networkType, client.device.apn)
+                t8(2052)
+                t511()
+                t147(appId, client.apkVersionName, client.apkSignatureMd5)
+                t177(buildTime = client.buildTime, buildVersion = client.sdkVersion)
 
-            // new
-            t400(
-                g = client.G,
-                uin = client.uin,
-                guid = client.device.guid,
-                dpwd = client.dpwd,
-                appId = 1,
-                subAppId = 16,
-                randomSeed = client.randSeed
-            )
+                // new
+                t400(
+                    g = client.G,
+                    uin = client.uin,
+                    guid = client.device.guid,
+                    dpwd = client.dpwd,
+                    appId = 1,
+                    subAppId = 16,
+                    randomSeed = client.randSeed
+                )
 
-            t187(client.device.macAddress)
-            t188(client.device.androidId)
-            t194(client.device.imsiMd5)
-            t202(client.device.wifiBSSID, client.device.wifiSSID)
-            t516()
+                t187(client.device.macAddress)
+                t188(client.device.androidId)
+                t194(client.device.imsiMd5)
+                t202(client.device.wifiBSSID, client.device.wifiSSID)
+                t516()
 
-            t521() // new
-            t525(client.loginExtraData) // new
-            //t544() // new
+                t521() // new
+                t525(client.loginExtraData) // new
+                //t544() // new
+            }
         }
 
         //  }

@@ -124,7 +124,7 @@ internal class MockFriendImpl(
 
     override suspend fun says(message: MessageChain): MessageChain {
         val src = newMsgSrc(true, message) { ids, internalIds, time ->
-            OnlineMsgSrcFromFriend(ids, internalIds, time, message, bot, this)
+            OnlineMsgSrcFromFriend(ids, internalIds, time, message, bot, this, bot)
         }
         val msg = src.withMessage(message)
         FriendMessageEvent(this, msg, src.time).broadcast()

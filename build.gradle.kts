@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -45,6 +45,7 @@ plugins {
 
 osDetector = osdetector
 BuildSrcRootProjectHolder.value = rootProject
+BuildSrcRootProjectHolder.lastUpdateTime = System.currentTimeMillis()
 
 analyzes.CompiledCodeVerify.run { registerAllVerifyTasks() }
 
@@ -69,12 +70,6 @@ allprojects {
         configureEncoding()
         configureKotlinTestSettings()
         configureKotlinExperimentalUsages()
-
-        runCatching {
-            blockingBridge {
-                unitCoercion = me.him188.kotlin.jvm.blocking.bridge.compiler.UnitCoercion.COMPATIBILITY
-            }
-        }
 
         //  useIr()
 

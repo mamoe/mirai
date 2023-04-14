@@ -12,11 +12,11 @@ package net.mamoe.mirai.internal.contact.roaming
 import kotlinx.coroutines.flow.*
 import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
 import net.mamoe.mirai.internal.contact.CommonGroupImpl
-import net.mamoe.mirai.internal.message.getMessageSourceKindFromC2cCmdOrNull
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetGroupMsg
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSourceKind
 
 internal class RoamingMessagesImplGroup(
     override val contact: CommonGroupImpl
@@ -33,6 +33,7 @@ internal class RoamingMessagesImplGroup(
         filter: RoamingMessageFilter?
     ): Flow<MessageChain> {
         var currentSeq: Int = getLastMsgSeq() ?: return emptyFlow()
+        var lastOfferedSeq = -1
 
         return flow {
             while (true) {
@@ -40,20 +41,29 @@ internal class RoamingMessagesImplGroup(
 
                 // the message may be sorted increasing by message time,
                 // if so, additional sortBy will not take cost.
-                val maxTime = resp.msgElem.maxOf { it.time }
-                if (maxTime < timeStart) break // we have fetched all messages
+
+                val messageTimeSequence = resp.msgElem.asSequence().map { it.time }
+
+                val maxTime = messageTimeSequence.max()
+
+
+                // we have fetched all messages
+                // note: maxTime = 0 means all fetched messages were recalled
+                if (maxTime < timeStart && maxTime != 0) break
 
                 emitAll(
                     resp.msgElem.asSequence()
-                        .filter { getMessageSourceKindFromC2cCmdOrNull(it.msgHead.c2cCmd) != null } // ignore unsupported messages
+                        .filter { lastOfferedSeq == -1 || it.msgHead.msgSeq < lastOfferedSeq }
                         .filter { it.time in timeStart..timeEnd }
-                        .sortedByDescending { it.time } // Ensure caller receiver newer messages first
+                        .sortedByDescending { it.msgHead.msgSeq } // Ensure caller receives newer messages first
                         .filter { filter.apply(it) } // Call filter after sort
                         .asFlow()
-                        .map { it.toMessageChainOnline(bot) }
+                        .map { listOf(it).toMessageChainOnline(bot, contact.id, MessageSourceKind.GROUP) }
                 )
 
-                currentSeq = resp.msgElem.minBy { it.time }.msgHead.msgSeq - 1
+
+                currentSeq = resp.msgElem.first().msgHead.msgSeq
+                lastOfferedSeq = currentSeq
             }
         }
     }

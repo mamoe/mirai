@@ -23,6 +23,7 @@ import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.mock.internal.contact.AbstractMockContact
 import net.mamoe.mirai.mock.internal.contact.MockImage
+import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.currentTimeSeconds
 
 internal fun registerMockMsgSerializers() {
@@ -174,9 +175,16 @@ internal class OnlineMsgSrcFromFriend(
     override val time: Int,
     override val originalMessage: MessageChain,
     override val bot: Bot,
-    override val sender: Friend
+    override val sender: Friend,
+    override val target: ContactOrBot,
 ) : OnlineMessageSource.Incoming.FromFriend() {
     override val isOriginalMessageInitialized: Boolean get() = true
+
+    override val subject: Friend
+        get() {
+            if (target is Bot) return sender
+            return target.cast()
+        }
 
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("Mock_OnlineMessageSourceFromFriend")
 }
@@ -189,9 +197,16 @@ internal class OnlineMsgSrcFromStranger(
     override val time: Int,
     override val originalMessage: MessageChain,
     override val bot: Bot,
-    override val sender: Stranger
+    override val sender: Stranger,
+    override val target: ContactOrBot,
 ) : OnlineMessageSource.Incoming.FromStranger() {
     override val isOriginalMessageInitialized: Boolean get() = true
+
+    override val subject: Stranger
+        get() {
+            if (target is Bot) return sender
+            return target.cast()
+        }
 
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl(
         "Mock_OnlineMessageSourceFromStranger"
@@ -206,9 +221,15 @@ internal class OnlineMsgSrcFromTemp(
     override val time: Int,
     override val originalMessage: MessageChain,
     override val bot: Bot,
-    override val sender: Member
+    override val sender: Member,
+    override val target: ContactOrBot,
 ) : OnlineMessageSource.Incoming.FromTemp() {
     override val isOriginalMessageInitialized: Boolean get() = true
+    override val subject: Member
+        get() {
+            if (target is Bot) return sender
+            return target.cast()
+        }
 
     object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("Mock_OnlineMessageSourceFromTemp")
 
