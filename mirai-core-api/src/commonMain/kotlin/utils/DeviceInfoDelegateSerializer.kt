@@ -112,107 +112,7 @@ public object DeviceInfoDelegateSerializer : KSerializer<DeviceInfo> {
                 when (index) {
                     0 -> decodeIntElement(descriptor, index) // version
                     1 -> { // version 2 or 3
-                        decoder.decodeStructure(v2OrV3Descriptor) {
-                            var display: String? = null
-                            var product: String? = null
-                            var device: String? = null
-                            var board: String? = null
-                            var brand: String? = null
-                            var model: String? = null
-                            var bootloader: String? = null
-                            var fingerprint: String? = null
-                            var bootId: String? = null
-                            var procVersion: String? = null
-                            var baseBand: DeviceInfoManager.HexString? = null
-                            var version: DeviceInfoManager.Version? = null
-                            var simInfo: String? = null
-                            var osType: String? = null
-                            var macAddress: String? = null
-                            var wifiBSSID: String? = null
-                            var wifiSSID: String? = null
-                            var imsiMd5: DeviceInfoManager.HexString? = null
-                            var imei: String? = null
-                            var apn: String? = null
-                            var androidId: String? = null
-
-                            while (true) {
-                                when (val innerIndex = decodeElementIndex(v2OrV3Descriptor)) {
-                                    0 -> display = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    1 -> product = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    2 -> device = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    3 -> board = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    4 -> brand = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    5 -> model = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    6 -> bootloader = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    7 -> fingerprint = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    8 -> bootId = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    9 -> procVersion = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    10 -> baseBand = decodeSerializableElement(
-                                        v2OrV3Descriptor,
-                                        innerIndex,
-                                        DeviceInfoManager.HexStringSerializer
-                                    )
-
-                                    11 -> version = decodeSerializableElement(
-                                        v2OrV3Descriptor,
-                                        innerIndex,
-                                        DeviceInfoManager.Version.serializer()
-                                    )
-
-                                    12 -> simInfo = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    13 -> osType = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    14 -> macAddress = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    15 -> wifiBSSID = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    16 -> wifiSSID = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    17 -> imsiMd5 = decodeSerializableElement(
-                                        v2OrV3Descriptor,
-                                        innerIndex,
-                                        DeviceInfoManager.HexStringSerializer
-                                    )
-
-                                    18 -> imei = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    19 -> apn = decodeStringElement(v2OrV3Descriptor, innerIndex)
-                                    20 -> androidId = decodeStringElement(v2OrV3Descriptor, innerIndex)
-
-                                    CompositeDecoder.DECODE_DONE -> break
-                                }
-                            }
-
-                            display = assertNotNullOrDecodeFailed(display)
-                            product = assertNotNullOrDecodeFailed(product)
-                            device = assertNotNullOrDecodeFailed(device)
-                            board = assertNotNullOrDecodeFailed(board)
-                            brand = assertNotNullOrDecodeFailed(brand)
-                            model = assertNotNullOrDecodeFailed(model)
-                            bootloader = assertNotNullOrDecodeFailed(bootloader)
-                            fingerprint = assertNotNullOrDecodeFailed(fingerprint)
-                            bootId = assertNotNullOrDecodeFailed(bootId)
-                            procVersion = assertNotNullOrDecodeFailed(procVersion)
-                            baseBand = assertNotNullOrDecodeFailed(baseBand)
-                            version = assertNotNullOrDecodeFailed(version)
-                            simInfo = assertNotNullOrDecodeFailed(simInfo)
-                            osType = assertNotNullOrDecodeFailed(osType)
-                            macAddress = assertNotNullOrDecodeFailed(macAddress)
-                            wifiBSSID = assertNotNullOrDecodeFailed(wifiBSSID)
-                            wifiSSID = assertNotNullOrDecodeFailed(wifiSSID)
-                            imsiMd5 = assertNotNullOrDecodeFailed(imsiMd5)
-                            imei = assertNotNullOrDecodeFailed(imei)
-                            apn = assertNotNullOrDecodeFailed(apn)
-
-                            v2OrV3DeviceInfo = if (androidId == null) {
-                                DeviceInfoManager.V2(
-                                    display, product, device, board, brand, model, bootloader,
-                                    fingerprint, bootId, procVersion, baseBand, version, simInfo,
-                                    osType, macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn
-                                ).toDeviceInfo()
-                            } else {
-                                DeviceInfoManager.V3(
-                                    display, product, device, board, brand, model, bootloader,
-                                    fingerprint, bootId, procVersion, baseBand, version, simInfo,
-                                    osType, macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn, androidId
-                                ).toDeviceInfo()
-                            }
-                        }
+                        v2OrV3DeviceInfo = decoder.deserializeV2OrV3()
                         break
                     }
 
@@ -245,8 +145,7 @@ public object DeviceInfoDelegateSerializer : KSerializer<DeviceInfo> {
                 if (index == CompositeDecoder.DECODE_DONE) break
             }
 
-            val r = v2OrV3DeviceInfo
-            if (r == null) {
+            if (v2OrV3DeviceInfo == null) {
                 displayV1 = assertNotNullOrDecodeFailed(displayV1)
                 productV1 = assertNotNullOrDecodeFailed(productV1)
                 deviceV1 = assertNotNullOrDecodeFailed(deviceV1)
@@ -275,10 +174,114 @@ public object DeviceInfoDelegateSerializer : KSerializer<DeviceInfo> {
                     simInfoV1, osTypeV1, macAddressV1, wifiBSSIDV1, wifiSSIDV1, imsiMd5V1, imeiV1, apnV1
                 ).toDeviceInfo()
             } else {
-                r
+                v2OrV3DeviceInfo
             }
         }
 
+    }
+
+    private fun Decoder.deserializeV2OrV3(): DeviceInfo {
+        return decodeStructure(v2OrV3Descriptor) {
+            var display: String? = null
+            var product: String? = null
+            var device: String? = null
+            var board: String? = null
+            var brand: String? = null
+            var model: String? = null
+            var bootloader: String? = null
+            var fingerprint: String? = null
+            var bootId: String? = null
+            var procVersion: String? = null
+            var baseBand: DeviceInfoManager.HexString? = null
+            var version: DeviceInfoManager.Version? = null
+            var simInfo: String? = null
+            var osType: String? = null
+            var macAddress: String? = null
+            var wifiBSSID: String? = null
+            var wifiSSID: String? = null
+            var imsiMd5: DeviceInfoManager.HexString? = null
+            var imei: String? = null
+            var apn: String? = null
+            var androidId: String? = null
+
+            while (true) {
+                when (val innerIndex = decodeElementIndex(v2OrV3Descriptor)) {
+                    0 -> display = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    1 -> product = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    2 -> device = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    3 -> board = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    4 -> brand = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    5 -> model = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    6 -> bootloader = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    7 -> fingerprint = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    8 -> bootId = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    9 -> procVersion = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    10 -> baseBand = decodeSerializableElement(
+                        v2OrV3Descriptor,
+                        innerIndex,
+                        DeviceInfoManager.HexStringSerializer
+                    )
+
+                    11 -> version = decodeSerializableElement(
+                        v2OrV3Descriptor,
+                        innerIndex,
+                        DeviceInfoManager.Version.serializer()
+                    )
+
+                    12 -> simInfo = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    13 -> osType = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    14 -> macAddress = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    15 -> wifiBSSID = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    16 -> wifiSSID = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    17 -> imsiMd5 = decodeSerializableElement(
+                        v2OrV3Descriptor,
+                        innerIndex,
+                        DeviceInfoManager.HexStringSerializer
+                    )
+
+                    18 -> imei = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    19 -> apn = decodeStringElement(v2OrV3Descriptor, innerIndex)
+                    20 -> androidId = decodeStringElement(v2OrV3Descriptor, innerIndex)
+
+                    CompositeDecoder.DECODE_DONE -> break
+                }
+            }
+
+            display = assertNotNullOrDecodeFailed(display)
+            product = assertNotNullOrDecodeFailed(product)
+            device = assertNotNullOrDecodeFailed(device)
+            board = assertNotNullOrDecodeFailed(board)
+            brand = assertNotNullOrDecodeFailed(brand)
+            model = assertNotNullOrDecodeFailed(model)
+            bootloader = assertNotNullOrDecodeFailed(bootloader)
+            fingerprint = assertNotNullOrDecodeFailed(fingerprint)
+            bootId = assertNotNullOrDecodeFailed(bootId)
+            procVersion = assertNotNullOrDecodeFailed(procVersion)
+            baseBand = assertNotNullOrDecodeFailed(baseBand)
+            version = assertNotNullOrDecodeFailed(version)
+            simInfo = assertNotNullOrDecodeFailed(simInfo)
+            osType = assertNotNullOrDecodeFailed(osType)
+            macAddress = assertNotNullOrDecodeFailed(macAddress)
+            wifiBSSID = assertNotNullOrDecodeFailed(wifiBSSID)
+            wifiSSID = assertNotNullOrDecodeFailed(wifiSSID)
+            imsiMd5 = assertNotNullOrDecodeFailed(imsiMd5)
+            imei = assertNotNullOrDecodeFailed(imei)
+            apn = assertNotNullOrDecodeFailed(apn)
+
+            if (androidId == null) {
+                DeviceInfoManager.V2(
+                    display, product, device, board, brand, model, bootloader,
+                    fingerprint, bootId, procVersion, baseBand, version, simInfo,
+                    osType, macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn
+                ).toDeviceInfo()
+            } else {
+                DeviceInfoManager.V3(
+                    display, product, device, board, brand, model, bootloader,
+                    fingerprint, bootId, procVersion, baseBand, version, simInfo,
+                    osType, macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn, androidId
+                ).toDeviceInfo()
+            }
+        }
     }
 
     override fun serialize(encoder: Encoder, value: DeviceInfo) {
