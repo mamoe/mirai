@@ -194,14 +194,15 @@ internal class SsoProcessorImpl(
 
             components[BdhSessionSyncer].loadServerListFromCache()
 
+            try {
+                ssoContext.bot.requestQimei(qimeiLogger)
+            } catch (exception: Throwable) {
+                qimeiLogger.warning("Cannot get qimei from server.", exception)
+            }
+
             // try fast login
             if (client.wLoginSigInfoInitialized) {
                 ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyEcdh()
-                try {
-                    ssoContext.bot.requestQimei(qimeiLogger)
-                } catch (exception: Throwable) {
-                    qimeiLogger.warning("Cannot get qimei from server.", exception)
-                }
                 kotlin.runCatching {
                     FastLoginImpl(handler).doLogin()
                 }.onFailure { e ->
