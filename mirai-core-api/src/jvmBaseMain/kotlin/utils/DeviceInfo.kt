@@ -137,7 +137,9 @@ public actual class DeviceInfo public actual constructor(
                     this.writeText(DeviceInfoManager.serialize(it, json))
                 }
             }
-            return DeviceInfoManager.deserialize(this.readText(), json)
+            return DeviceInfoManager.deserialize(this.readText(), json) { upg ->
+                this.writeText(DeviceInfoManager.serialize(upg, json))
+            }
         }
 
         /**

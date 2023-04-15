@@ -550,10 +550,15 @@ internal object DeviceInfoManager {
     }
 
     @Throws(IllegalArgumentException::class, NumberFormatException::class) // in case malformed
-    fun deserialize(string: String, format: Json = this.format): DeviceInfo {
+    fun deserialize(
+        string: String,
+        format: Json = this.format,
+        onUpgradeVersion: (DeviceInfo) -> Unit = { }
+    ): DeviceInfo {
         val element = format.parseToJsonElement(string)
+        val version = element.jsonObject["deviceInfoVersion"]?.jsonPrimitive?.content?.toInt() ?: 1
 
-        return when (val version = element.jsonObject["deviceInfoVersion"]?.jsonPrimitive?.content?.toInt() ?: 1) {
+        val deviceInfo = when (version) {
             /**
              * @since 2.0
              */
@@ -568,6 +573,10 @@ internal object DeviceInfoManager {
             3 -> format.decodeFromJsonElement(Wrapper.serializer(V3.serializer()), element).data
             else -> throw IllegalArgumentException("Unsupported deviceInfoVersion: $version")
         }.toDeviceInfo()
+
+        if (version < 3) onUpgradeVersion(deviceInfo)
+
+        return deviceInfo
     }
 
     fun serialize(info: DeviceInfo, format: Json = this.format): String {
