@@ -41,10 +41,6 @@ internal object WtLogin9 : WtLoginExt {
                     t18(appId, client.appClientVersion, client.uin)
                     t1(client.uin, (currentTimeSeconds() + client.timeDifference).toInt(), client.device.ipAddress)
 
-                    if (client.t104Initialized) {
-                        t104(client.t104)
-                    }
-
                     if (useEncryptA1AndNoPicSig) {
                         t106(client.wLoginSigInfo.encryptA1!!)
                     } else {
@@ -69,8 +65,11 @@ internal object WtLogin9 : WtLoginExt {
                     }
 
                     // t108(byteArrayOf())
-                    t142(client.apkId)
+                    if (client.t104Initialized) {
+                        t104(client.t104)
+                    }
 
+                    t142(client.apkId)
 
                     // if login with non-number uin
                     if (client.uin !in 10000L..4000000000L) {
