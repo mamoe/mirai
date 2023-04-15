@@ -179,13 +179,6 @@ internal class SsoProcessorImpl(
             ssoContext.bot.logger.info { "Login successful." }
         }
 
-        // try to get qimei before login
-        try {
-            ssoContext.bot.requestQimei(qimeiLogger)
-        } catch (exception: Throwable) {
-            qimeiLogger.warning("Cannot get qimei from server.", exception)
-        }
-
         if (authControl == null) {
             ssoContext.bot.account.let { account ->
                 if (account.accountSecretsKeyBuffer == null) {
@@ -204,6 +197,11 @@ internal class SsoProcessorImpl(
             // try fast login
             if (client.wLoginSigInfoInitialized) {
                 ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyEcdh()
+                try {
+                    ssoContext.bot.requestQimei(qimeiLogger)
+                } catch (exception: Throwable) {
+                    qimeiLogger.warning("Cannot get qimei from server.", exception)
+                }
                 kotlin.runCatching {
                     FastLoginImpl(handler).doLogin()
                 }.onFailure { e ->
