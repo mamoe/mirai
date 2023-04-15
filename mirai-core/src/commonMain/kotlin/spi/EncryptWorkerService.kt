@@ -13,6 +13,7 @@ package net.mamoe.mirai.internal.spi
 import net.mamoe.mirai.spi.BaseService
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.jvm.JvmStatic
+import kotlin.jvm.Volatile
 
 /**
  * @since 2.15.0
@@ -23,7 +24,7 @@ internal interface EncryptWorkerService : BaseService {
     fun doTLVEncrypt(id: Long, tlvType: Int, payLoad: ByteArray, vararg extraArgs: Any?): ByteArray?
 
     companion object : EncryptWorkerService {
-
+        @Volatile
         private var instance: EncryptWorkerService? = null
 
         override fun doTLVEncrypt(
