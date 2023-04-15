@@ -21,11 +21,11 @@ import kotlin.jvm.JvmStatic
 @MiraiExperimentalApi
 internal interface EncryptWorkerService : BaseService {
 
-    suspend fun doTLVEncrypt(id: Long, tlvType: Int, payLoad: ByteArray, vararg extraArgs: Any?): ByteArray?
+    fun doTLVEncrypt(id: Long, tlvType: Int, payLoad: ByteArray, vararg extraArgs: Any?): ByteArray?
 
     companion object : EncryptWorkerService {
         private val loader = SPIServiceLoader(object : EncryptWorkerService {
-            override suspend fun doTLVEncrypt(
+            override fun doTLVEncrypt(
                 id: Long,
                 tlvType: Int,
                 payLoad: ByteArray,
@@ -33,7 +33,7 @@ internal interface EncryptWorkerService : BaseService {
             ): ByteArray? = null
         }, EncryptWorkerService::class)
 
-        override suspend fun doTLVEncrypt(
+        override fun doTLVEncrypt(
             id: Long,
             tlvType: Int,
             payLoad: ByteArray,

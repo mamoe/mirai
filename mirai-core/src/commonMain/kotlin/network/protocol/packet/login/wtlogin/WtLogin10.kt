@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
 import io.ktor.utils.io.core.*
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
@@ -85,7 +84,6 @@ internal object WtLogin10 : WtLoginExt {
                     t511()
                     t202(client.device.wifiBSSID, client.device.wifiSSID)
                     if (client.useAndroid) {
-                        runBlocking {
                             t544ForToken(
                                 uin = client.uin,
                                 guid = client.device.guid,
@@ -93,7 +91,6 @@ internal object WtLogin10 : WtLoginExt {
                                 subCommandId = 10,
                                 commandStr = "810_a"
                             )
-                        }
                     }
                 }
 

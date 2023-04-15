@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
 import io.ktor.utils.io.core.*
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
@@ -32,8 +31,8 @@ internal object WtLogin2 : WtLoginExt {
                     t116(client.miscBitMap, client.subSigMap)
                     client.t547?.let { t547(it) }
                     if (client.useAndroid) {
-                        runBlocking {
-                            t544ForVerify(
+
+                        t544ForVerify(
                                 uin = client.uin,
                                 guid = client.device.guid,
                                 sdkVersion = client.sdkVersion,
@@ -41,7 +40,6 @@ internal object WtLogin2 : WtLoginExt {
                                 commandStr = "810_2"
                             )
 
-                        }
                     }
                 }
 
@@ -65,7 +63,6 @@ internal object WtLogin2 : WtLoginExt {
                     t116(client.miscBitMap, client.subSigMap)
                     client.t547?.let { t547(it) }
                     if (client.useAndroid) {
-                        runBlocking {
                             t544ForVerify(
                                 uin = client.uin,
                                 guid = client.device.guid,
@@ -74,7 +71,6 @@ internal object WtLogin2 : WtLoginExt {
                                 commandStr = "810_2"
                             )
 
-                        }
                     }
                 }
             }

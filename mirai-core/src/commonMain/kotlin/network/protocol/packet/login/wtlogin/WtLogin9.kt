@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
 import io.ktor.utils.io.core.*
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
@@ -121,7 +120,6 @@ internal object WtLogin9 : WtLoginExt {
 
                     // ignored t318 because not logging in by QR
                     if (client.useAndroid) {
-                        runBlocking {
                             t544ForToken(
                                 uin = client.uin,
                                 guid = client.device.guid,
@@ -129,7 +127,6 @@ internal object WtLogin9 : WtLoginExt {
                                 subCommandId = 9,
                                 commandStr = "810_9"
                             )
-                        }
                     }
 
                 }
