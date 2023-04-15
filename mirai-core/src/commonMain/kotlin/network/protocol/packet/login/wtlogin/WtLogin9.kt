@@ -128,7 +128,6 @@ internal object WtLogin9 : WtLoginExt {
                             commandStr = "810_9"
                         )
                     }
-
                 }
             }
         }
