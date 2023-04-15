@@ -130,6 +130,10 @@ public expect class DeviceInfo(
          * @since 2.9
          */
         override fun hashCode(): Int
+
+        internal companion object {
+            fun serializer(): KSerializer<Version>
+        }
     }
 
     public companion object {
@@ -342,7 +346,7 @@ internal object DeviceInfoManager {
     ) {
         @SerialName("Version")
         @Serializable
-        internal class SerialData(
+        private class SerialData(
             val incremental: ByteArray = "5891938".toByteArray(),
             val release: ByteArray = "10".toByteArray(),
             val codename: ByteArray = "REL".toByteArray(),
@@ -494,7 +498,7 @@ internal object DeviceInfoManager {
             this.imsiMd5.data,
             this.imei,
             this.apn.toByteArray(),
-            this.androidId!!.toByteArray()
+            this.androidId.toByteArray()
         )
     }
 
