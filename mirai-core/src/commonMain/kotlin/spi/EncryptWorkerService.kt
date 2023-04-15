@@ -11,7 +11,6 @@
 package net.mamoe.mirai.internal.spi
 
 import net.mamoe.mirai.spi.BaseService
-import net.mamoe.mirai.spi.SPIServiceLoader
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.jvm.JvmStatic
 
@@ -24,14 +23,8 @@ internal interface EncryptWorkerService : BaseService {
     fun doTLVEncrypt(id: Long, tlvType: Int, payLoad: ByteArray, vararg extraArgs: Any?): ByteArray?
 
     companion object : EncryptWorkerService {
-        private val loader = SPIServiceLoader(object : EncryptWorkerService {
-            override fun doTLVEncrypt(
-                id: Long,
-                tlvType: Int,
-                payLoad: ByteArray,
-                vararg extraArgs: Any?
-            ): ByteArray? = null
-        }, EncryptWorkerService::class)
+
+        private var instance: EncryptWorkerService? = null
 
         override fun doTLVEncrypt(
             id: Long,
@@ -39,12 +32,12 @@ internal interface EncryptWorkerService : BaseService {
             payLoad: ByteArray,
             vararg extraArgs: Any?
         ): ByteArray? {
-            return loader.service.doTLVEncrypt(id, tlvType, payLoad, extraArgs)
+            return instance?.doTLVEncrypt(id, tlvType, payLoad, extraArgs)
         }
 
         @JvmStatic
         fun setService(service: EncryptWorkerService) {
-            loader.service = service
+            instance = service
         }
     }
 }
