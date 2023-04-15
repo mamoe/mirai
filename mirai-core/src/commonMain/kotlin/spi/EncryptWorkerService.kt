@@ -1,4 +1,3 @@
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 /*
  * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
@@ -7,6 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
 package net.mamoe.mirai.internal.spi
 
