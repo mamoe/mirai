@@ -10,6 +10,7 @@
 package net.mamoe.mirai.utils
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -103,26 +104,26 @@ public object DeviceInfoDelegateSerializer : KSerializer<DeviceInfo> {
                 }
                 if (index == CompositeDecoder.DECODE_DONE) break
             }
-            display = assertNotNullOrDecodeFailed(display)
-            product = assertNotNullOrDecodeFailed(product)
-            device = assertNotNullOrDecodeFailed(device)
-            board = assertNotNullOrDecodeFailed(board)
-            brand = assertNotNullOrDecodeFailed(brand)
-            model = assertNotNullOrDecodeFailed(model)
-            bootloader = assertNotNullOrDecodeFailed(bootloader)
-            fingerprint = assertNotNullOrDecodeFailed(fingerprint)
-            bootId = assertNotNullOrDecodeFailed(bootId)
-            procVersion = assertNotNullOrDecodeFailed(procVersion)
-            baseBand = assertNotNullOrDecodeFailed(baseBand)
-            version = assertNotNullOrDecodeFailed(version)
-            simInfo = assertNotNullOrDecodeFailed(simInfo)
-            osType = assertNotNullOrDecodeFailed(osType)
-            macAddress = assertNotNullOrDecodeFailed(macAddress)
-            wifiBSSID = assertNotNullOrDecodeFailed(wifiBSSID)
-            wifiSSID = assertNotNullOrDecodeFailed(wifiSSID)
-            imsiMd5 = assertNotNullOrDecodeFailed(imsiMd5)
-            imei = assertNotNullOrDecodeFailed(imei)
-            apn = assertNotNullOrDecodeFailed(apn)
+            display = assertNotNullOrDecodeFailed(display, "display")
+            product = assertNotNullOrDecodeFailed(product, "product")
+            device = assertNotNullOrDecodeFailed(device, "device")
+            board = assertNotNullOrDecodeFailed(board, "board")
+            brand = assertNotNullOrDecodeFailed(brand, "brand")
+            model = assertNotNullOrDecodeFailed(model, "model")
+            bootloader = assertNotNullOrDecodeFailed(bootloader, "bootloader")
+            fingerprint = assertNotNullOrDecodeFailed(fingerprint, "fingerprint")
+            bootId = assertNotNullOrDecodeFailed(bootId, "bootId")
+            procVersion = assertNotNullOrDecodeFailed(procVersion, "procVersion")
+            baseBand = assertNotNullOrDecodeFailed(baseBand, "baseBand")
+            version = assertNotNullOrDecodeFailed(version, "version")
+            simInfo = assertNotNullOrDecodeFailed(simInfo, "simInfo")
+            osType = assertNotNullOrDecodeFailed(osType, "osType")
+            macAddress = assertNotNullOrDecodeFailed(macAddress, "macAddress")
+            wifiBSSID = assertNotNullOrDecodeFailed(wifiBSSID, "wifiBSSID")
+            wifiSSID = assertNotNullOrDecodeFailed(wifiSSID, "wifiSSID")
+            imsiMd5 = assertNotNullOrDecodeFailed(imsiMd5, "imsiMd5")
+            imei = assertNotNullOrDecodeFailed(imei, "imei")
+            apn = assertNotNullOrDecodeFailed(apn, "apn")
 
             return@decodeStructure DeviceInfo(
                 display, product, device, board, brand, model, bootloader,
@@ -160,12 +161,11 @@ public object DeviceInfoDelegateSerializer : KSerializer<DeviceInfo> {
         }
     }
 
-    private fun <T : Any> assertNotNullOrDecodeFailed(value: T?): T {
+    private fun <T : Any> assertNotNullOrDecodeFailed(value: T?, fieldName: String): T {
         contract {
             returns() implies (value != null)
         }
-        if (value == null) error("Failed to deserialize DeviceInfo.")
-        return value
+        return value ?: throw SerializationException("Failed to deserialize DeviceInfo: missing field \"$fieldName\".")
     }
 
 }
