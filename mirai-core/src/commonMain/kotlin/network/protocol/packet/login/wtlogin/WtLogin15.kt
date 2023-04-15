@@ -126,14 +126,13 @@ internal object WtLogin15 : WtLoginExt {
                 t521() // new
                 t525(client.loginExtraData) // new
                 if (client.useAndroid) {
-
                     t544ForToken(
-                            uin = client.uin,
-                            guid = client.device.guid,
-                            sdkVersion = client.sdkVersion,
-                            subCommandId = 15,
-                            commandStr = "810_f"
-                        )
+                        uin = client.uin,
+                        guid = client.device.guid,
+                        sdkVersion = client.sdkVersion,
+                        subCommandId = 15,
+                        commandStr = "810_f"
+                    )
                 }
             }
         }

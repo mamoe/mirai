@@ -24,6 +24,7 @@ internal object WtLogin2 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(2) // subCommand
+
                 _writeTlvMap {
                     t193(ticket)
                     t8(2052)
@@ -31,14 +32,13 @@ internal object WtLogin2 : WtLoginExt {
                     t116(client.miscBitMap, client.subSigMap)
                     client.t547?.let { t547(it) }
                     if (client.useAndroid) {
-
                         t544ForVerify(
-                                uin = client.uin,
-                                guid = client.device.guid,
-                                sdkVersion = client.sdkVersion,
-                                subCommandId = 2,
-                                commandStr = "810_2"
-                            )
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 2,
+                            commandStr = "810_2"
+                        )
 
                     }
                 }
@@ -56,6 +56,7 @@ internal object WtLogin2 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(2) // subCommand
+
                 _writeTlvMap {
                     t2(captchaAnswer, captchaSign, 0)
                     t8(2052)
@@ -63,13 +64,13 @@ internal object WtLogin2 : WtLoginExt {
                     t116(client.miscBitMap, client.subSigMap)
                     client.t547?.let { t547(it) }
                     if (client.useAndroid) {
-                            t544ForVerify(
-                                uin = client.uin,
-                                guid = client.device.guid,
-                                sdkVersion = client.sdkVersion,
-                                subCommandId = 2,
-                                commandStr = "810_2"
-                            )
+                        t544ForVerify(
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 2,
+                            commandStr = "810_2"
+                        )
 
                     }
                 }

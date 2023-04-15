@@ -45,6 +45,7 @@ internal object WtLogin10 : WtLoginExt {
                 0x0810
             ) {
                 writeShort(11) // subCommand
+
                 _writeTlvMap(Short.SIZE_BYTES) {
                     t100(appId, subAppId, client.appClientVersion, client.ssoVersion, mainSigMap)
                     t10a(client.wLoginSigInfo.tgt)
@@ -84,13 +85,13 @@ internal object WtLogin10 : WtLoginExt {
                     t511()
                     t202(client.device.wifiBSSID, client.device.wifiSSID)
                     if (client.useAndroid) {
-                            t544ForToken(
-                                uin = client.uin,
-                                guid = client.device.guid,
-                                sdkVersion = client.sdkVersion,
-                                subCommandId = 10,
-                                commandStr = "810_a"
-                            )
+                        t544ForToken(
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 10,
+                            commandStr = "810_a"
+                        )
                     }
                 }
 

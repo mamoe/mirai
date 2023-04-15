@@ -31,6 +31,7 @@ internal object WtLogin7 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(7) // subCommand
+
                 _writeTlvMap {
 
                     t8(2052)
@@ -41,14 +42,13 @@ internal object WtLogin7 : WtLoginExt {
                     t401(client.G)
                     t198()
                     if (client.useAndroid) {
-
                         t544ForVerify(
-                                uin = client.uin,
-                                guid = client.device.guid,
-                                sdkVersion = client.sdkVersion,
-                                subCommandId = 7,
-                                commandStr = "810_7"
-                            )
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 7,
+                            commandStr = "810_7"
+                        )
 
                     }
                 }

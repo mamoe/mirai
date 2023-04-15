@@ -18,17 +18,17 @@ import net.mamoe.mirai.utils._writeTlvMap
 internal object WtLogin9 : WtLoginExt {
     private const val appId = 16L
 
-   fun Password(
-       client: QQAndroidClient,
-       passwordMd5: ByteArray,
-       allowSlider: Boolean
-   ) = WtLogin.Login.buildLoginOutgoingPacket(
-       client, bodyType = 2, remark = "9:password-login"
-   ) { sequenceId ->
-       writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
-           writeOicqRequestPacket(client, commandId = 0x0810) {
-               writeShort(9) // subCommand
-               var tlvCount = if (allowSlider) 0x18 else 0x17;
+    fun Password(
+        client: QQAndroidClient,
+        passwordMd5: ByteArray,
+        allowSlider: Boolean
+    ) = WtLogin.Login.buildLoginOutgoingPacket(
+        client, bodyType = 2, remark = "9:password-login"
+    ) { sequenceId ->
+        writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
+            writeOicqRequestPacket(client, commandId = 0x0810) {
+                writeShort(9) // subCommand
+                var tlvCount = if (allowSlider) 0x18 else 0x17;
                 val useEncryptA1AndNoPicSig =
                     client.wLoginSigInfoInitialized
                             && client.wLoginSigInfo.noPicSig != null
@@ -120,13 +120,13 @@ internal object WtLogin9 : WtLoginExt {
 
                     // ignored t318 because not logging in by QR
                     if (client.useAndroid) {
-                            t544ForToken(
-                                uin = client.uin,
-                                guid = client.device.guid,
-                                sdkVersion = client.sdkVersion,
-                                subCommandId = 9,
-                                commandStr = "810_9"
-                            )
+                        t544ForToken(
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 9,
+                            commandStr = "810_9"
+                        )
                     }
 
                 }
