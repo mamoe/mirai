@@ -49,7 +49,6 @@ internal object WtLogin7 : WtLoginExt {
                             subCommandId = 7,
                             commandStr = "810_7"
                         )
-
                     }
                 }
             }

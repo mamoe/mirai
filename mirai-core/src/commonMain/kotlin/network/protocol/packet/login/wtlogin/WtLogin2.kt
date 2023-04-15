@@ -39,11 +39,8 @@ internal object WtLogin2 : WtLoginExt {
                             subCommandId = 2,
                             commandStr = "810_2"
                         )
-
                     }
                 }
-
-
             }
         }
     }
@@ -71,7 +68,6 @@ internal object WtLogin2 : WtLoginExt {
                             subCommandId = 2,
                             commandStr = "810_2"
                         )
-
                     }
                 }
             }
