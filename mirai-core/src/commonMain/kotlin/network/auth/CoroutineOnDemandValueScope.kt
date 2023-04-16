@@ -73,6 +73,10 @@ internal class CoroutineOnDemandValueScope<T, V>(
                         }
                     }
 
+                    is ProducerState.ProducerReady -> {
+                        setStateProducing(state)
+                    }
+
                     else -> throw IllegalProducerStateException(state)
                 }
             }
@@ -94,6 +98,14 @@ internal class CoroutineOnDemandValueScope<T, V>(
                 }
             }
         }
+    }
+
+    private fun setStateProducing(state: ProducerState.ProducerReady<T, V>) {
+        val deferred = CompletableDeferred<V>(coroutineScope.coroutineContext.job)
+        if (!compareAndSetState(state, ProducerState.Producing(state.producer, deferred))) {
+            deferred.cancel() // avoid leak
+        }
+        // loop again
     }
 
     private fun finishImpl(exception: Throwable?) {
@@ -173,11 +185,7 @@ internal class CoroutineOnDemandValueScope<T, V>(
                 }
 
                 is ProducerState.ProducerReady -> {
-                    val deferred = CompletableDeferred<V>(coroutineScope.coroutineContext.job)
-                    if (!compareAndSetState(state, ProducerState.Producing(state.producer, deferred))) {
-                        deferred.cancel() // avoid leak
-                    }
-                    // loop again
+                    setStateProducing(state)
                 }
 
                 is ProducerState.Producing -> return true // ok
