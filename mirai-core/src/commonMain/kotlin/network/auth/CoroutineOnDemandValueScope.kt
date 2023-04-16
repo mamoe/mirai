@@ -99,7 +99,7 @@ internal class CoroutineOnDemandValueScope<T, V>(
     private fun finishImpl(exception: Throwable?) {
         state.loop { state ->
             when (state) {
-                is ProducerState.Finished -> throw state.createAlreadyFinishedException(exception)
+                is ProducerState.Finished -> {} // ignore 
                 else -> {
                     if (compareAndSetState(state, ProducerState.Finished(state, exception))) {
                         val cancellationException = kotlinx.coroutines.CancellationException("Finished", exception)
@@ -153,6 +153,7 @@ internal class CoroutineOnDemandValueScope<T, V>(
                     }
                     return null
                 }
+
                 else -> throw IllegalProducerStateException(state)
             }
         }
