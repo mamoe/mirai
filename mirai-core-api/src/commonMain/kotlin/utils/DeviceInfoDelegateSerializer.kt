@@ -129,7 +129,7 @@ public object DeviceInfoDelegateSerializer : KSerializer<DeviceInfo> {
                 display, product, device, board, brand, model, bootloader,
                 fingerprint, bootId, procVersion, baseBand, version, simInfo,
                 osType, macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn,
-                androidId ?: getRandomByteArray(8).toUHexString("").lowercase().encodeToByteArray()
+                androidId ?: display
             )
         }
 

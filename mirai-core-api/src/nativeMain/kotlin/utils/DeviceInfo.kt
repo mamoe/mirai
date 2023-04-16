@@ -72,7 +72,7 @@ public actual class DeviceInfo public actual constructor(
         display, product, device, board, brand, model, bootloader,
         fingerprint, bootId, procVersion, baseBand, version, simInfo,
         osType, macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn,
-        androidId = getRandomByteArray(8).toUHexString("").lowercase().encodeToByteArray()
+        androidId = display
     )
 
     public actual val ipAddress: ByteArray get() = byteArrayOf(192.toByte(), 168.toByte(), 1, 123)
