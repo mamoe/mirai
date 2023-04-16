@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
@@ -179,5 +180,5 @@ public actual class DeviceInfo public actual constructor(
 
     @Suppress("ClassName")
     @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
-    public object `$serializer`
+    public object `$serializer` : KSerializer<DeviceInfo> by DeviceInfoDelegateSerializer
 }
