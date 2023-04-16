@@ -803,6 +803,7 @@ public final class net/mamoe/mirai/contact/announcement/AnnouncementImage {
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getHeight ()I
 	public final fun getId ()Ljava/lang/String;
+	public final fun getUrl ()Ljava/lang/String;
 	public final fun getWidth ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;

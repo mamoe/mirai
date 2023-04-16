@@ -76,6 +76,8 @@ internal class JvmPluginDependencyDownloader(
                     "mirai-console",
                     "mirai-console-terminal",
                     "mirai-console-frontend-base",
+                    "mirai-console-compiler-annotations",
+                    "mirai-console-compiler-annotations-jvm",
                 )
             ) return@DependencyFilter false
         }
