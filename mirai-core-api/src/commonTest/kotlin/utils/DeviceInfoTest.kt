@@ -42,7 +42,7 @@ class CommonDeviceInfoTest {
     }
 
     @Test
-    fun `can serialize and deserialize v2`() {
+    fun `can serialize and deserialize v3`() {
         val device = DeviceInfo.random()
         assertEquals(device, DeviceInfoManager.deserialize(DeviceInfoManager.serialize(device)))
     }
