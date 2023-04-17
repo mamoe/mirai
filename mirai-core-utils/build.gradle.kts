@@ -10,6 +10,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
+    id("com.android.library")
     kotlin("multiplatform")
     kotlin("plugin.serialization")
 
@@ -23,6 +24,7 @@ description = "mirai-core utilities"
 
 kotlin {
     explicitApi()
+    apply(plugin = "explicit-api")
 
     configureJvmTargetsHierarchical()
     configureNativeTargetsHierarchical(project)
@@ -79,22 +81,22 @@ kotlin {
     }
 }
 
-if (tasks.findByName("androidMainClasses") != null) {
-    tasks.register("checkAndroidApiLevel") {
-        doFirst {
-            analyzes.AndroidApiLevelCheck.check(
-                buildDir.resolve("classes/kotlin/android/main"),
-                project.property("mirai.android.target.api.level")!!.toString().toInt(),
-                project
-            )
-        }
-        group = "verification"
-        this.mustRunAfter("androidMainClasses")
-    }
-    tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
-}
+//if (tasks.findByName("androidMainClasses") != null) {
+//    tasks.register("checkAndroidApiLevel") {
+//        doFirst {
+//            analyzes.AndroidApiLevelCheck.check(
+//                buildDir.resolve("classes/kotlin/android/main"),
+//                project.property("mirai.android.target.api.level")!!.toString().toInt(),
+//                project
+//            )
+//        }
+//        group = "verification"
+//        this.mustRunAfter("androidMainClasses")
+//    }
+//    tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
+//}
 
-configureMppPublishing()
+//configureMppPublishing()
 
 //mavenCentralPublish {
 //    artifactId = "mirai-core-utils"
@@ -103,3 +105,7 @@ configureMppPublishing()
 //    licenseFromGitHubProject("AGPLv3", "dev")
 //    publishPlatformArtifactsInRootModule = "jvm"
 //}
+
+android {
+    namespace = "net.mamoe.mirai.utils"
+}

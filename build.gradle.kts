@@ -39,8 +39,9 @@ plugins {
     id("me.him188.kotlin-jvm-blocking-bridge") version Versions.blockingBridge
     id("me.him188.kotlin-dynamic-delegation") version Versions.dynamicDelegation apply false
     id("me.him188.maven-central-publish") version Versions.mavenCentralPublish apply false
-    id("com.gradle.plugin-publish") version "1.0.0-rc-3" apply false
+    id("com.gradle.plugin-publish") version "1.1.0" apply false
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version Versions.binaryValidator apply false
+    id("com.android.library") apply false
 }
 
 osDetector = osdetector
@@ -69,9 +70,7 @@ allprojects {
         configureMppShadow()
         configureEncoding()
         configureKotlinTestSettings()
-        configureKotlinExperimentalUsages()
-
-        //  useIr()
+        configureKotlinOptIns()
 
         if (isKotlinJvmProject) {
             configureFlattenSourceSets()
@@ -108,12 +107,6 @@ tasks.register("cleanExceptIntellij") {
 extensions.findByName("buildScan")?.withGroovyBuilder {
     setProperty("termsOfServiceUrl", "https://gradle.com/terms-of-service")
     setProperty("termsOfServiceAgree", "yes")
-}
-
-fun Project.useIr() {
-    kotlinCompilations?.forEach { kotlinCompilation ->
-        kotlinCompilation.kotlinOptions.freeCompilerArgs += "-Xuse-ir"
-    }
 }
 
 fun Project.configureDokka() {

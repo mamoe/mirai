@@ -98,6 +98,7 @@ fun KotlinDependencyHandler.relocateCompileOnly(
     relocatedDependency: RelocatedDependency,
 ): ExternalModuleDependency {
     val dependency = compileOnly(relocatedDependency.notation) {
+        relocatedDependency.exclusionAction(this)
     }
     project.relocationFilters.add(
         RelocationFilter(
@@ -122,6 +123,7 @@ fun DependencyHandler.relocateCompileOnly(
 ): Dependency {
     val dependency =
         addDependencyTo(this, "compileOnly", relocatedDependency.notation, Action<ExternalModuleDependency> {
+            relocatedDependency.exclusionAction(this)
         })
     project.relocationFilters.add(
         RelocationFilter(
@@ -145,7 +147,7 @@ fun KotlinDependencyHandler.relocateImplementation(
     action: ExternalModuleDependency.() -> Unit = {}
 ): ExternalModuleDependency {
     val dependency = implementation(relocatedDependency.notation) {
-
+        relocatedDependency.exclusionAction(this)
     }
     project.relocationFilters.add(
         RelocationFilter(
@@ -181,6 +183,7 @@ fun DependencyHandler.relocateImplementation(
 ): ExternalModuleDependency {
     val dependency =
         addDependencyTo(this, "implementation", relocatedDependency.notation, Action<ExternalModuleDependency> {
+            relocatedDependency.exclusionAction(this)
         })
     project.relocationFilters.add(
         RelocationFilter(

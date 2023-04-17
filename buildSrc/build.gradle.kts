@@ -70,6 +70,10 @@ dependencies {
         exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
     }
 
+    // https://mvnrepository.com/artifact/com.android.library/com.android.library.gradle.plugin
+    api("com.android.library:com.android.library.gradle.plugin:${version("androidGradlePlugin")}")
+    api("com.google.code.gson:gson:2.10.1")
+
     api("gradle.plugin.com.google.gradle:osdetector-gradle-plugin:1.7.0")
 
     api(gradleApi())

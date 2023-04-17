@@ -56,7 +56,7 @@ object Versions {
     const val dynamicDelegation = "0.4.0-180.1"
     const val mavenCentralPublish = "1.0.0"
 
-    const val androidGradlePlugin = "4.1.1"
+    const val androidGradlePlugin = "7.3.1"
     const val android = "4.1.1.4"
 
     const val shadow = "8.1.0"
@@ -172,6 +172,7 @@ object ExcludeProperties {
     val `kotlinx-coroutines` = multiplatformJvm(groupId = "org.jetbrains.kotlinx", "kotlinx-coroutines")
     val `ktor-io` = multiplatformJvm(groupId = "io.ktor", "ktor-io")
     val `everything from slf4j` = exclude(groupId = "org.slf4j", null)
+    val `slf4j-api` = exclude(groupId = "org.slf4j", "slf4j-api")
 
     /**
      * @see org.gradle.kotlin.dsl.exclude
@@ -192,6 +193,7 @@ object ExcludeProperties {
 val `ktor-io` = ktor("io", Versions.ktor)
 val `ktor-io_relocated` = RelocatedDependency(`ktor-io`, "io.ktor.utils.io") {
     exclude(ExcludeProperties.`everything from slf4j`)
+    exclude(ExcludeProperties.`slf4j-api`)
 }
 
 val `ktor-http` = ktor("http", Versions.ktor)
