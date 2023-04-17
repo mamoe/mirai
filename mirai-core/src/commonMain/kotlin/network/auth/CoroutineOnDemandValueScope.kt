@@ -44,7 +44,7 @@ internal class CoroutineOnDemandValueScope<T, V>(
     inner class Producer(
         private val initialTicket: T,
     ) : OnDemandProducerScope<T, V> {
-        init {
+        fun ready() {
             coroutineScope.launch {
                 try {
                     producerCoroutine(initialTicket)
@@ -71,10 +71,6 @@ internal class CoroutineOnDemandValueScope<T, V>(
                             deferred.complete(value) // produce a value
                             return consumingState.producerLatch.acquire() // wait for producer to consume the previous value.
                         }
-                    }
-
-                    is ProducerState.ProducerReady -> {
-                        setStateProducing(state)
                     }
 
                     else -> throw IllegalProducerStateException(state)
@@ -104,6 +100,8 @@ internal class CoroutineOnDemandValueScope<T, V>(
         val deferred = CompletableDeferred<V>(coroutineScope.coroutineContext.job)
         if (!compareAndSetState(state, ProducerState.Producing(state.producer, deferred))) {
             deferred.cancel() // avoid leak
+        } else {
+            (state.producer as Producer).ready()
         }
         // loop again
     }
