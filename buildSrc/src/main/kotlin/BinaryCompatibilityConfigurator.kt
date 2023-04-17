@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -52,7 +52,8 @@ object BinaryCompatibilityConfigurator {
         }
     }
 
-    private fun Project.getValidatorDir(dir: File) = ":validator" + project.path + ":${dir.name}"
+    // Also change: settings.gradle.kts:116
+    private fun Project.getValidatorDir(dir: File) = ":validator" + project.path + "-validator:${dir.name}"
 
     private fun File.writeTextIfNeeded(text: String) {
         if (!this.exists()) return this.writeText(text)
@@ -81,7 +82,13 @@ object BinaryCompatibilityConfigurator {
                     if (targetName == null) {
                         tasks.findByName("apiBuild")?.dependsOn(project.tasks.getByName("jar"))
                     } else {
-                        tasks.findByName("apiBuild")?.dependsOn(project.tasks.getByName("${targetName}Jar"))
+                        tasks.findByName("apiBuild")?.dependsOn(
+                            if (targetName.contains("android")) {
+                                project.tasks.getByName("bundleDebugAar")
+                            } else {
+                                project.tasks.getByName("${targetName}Jar")
+                            }
+                        )
                     }
                 }
         }

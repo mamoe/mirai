@@ -7,31 +7,22 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-
 import org.gradle.api.JavaVersion
+import org.gradle.api.NamedDomainObjectCollection
+import org.gradle.api.NamedDomainObjectList
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.*
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
-import org.jetbrains.kotlin.gradle.dsl.KotlinSingleTargetExtension
+import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-
-
-fun Project.useIr() {
-    kotlinCompilations?.forEach { kotlinCompilation ->
-        kotlinCompilation.kotlinOptions.freeCompilerArgs += "-Xuse-ir"
-    }
-}
 
 private fun Project.jvmVersion(): JavaVersion {
     return if (project.path.endsWith("mirai-console-intellij")) {
@@ -94,22 +85,16 @@ fun Project.preConfigureJvmTarget() {
 fun Project.configureJvmTarget() {
     val defaultVer = jvmVersion()
 
-    configure(kotlinSourceSets.orEmpty()) {
-        languageSettings {
-            optIn("net.mamoe.mirai.utils.TestOnly")
-            optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
-        }
-    }
-
     extensions.findByType(JavaPluginExtension::class.java)?.run {
         sourceCompatibility = defaultVer
         targetCompatibility = defaultVer
     }
 
-    kotlinTargets.orEmpty().filterIsInstance<KotlinJvmTarget>().forEach { target ->
-        when (target.attributes.getAttribute(KotlinPlatformType.attribute)) { // mirai does magic, don't use target.platformType
+    allKotlinTargets().all {
+        if (this !is KotlinJvmTarget) return@all
+        when (this.attributes.getAttribute(KotlinPlatformType.attribute)) { // mirai does magic, don't use target.platformType
             KotlinPlatformType.androidJvm -> {
-                target.compilations.all {
+                this.compilations.all {
                     /*
                      * Kotlin JVM compiler generates Long.hashCode witch is available since API 26 when targeting JVM 1.8 while IR prefer member function hashCode always.
                      */
@@ -122,7 +107,7 @@ fun Project.configureJvmTarget() {
             else -> {
             }
         }
-        target.testRuns["test"].executionTask.configure { useJUnitPlatform() }
+        this.testRuns["test"].executionTask.configure { useJUnitPlatform() }
     }
 }
 
@@ -148,7 +133,8 @@ fun Project.configureKotlinTestSettings() {
         }
 
         isKotlinMpp -> {
-            kotlinSourceSets?.forEach { sourceSet ->
+            kotlinSourceSets?.all {
+                val sourceSet = this
                 fun configureJvmTest(sourceSet: KotlinSourceSet) {
                     sourceSet.dependencies {
                         implementation(kotlin("test-junit5"))?.because(b)
@@ -158,12 +144,14 @@ fun Project.configureKotlinTestSettings() {
                     }
                 }
 
-                val target = kotlinTargets.orEmpty()
+                val target = allKotlinTargets()
                     .find { it.name == sourceSet.name.substringBeforeLast("Main").substringBeforeLast("Test") }
 
                 when {
                     sourceSet.name == "commonTest" -> {
-                        if (isJvmLikePlatform(target)) {
+                        if (target?.platformType == KotlinPlatformType.jvm &&
+                            target.attributes.getAttribute(MIRAI_PLATFORM_INTERMEDIATE) != true
+                        ) {
                             configureJvmTest(sourceSet)
                         } else {
                             sourceSet.dependencies {
@@ -174,7 +162,9 @@ fun Project.configureKotlinTestSettings() {
                     }
 
                     sourceSet.name.contains("test", ignoreCase = true) -> {
-                        if (isJvmLikePlatform(target)) {
+                        if (target?.platformType == KotlinPlatformType.jvm &&
+                            target.attributes.getAttribute(MIRAI_PLATFORM_INTERMEDIATE) != true
+                        ) {
                             configureJvmTest(sourceSet)
                         }
                     }
@@ -191,7 +181,9 @@ val testExperimentalAnnotations = arrayOf(
     "kotlin.ExperimentalUnsignedTypes",
     "kotlin.time.ExperimentalTime",
     "io.ktor.util.KtorExperimentalAPI",
-    "kotlin.io.path.ExperimentalPathApi"
+    "kotlin.io.path.ExperimentalPathApi",
+    "kotlinx.coroutines.ExperimentalCoroutinesApi",
+    "net.mamoe.mirai.utils.TestOnly",
 )
 
 val experimentalAnnotations = arrayOf(
@@ -217,11 +209,10 @@ val testLanguageFeatures = listOf(
     "ContextReceivers"
 )
 
-fun Project.configureKotlinExperimentalUsages() {
+fun Project.configureKotlinOptIns() {
     val sourceSets = kotlinSourceSets ?: return
-
-    for (target in sourceSets) {
-        target.configureKotlinExperimentalUsages()
+    sourceSets.all {
+        configureKotlinOptIns()
     }
 
     for (name in testLanguageFeatures) {
@@ -233,7 +224,7 @@ fun Project.configureKotlinExperimentalUsages() {
     }
 }
 
-fun KotlinSourceSet.configureKotlinExperimentalUsages() {
+fun KotlinSourceSet.configureKotlinOptIns() {
     languageSettings.progressiveMode = true
     experimentalAnnotations.forEach { a ->
         languageSettings.optIn(a)
@@ -278,13 +269,22 @@ inline fun <reified T> Any?.safeAs(): T? {
 
 val Project.kotlinSourceSets get() = extensions.findByName("kotlin").safeAs<KotlinProjectExtension>()?.sourceSets
 
-val Project.kotlinTargets
-    get() =
-        extensions.findByName("kotlin").safeAs<KotlinSingleTargetExtension<*>>()?.target?.let { listOf(it) }
-            ?: extensions.findByName("kotlin").safeAs<KotlinMultiplatformExtension>()?.targets
+fun Project.allKotlinTargets(): NamedDomainObjectCollection<KotlinTarget> {
+    return extensions.findByName("kotlin")?.safeAs<KotlinSingleTargetExtension<*>>()
+        ?.target?.let { namedDomainObjectListOf(it) }
+        ?: extensions.findByName("kotlin")?.safeAs<KotlinMultiplatformExtension>()?.targets
+        ?: namedDomainObjectListOf()
+}
+
+private inline fun <reified T> Project.namedDomainObjectListOf(vararg values: T): NamedDomainObjectList<T> {
+    return objects.namedDomainObjectList(T::class.java).apply { addAll(values) }
+}
 
 val Project.isKotlinJvmProject: Boolean get() = extensions.findByName("kotlin") is KotlinJvmProjectExtension
 val Project.isKotlinMpp: Boolean get() = extensions.findByName("kotlin") is KotlinMultiplatformExtension
 
-val Project.kotlinCompilations
-    get() = kotlinTargets?.flatMap { it.compilations }
+fun Project.allKotlinCompilations(action: (KotlinCompilation<KotlinCommonOptions>) -> Unit) {
+    allKotlinTargets().all {
+        compilations.all(action)
+    }
+}

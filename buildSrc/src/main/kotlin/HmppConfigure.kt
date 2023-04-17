@@ -7,9 +7,14 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("UNUSED_VARIABLE")
+
+import com.android.build.api.dsl.LibraryExtension
 import com.google.gradle.osdetector.OsDetector
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.attributes.Attribute
+import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getting
 import org.gradle.kotlin.dsl.withType
@@ -23,6 +28,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinTargetPreset
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import java.io.File
+import java.util.*
 
 val MIRAI_PLATFORM_ATTRIBUTE = Attribute.of(
     "net.mamoe.mirai.platform", String::class.java
@@ -37,7 +43,7 @@ val MIRAI_PLATFORM_INTERMEDIATE = Attribute.of(
 
 val IDEA_ACTIVE = System.getProperty("idea.active") == "true" && System.getProperty("publication.test") != "true"
 
-val OS_NAME = System.getProperty("os.name").toLowerCase()
+val OS_NAME = System.getProperty("os.name").lowercase()
 
 lateinit var osDetector: OsDetector
 
@@ -162,7 +168,7 @@ fun Project.configureJvmTargetsHierarchical() {
                 compilations.all {
                     this.compileTaskProvider.configure { // IDE complain
                         enabled = false
-                    } 
+                    }
                 }
                 attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // magic
                 attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "jvmBase") // avoid resolution
@@ -183,16 +189,47 @@ fun Project.configureJvmTargetsHierarchical() {
 
         if (isTargetEnabled("android")) {
             if (isAndroidSDKAvailable) {
-                jvm("android") {
-                    attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
+//                apply(plugin = "com.android.library")
+                android {
                     if (IDEA_ACTIVE) {
                         attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "android") // avoid resolution
                     }
                 }
+                configureAndroidTarget()
                 val androidMain by sourceSets.getting
-                val androidTest by sourceSets.getting
-                androidMain.dependsOn(jvmBaseMain)
-                androidTest.dependsOn(jvmBaseTest)
+                for (s in arrayOf("androidMain")) {
+                    sourceSets.all { if (name in s) dependsOn(jvmBaseMain) }
+                }
+                // this can cause problems on sync
+//                for (s in arrayOf("androidDebug", "androidRelease")) {
+//                    sourceSets.all { if (name in s) dependsOn(androidMain) }
+//                }
+                val androidUnitTest by sourceSets.getting {
+                    dependsOn(jvmBaseTest)
+                }
+//                for (s in arrayOf("androidUnitTestDebug", "androidUnitTestRelease")) {
+//                    sourceSets.all { if (name in s) dependsOn(androidUnitTest) }
+//                }
+                val androidInstrumentedTest by sourceSets.getting {
+                    dependsOn(jvmBaseTest)
+                }
+//                for (s in arrayOf("androidInstrumentedTestDebug")) {
+//                    sourceSets.all { if (name in s) dependsOn(androidInstrumentedTest) }
+//                }
+
+//                afterEvaluate {
+////                    > androidDebug dependsOn commonMain
+////                    androidInstrumentedTest dependsOn jvmBaseTest
+////                    androidInstrumentedTestDebug dependsOn
+////                    androidMain dependsOn commonMain, jvmBaseMain
+////                    androidRelease dependsOn commonMain
+////                    androidUnitTest dependsOn commonTest, jvmBaseTest
+////                    androidUnitTestDebug dependsOn commonTest
+////                    androidUnitTestRelease dependsOn commonTest
+//                    error(this@apply.sourceSets.joinToString("\n") {
+//                        it.name + " dependsOn " + it.dependsOn.joinToString { it.name }
+//                    })
+//                }
             } else {
                 printAndroidNotInstalled()
             }
@@ -209,6 +246,41 @@ fun Project.configureJvmTargetsHierarchical() {
         }
     }
 }
+
+@Suppress("UnstableApiUsage")
+fun Project.configureAndroidTarget() {
+    extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
+
+        // trick
+        this.sourceSets.apply {
+            removeIf { it.name == "androidAndroidTestRelease" }
+            removeIf { it.name == "androidTestFixtures" }
+            removeIf { it.name == "androidTestFixturesDebug" }
+            removeIf { it.name == "androidTestFixturesRelease" }
+        }
+    }
+
+    extensions.getByType(LibraryExtension::class.java).apply {
+        compileSdk = 33
+        sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+        defaultConfig {
+            minSdk = rootProject.extra["mirai.android.target.api.level"]!!.toString().toInt()
+            targetSdk = 33
+        }
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_1_8
+            targetCompatibility = JavaVersion.VERSION_1_8
+        }
+        buildTypes.getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+            )
+        }
+    }
+}
+
 
 /**
  * ```
@@ -235,13 +307,14 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
 
     val nativeMainSets = mutableListOf<KotlinSourceSet>()
     val nativeTestSets = mutableListOf<KotlinSourceSet>()
-    val nativeTargets = mutableListOf<KotlinTarget>() // actually KotlinNativeTarget, but KotlinNativeTarget is an internal API (complained by IDEA)
+    val nativeTargets =
+        mutableListOf<KotlinTarget>() // actually KotlinNativeTarget, but KotlinNativeTarget is an internal API (complained by IDEA)
 
 
     fun KotlinMultiplatformExtension.addNativeTarget(
         preset: KotlinTargetPreset<*>,
     ): KotlinTarget {
-        val target = targetFromPreset(preset, preset.name) 
+        val target = targetFromPreset(preset, preset.name)
         nativeMainSets.add(target.compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first())
         nativeTestSets.add(target.compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first())
         nativeTargets.add(target)
@@ -387,10 +460,10 @@ fun KotlinMultiplatformExtension.configureNativeTargetBinaries(project: Project)
         val target = targets.getByName(targetName) as KotlinNativeTarget
         target.binaries {
             sharedLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-                baseName = project.name.toLowerCase().replace("-", "")
+                baseName = project.name.lowercase(Locale.ROOT).replace("-", "")
             }
             staticLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-                baseName = project.name.toLowerCase().replace("-", "")
+                baseName = project.name.lowercase(Locale.ROOT).replace("-", "")
             }
         }
     }

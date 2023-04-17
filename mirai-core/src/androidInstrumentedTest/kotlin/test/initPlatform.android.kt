@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,10 +9,9 @@
 
 package net.mamoe.mirai.internal.test
 
+//import org.bouncycastle.jce.provider.BouncyCastleProvider
 import net.mamoe.mirai.utils.MiraiLogger
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import java.security.Security
-import kotlin.test.Test
+import org.junit.jupiter.api.Test
 import kotlin.test.assertIs
 
 internal actual fun initPlatform() {
@@ -20,10 +19,10 @@ internal actual fun initPlatform() {
 }
 
 private val init: Unit by lazy {
-    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
-    }
-    Security.addProvider(BouncyCastleProvider())
+//    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
+//        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
+//    }
+//    Security.addProvider(BouncyCastleProvider())
 
     Unit
 }

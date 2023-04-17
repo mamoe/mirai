@@ -55,13 +55,16 @@ fun Project.configureShadowDependenciesForPublishing() {
         "configureShadowDependenciesForPublishing can only be used on root project."
     }
 
+    val jarTaskNames = arrayOf("jvmJar", "jvmBaseJar")
     gradle.projectsEvaluated {
         // Tasks requested to run in this build
         val allTasks = rootProject.allprojects.asSequence().flatMap { it.tasks }
 
         val publishTasks = allTasks.filter { it.name.contains("publish", ignoreCase = true) }
         val relocateTasks = allTasks.filter { it.name.contains("relocate", ignoreCase = true) }
-        val jarTasks = allTasks.filter { it.name.contains("jar", ignoreCase = true) }
+        val jarTasks = allTasks.filter {
+            it.name in jarTaskNames
+        }
         val compileKotlinTasks = allTasks.filter { it.name.contains("compileKotlin", ignoreCase = true) }
         val compileTestKotlinTasks = allTasks.filter { it.name.contains("compileTestKotlin", ignoreCase = true) }
 
@@ -99,7 +102,7 @@ private fun KotlinTarget.configureRelocationForMppTarget(project: Project) = pro
         group = "mirai"
         description = "Relocate dependencies to internal package"
         destinationDirectory.set(buildDir.resolve("libs")) // build/libs
-        archiveBaseName.set("${project.name}-${targetName.toLowerCase()}") // e.g. "mirai-core-api-jvm"
+        archiveBaseName.set("${project.name}-${targetName.lowercase()}") // e.g. "mirai-core-api-jvm"
 
         dependsOn(compilations["main"].compileTaskProvider) // e.g. compileKotlinJvm
 
