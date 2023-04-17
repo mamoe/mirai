@@ -120,11 +120,26 @@ kotlin {
 
 
         // Ktor
-
         findByName("commonMain")?.apply {
+            dependencies {
+                compileOnly(`ktor-io`)
+                implementation(`ktor-client-core`)
+            }
+        }
+        findByName("jvmBaseMain")?.apply {
+            // relocate for JVM like modules
             dependencies {
                 relocateCompileOnly(`ktor-io_relocated`) // runtime from mirai-core-utils
                 relocateImplementation(`ktor-client-core_relocated`)
+            }
+        }
+        configure(NATIVE_TARGETS.map { getByName(it + "Main") }
+                + NATIVE_TARGETS.map { getByName(it + "Test") }) {
+            // no relocation in native, include binaries
+            dependencies {
+                api(`ktor-io`) {
+                    exclude(ExcludeProperties.`slf4j-api`)
+                }
             }
         }
         findByName("jvmBaseMain")?.apply {

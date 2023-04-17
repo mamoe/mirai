@@ -125,6 +125,7 @@ private fun KotlinTarget.configureRelocationForMppTarget(project: Project) = pro
     // We will modify Kotlin metadata, so do generate metadata before relocation
     val generateMetadataTask =
         tasks.getByName("generateMetadataFileFor${targetName.capitalize()}Publication") as GenerateModuleMetadata
+    generateMetadataTask.dependsOn(relocateDependencies)
 
     val patchMetadataTask = tasks.create("patchMetadataFileFor${targetName.capitalize()}RelocatedPublication") {
         dependsOn(generateMetadataTask)

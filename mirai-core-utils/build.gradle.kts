@@ -41,6 +41,15 @@ kotlin {
                 relocateImplementation(`ktor-io_relocated`)
             }
         }
+        configure(NATIVE_TARGETS.map { getByName(it + "Main") }
+                + NATIVE_TARGETS.map { getByName(it + "Test") }) {
+            dependencies {
+                // no relocation in native
+                implementation(`ktor-io`) {
+                    exclude(ExcludeProperties.`slf4j-api`)
+                }
+            }
+        }
 
         val commonTest by getting {
             dependencies {
