@@ -14,10 +14,7 @@ import com.google.gradle.osdetector.OsDetector
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.attributes.Attribute
-import org.gradle.kotlin.dsl.extra
-import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getting
-import org.gradle.kotlin.dsl.withType
+import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.TEST_COMPILATION_NAME
@@ -204,6 +201,12 @@ fun Project.configureJvmTargetsHierarchical() {
 //                for (s in arrayOf("androidDebug", "androidRelease")) {
 //                    sourceSets.all { if (name in s) dependsOn(androidMain) }
 //                }
+
+//                 we should have added a "androidBaseTest" (or "androidTest") for "androidUnitTest" and "androidInstrumentedTest",
+//                 but this currently cause bugs in IntelliJ (2023.2)
+//                val androidBaseTest = sourceSets.maybeCreate("androidBaseTest").apply {
+//                    dependsOn(jvmBaseTest)
+//                }
                 val androidUnitTest by sourceSets.getting {
                     dependsOn(jvmBaseTest)
                 }
@@ -279,7 +282,32 @@ fun Project.configureAndroidTarget() {
             )
         }
     }
+
+//    if (USE_JUNIT5_FOR_ANDROID_TEST) {
+//        extensions.getByType(LibraryExtension::class.java).apply {
+//            defaultConfig {
+//                // 1) Make sure to use the AndroidJUnitRunner, or a subclass of it. This requires a dependency on androidx.test:runner, too!
+//                testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+//                // 2) Connect JUnit 5 to the runner
+//                testInstrumentationRunnerArguments["runnerBuilder"] = "de.mannodermaus.junit5.AndroidJUnit5Builder"
+//            }
+//        }
+//
+//        dependencies {
+//            // 4) Jupiter API & Test Runner, if you don't have it already
+//            "androidTestImplementation"("androidx.test:runner:1.5.2")
+//            "androidTestImplementation"("org.junit.jupiter:junit-jupiter-api:5.9.2")
+    // runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+//
+//            // 5) The instrumentation test companion libraries
+//            "androidTestImplementation"("de.mannodermaus.junit5:android-test-core:1.3.0")
+//            "androidTestRuntimeOnly"("de.mannodermaus.junit5:android-test-runner:1.3.0")
+//        }
+//    }
+
 }
+
+private const val USE_JUNIT5_FOR_ANDROID_TEST = true
 
 
 /**

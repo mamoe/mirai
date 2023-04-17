@@ -90,20 +90,20 @@ kotlin {
     }
 }
 
-//if (tasks.findByName("androidMainClasses") != null) {
-//    tasks.register("checkAndroidApiLevel") {
-//        doFirst {
-//            analyzes.AndroidApiLevelCheck.check(
-//                buildDir.resolve("classes/kotlin/android/main"),
-//                project.property("mirai.android.target.api.level")!!.toString().toInt(),
-//                project
-//            )
-//        }
-//        group = "verification"
-//        this.mustRunAfter("androidMainClasses")
-//    }
-//    tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
-//}
+if (tasks.findByName("androidMainClasses") != null) {
+    tasks.register("checkAndroidApiLevel") {
+        doFirst {
+            analyzes.AndroidApiLevelCheck.check(
+                buildDir.resolve("classes/kotlin/android/main"),
+                project.property("mirai.android.target.api.level")!!.toString().toInt(),
+                project
+            )
+        }
+        group = "verification"
+        this.mustRunAfter("androidMainClasses")
+    }
+    tasks.getByName("androidBaseTest").dependsOn("checkAndroidApiLevel")
+}
 
 //configureMppPublishing()
 

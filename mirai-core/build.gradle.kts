@@ -22,6 +22,7 @@ plugins {
     id("me.him188.kotlin-dynamic-delegation")
 //    id("me.him188.maven-central-publish")
     `maven-publish`
+    id("de.mannodermaus.android-junit5") version "1.8.2.1"
 }
 
 description = "Mirai Protocol implementation for QQ Android"
@@ -243,7 +244,7 @@ if (tasks.findByName("androidMainClasses") != null) {
         group = "verification"
         this.mustRunAfter("androidMainClasses")
     }
-    tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
+    tasks.getByName("androidBaseTest").dependsOn("checkAndroidApiLevel")
 }
 
 configureMppPublishing()
