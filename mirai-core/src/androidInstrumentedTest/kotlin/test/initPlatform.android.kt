@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal.test
 
 //import org.bouncycastle.jce.provider.BouncyCastleProvider
 import net.mamoe.mirai.utils.MiraiLogger
-import org.junit.jupiter.api.Test
+import org.junit.Test
 import kotlin.test.assertIs
 
 internal actual fun initPlatform() {
@@ -29,7 +29,7 @@ private val init: Unit by lazy {
 
 internal actual class PlatformInitializationTest : AbstractTest() {
 
-    @Test
+    @org.junit.jupiter.api.Test
     actual fun test() {
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         assertIs<net.mamoe.mirai.internal.utils.StdoutLogger>(MiraiLogger.Factory.create(this::class, "1"))
