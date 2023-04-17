@@ -12,10 +12,7 @@ package net.mamoe.mirai.internal.network.auth
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.loop
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.debug
@@ -44,15 +41,13 @@ internal class CoroutineOnDemandValueScope<T, V>(
     inner class Producer(
         private val initialTicket: T,
     ) : OnDemandProducerScope<T, V> {
-        fun ready() {
-            coroutineScope.launch {
-                try {
-                    producerCoroutine(initialTicket)
-                } catch (_: CancellationException) {
-                    // ignored
-                } catch (e: Exception) {
-                    finishExceptionally(e)
-                }
+        val ready = coroutineScope.launch(start = CoroutineStart.LAZY) {
+            try {
+                producerCoroutine(initialTicket)
+            } catch (_: CancellationException) {
+                // ignored
+            } catch (e: Exception) {
+                finishExceptionally(e)
             }
         }
 
@@ -101,7 +96,7 @@ internal class CoroutineOnDemandValueScope<T, V>(
         if (!compareAndSetState(state, ProducerState.Producing(state.producer, deferred))) {
             deferred.cancel() // avoid leak
         } else {
-            (state.producer as Producer).ready()
+            (state.producer as Producer).ready.start()
         }
         // loop again
     }
