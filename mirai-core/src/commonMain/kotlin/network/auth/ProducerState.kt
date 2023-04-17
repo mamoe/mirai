@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.auth
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -133,6 +134,7 @@ internal sealed interface ProducerState<T, V> {
         val producerLatch = Latch<T>(parentCoroutineContext)
 
         override fun toString(): String {
+            @OptIn(ExperimentalCoroutinesApi::class)
             val completed =
                 value.runCatching { getCompleted().toString() }.getOrNull() // getCompleted() is experimental
             return "Consuming(value=$completed)"
