@@ -15,3 +15,7 @@ repositories {
 #end
     mavenCentral()
 }
+
+mirai {
+    jvmTarget = JavaVersion.VERSION_1_8
+}
