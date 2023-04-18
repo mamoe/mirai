@@ -10,7 +10,8 @@ group = "$GROUP_ID"
 version = "$VERSION"
 
 repositories {
-    #if ($USE_PROXY_REPO) maven("https://maven.aliyun.com/repository/public") #end
-
+#if($USE_PROXY_REPO)
+    maven("https://maven.aliyun.com/repository/public")
+#end
     mavenCentral()
 }

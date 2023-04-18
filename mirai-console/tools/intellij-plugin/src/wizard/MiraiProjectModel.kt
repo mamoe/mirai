@@ -38,7 +38,7 @@ class MiraiProjectModel(
 
     val buildSystemType: BuildSystemType,
     val languageType: LanguageType,
-
+    val useProxyRepo: Boolean,
 
     val mainClassSimpleName: String = pluginCoordinates.run {
         name.adjustToClassName() ?: id.substringAfterLast('.').adjustToClassName()
