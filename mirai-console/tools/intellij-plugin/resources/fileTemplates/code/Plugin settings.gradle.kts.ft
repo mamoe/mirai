@@ -1,1 +1,9 @@
+pluginManagement {
+    repositories {
+#if($USE_PROXY_REPO)
+        maven("https://maven.aliyun.com/repository/gradle-plugin")
+#end
+        gradlePluginPortal()
+    }
+}
 rootProject.name = "$ARTIFACT_ID"
