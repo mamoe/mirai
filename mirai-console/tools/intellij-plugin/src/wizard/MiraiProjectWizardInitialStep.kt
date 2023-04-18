@@ -145,7 +145,7 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                 rowComment(message("comment.mirai.version"))
             }
             row {
-                checkBox(message("text.use.proxy")).enabled(true).bindSelected(useProxyRepoProperty)
+                checkBox(message("text.use.proxy.repo")).enabled(true).bindSelected(useProxyRepoProperty)
             }
         }
 
