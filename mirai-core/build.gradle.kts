@@ -77,7 +77,24 @@ kotlin {
             }
         }
 
+        findByName("androidMain")?.apply {
+            dependencies {
+                if (rootProject.property("mirai.android.target.api.level")!!.toString().toInt() < 23) {
+                    // Ship with BC if we are targeting 23 or lower where AndroidKeyStore is not stable enough.
+                    // For more info, read `net.mamoe.mirai.internal.utils.crypto.EcdhAndroidKt.create` in `androidMain`.
+                    implementation(bouncycastle)
+                }
+            }
+        }
+
+        // For Android with JDK
         findByName("androidTest")?.apply {
+            dependencies {
+                implementation(bouncycastle)
+            }
+        }
+        // For Android with SDK
+        findByName("androidUnitTest")?.apply {
             dependencies {
                 implementation(bouncycastle)
             }

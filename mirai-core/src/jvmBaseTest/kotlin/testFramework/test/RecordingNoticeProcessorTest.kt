@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,7 +13,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.internal.test.AbstractTest
+import net.mamoe.mirai.internal.testFramework.Platform
 import net.mamoe.mirai.internal.testFramework.desensitizer.Desensitizer
+import net.mamoe.mirai.internal.testFramework.rules.DisabledOnPlatform
 import net.mamoe.mirai.internal.utils.io.ProtocolStruct
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlBuilder
@@ -28,9 +30,9 @@ internal class RecordingNoticeProcessorTest : AbstractTest() {
     ) : ProtocolStruct
 
     @Test
+    @DisabledOnPlatform(Platform.Android::class) // resources not available
     fun `test plain desensitization`() {
-        val text = Thread.currentThread().contextClassLoader.getResource("recording/configs/test.desensitization.yml")!!
-            .readText()
+        val text = loadDesensitizationRules()
         val desensitizer = Desensitizer.create(Yaml.decodeFromString(text))
 
 
@@ -75,9 +77,9 @@ internal class RecordingNoticeProcessorTest : AbstractTest() {
 
 
     @Test
+    @DisabledOnPlatform(Platform.Android::class)
     fun `test long as byte array desensitization`() {
-        val text = Thread.currentThread().contextClassLoader.getResource("recording/configs/test.desensitization.yml")!!
-            .readText()
+        val text = loadDesensitizationRules()
         val desensitizer = Desensitizer.create(Yaml.decodeFromString(text))
 
         val proto = TestProto(TestProto.Proto(123456789))
@@ -90,4 +92,8 @@ internal class RecordingNoticeProcessorTest : AbstractTest() {
             )
         )
     }
+
+    private fun loadDesensitizationRules() =
+        ((Thread.currentThread().contextClassLoader ?: this::class.java.classLoader)
+            .getResource("recording/configs/test.desensitization.yml")!!).readText()
 }

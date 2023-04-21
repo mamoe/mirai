@@ -7,4 +7,4 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mameo.mirai
+package net.mamoe.mirai.internal
