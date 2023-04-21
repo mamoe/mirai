@@ -9,12 +9,13 @@
 
 @file:Suppress("UNUSED_VARIABLE")
 
-import com.android.build.api.dsl.LibraryExtension
 import com.google.gradle.osdetector.OsDetector
-import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.attributes.Attribute
-import org.gradle.kotlin.dsl.*
+import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.getting
+import org.gradle.kotlin.dsl.provideDelegate
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.TEST_COMPILATION_NAME
@@ -155,6 +156,16 @@ val NATIVE_TARGETS by projectLazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
 
 private val POSSIBLE_NATIVE_TARGETS by lazy { setOf("mingwX64", "macosX64", "macosArm64", "linuxX64") }
 
+const val JVM_TOOLCHAIN_VERSION = 8
+
+/**
+ * ## Android Test 结构
+ *
+ * 如果[启用 Android Instrumented Test][ENABLE_ANDROID_INSTRUMENTED_TESTS], 将会配置使用 Android SDK 配置真 Android target,
+ * `androidMain` 将能访问 Android SDK, 也能获得针对 Android 的 IDE 错误检查.
+ *
+ * @see configureNativeTargetsHierarchical
+ */
 fun Project.configureJvmTargetsHierarchical() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
         val commonMain by sourceSets.getting
@@ -162,15 +173,21 @@ fun Project.configureJvmTargetsHierarchical() {
 
         if (IDEA_ACTIVE) {
             jvm("jvmBase") { // dummy target for resolution, not published
+                jvmToolchain(JVM_TOOLCHAIN_VERSION)
                 compilations.all {
-                    this.compileTaskProvider.configure { // IDE complain
+                    // magic to help IDEA
+                    this.compileTaskProvider.configure {
                         enabled = false
                     }
                 }
                 attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // magic
-                attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "jvmBase") // avoid resolution
-                attributes.attribute(MIRAI_PLATFORM_INTERMEDIATE, true)
+
+                // avoid resolution when other modules dependsOn this project
+                attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "jvmBase")
+                attributes.attribute(MIRAI_PLATFORM_INTERMEDIATE, true) // no shadow
             }
+        } else {
+            // if not in IDEA, no need to create intermediate targets.
         }
 
         val jvmBaseMain by lazy {
@@ -185,62 +202,12 @@ fun Project.configureJvmTargetsHierarchical() {
         }
 
         if (isTargetEnabled("android")) {
-            if (isAndroidSDKAvailable) {
-//                apply(plugin = "com.android.library")
-                android {
-                    if (IDEA_ACTIVE) {
-                        attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "android") // avoid resolution
-                    }
-                }
-                configureAndroidTarget()
-                val androidMain by sourceSets.getting
-                for (s in arrayOf("androidMain")) {
-                    sourceSets.all { if (name in s) dependsOn(jvmBaseMain) }
-                }
-                // this can cause problems on sync
-//                for (s in arrayOf("androidDebug", "androidRelease")) {
-//                    sourceSets.all { if (name in s) dependsOn(androidMain) }
-//                }
-
-//                 we should have added a "androidBaseTest" (or "androidTest") for "androidUnitTest" and "androidInstrumentedTest",
-//                 but this currently cause bugs in IntelliJ (2023.2)
-//                val androidBaseTest = sourceSets.maybeCreate("androidBaseTest").apply {
-//                    dependsOn(jvmBaseTest)
-//                }
-                val androidUnitTest by sourceSets.getting {
-                    dependsOn(jvmBaseTest)
-                }
-//                for (s in arrayOf("androidUnitTestDebug", "androidUnitTestRelease")) {
-//                    sourceSets.all { if (name in s) dependsOn(androidUnitTest) }
-//                }
-                val androidInstrumentedTest by sourceSets.getting {
-                    dependsOn(jvmBaseTest)
-                }
-//                for (s in arrayOf("androidInstrumentedTestDebug")) {
-//                    sourceSets.all { if (name in s) dependsOn(androidInstrumentedTest) }
-//                }
-
-//                afterEvaluate {
-////                    > androidDebug dependsOn commonMain
-////                    androidInstrumentedTest dependsOn jvmBaseTest
-////                    androidInstrumentedTestDebug dependsOn
-////                    androidMain dependsOn commonMain, jvmBaseMain
-////                    androidRelease dependsOn commonMain
-////                    androidUnitTest dependsOn commonTest, jvmBaseTest
-////                    androidUnitTestDebug dependsOn commonTest
-////                    androidUnitTestRelease dependsOn commonTest
-//                    error(this@apply.sourceSets.joinToString("\n") {
-//                        it.name + " dependsOn " + it.dependsOn.joinToString { it.name }
-//                    })
-//                }
-            } else {
-                printAndroidNotInstalled()
-            }
+            configureAndroidTarget()
         }
 
         if (isTargetEnabled("jvm")) {
             jvm("jvm") {
-
+                jvmToolchain(JVM_TOOLCHAIN_VERSION)
             }
             val jvmMain by sourceSets.getting
             val jvmTest by sourceSets.getting
@@ -250,67 +217,9 @@ fun Project.configureJvmTargetsHierarchical() {
     }
 }
 
-@Suppress("UnstableApiUsage")
-fun Project.configureAndroidTarget() {
-    extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
-
-        // trick
-        this.sourceSets.apply {
-            removeIf { it.name == "androidAndroidTestRelease" }
-            removeIf { it.name == "androidTestFixtures" }
-            removeIf { it.name == "androidTestFixturesDebug" }
-            removeIf { it.name == "androidTestFixturesRelease" }
-        }
-    }
-
-    extensions.getByType(LibraryExtension::class.java).apply {
-        compileSdk = 33
-        sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-        defaultConfig {
-            minSdk = rootProject.extra["mirai.android.target.api.level"]!!.toString().toInt()
-            targetSdk = 33
-        }
-        compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_1_8
-            targetCompatibility = JavaVersion.VERSION_1_8
-        }
-        buildTypes.getByName("release") {
-            isMinifyEnabled = true
-            isShrinkResources = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-            )
-        }
-    }
-
-//    if (USE_JUNIT5_FOR_ANDROID_TEST) {
-//        extensions.getByType(LibraryExtension::class.java).apply {
-//            defaultConfig {
-//                // 1) Make sure to use the AndroidJUnitRunner, or a subclass of it. This requires a dependency on androidx.test:runner, too!
-//                testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-//                // 2) Connect JUnit 5 to the runner
-//                testInstrumentationRunnerArguments["runnerBuilder"] = "de.mannodermaus.junit5.AndroidJUnit5Builder"
-//            }
-//        }
-//
-//        dependencies {
-//            // 4) Jupiter API & Test Runner, if you don't have it already
-//            "androidTestImplementation"("androidx.test:runner:1.5.2")
-//            "androidTestImplementation"("org.junit.jupiter:junit-jupiter-api:5.9.2")
-    // runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
-//
-//            // 5) The instrumentation test companion libraries
-//            "androidTestImplementation"("de.mannodermaus.junit5:android-test-core:1.3.0")
-//            "androidTestRuntimeOnly"("de.mannodermaus.junit5:android-test-runner:1.3.0")
-//        }
-//    }
-
-}
-
-private const val USE_JUNIT5_FOR_ANDROID_TEST = true
-
 
 /**
+ * Target 结构:
  * ```
  *                      common
  *                        |
@@ -326,7 +235,9 @@ private const val USE_JUNIT5_FOR_ANDROID_TEST = true
  *                        <darwin targets>
  * ```
  *
- * `<darwin targets>`: macosX64, macosArm64, tvosX64, iosArm64, iosArm32...
+ * `<darwin targets>`: macosX64, macosArm64
+ *
+ * @see configureJvmTargetsHierarchical
  */
 fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     project: Project

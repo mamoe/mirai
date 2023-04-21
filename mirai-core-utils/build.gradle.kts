@@ -64,13 +64,6 @@ kotlin {
             }
         }
 
-        findByName("androidMain")?.apply {
-            dependencies {
-                compileOnly(`android-runtime`)
-//                    api1(`ktor-client-android`)
-            }
-        }
-
         findByName("jvmMain")?.apply {
 
         }
