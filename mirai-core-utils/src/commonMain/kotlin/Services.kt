@@ -72,7 +72,8 @@ public object Services {
         }
     }
 
-    internal fun implementationsDirectly(baseClass: String) = lock.withLock { registered[baseClass]?.toList().orEmpty() }
+    internal fun implementationsDirectly(baseClass: String) =
+        lock.withLock { registered[baseClass]?.toList().orEmpty() }
 
     public fun print(): String {
         lock.withLock {

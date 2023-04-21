@@ -12,6 +12,7 @@
 import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
@@ -68,8 +69,17 @@ private fun Project.configureAndroidTargetWithJvm() {
                 compileOnly(`android-runtime`)
             }
         }
+
+        tasks.all {
+            if (this.name == "androidTest") {
+                this as Test
+                this.environment(PROP_MIRAI_ANDROID_SDK_KIND, "jdk")
+            }
+        }
     }
 }
+
+private const val PROP_MIRAI_ANDROID_SDK_KIND = "mirai.android.sdk.kind"
 
 @Suppress("UnstableApiUsage")
 private fun Project.configureAndroidTargetWithSdk() {
@@ -132,6 +142,13 @@ private fun Project.configureAndroidTargetWithSdk() {
             )
         ) {
             dependencies { implementation(kotlin("test-annotations-common"))?.because("configureAndroidTargetWithSdk") }
+        }
+
+        tasks.all {
+            if (this.name == "testDebugUnitTest" || this.name == "testReleaseUnitTest") {
+                this as Test
+                this.environment(PROP_MIRAI_ANDROID_SDK_KIND, "adk")
+            }
         }
     }
 
