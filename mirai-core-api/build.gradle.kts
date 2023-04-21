@@ -71,16 +71,10 @@ kotlin {
         }
 
         afterEvaluate {
-            getByName("androidUnitTest") {
+            findByName("androidUnitTest")?.apply {
                 dependencies {
                     runtimeOnly(`slf4j-api`)
                 }
-            }
-        }
-
-        findByName("androidMain")?.apply {
-            dependencies {
-//                compileOnly(`android-runtime`)
             }
         }
 

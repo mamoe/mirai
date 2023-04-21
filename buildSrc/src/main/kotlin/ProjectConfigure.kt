@@ -92,21 +92,6 @@ fun Project.configureJvmTarget() {
 
     allKotlinTargets().all {
         if (this !is KotlinJvmTarget) return@all
-        when (this.attributes.getAttribute(KotlinPlatformType.attribute)) { // mirai does magic, don't use target.platformType
-            KotlinPlatformType.androidJvm -> {
-                this.compilations.all {
-                    /*
-                     * Kotlin JVM compiler generates Long.hashCode witch is available since API 26 when targeting JVM 1.8 while IR prefer member function hashCode always.
-                     */
-                    // kotlinOptions.useIR = true
-
-                    // IR cannot compile mirai. We'll wait for Kotlin 1.5 for stable IR release.
-                }
-            }
-
-            else -> {
-            }
-        }
         this.testRuns["test"].executionTask.configure { useJUnitPlatform() }
     }
 }
@@ -135,42 +120,41 @@ fun Project.configureKotlinTestSettings() {
         isKotlinMpp -> {
             kotlinSourceSets?.all {
                 val sourceSet = this
-                fun configureJvmTest(sourceSet: KotlinSourceSet) {
-                    sourceSet.dependencies {
-                        implementation(kotlin("test-junit5"))?.because(b)
-
-                        implementation(`junit-jupiter-api`)?.because(b)
-                        runtimeOnly(`junit-jupiter-engine`)?.because(b)
-                    }
-                }
 
                 val target = allKotlinTargets()
                     .find { it.name == sourceSet.name.substringBeforeLast("Main").substringBeforeLast("Test") }
 
-                when {
-                    sourceSet.name == "commonTest" -> {
-                        if (target?.platformType == KotlinPlatformType.jvm &&
-                            target.attributes.getAttribute(MIRAI_PLATFORM_INTERMEDIATE) != true
-                        ) {
-                            configureJvmTest(sourceSet)
-                        } else {
+                if (sourceSet.name.contains("test", ignoreCase = true)) {
+                    if (isJvmFinalTarget(target)) {
+                        // For android, this should be done differently. See Android.kt
+                        sourceSet.configureJvmTest(b)
+                    } else {
+                        if (sourceSet.name == "commonTest") {
                             sourceSet.dependencies {
                                 implementation(kotlin("test"))?.because(b)
                                 implementation(kotlin("test-annotations-common"))?.because(b)
                             }
-                        }
-                    }
-
-                    sourceSet.name.contains("test", ignoreCase = true) -> {
-                        if (target?.platformType == KotlinPlatformType.jvm &&
-                            target.attributes.getAttribute(MIRAI_PLATFORM_INTERMEDIATE) != true
-                        ) {
-                            configureJvmTest(sourceSet)
+                        } else {
+                            // can be an Android sourceSet
+                            // Do not even add "kotlin-test" for Android sourceSets. IDEA can't resolve them on sync
                         }
                     }
                 }
             }
         }
+    }
+}
+
+private fun isJvmFinalTarget(target: KotlinTarget?) =
+    target?.platformType == KotlinPlatformType.jvm &&
+            target.attributes.getAttribute(MIRAI_PLATFORM_INTERMEDIATE) != true // jvmBase is intermediate
+
+fun KotlinSourceSet.configureJvmTest(because: String) {
+    dependencies {
+        implementation(kotlin("test-junit5"))?.because(because)
+
+        implementation(`junit-jupiter-api`)?.because(because)
+        runtimeOnly(`junit-jupiter-engine`)?.because(because)
     }
 }
 

@@ -74,6 +74,18 @@ jobs:
           GPG_PRIVATE: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PUBLIC_: ${{ secrets.GPG_PUBLIC_KEY }}
 
+      - name: Setup Android SDK Ubuntu
+        if: ${{ env.isUbuntu == 'true' }}
+        run: 'touch local.properties && echo sdk.dir=/usr/local/lib/android/sdk >> local.properties'
+
+      - name: Setup Android SDK macOS
+        if: ${{ env.isMac == 'true' }}
+        run: 'touch local.properties && echo sdk.dir=/Users/runner/Library/Android/sdk >> local.properties'
+
+      - name: Setup Android SDK Windows
+        if: ${{ env.isWindows == 'true' }}
+        run: 'echo sdk.dir=C:\Android\android-sdk >> local.properties'
+
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
