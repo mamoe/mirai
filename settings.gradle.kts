@@ -31,6 +31,7 @@ pluginManagement {
 
 rootProject.name = "mirai"
 
+runCatching { rootProject.projectDir.resolve("local.properties").let { if (!it.exists()) it.createNewFile() } }
 
 val localProperties = Properties().apply {
     rootProject.projectDir.resolve("local.properties").takeIf { it.exists() }?.bufferedReader()?.use {
