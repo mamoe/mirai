@@ -32,11 +32,6 @@ internal sealed interface ProducerState<T, V> {
      *                                         |
      *                                         | 调用 [expectMore]
      *                                         |
-     *                                         V 
-     *                                  CreatingProducer 
-     *                                         |
-     *                                         | 
-     *                                         |                                                     
      *                                         V                                                      
      *                                   ProducerReady (从此用户协程作为 producer 在后台运行)             
      *                                         |                                                      
@@ -105,17 +100,15 @@ internal sealed interface ProducerState<T, V> {
         val producer: OnDemandProducerScope<T, V>
     }
 
-    // This is need — to ensure [launchProducer] is called exactly once.
-    class CreatingProducer<T, V>(
-        launchProducer: () -> OnDemandProducerScope<T, V>
-    ) : HasProducer<T, V> {
-        override val producer: OnDemandProducerScope<T, V> by lazy(launchProducer)
-        override fun toString(): String = "CreatingProducer"
-    }
-
     class ProducerReady<T, V>(
-        override val producer: OnDemandProducerScope<T, V>,
+        launchProducer: () -> OnDemandProducerScope<T, V>,
     ) : HasProducer<T, V> {
+        override val producer: OnDemandProducerScope<T, V> by lazy(launchProducer) // `lazy` is synchronized
+
+        fun startProducerIfNotYet() {
+            producer
+        }
+
         override fun toString(): String = "ProducerReady"
     }
 

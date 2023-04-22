@@ -175,12 +175,10 @@ internal class CoroutineOnDemandValueScope<T, V>(
         state.loop { state ->
             when (state) {
                 is ProducerState.JustInitialized -> {
-                    compareAndSetState(state, ProducerState.CreatingProducer { Producer(ticket) })
-                    // loop again
-                }
-
-                is ProducerState.CreatingProducer -> {
-                    compareAndSetState(state, ProducerState.ProducerReady(state.producer))
+                    val ready = ProducerState.ProducerReady { Producer(ticket) }
+                    if (compareAndSetState(state, ready)) {
+                        ready.startProducerIfNotYet()
+                    }
                     // loop again
                 }
 
@@ -193,7 +191,7 @@ internal class CoroutineOnDemandValueScope<T, V>(
                 is ProducerState.Consuming -> throw IllegalProducerStateException(state) // a value is already ready
 
                 is ProducerState.Consumed -> {
-                    if (compareAndSetState(state, ProducerState.ProducerReady(state.producer))) {
+                    if (compareAndSetState(state, ProducerState.ProducerReady { state.producer })) {
                         // wake up producer async.
                         state.producerLatch.resumeWith(Result.success(ticket))
                         // loop again to switch state atomically to Producing. 
