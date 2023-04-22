@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.auth
+package net.mamoe.mirai.utils.channels
 
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
@@ -16,34 +16,26 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.UtilsLogger
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.debug
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
 
-internal class IllegalProducerStateException(
-    private val state: ProducerState<*, *>,
-    message: String? = state.toString(),
-    cause: Throwable? = null,
-) : IllegalStateException(message, cause) {
-    val lastStateWasSucceed get() = (state is ProducerState.Finished) && state.isSuccess
-}
-
-internal class CoroutineOnDemandValueScope<T, V>(
+internal class CoroutineOnDemandReceiveChannel<T, V>(
     parentCoroutineContext: CoroutineContext,
-    private val logger: MiraiLogger,
-    private val producerCoroutine: suspend OnDemandProducerScope<T, V>.(initialTicket: T) -> Unit,
-) : OnDemandConsumer<T, V> {
-    private val coroutineScope = parentCoroutineContext.childScope("CoroutineOnDemandValueScope")
+    private val logger: UtilsLogger,
+    private val producerCoroutine: suspend OnDemandSendChannel<T, V>.(initialTicket: T) -> Unit,
+) : OnDemandReceiveChannel<T, V> {
+    private val coroutineScope = parentCoroutineContext.childScope("CoroutineOnDemandReceiveChannel")
 
     private val state: AtomicRef<ProducerState<T, V>> = atomic(ProducerState.JustInitialized())
 
 
     inner class Producer(
         private val initialTicket: T,
-    ) : OnDemandProducerScope<T, V> {
+    ) : OnDemandSendChannel<T, V> {
         init {
             coroutineScope.launch {
                 try {
@@ -132,7 +124,23 @@ internal class CoroutineOnDemandValueScope<T, V>(
     override suspend fun receiveOrNull(): V? {
         state.loop { state ->
             when (state) {
-                is ProducerState.Producing -> {
+                is ProducerState.Consuming -> {
+                    // value is ready, switch state to Consumed
+
+                    if (compareAndSetState(state, ProducerState.Consumed(state.producer, state.producerLatch))) {
+                        return try {
+                            // This actually won't suspend, since the value is already completed
+                            // Just to be error-tolerating
+                            state.value.await()
+                        } catch (e: Exception) {
+                            throw ProducerFailureException(cause = e)
+                        }
+                    }
+                }
+
+                // note: actually, this case should be the first case (for code consistency) in `when`, 
+                // but atomicfu 1.8.10 fails on this.
+                is ProducerState.Producing<T, V> -> {
                     // still producing value
 
                     state.deferred.await() // just wait for value, but does not return it.
@@ -141,22 +149,6 @@ internal class CoroutineOnDemandValueScope<T, V>(
                     // but you cannot thread-safely assume current state is Consuming.
 
                     // Here we will loop again, to atomically switch to Consumed state.
-                }
-
-                is ProducerState.Consuming -> {
-                    // value is ready, switch state to ProducerReady
-
-                    if (compareAndSetState(
-                            state,
-                            ProducerState.Consumed(state.producer, state.producerLatch)
-                        )
-                    ) {
-                        return try {
-                            state.value.await() // won't suspend, since value is already completed
-                        } catch (e: Exception) {
-                            throw ProducerFailureException(cause = e)
-                        }
-                    }
                 }
 
                 is ProducerState.Finished -> {

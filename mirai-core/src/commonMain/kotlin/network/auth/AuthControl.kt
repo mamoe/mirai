@@ -12,9 +12,12 @@ package net.mamoe.mirai.internal.network.auth
 import net.mamoe.mirai.auth.BotAuthInfo
 import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
+import net.mamoe.mirai.internal.utils.asUtilsLogger
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.ExceptionCollector
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.channels.OnDemandReceiveChannel
+import net.mamoe.mirai.utils.channels.ProducerFailureException
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.verbose
 import kotlin.coroutines.CoroutineContext
@@ -35,8 +38,11 @@ internal class AuthControl(
 ) {
     internal val exceptionCollector = ExceptionCollector()
 
-    private val userDecisions: OnDemandConsumer<Throwable?, SsoProcessorImpl.AuthMethod> =
-        CoroutineOnDemandValueScope(parentCoroutineContext, logger.subLogger("AuthControl/UserDecisions")) { _ ->
+    private val userDecisions: OnDemandReceiveChannel<Throwable?, SsoProcessorImpl.AuthMethod> =
+        OnDemandReceiveChannel(
+            parentCoroutineContext,
+            logger.subLogger("AuthControl/UserDecisions").asUtilsLogger()
+        ) { _ ->
             val sessionImpl = SafeBotAuthSession(this)
 
             try {

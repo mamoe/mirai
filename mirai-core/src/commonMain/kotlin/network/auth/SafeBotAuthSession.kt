@@ -12,12 +12,14 @@ package net.mamoe.mirai.internal.network.auth
 import net.mamoe.mirai.auth.BotAuthResult
 import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
 import net.mamoe.mirai.utils.SecretsProtection
+import net.mamoe.mirai.utils.channels.IllegalProducerStateException
+import net.mamoe.mirai.utils.channels.OnDemandSendChannel
 
 /**
  * Implements [BotAuthSessionInternal] from API, to be called by the user, to receive user's decisions.
  */
 internal class SafeBotAuthSession(
-    private val producer: OnDemandProducerScope<Throwable?, SsoProcessorImpl.AuthMethod>
+    private val producer: OnDemandSendChannel<Throwable?, SsoProcessorImpl.AuthMethod>
 ) : BotAuthSessionInternal() {
     private val authResultImpl = object : BotAuthResult {}
 
