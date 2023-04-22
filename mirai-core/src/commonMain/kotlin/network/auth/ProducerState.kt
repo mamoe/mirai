@@ -103,6 +103,7 @@ internal sealed interface ProducerState<T, V> {
     class ProducerReady<T, V>(
         launchProducer: () -> OnDemandProducerScope<T, V>,
     ) : HasProducer<T, V> {
+        // Lazily start the producer job since it's on-demand
         override val producer: OnDemandProducerScope<T, V> by lazy(launchProducer) // `lazy` is synchronized
 
         fun startProducerIfNotYet() {
