@@ -7,31 +7,33 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.auth
+package net.mamoe.mirai.utils.sync
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.completeWith
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 
-internal interface Latch<T> {
+public interface Latch<T> {
     /**
      * Suspends and waits to acquire the latch.
      * @throws Throwable if [resumeWith] is called with [Result.Failure]
      */
-    suspend fun acquire(): T
+    public suspend fun acquire(): T
 
     /**
      * Release the latch, resuming the coroutines waiting for the latch.
      *
      * This function will return immediately unless a client is calling [acquire] concurrently.
      */
-    fun resumeWith(result: Result<T>)
+    public fun resumeWith(result: Result<T>)
 }
 
 
-internal fun <T> Latch(parentCoroutineContext: CoroutineContext): Latch<T> = LatchImpl(parentCoroutineContext)
+public fun <T> Latch(parentCoroutineContext: CoroutineContext = EmptyCoroutineContext): Latch<T> =
+    LatchImpl(parentCoroutineContext)
 
 private class LatchImpl<T>(
     parentCoroutineContext: CoroutineContext

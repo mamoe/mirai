@@ -7,11 +7,12 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.auth
+package net.mamoe.mirai.utils.channels
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import net.mamoe.mirai.utils.sync.Latch
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -97,14 +98,14 @@ internal sealed interface ProducerState<T, V> {
     }
 
     sealed interface HasProducer<T, V> : ProducerState<T, V> {
-        val producer: OnDemandProducerScope<T, V>
+        val producer: OnDemandSendChannel<T, V>
     }
 
     class ProducerReady<T, V>(
-        launchProducer: () -> OnDemandProducerScope<T, V>,
+        launchProducer: () -> OnDemandSendChannel<T, V>,
     ) : HasProducer<T, V> {
         // Lazily start the producer job since it's on-demand
-        override val producer: OnDemandProducerScope<T, V> by lazy(launchProducer) // `lazy` is synchronized
+        override val producer: OnDemandSendChannel<T, V> by lazy(launchProducer) // `lazy` is synchronized
 
         fun startProducerIfNotYet() {
             producer
@@ -114,18 +115,18 @@ internal sealed interface ProducerState<T, V> {
     }
 
     class Producing<T, V>(
-        override val producer: OnDemandProducerScope<T, V>,
+        override val producer: OnDemandSendChannel<T, V>,
         val deferred: CompletableDeferred<V>,
     ) : HasProducer<T, V> {
         override fun toString(): String = "Producing(deferred.completed=${deferred.isCompleted})"
     }
 
     class Consuming<T, V>(
-        override val producer: OnDemandProducerScope<T, V>,
+        override val producer: OnDemandSendChannel<T, V>,
         val value: Deferred<V>,
         parentCoroutineContext: CoroutineContext,
     ) : HasProducer<T, V> {
-        val producerLatch = Latch<T>(parentCoroutineContext)
+        val producerLatch: Latch<T> = Latch(parentCoroutineContext)
 
         override fun toString(): String {
             @OptIn(ExperimentalCoroutinesApi::class)
@@ -136,17 +137,17 @@ internal sealed interface ProducerState<T, V> {
     }
 
     class Consumed<T, V>(
-        override val producer: OnDemandProducerScope<T, V>,
+        override val producer: OnDemandSendChannel<T, V>,
         val producerLatch: Latch<T>
     ) : HasProducer<T, V> {
         override fun toString(): String = "Consumed($producerLatch)"
     }
 
     class Finished<T, V>(
-        val previousState: ProducerState<T, V>,
+        private val previousState: ProducerState<T, V>,
         val exception: Throwable?,
     ) : ProducerState<T, V> {
-        val isSuccess get() = exception == null
+        val isSuccess: Boolean get() = exception == null
 
         fun createAlreadyFinishedException(cause: Throwable?): IllegalProducerStateException {
             val exception = exception
