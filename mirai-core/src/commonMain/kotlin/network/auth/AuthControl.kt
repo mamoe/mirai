@@ -16,6 +16,7 @@ import net.mamoe.mirai.internal.utils.asUtilsLogger
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.ExceptionCollector
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.channels.OnDemandChannel
 import net.mamoe.mirai.utils.channels.OnDemandReceiveChannel
 import net.mamoe.mirai.utils.channels.ProducerFailureException
 import net.mamoe.mirai.utils.debug
@@ -39,7 +40,7 @@ internal class AuthControl(
     internal val exceptionCollector = ExceptionCollector()
 
     private val userDecisions: OnDemandReceiveChannel<Throwable?, SsoProcessorImpl.AuthMethod> =
-        OnDemandReceiveChannel(
+        OnDemandChannel(
             parentCoroutineContext,
             logger.subLogger("AuthControl/UserDecisions").asUtilsLogger()
         ) { _ ->
