@@ -10,9 +10,9 @@
 package net.mamoe.mirai.utils.channels
 
 public class IllegalProducerStateException internal constructor(
-    private val state: ProducerState<*, *>,
+    private val state: ChannelState<*, *>,
     message: String? = state.toString(),
     cause: Throwable? = null,
 ) : IllegalStateException(message, cause) {
-    public val lastStateWasSucceed: Boolean get() = (state is ProducerState.Finished) && state.isSuccess
+    public val lastStateWasSucceed: Boolean get() = (state is ChannelState.Finished) && state.isSuccess
 }

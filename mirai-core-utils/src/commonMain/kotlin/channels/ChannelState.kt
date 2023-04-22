@@ -12,13 +12,13 @@ package net.mamoe.mirai.utils.channels
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import net.mamoe.mirai.utils.sync.Latch
+import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
 
 /**
  * Producer states.
  */
-internal sealed interface ProducerState<T, V> {
+internal sealed interface ChannelState<T, V> {
     /*
      * 可变更状态的函数: [emit], [receiveOrNull], [expectMore], [finish], [finishExceptionally]
      * 
@@ -93,11 +93,11 @@ internal sealed interface ProducerState<T, V> {
      */
     abstract override fun toString(): String
 
-    class JustInitialized<T, V> : ProducerState<T, V> {
+    class JustInitialized<T, V> : ChannelState<T, V> {
         override fun toString(): String = "JustInitialized"
     }
 
-    sealed interface HasProducer<T, V> : ProducerState<T, V> {
+    sealed interface HasProducer<T, V> : ChannelState<T, V> {
         val producer: OnDemandSendChannel<T, V>
     }
 
@@ -116,8 +116,10 @@ internal sealed interface ProducerState<T, V> {
 
     class Producing<T, V>(
         override val producer: OnDemandSendChannel<T, V>,
-        val deferred: CompletableDeferred<V>,
+        parentJob: Job,
     ) : HasProducer<T, V> {
+        val deferred: CompletableDeferred<V> by lazy { CompletableDeferred<V>(parentJob) }
+        
         override fun toString(): String = "Producing(deferred.completed=${deferred.isCompleted})"
     }
 
@@ -126,7 +128,7 @@ internal sealed interface ProducerState<T, V> {
         val value: Deferred<V>,
         parentCoroutineContext: CoroutineContext,
     ) : HasProducer<T, V> {
-        val producerLatch: Latch<T> = Latch(parentCoroutineContext)
+        val producerLatch: CompletableDeferred<T> = CompletableDeferred(parentCoroutineContext[Job])
 
         override fun toString(): String {
             @OptIn(ExperimentalCoroutinesApi::class)
@@ -138,15 +140,15 @@ internal sealed interface ProducerState<T, V> {
 
     class Consumed<T, V>(
         override val producer: OnDemandSendChannel<T, V>,
-        val producerLatch: Latch<T>
+        val producerLatch: CompletableDeferred<T>
     ) : HasProducer<T, V> {
         override fun toString(): String = "Consumed($producerLatch)"
     }
 
     class Finished<T, V>(
-        private val previousState: ProducerState<T, V>,
+        private val previousState: ChannelState<T, V>,
         val exception: Throwable?,
-    ) : ProducerState<T, V> {
+    ) : ChannelState<T, V> {
         val isSuccess: Boolean get() = exception == null
 
         fun createAlreadyFinishedException(cause: Throwable?): IllegalProducerStateException {
