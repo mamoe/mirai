@@ -11,7 +11,8 @@ package net.mamoe.mirai.internal.network.components
 
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
-import net.mamoe.mirai.auth.*
+import net.mamoe.mirai.auth.BotAuthInfo
+import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.QRCodeLoginData
@@ -159,13 +160,13 @@ internal class SsoProcessorImpl(
      */
     override suspend fun login(handler: NetworkHandler) {
 
-        fun initAuthControl() {
+        fun initAndStartAuthControl() {
             authControl = AuthControl(
                 botAuthInfo,
                 ssoContext.bot.account.authorization,
                 ssoContext.bot.network.logger,
                 ssoContext.bot.coroutineContext, // do not use network context because network may restart whilst auth control should keep alive
-            )
+            ).also { it.start() }
         }
 
         suspend fun loginSuccess() {
@@ -195,7 +196,7 @@ internal class SsoProcessorImpl(
                 kotlin.runCatching {
                     FastLoginImpl(handler).doLogin()
                 }.onFailure { e ->
-                    initAuthControl()
+                    initAndStartAuthControl()
                     authControl!!.exceptionCollector.collect(e)
 
                     throw SelectorRequireReconnectException()
@@ -207,7 +208,7 @@ internal class SsoProcessorImpl(
             }
         }
 
-        if (authControl == null) initAuthControl()
+        if (authControl == null) initAndStartAuthControl()
         val authControl0 = authControl!!
 
 

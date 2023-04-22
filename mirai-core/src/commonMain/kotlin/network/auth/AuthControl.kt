@@ -86,7 +86,7 @@ internal class AuthControl(
             }
         }
 
-    init {
+    fun start() {
         userDecisions.expectMore(null)
     }
 
