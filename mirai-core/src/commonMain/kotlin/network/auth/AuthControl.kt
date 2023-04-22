@@ -10,11 +10,13 @@
 package net.mamoe.mirai.internal.network.auth
 
 import net.mamoe.mirai.auth.BotAuthInfo
-import net.mamoe.mirai.auth.BotAuthResult
 import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
 import net.mamoe.mirai.internal.utils.subLogger
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExceptionCollector
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.verbose
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -35,41 +37,7 @@ internal class AuthControl(
 
     private val userDecisions: OnDemandConsumer<Throwable?, SsoProcessorImpl.AuthMethod> =
         CoroutineOnDemandValueScope(parentCoroutineContext, logger.subLogger("AuthControl/UserDecisions")) { _ ->
-            /**
-             * Implements [BotAuthSessionInternal] from API, to be called by the user, to receive user's decisions.
-             */
-            val sessionImpl = object : BotAuthSessionInternal() {
-                private val authResultImpl = object : BotAuthResult {}
-
-                override suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthResult {
-                    runWrapInternalException {
-                        emit(SsoProcessorImpl.AuthMethod.Pwd(passwordMd5))
-                    }?.let { throw it }
-                    return authResultImpl
-                }
-
-                override suspend fun authByQRCode(): BotAuthResult {
-                    runWrapInternalException {
-                        emit(SsoProcessorImpl.AuthMethod.QRCode)
-                    }?.let { throw it }
-                    return authResultImpl
-                }
-
-                private inline fun <R> runWrapInternalException(block: () -> R): R {
-                    try {
-                        return block()
-                    } catch (e: IllegalProducerStateException) {
-                        if (e.lastStateWasSucceed) {
-                            throw IllegalStateException(
-                                "This login session has already completed. Please return the BotAuthResult you get from 'authBy*()' immediately",
-                                e
-                            )
-                        } else {
-                            throw e // internal bug
-                        }
-                    }
-                }
-            }
+            val sessionImpl = SafeBotAuthSession(this)
 
             try {
                 logger.verbose { "[AuthControl/auth] Authorization started" }
