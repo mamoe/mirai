@@ -46,9 +46,14 @@ MCL查询更新信息失败，你可以尝试编辑 `config.json` 更换 [`mirai
 
 你可能需要安装插件 https://github.com/project-mirai/mirai-api-http
 
+> 如何添加 jvm 参数，例如 `-Dmirai.no-desktop=true`
+
+编辑启动脚本 `mcl.cmd`, 在 `-jar` 前面加上 `-D...`  
+例如 `-Dmirai.no-desktop=true -jar mcl...`
+
 ## 开发者常见问题
 
-> 如何自定义登录处理
+> 如何自定义登录验证处理
 
 [覆盖登录解决器](https://github.com/mamoe/mirai/blob/dev/docs/Bots.md#%E8%A6%86%E7%9B%96%E7%99%BB%E5%BD%95%E8%A7%A3%E5%86%B3%E5%99%A8)
 
@@ -65,6 +70,8 @@ IDEA 太旧了，没法解析新版 kotlin, 最后升级到最新版
 `GroupMessageEvent`  
 群事件收不到可能是因为你将群设置为`屏蔽群`或者`收入了群助手`
 
+另外如果消息是 `转发消息` 或 `卡片消息` 等特殊消息, 也有可能因为风控无法接收和发出
+
 > 发送语音之后播放没有声音
 
-你可能需要安装插件/引入依赖 https://github.com/project-mirai/mirai-silk-converter
+你可能需要 安装插件/引入依赖 https://github.com/project-mirai/mirai-silk-converter
