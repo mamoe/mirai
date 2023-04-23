@@ -12,7 +12,7 @@ package net.mamoe.mirai.internal.network.auth
 import net.mamoe.mirai.auth.BotAuthResult
 import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
 import net.mamoe.mirai.utils.SecretsProtection
-import net.mamoe.mirai.utils.channels.IllegalProducerStateException
+import net.mamoe.mirai.utils.channels.IllegalChannelStateException
 import net.mamoe.mirai.utils.channels.OnDemandSendChannel
 
 /**
@@ -40,7 +40,7 @@ internal class SafeBotAuthSession(
     private inline fun <R> runWrapInternalException(block: () -> R): R {
         try {
             return block()
-        } catch (e: IllegalProducerStateException) {
+        } catch (e: IllegalChannelStateException) {
             if (e.lastStateWasSucceed) {
                 throw IllegalStateException(
                     "This login session has already completed. Please return the BotAuthResult you get from 'authBy*()' immediately",

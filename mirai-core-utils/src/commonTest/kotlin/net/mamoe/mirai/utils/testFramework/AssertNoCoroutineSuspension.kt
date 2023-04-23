@@ -34,14 +34,23 @@ suspend inline fun <R> assertNoCoroutineSuspension(
     }
 }
 
+/**
+ * Executes [block], and asserts there happens at least one coroutine suspension in [block].
+ *
+ * When the first coroutine suspension happens, [onSuspend] will be called.
+ */
+@OptIn(ExperimentalStdlibApi::class)
 suspend inline fun <R> assertCoroutineSuspends(
+    noinline onSuspend: (suspend () -> Unit)? = null,
     crossinline block: suspend () -> R,
 ): R {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
-    return withContext(Dispatchers.Default.limitedParallelism(1)) {
+    val dispatcher = currentCoroutineContext()[CoroutineDispatcher] ?: Dispatchers.Main.limitedParallelism(1)
+    return withContext(dispatcher.limitedParallelism(1)) {
         val job = launch(start = CoroutineStart.UNDISPATCHED) {
             yield() // goto block
+            onSuspend?.invoke()
         }
         val ret = block()
         kotlin.test.assertTrue("Expected coroutine suspension") { job.isCompleted }

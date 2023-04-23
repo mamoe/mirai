@@ -10,6 +10,6 @@
 package net.mamoe.mirai.utils.channels
 
 public class ProducerFailureException(
-    override val message: String? = null,
+    override val message: String? = "Producer failed to produce a value, see cause",
     override val cause: Throwable?
 ) : Exception()
