@@ -101,28 +101,27 @@ internal sealed interface ChannelState<T, V> {
         val producer: OnDemandSendChannel<T, V>
     }
 
+    // Producer is not running until `expectMore`. `emit` and `receiveOrNull` not allowed.
     class ProducerReady<T, V>(
         launchProducer: () -> OnDemandSendChannel<T, V>,
     ) : HasProducer<T, V> {
         // Lazily start the producer job since it's on-demand
         override val producer: OnDemandSendChannel<T, V> by lazy(launchProducer) // `lazy` is synchronized
 
-        fun startProducerIfNotYet() {
-            producer
-        }
-
         override fun toString(): String = "ProducerReady"
     }
 
+    // Producer is running. `emit` and `receiveOrNull` both allowed.
     class Producing<T, V>(
         override val producer: OnDemandSendChannel<T, V>,
         parentJob: Job,
     ) : HasProducer<T, V> {
         val deferred: CompletableDeferred<V> by lazy { CompletableDeferred<V>(parentJob) }
-        
+
         override fun toString(): String = "Producing(deferred.completed=${deferred.isCompleted})"
     }
 
+    // Producer is suspended because it called `emit`. Expecting `receiveOrNull`.
     class Consuming<T, V>(
         override val producer: OnDemandSendChannel<T, V>,
         val value: Deferred<V>,
@@ -138,6 +137,7 @@ internal sealed interface ChannelState<T, V> {
         }
     }
 
+    // Producer is suspended. `expectMore` will resume producer with a ticket.
     class Consumed<T, V>(
         override val producer: OnDemandSendChannel<T, V>,
         val producerLatch: CompletableDeferred<T>
@@ -151,7 +151,7 @@ internal sealed interface ChannelState<T, V> {
     ) : ChannelState<T, V> {
         val isSuccess: Boolean get() = exception == null
 
-        fun createAlreadyFinishedException(cause: Throwable?): IllegalProducerStateException {
+        fun createAlreadyFinishedException(cause: Throwable?): IllegalChannelStateException {
             val exception = exception
             val causeMessage = if (cause == null) {
                 ""
@@ -159,13 +159,13 @@ internal sealed interface ChannelState<T, V> {
                 ", but attempting to finish with the cause $cause"
             }
             return if (exception == null) {
-                IllegalProducerStateException(
+                IllegalChannelStateException(
                     this,
                     "Producer has already finished normally$causeMessage. Previous state was: $previousState",
                     cause = cause
                 )
             } else {
-                IllegalProducerStateException(
+                IllegalChannelStateException(
                     this,
                     "Producer has already finished with the suppressed exception$causeMessage. Previous state was: $previousState",
                     cause = cause

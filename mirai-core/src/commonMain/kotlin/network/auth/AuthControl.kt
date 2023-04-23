@@ -22,7 +22,6 @@ import net.mamoe.mirai.utils.channels.ProducerFailureException
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.verbose
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.cancellation.CancellationException
 
 
 /**
@@ -45,20 +44,7 @@ internal class AuthControl(
             logger.subLogger("AuthControl/UserDecisions").asUtilsLogger()
         ) { _ ->
             val sessionImpl = SafeBotAuthSession(this)
-
-            try {
-                logger.verbose { "[AuthControl/auth] Authorization started" }
-
-                authorization.authorize(sessionImpl, botAuthInfo)
-
-                logger.verbose { "[AuthControl/auth] Authorization exited" }
-                finish()
-            } catch (e: CancellationException) {
-                logger.verbose { "[AuthControl/auth] Authorization cancelled" }
-            } catch (e: Throwable) {
-                logger.verbose { "[AuthControl/auth] Authorization failed: $e" }
-                finishExceptionally(e)
-            }
+            authorization.authorize(sessionImpl, botAuthInfo) // OnDemandChannel handles exceptions for us
         }
 
     fun start() {
@@ -86,6 +72,6 @@ internal class AuthControl(
 
     fun actComplete() {
         logger.verbose { "[AuthControl/resume] Fire auth completed" }
-        userDecisions.finish()
+        userDecisions.close()
     }
 }

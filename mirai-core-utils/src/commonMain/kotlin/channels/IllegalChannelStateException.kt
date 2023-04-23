@@ -9,7 +9,8 @@
 
 package net.mamoe.mirai.utils.channels
 
-public class IllegalProducerStateException internal constructor(
+// An internal error exception
+public class IllegalChannelStateException internal constructor(
     private val state: ChannelState<*, *>,
     message: String? = state.toString(),
     cause: Throwable? = null,

@@ -13,11 +13,11 @@ import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.loop
 import kotlinx.coroutines.*
+import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.UtilsLogger
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.debug
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.cancellation.CancellationException
 
 
 internal class CoroutineOnDemandReceiveChannel<T, V>(
@@ -27,7 +27,13 @@ internal class CoroutineOnDemandReceiveChannel<T, V>(
 ) : OnDemandReceiveChannel<T, V> {
     private val coroutineScope = parentCoroutineContext.childScope("CoroutineOnDemandReceiveChannel")
 
+    @TestOnly
+    internal fun getScope() = coroutineScope
+
     private val state: AtomicRef<ChannelState<T, V>> = atomic(ChannelState.JustInitialized())
+
+    @TestOnly
+    internal fun getState() = state.value
 
 
     inner class Producer(
@@ -38,20 +44,33 @@ internal class CoroutineOnDemandReceiveChannel<T, V>(
             // attaching Job to the coroutineScope, then `yield` the thread back, to complete `launch`.
             coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
                 yield()
+
                 try {
                     producerCoroutine(initialTicket)
-                } catch (_: CancellationException) {
-                    // ignored
-                } catch (e: Exception) {
-                    finishExceptionally(e)
+                } catch (e: Throwable) {
+                    // close exceptionally
+                    val r = emitImpl(Result.failure(e))
+                    check(r == null) // assertion
+                    return@launch
                 }
+
+                close()
             }
         }
 
-        override suspend fun emit(value: V): T {
+        override suspend fun emit(value: V): T = emitImpl(Result.success(value))!!
+
+        private suspend inline fun emitImpl(value: Result<V>): T? {
             state.loop { state ->
                 when (state) {
-                    is ChannelState.Finished -> throw state.createAlreadyFinishedException(null)
+                    is ChannelState.Finished -> {
+                        if (value.isFailure) {
+                            return null
+                        } else {
+                            throw state.createAlreadyFinishedException(null)
+                        }
+                    }
+
                     is ChannelState.Producing -> {
                         val deferred = state.deferred
                         val consumingState = ChannelState.Consuming(
@@ -60,55 +79,46 @@ internal class CoroutineOnDemandReceiveChannel<T, V>(
                             coroutineScope.coroutineContext
                         )
                         if (compareAndSetState(state, consumingState)) {
-                            deferred.complete(value) // produce a value
+                            deferred.completeWith(value) // produce a value
                             return consumingState.producerLatch.await() // wait for producer to consume the previous value.
                         }
+                        // failed race, try again
                     }
 
                     is ChannelState.ProducerReady -> {
+                        // This implies another coroutine is running `expectMore`,
+                        // and we are a bit faster than it!
                         setStateProducing(state)
                     }
 
-                    else -> throw IllegalProducerStateException(state)
-                }
-            }
-        }
+                    else -> throw IllegalChannelStateException(
+                        state,
+                        if (value.isFailure)
+                            "Producer threw an exception (see cause), so completing with the exception, but current state is not Producing"
+                        else "Producer is emitting an value, but current state is not Producing",
+                        value.exceptionOrNull()
+                    )
 
-        override fun finishExceptionally(exception: Throwable) {
-            finishImpl(exception)
-        }
-
-        override fun finish() {
-            state.loop { state ->
-                when (state) {
-                    is ChannelState.Finished -> throw state.createAlreadyFinishedException(null)
-                    else -> {
-                        if (compareAndSetState(state, ChannelState.Finished(state, null))) {
-                            return
-                        }
-                    }
                 }
             }
         }
     }
 
-    private fun setStateProducing(state: ChannelState.ProducerReady<T, V>) {
-        compareAndSetState(state, ChannelState.Producing(state.producer, coroutineScope.coroutineContext.job))
+    private fun setStateProducing(state: ChannelState.ProducerReady<T, V>): Boolean {
+        return compareAndSetState(state, ChannelState.Producing(state.producer, coroutineScope.coroutineContext.job))
     }
 
-    private fun finishImpl(exception: Throwable?) {
-        state.loop { state ->
-            when (state) {
-                is ChannelState.Finished -> {} // ignore 
-                else -> {
-                    if (compareAndSetState(state, ChannelState.Finished(state, exception))) {
-                        val cancellationException = kotlinx.coroutines.CancellationException("Finished", exception)
-                        coroutineScope.cancel(cancellationException)
-                        return
-                    }
-                }
-            }
+    private fun setStateFinished(
+        currState: ChannelState<T, V>,
+        message: String,
+        exception: ProducerFailureException?
+    ): Boolean {
+        if (compareAndSetState(currState, ChannelState.Finished(currState, exception))) {
+            val cancellationException = CancellationException(message, exception)
+            coroutineScope.cancel(cancellationException)
+            return true
         }
+        return false
     }
 
     private fun compareAndSetState(state: ChannelState<T, V>, newState: ChannelState<T, V>): Boolean {
@@ -117,27 +127,27 @@ internal class CoroutineOnDemandReceiveChannel<T, V>(
         }
     }
 
+    override val isClosed: Boolean
+        get() = state.value is ChannelState.Finished
+
     override suspend fun receiveOrNull(): V? {
-        // don't use `.loop`:
+        // don't use atomicfu `.loop`:
         // java.lang.VerifyError: Bad type on operand stack	
         //     net/mamoe/mirai/utils/channels/CoroutineOnDemandReceiveChannel.receiveOrNull(Lkotlin/coroutines/Continuation;)Ljava/lang/Object; @103: getfield	
 
         while (true) {
             when (val state = state.value) {
                 is ChannelState.Consuming -> {
-                    // value is ready, now we consume the value
+                    // value is ready, now we try to consume the value
 
                     if (compareAndSetState(state, ChannelState.Consumed(state.producer, state.producerLatch))) {
-                        // value is consumed, no contention, safe to retrieve 
+                        // value is now reserved for us, no contention is possible, safe to retrieve
 
-                        return try {
-                            // This actually won't suspend, since the value is already completed
-                            // Just to be error-tolerating and re-throwing exceptions.
-                            state.value.await()
-                        } catch (e: Throwable) {
-                            // Producer failed to produce the previous value with exception
-                            throw ProducerFailureException(cause = e)
-                        }
+                        // This actually won't suspend (there are tests ensuring this point), 
+                        // since the value is already completed.
+                        // Just to be error-tolerating and re-throwing exceptions. 
+                        // (Also because `Deferred.getCompleted()` is not stable yet (coroutines 1.6))
+                        return awaitValueSafe(state.value)
                     }
                 }
 
@@ -146,24 +156,38 @@ internal class CoroutineOnDemandReceiveChannel<T, V>(
                 is ChannelState.Producing<T, V> -> {
                     // still producing value
 
-                    state.deferred.await() // just wait for value, but does not return it.
+                    // Wait for value and throw exception caused by the producer if there is one.
+                    awaitValueSafe(state.deferred) // this may or may not suspend.
 
-                    // The value will be completed in ProducerState.Consuming state,
-                    // but you cannot thread-safely assume current state is Consuming.
+                    // Now deferred is complete, and we will be in the Consuming state, but we can't use the value here.
+                    // We must ensure only one thread gets the value, and state should then be Consumed
 
-                    // Here we will loop again, to atomically switch to Consumed state.
+                    // So we loop again and do this in the Consuming state.
                 }
 
                 is ChannelState.Finished -> {
-                    state.exception?.let { err ->
-                        throw ProducerFailureException(cause = err)
-                    }
+                    // see public API docs for behavior
                     return null
                 }
 
-                else -> throw IllegalProducerStateException(state)
+                else ->
+                    // internal error 
+                    throw IllegalChannelStateException(state)
             }
         }
+    }
+
+    private suspend inline fun awaitValueSafe(deferred: Deferred<V>) = try {
+        deferred.await()
+    } catch (e: Throwable) {
+        // Producer failed to produce the previous value with exception
+        val producerFailureException = ProducerFailureException(cause = e)
+        setStateFinished(
+            this.state.value,
+            "OnDemandChannel is closed because producer failed to produce value, see cause",
+            producerFailureException
+        )
+        throw producerFailureException
     }
 
     override fun expectMore(ticket: T): Boolean {
@@ -172,19 +196,19 @@ internal class CoroutineOnDemandReceiveChannel<T, V>(
                 is ChannelState.JustInitialized -> {
                     // start producer atomically
                     val ready = ChannelState.ProducerReady { Producer(ticket) }
-                    if (compareAndSetState(state, ready)) {
-                        ready.startProducerIfNotYet()
-                    }
+                    compareAndSetState(state, ready)
                     // loop again
                 }
 
                 is ChannelState.ProducerReady -> {
-                    setStateProducing(state)
+                    if (setStateProducing(state)) {
+                        return true
+                    }
+                    // lost race, try again
                 }
 
-                is ChannelState.Producing -> return true // ok
-
-                is ChannelState.Consuming -> throw IllegalProducerStateException(state) // a value is already ready
+                is ChannelState.Producing,
+                is ChannelState.Consuming -> throw IllegalChannelStateException(state) // a value is already ready
 
                 is ChannelState.Consumed -> {
                     if (compareAndSetState(state, ChannelState.ProducerReady { state.producer })) {
@@ -200,7 +224,12 @@ internal class CoroutineOnDemandReceiveChannel<T, V>(
         }
     }
 
-    override fun finish() {
-        finishImpl(null)
+    override fun close() {
+        state.loop { state ->
+            when (state) {
+                is ChannelState.Finished -> return
+                else -> if (setStateFinished(state, "OnDemandChannel is closed normally", null)) return
+            }
+        }
     }
 }
