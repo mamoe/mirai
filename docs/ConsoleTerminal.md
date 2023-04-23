@@ -9,7 +9,7 @@ Console，可参考 [Console 开发文档](../mirai-console/docs/README.md)。
 本文假设你使用 Windows 操作系统。但 Mirai Console 并不仅限于 Windows
 平台使用，在其他操作系统上的使用方法应当是类似的。
 
-请注意，关闭 `mirai-console-terminal` 请使用 `stop` 指令关闭  
+请注意，关闭 Mirai Console 请使用 `stop` 指令关闭  
 不要直接右上角关闭窗口。
 
 安装
@@ -240,7 +240,7 @@ Mirai Console 会记录运行时的日志并保存到 `logs` 目录中。
 
 可以参考[日志文档](../mirai-console/docs/Logging.md)了解如何配置日志的详略程度。
 
-若要向插件开发者提交问题，建议将日志等级调整为 `ALL` 并复现问题后一并提交。
+若要向插件开发者提交问题，建议将日志等级调整为 `ALL` 并复现问题后将日志一并提交。
 
 ### 配置权限
 
