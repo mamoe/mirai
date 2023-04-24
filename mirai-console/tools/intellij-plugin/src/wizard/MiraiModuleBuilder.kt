@@ -82,7 +82,7 @@ class MiraiModuleBuilder : StarterModuleBuilder() {
                 "GROUP_ID" to projectCoordinates.groupId,
                 "VERSION" to projectCoordinates.version,
                 "PROJECT_NAME" to starterContext,
-                "USE_PROXY_REPO" to "true",
+                "USE_PROXY_REPO" to useProxyRepo,
                 "ARTIFACT_ID" to projectCoordinates.artifactId,
                 "MODULE_NAME" to projectCoordinates.moduleName,
 
