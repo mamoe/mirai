@@ -33,6 +33,8 @@ object Versions {
 
     const val kotlinCompiler = "1.8.10"
     const val kotlinStdlib = kotlinCompiler
+    const val kotlinLanguageVersionForTests = "1.9" // be curious!
+
     const val dokka = "1.8.10"
 
     const val kotlinCompilerForIdeaPlugin = "1.8.20-RC" // 231 bundles 1.8.20

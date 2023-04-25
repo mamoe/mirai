@@ -55,6 +55,22 @@ fun Project.enableLanguageFeatureForAllSourceSets(qualifiedClassname: String) {
     }
 }
 
+fun Project.enableLanguageFeatureForTestSourceSets(name: String) {
+    allTestSourceSets {
+        languageSettings {
+            this.enableLanguageFeature(name)
+        }
+    }
+}
+
+fun Project.allTestSourceSets(action: KotlinSourceSet.() -> Unit) {
+    kotlinSourceSets!!.all {
+        if (this.name.contains("test", ignoreCase = true)) {
+            action()
+        }
+    }
+}
+
 fun Project.preConfigureJvmTarget() {
     val defaultVer = jvmVersion()
 
@@ -102,6 +118,7 @@ fun Project.configureJvmTarget() {
                     // IR cannot compile mirai. We'll wait for Kotlin 1.5 for stable IR release.
                 }
             }
+
             else -> {
             }
         }
@@ -129,6 +146,7 @@ fun Project.configureKotlinTestSettings() {
                 "testRuntimeOnly"(`junit-jupiter-engine`)?.because(b)
             }
         }
+
         isKotlinMpp -> {
             kotlinSourceSets?.forEach { sourceSet ->
                 fun configureJvmTest(sourceSet: KotlinSourceSet) {
@@ -154,6 +172,7 @@ fun Project.configureKotlinTestSettings() {
                             }
                         }
                     }
+
                     sourceSet.name.contains("test", ignoreCase = true) -> {
                         if (isJvmLikePlatform(target)) {
                             configureJvmTest(sourceSet)
@@ -194,11 +213,23 @@ val experimentalAnnotations = arrayOf(
     "io.ktor.utils.io.core.internal.DangerousInternalIoApi"
 )
 
+val testLanguageFeatures = listOf(
+    "ContextReceivers"
+)
+
 fun Project.configureKotlinExperimentalUsages() {
     val sourceSets = kotlinSourceSets ?: return
 
     for (target in sourceSets) {
         target.configureKotlinExperimentalUsages()
+    }
+
+    for (name in testLanguageFeatures) {
+        enableLanguageFeatureForTestSourceSets(name)
+    }
+
+    allTestSourceSets {
+        languageSettings.languageVersion = Versions.kotlinLanguageVersionForTests
     }
 }
 
