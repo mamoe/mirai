@@ -171,7 +171,7 @@ internal class SsoProcessorImpl(
 
         suspend fun loginSuccess() {
             components[AccountSecretsManager].saveSecrets(ssoContext.account, AccountSecretsImpl(client))
-            registerClientOnline(handler)
+            sendRegister(handler)
             ssoContext.bot.logger.info { "Login successful." }
         }
 
