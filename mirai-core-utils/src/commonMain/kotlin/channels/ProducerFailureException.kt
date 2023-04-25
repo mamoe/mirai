@@ -11,5 +11,13 @@ package net.mamoe.mirai.utils.channels
 
 public class ProducerFailureException(
     override val message: String? = "Producer failed to produce a value, see cause",
-    override val cause: Throwable?
-) : Exception()
+    override var cause: Throwable?
+) : Exception() {
+    private val unwrapped: Throwable by lazy {
+        val cause = cause ?: return@lazy this
+        this.cause = null
+        cause.also { addSuppressed(this) }
+    }
+
+    public fun unwrap(): Throwable = unwrapped
+}

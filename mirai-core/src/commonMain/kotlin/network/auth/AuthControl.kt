@@ -58,7 +58,7 @@ internal class AuthControl(
         val rsp = try {
             userDecisions.receiveOrNull() ?: SsoProcessorImpl.AuthMethod.NotAvailable
         } catch (e: ProducerFailureException) {
-            SsoProcessorImpl.AuthMethod.Error(e)
+            SsoProcessorImpl.AuthMethod.Error(e.unwrap())
         }
 
         logger.debug { "[AuthControl/acquire] Authorization responded: $rsp" }
