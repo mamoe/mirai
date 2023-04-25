@@ -285,7 +285,8 @@ class OnDemandChannelTest {
         }
         assertTrue { channel.isClosed }
 
-        // The exception looks like this, though I don't know why there are two causes.
+        // The exception looks like this. 
+        // The first cause is stacktrace-recovered by coroutines, and the second is the original one. 
 
         //net.mamoe.mirai.utils.channels.ProducerFailureException: Producer failed to produce a value, see cause
         //	at net.mamoe.mirai.utils.channels.CoroutineOnDemandReceiveChannel.receiveOrNull(OnDemandChannelImpl.kt:164)
