@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.framework
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.handler.*
@@ -32,6 +33,9 @@ internal abstract class TestCommonNetworkHandler(
         for (packetReplier in packetRepliers) {
             packetReplier.run {
                 object : PacketReplierContext {
+                    override val coroutineScope: CoroutineScope
+                        get() = CoroutineScope(coroutineContext)
+
                     override fun reply(incoming: IncomingPacket) {
                         collectReceived(incoming)
                     }
@@ -74,19 +78,10 @@ internal abstract class TestCommonNetworkHandler(
     fun addPacketReplier(packetReplier: PacketReplier) {
         packetRepliers.add(packetReplier)
     }
-}
 
-/**
- * 应答器, 模拟服务器返回.
- */
-internal fun interface PacketReplier {
-    fun PacketReplierContext.onSend(packet: OutgoingPacket)
-}
-
-internal interface PacketReplierContext {
-    fun reply(incoming: IncomingPacket)
-    fun reply(incoming: Packet)
-    fun reply(incoming: Throwable)
+    inline fun addPacketReplierDsl(crossinline action: PacketReplierDslBuilder.() -> Unit) {
+        packetRepliers.add(buildPacketReplier(action))
+    }
 }
 
 /**
