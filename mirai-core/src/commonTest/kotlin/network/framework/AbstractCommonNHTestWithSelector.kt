@@ -30,7 +30,7 @@ internal abstract class AbstractCommonNHTestWithSelector :
         overrideComponents[BotOfflineEventMonitor] = BotOfflineEventMonitorImpl()
     }
 
-    val conn = PlatformConn()
+    val conn get() = PlatformConn(createAddress())
 
     val selector = TestSelector<TestCommonNetworkHandler> {
         object : TestCommonNetworkHandler(bot, createContext(), createAddress()) {
@@ -38,6 +38,7 @@ internal abstract class AbstractCommonNHTestWithSelector :
             override suspend fun createConnection(): PlatformConn {
                 return conn
             }
+
         }
     }
 

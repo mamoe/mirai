@@ -36,7 +36,7 @@ internal class NativeNetworkHandler(
     }
 
     internal inner class NativeConn(
-        private val socket: PlatformSocket,
+        internal val socket: PlatformSocket,
     ) : Closeable, CoroutineScope by coroutineContext.childScope("NativeConn") {
         private val decodePipeline: PacketDecodePipeline = PacketDecodePipeline(this.coroutineContext)
 
@@ -100,6 +100,10 @@ internal class NativeNetworkHandler(
         return NativeConn(PlatformSocket.connect(address)).also {
             logger.info { "Connected to server $address" }
         }
+    }
+
+    override fun NativeConn.getConnectedIP(): Long {
+        return this.socket.connectedIp
     }
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER")

@@ -23,7 +23,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.error
 
-internal class NettyNHTestChannel(
+internal sealed class NettyNHTestChannel(
     var fakeServer: (NettyNHTestChannel.(msg: Any?) -> Unit)?,
 ) : EmbeddedChannel() {
     constructor() : this(null)

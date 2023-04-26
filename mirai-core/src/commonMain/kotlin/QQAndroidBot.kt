@@ -22,11 +22,8 @@ import net.mamoe.mirai.internal.network.component.ComponentStorageDelegate
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.withFallback
 import net.mamoe.mirai.internal.network.components.*
-import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.*
 import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerContextImpl
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerFactory
-import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport
 import net.mamoe.mirai.internal.network.handler.NetworkHandlerSupport.BaseStateImpl
 import net.mamoe.mirai.internal.network.handler.selector.KeepAliveNetworkHandlerSelector
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
@@ -123,11 +120,6 @@ internal open class QQAndroidBot constructor(
                 }
 
                 override fun toString(): String = "StateChangedObserver(BotOnlineEventBroadcaster)"
-            },
-            StateChangedObserver("LastConnectedAddressUpdater", State.OK) {
-                components[ServerList].run {
-                    lastConnectedIP = getLastPolledIP()
-                }
             },
             StateChangedObserver("LastDisconnectedAddressUpdater", State.CLOSED) {
                 components[ServerList].run {

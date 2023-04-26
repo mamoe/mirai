@@ -5,6 +5,39 @@ headers = netdb.h
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+static unsigned long get_ulong_ip_by_name(char* host) {
+	unsigned long result;
+	if (strlen(host) == 0) {
+		return 0;
+	}
+	struct hostent* dns_result = gethostbyname(host);
+	if (dns_result != NULL) {
+		char** list_ptr = dns_result->h_addr_list;
+		char ip_str[16];
+		if (inet_ntop(dns_result->h_addrtype, *list_ptr, ip_str, sizeof(ip_str)) != NULL) {
+			result = inet_addr(ip_str);
+			if (result > 0) {
+				return result;
+			}
+		}
+	}
+	return 2;
+}
+
+static unsigned long socket_get_connected_ip(int sockfd) {
+	struct sockaddr_in peer_addr;
+	if (!(sockfd > 0)) {
+		return 1;
+	}
+	if (!getpeername(sockfd, (struct sockaddr*)&peer_addr, sizeof(peer_addr))) {
+		return peer_addr.sin_addr.s_addr;
+	}
+	return 2;
+}
 
 static int socket_create_connect(char *host, ushort port) {
     struct hostent *he;

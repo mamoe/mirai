@@ -24,6 +24,7 @@ import kotlin.jvm.JvmName
  */
 internal expect class PlatformSocket : Closeable, HighwayProtocolChannel {
     val isOpen: Boolean
+    val connectedIp: Long
 
     override fun close()
 

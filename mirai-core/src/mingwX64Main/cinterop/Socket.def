@@ -1,5 +1,8 @@
 headers = winsock.h
 
+linkerOpts =                 -lWS2_32 \
+                             -lDnsapi
+
 ---
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
@@ -7,32 +10,54 @@ headers = winsock.h
 #include <mswsock.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windns.h>
 
-static SOCKET socket_create_connect(char *host, unsigned short port) {
-    SOCKADDR_STORAGE local_addr = {0};
-    SOCKADDR_STORAGE remote_addr = {0};
-    DWORD local_addr_size = sizeof(local_addr);
-    DWORD remote_addr_size = sizeof(remote_addr);
-    char port_name[6];
-    int sockfd;
+static unsigned long get_ulong_ip_by_name(char* host) {
+	DNS_RECORDA* dns_record;
+	if (strlen(host) == 0) {
+		return 0;
+	}
+	int dns_result = DnsQuery_A(host, DNS_TYPE_A, DNS_QUERY_STANDARD, NULL, &dns_record, NULL);
+	if (dns_result == DNS_RCODE_NOERROR && dns_record != NULL) {
+		unsigned long result = dns_record->Data.A.IpAddress;
+		DnsRecordListFree(dns_record, DnsFreeRecordList);
+		return result;
+	}
+	else {
+		return 2;
+	}
+}
 
-    sprintf(port_name, "%d", (int)port);
+static unsigned long socket_get_connected_ip(SOCKET sockfd) {
+	struct sockaddr_in peer_addr;
+	int peer_addr_size = sizeof(peer_addr);
+	if (!(sockfd > 0)) {
+		return 1;
+	}
+	if (getpeername(sockfd, (SOCKADDR*)&peer_addr, &peer_addr_size) == 0) {
+		return peer_addr.sin_addr.s_addr;
+	}
+	return 2;
+}
 
-    if ((sockfd = socket(AF_INET6, SOCK_STREAM, 0)) == INVALID_SOCKET) {
-        if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
-            return INVALID_SOCKET;
-        }
-    } else {
-        int ipv6only = 0;
-        setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only));
-    }
-    if (!WSAConnectByNameA(sockfd, host, port_name, &local_addr_size, (SOCKADDR*)&local_addr, &remote_addr_size, (SOCKADDR*)&remote_addr, NULL, NULL)) {
-        closesocket(sockfd);
-        return INVALID_SOCKET;
-    }
-    if (setsockopt(sockfd, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0) == SOCKET_ERROR) {
-        closesocket(sockfd);
-        return INVALID_SOCKET;
-    }
-    return sockfd;
+static SOCKET socket_create_connect(char* host, char* port_name) {
+	SOCKADDR_STORAGE local_addr = { 0 };
+	SOCKADDR_STORAGE remote_addr = { 0 };
+	DWORD local_addr_size = sizeof(local_addr);
+	DWORD remote_addr_size = sizeof(remote_addr);
+	int sockfd;
+
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
+		return INVALID_SOCKET;
+	}
+	if (!WSAConnectByNameA(sockfd, host, port_name, &local_addr_size, (SOCKADDR*)&local_addr, &remote_addr_size, (SOCKADDR*)&remote_addr, NULL, NULL)) {
+		closesocket(sockfd);
+		return INVALID_SOCKET;
+	}
+
+	if (setsockopt(sockfd, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0) == SOCKET_ERROR) {
+		closesocket(sockfd);
+		return INVALID_SOCKET;
+	}
+	return sockfd;
 }

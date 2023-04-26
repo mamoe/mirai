@@ -21,6 +21,7 @@ import net.mamoe.mirai.utils.ByteArrayPool
 import net.mamoe.mirai.utils.DEFAULT_BUFFER_SIZE
 import net.mamoe.mirai.utils.toReadPacket
 import platform.posix.*
+import sockets.socket_get_connected_ip
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -43,6 +44,12 @@ internal actual class PlatformSocket(
 
     actual val isOpen: Boolean
         get() = send(socket, null, 0, 0).convert<Long>() != 0L
+    actual val connectedIp: Long
+        get() = if (isOpen) {
+            sockets.socket_get_connected_ip(socket).toLong()
+        } else {
+            0L
+        }
 
     actual override fun close() {
         closesocket(socket)
@@ -104,7 +111,7 @@ internal actual class PlatformSocket(
             serverIp: String,
             serverPort: Int
         ): PlatformSocket {
-            val r = sockets.socket_create_connect(serverIp.cstr, serverPort.toUShort())
+            val r = sockets.socket_create_connect(serverIp.cstr, serverPort.toString().cstr)
             if (r == INVALID_SOCKET) error("Failed socket_create_connect: $r")
             return PlatformSocket(r)
         }

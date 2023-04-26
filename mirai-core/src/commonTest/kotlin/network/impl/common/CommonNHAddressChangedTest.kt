@@ -25,8 +25,8 @@ internal class CommonNHAddressChangedTest : AbstractCommonNHTest() {
         networkLogger.debug("before login, Assuming both ip is empty")
         val lastConnectedIpOld = bot.components[ServerList].lastConnectedIP
         val lastDisconnectedIpOld = bot.components[ServerList].lastDisconnectedIP
-        assertTrue(lastConnectedIpOld.isEmpty(), "Assuming lastConnectedIp is empty")
-        assertTrue(lastDisconnectedIpOld.isEmpty(), "Assuming lastDisconnectedIp is empty")
+        assertTrue(lastConnectedIpOld == 0L, "Assuming lastConnectedIp is empty")
+        assertTrue(lastDisconnectedIpOld == 0L, "Assuming lastDisconnectedIp is empty")
 
         networkLogger.debug("Do login, Assuming lastConnectedIp is NOT empty")
         bot.login()

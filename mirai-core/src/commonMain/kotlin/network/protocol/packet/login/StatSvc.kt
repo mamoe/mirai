@@ -169,8 +169,16 @@ internal class StatSvc {
             if (client.bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
                 client.bot.components[ServerList].run {
                     kotlin.runCatching {
-                        uOldSSOIp = lastDisconnectedIP.toIpV4Long()
-                        uNewSSOIp = lastConnectedIP.toIpV4Long()
+                        uOldSSOIp = if (lastDisconnectedIP in 1..2) {
+                            -lastDisconnectedIP
+                        } else {
+                            lastDisconnectedIP
+                        }
+                        uNewSSOIp = if (lastConnectedIP in 1..2) {
+                            -lastDisconnectedIP
+                        } else {
+                            lastConnectedIP
+                        }
                     }.onFailure { err ->
                         client.bot.network.logger.warning({
                             "Exception when converting ipaddress to long: ld=${lastDisconnectedIP}, lc=${lastConnectedIP}"
@@ -194,7 +202,7 @@ internal class StatSvc {
         fun offline(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister
-        ) = impl("offline", client, 1L or 2 or 4, OnlineStatus.OFFLINE, regPushReason)
+        ) = impl("offline", client, 0, OnlineStatus.OFFLINE, regPushReason)
 
         private fun impl(
             name: String,
@@ -425,9 +433,3 @@ internal class StatSvc {
     }
 }
 
-internal fun String.toIpV4Long(): Long {
-    if (isEmpty()) return 0
-    val split = split('.')
-    if (split.size != 4) return 0
-    return split.mapToByteArray { it.toUByte().toByte() }.toInt().toLongUnsigned()
-}

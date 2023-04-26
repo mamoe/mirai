@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.internal.network.handler
 
-import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.internal.network.components.FirstLoginResult
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.framework.AbstractCommonNHTest
@@ -41,7 +40,7 @@ internal class StandaloneSelectorTests : AbstractCommonNHTest() {
         NetworkHandlerFactory<TestCommonNetworkHandler> { context, address ->
             object : TestCommonNetworkHandler(bot, context, address) {
                 override suspend fun createConnection(): PlatformConn {
-                    return throwExceptionOnConnecting?.invoke() ?: PlatformConn()
+                    return throwExceptionOnConnecting?.invoke() ?: PlatformConn(address)
                 }
             }
         }
