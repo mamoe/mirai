@@ -40,7 +40,11 @@ MCL查询更新信息失败，你可以尝试编辑 `config.json` 更换 [`mirai
 
 > 如何确认 `Mirai 版本` 或 `插件版本` 等信息
 
-使用指令 `/status` 
+可以启动 MCL 的情况下:  
+用指令 `/status`  
+
+无法启动的情况下:  
+`Mirai Console` 的组件在 `libs` 文件夹下, 文件名包含 `版本信息`  
 
 > 找不到 `http api` 的相关配置文件
 
@@ -49,7 +53,8 @@ MCL查询更新信息失败，你可以尝试编辑 `config.json` 更换 [`mirai
 > 如何添加 jvm 参数，例如 `-Dmirai.no-desktop=true`
 
 编辑启动脚本 `mcl.cmd`, 在 `-jar` 前面加上 `-D...`  
-例如 `-Dmirai.no-desktop=true -jar mcl...`
+例如 `-Dmirai.no-desktop=true -jar mcl...`  
+`Linux/MacOS` 的启动脚本是 `mcl` (没有后缀的那个文件)
 
 ## 开发者常见问题
 
@@ -59,7 +64,7 @@ MCL查询更新信息失败，你可以尝试编辑 `config.json` 更换 [`mirai
 
 > IDEA 下 `import` 爆红，mirai 相关依赖全部无法解析
 
-IDEA 太旧了，没法解析新版 kotlin, 最后升级到最新版
+IDEA 太旧了，没法解析新版 kotlin, 最好升级到最新版
 
 > 有些事件收到不到
 
