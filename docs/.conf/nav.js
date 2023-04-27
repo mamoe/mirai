@@ -18,7 +18,7 @@ module.exports = {
         {text: '用户手册 - 控制台', link: '/ConsoleTerminal.html'},
         {text: 'JVM 环境和开发准备工作', link: '/Preparations.html'},
         {text: "配置项目", link: "/ConfiguringProjects.html"},
-        {text: "常见问题", link: "/Question.html"},
+        {text: "常见问题", link: "/Questions.html"},
         {
             text: "CoreAPI", items: [
                 {text: "CoreAPI", link: "/CoreAPI.html"},

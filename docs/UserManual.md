@@ -53,6 +53,8 @@ Mirai 控制台现在有两个版本，Mirai 插件在这两个版本的 Mirai C
 
 ## 解决问题
 
+你可以先阅读 [常见问题](Questions.md)  
+
 如果遇到使用问题或想提建议，可以在 [issues](https://github.com/mamoe/mirai/issues)
 发表。也可以在[论坛](https://mirai.mamoe.net/)交流想法。
 

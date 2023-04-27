@@ -1,4 +1,4 @@
-# Mirai - Question
+# Mirai - Questions
 
 ## 用户常见问题
 
