@@ -33,6 +33,7 @@ interface BotFactory {
     fun newBot(qq: Long, password: String): Bot
     fun newBot(qq: Long, passwordMd5: ByteArray, configuration: BotConfiguration): Bot
     fun newBot(qq: Long, passwordMd5: ByteArray): Bot
+    // 在 2.15.0 中加入
     fun newBot(qq: Long, authorization: BotAuthorization)
     fun newBot(qq: Long, authorization: BotAuthorization, configuration: BotConfiguration)
     
@@ -61,6 +62,7 @@ val bot = BotFactory.newBot(qq, password) {
     // 配置，例如：
     fileBasedDeviceInfo()
 }
+// 在 2.15.0 中加入
 val bot BotFactory.newBot(qq, BotAuthorization.byQRCode()) {
     protocol = BotConfiguration.MiraiProtocol.ANDROID_WATCH
 }
@@ -70,6 +72,7 @@ Bot bot = BotFactory.INSTANCE.newBot(qq, password, new BotConfiguration() {{
     // 配置，例如：
     fileBasedDeviceInfo()
 }});
+// 在 2.15.0 中加入
 Bot bot = BotFactory.INSTANCE.newBot(qq, BotAuthorization.byQRCode(), configuration -> {
     configuration.setProtocol(BotConfiguration.MiraiProtocol.ANDROID_WATCH);
 });
