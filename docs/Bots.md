@@ -63,7 +63,7 @@ val bot = BotFactory.newBot(qq, password) {
     fileBasedDeviceInfo()
 }
 // 在 2.15.0 中加入
-val bot BotFactory.newBot(qq, BotAuthorization.byQRCode()) {
+val bot = BotFactory.newBot(qq, BotAuthorization.byQRCode()) {
     protocol = BotConfiguration.MiraiProtocol.ANDROID_WATCH
 }
 
