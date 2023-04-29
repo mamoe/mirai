@@ -7,8 +7,6 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("UNUSED_VARIABLE")
-
 import com.google.gradle.osdetector.OsDetector
 import org.gradle.api.Project
 import org.gradle.api.attributes.Attribute
@@ -28,14 +26,14 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import java.io.File
 import java.util.*
 
-val MIRAI_PLATFORM_ATTRIBUTE = Attribute.of(
+val MIRAI_PLATFORM_ATTRIBUTE: Attribute<String> = Attribute.of(
     "net.mamoe.mirai.platform", String::class.java
 )
 
 /**
  * Flags a target as an HMPP intermediate target
  */
-val MIRAI_PLATFORM_INTERMEDIATE = Attribute.of(
+val MIRAI_PLATFORM_INTERMEDIATE: Attribute<Boolean> = Attribute.of(
     "net.mamoe.mirai.platform.intermediate", Boolean::class.javaObjectType
 )
 

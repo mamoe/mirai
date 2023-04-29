@@ -11,6 +11,7 @@
 
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
+import shadow.configureMppShadow
 import java.time.LocalDateTime
 
 buildscript {
@@ -78,9 +79,6 @@ allprojects {
         configureJarManifest()
         substituteDependenciesUsingExpectedVersion()
     }
-}
-afterEvaluate {
-    configureShadowDependenciesForPublishing()
 }
 
 subprojects {

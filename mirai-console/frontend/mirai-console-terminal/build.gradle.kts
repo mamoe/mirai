@@ -7,6 +7,9 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+import shadow.registerRegularShadowTaskForJvmProject
+import shadow.shadowImplementation
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")

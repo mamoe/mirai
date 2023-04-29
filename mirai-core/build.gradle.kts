@@ -12,6 +12,8 @@
 import BinaryCompatibilityConfigurator.configureBinaryValidators
 import org.jetbrains.kotlin.gradle.plugin.mpp.AbstractNativeLibrary
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import shadow.relocateCompileOnly
+import shadow.relocateImplementation
 
 plugins {
     id("com.android.library")
@@ -48,6 +50,9 @@ kotlin {
                 implementation(project(":mirai-core-utils"))
                 implementation(`kotlinx-serialization-protobuf`)
                 implementation(`kotlinx-atomicfu`)
+
+                // runtime from mirai-core-utils
+                relocateCompileOnly(`ktor-io_relocated`)
 
 //                relocateImplementation(`ktor-http_relocated`)
 //                relocateImplementation(`ktor-serialization_relocated`)

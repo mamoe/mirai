@@ -7,6 +7,11 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+package shadow
+
+import ExcludeProperties
+import RelocatableDependency
+import RelocatedDependency
 import org.gradle.api.Action
 import org.gradle.api.DomainObjectCollection
 import org.gradle.api.Project
@@ -66,13 +71,20 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
  *
  * 如果你都使用 [relocateImplementation], 就会导致在 Android 平台发生 'Duplicated Class' 问题. 如果你都使用 [relocateCompileOnly] 则会在 clinit 阶段遇到 [NoClassDefFoundError]
  *
- * ## relocation 发生的时机晚于编译
+ * ## relocation 发生的时机晚于编译 (Jar)
  *
  * mirai-core-utils relocate 了 ktor-io, 然后 mirai-core 在 `build.gradle.kts` 使用了 `implementation(project(":mirai-core-utils"))`.
  * 在 mirai-core 编译时, 编译器仍然会使用 relocate 之前的 `io.ktor`. 为了在 mirai-core 将对 `io.ktor` 的调用转为对 `net.mamoe.mirai.internal.deps.io.ktor` 的调用, 需要配置 relocation.
  * 所以此时就不能让 mirai-core 也打包 relocation 后的 ktor 而在运行时携带, 否则因为用户依赖 mirai-core 时 Maven 会同时下载 mirai-core-utils, 用户 classpath 就会有两份被 relocate 的 Ktor, 导致冲突.
  *
  * 所以你需要为所有依赖了 mirai-core-utils 的模块都分别配置 [relocateCompileOnly].
+ *
+ * ## relocation 仅在发布 (e.g. `publishToMavenLocal`) 时自动使用
+ *
+ * 其他任何时候, 比如在 mirai-console 编译时, mirai-console 依赖的是未 relocate 的 JAR. 使用 `jar` 任务打包的也是未 relocate 的.
+ *
+ * 若需要 relocated 的 JAR, 使用 `relocateJvmDependencies`. 其中 `Jvm` 可换为其他启动了 relocate 的 Kotlin target 名.
+ * 可在 IDEA Gradle 视图中找到 mirai 文件夹, 查看可用的 task 列表.
  *
  * ### "在运行时包含" 是如何实现的?
  *
@@ -89,7 +101,7 @@ object RelocationNotes
 /**
  * 添加一个通常的 [compileOnly][KotlinDependencyHandler.compileOnly] 依赖, 并按 [relocatedDependency] 定义的配置 relocate.
  *
- * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用**都不会**被 relocate 到 [RELOCATION_ROOT_PACKAGE].
+ * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用**都不会**被 relocate 到 [RelocationConfig.RELOCATION_ROOT_PACKAGE].
  * 运行时 (runtime) **不会**包含被 relocate 的依赖及其所有间接依赖.
  *
  * @see RelocationNotes
@@ -102,7 +114,9 @@ fun KotlinDependencyHandler.relocateCompileOnly(
     }
     project.relocationFilters.add(
         RelocationFilter(
-            dependency.groupNotNull, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = false,
+            relocatedDependency.notationsToExcludeInPom,
+            relocatedDependency.packages.toList(),
+            includeInRuntime = false,
         )
     )
     // Don't add to runtime
@@ -112,7 +126,7 @@ fun KotlinDependencyHandler.relocateCompileOnly(
 /**
  * 添加一个通常的 [compileOnly][KotlinDependencyHandler.compileOnly] 依赖, 并按 [relocatedDependency] 定义的配置 relocate.
  *
- * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用**都不会**被 relocate 到 [RELOCATION_ROOT_PACKAGE].
+ * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用**都不会**被 relocate 到 [RelocationConfig.RELOCATION_ROOT_PACKAGE].
  * 运行时 (runtime) **不会**包含被 relocate 的依赖及其所有间接依赖.
  *
  * @see RelocationNotes
@@ -127,7 +141,9 @@ fun DependencyHandler.relocateCompileOnly(
         })
     project.relocationFilters.add(
         RelocationFilter(
-            dependency.groupNotNull, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = false,
+            relocatedDependency.notationsToExcludeInPom,
+            relocatedDependency.packages.toList(),
+            includeInRuntime = false,
         )
     )
     // Don't add to runtime
@@ -137,7 +153,7 @@ fun DependencyHandler.relocateCompileOnly(
 /**
  * 添加一个通常的 [implementation][KotlinDependencyHandler.implementation] 依赖, 并按 [relocatedDependency] 定义的配置 relocate.
  *
- * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用**都会**被 relocate 到 [RELOCATION_ROOT_PACKAGE].
+ * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用**都会**被 relocate 到 [RelocationConfig.RELOCATION_ROOT_PACKAGE].
  * 运行时 (runtime) 将**会**包含被 relocate 的依赖及其所有间接依赖.
  *
  * @see RelocationNotes
@@ -151,13 +167,14 @@ fun KotlinDependencyHandler.relocateImplementation(
     }
     project.relocationFilters.add(
         RelocationFilter(
-            dependency.groupNotNull, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = true,
+            relocatedDependency.notationsToExcludeInPom, relocatedDependency.packages.toList(), includeInRuntime = true,
         )
     )
-    project.configurations.maybeCreate(SHADOW_RELOCATION_CONFIGURATION_NAME)
+    val configurationName = RelocationConfig.SHADOW_RELOCATION_CONFIGURATION_NAME
+    project.configurations.maybeCreate(configurationName)
     addDependencyTo(
         project.dependencies,
-        SHADOW_RELOCATION_CONFIGURATION_NAME,
+        configurationName,
         relocatedDependency.notation,
         Action<ExternalModuleDependency> {
             relocatedDependency.exclusionAction(this)
@@ -171,7 +188,7 @@ fun KotlinDependencyHandler.relocateImplementation(
 /**
  * 添加一个通常的 [implementation][KotlinDependencyHandler.implementation] 依赖, 并按 [relocatedDependency] 定义的配置 relocate.
  *
- * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用都会被 relocate 到 [RELOCATION_ROOT_PACKAGE].
+ * 在发布版本时, 全部对 [RelocatedDependency.packages] 中的 API 的调用都会被 relocate 到 [RelocationConfig.RELOCATION_ROOT_PACKAGE].
  * 运行时 (runtime) 将会包含被 relocate 的依赖及其所有间接依赖.
  *
  * @see RelocationNotes
@@ -187,13 +204,14 @@ fun DependencyHandler.relocateImplementation(
         })
     project.relocationFilters.add(
         RelocationFilter(
-            dependency.groupNotNull, dependency.name, relocatedDependency.packages.toList(), includeInRuntime = true,
+            relocatedDependency.notationsToExcludeInPom, relocatedDependency.packages.toList(), includeInRuntime = true,
         )
     )
-    project.configurations.maybeCreate(SHADOW_RELOCATION_CONFIGURATION_NAME)
+    val configurationName = RelocationConfig.SHADOW_RELOCATION_CONFIGURATION_NAME
+    project.configurations.maybeCreate(configurationName)
     addDependencyTo(
         project.dependencies,
-        SHADOW_RELOCATION_CONFIGURATION_NAME,
+        configurationName,
         relocatedDependency.notation,
         Action<ExternalModuleDependency> {
             relocatedDependency.exclusionAction(this)
@@ -204,8 +222,7 @@ fun DependencyHandler.relocateImplementation(
     return dependency
 }
 
-@Suppress("UNNECESSARY_NOT_NULL_ASSERTION") // compiler bug
-private val ExternalModuleDependency.groupNotNull get() = group!!
+private val ExternalModuleDependency.groupNotNull: String get() = group.toString()
 
 private fun ExternalModuleDependency.intrinsicExclusions() {
     exclude(ExcludeProperties.`everything from kotlin`)
@@ -213,14 +230,10 @@ private fun ExternalModuleDependency.intrinsicExclusions() {
 }
 
 
-const val SHADOW_RELOCATION_CONFIGURATION_NAME = "shadowRelocation"
-
-
 data class RelocationFilter(
-    val groupId: String,
-    val artifactId: String? = null,
-    val packages: List<String> = listOf(groupId),
-    val filesFilter: String = groupId.replace(".", "/"),
+    val notations: RelocatableDependency,
+    val packages: List<String>,
+//    val filesFilter: String = groupId.replace(".", "/"),
     /**
      * Pack relocated dependency into the fat jar. If set to `false`, dependencies will be removed.
      * This is to avoid duplicated classes. See #2291.
@@ -229,10 +242,9 @@ data class RelocationFilter(
 ) {
 
     fun matchesDependency(groupId: String?, artifactId: String?): Boolean {
-        if (this.groupId == groupId) return true
-        if (this.artifactId != null && this.artifactId == artifactId) return true
-
-        return false
+        return notations.notations().any {
+            it.groupId == groupId && it.artifactId == artifactId
+        }
     }
 }
 

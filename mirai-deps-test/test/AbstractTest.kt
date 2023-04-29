@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -33,6 +33,9 @@ abstract class AbstractTest {
 
         @JvmStatic
         fun isMiraiLocalAvailable(): Boolean {
+            val commandLine =
+                """./gradlew publishMiraiArtifactsToMavenLocal -Dmirai.build.project.version=$miraiLocalVersion"""
+
             return if (mavenLocalDir.resolve("net/mamoe/mirai-core/$miraiLocalVersion").exists()) {
                 println(
                     """
@@ -41,7 +44,8 @@ abstract class AbstractTest {
                 - added/removed a dependency for mirai-core series modules
                 - changed version of any of the dependencies for mirai-core series modules
                 
-                You can update by running `./gradlew publishMiraiLocalArtifacts`.
+                You can update by running the following command: 
+                $commandLine
             """.trimIndent()
                 )
                 true
@@ -58,7 +62,9 @@ abstract class AbstractTest {
                 Note that you can ignore this test if you did not change project (dependency) structure.
                 And you don't need to worry if you does not run this test — this test is always executed on the CI when you make a PR.
 
-                You can run `./gradlew publishMiraiLocalArtifacts` to publish local artifacts. 
+                You can run the following command to publish local artifacts:
+                $commandLine
+                
                 Then you can run this test again. (By your original way or ./gradlew :mirai-deps-test:test)
                 """.trimIndent()
                 System.err.println(
