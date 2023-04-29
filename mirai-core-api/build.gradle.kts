@@ -9,6 +9,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 import BinaryCompatibilityConfigurator.configureBinaryValidators
+import shadow.relocateCompileOnly
 
 plugins {
     id("com.android.library")

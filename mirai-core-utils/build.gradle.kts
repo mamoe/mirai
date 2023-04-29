@@ -9,6 +9,8 @@
 
 @file:Suppress("UNUSED_VARIABLE")
 
+import shadow.relocateImplementation
+
 plugins {
     id("com.android.library")
     kotlin("multiplatform")
@@ -98,7 +100,7 @@ if (tasks.findByName("androidMainClasses") != null) {
     tasks.getByName("androidBaseTest").dependsOn("checkAndroidApiLevel")
 }
 
-//configureMppPublishing()
+configureMppPublishing()
 
 //mavenCentralPublish {
 //    artifactId = "mirai-core-utils"
