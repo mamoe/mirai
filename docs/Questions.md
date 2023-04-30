@@ -8,7 +8,9 @@
 
 > `Failed to fetch announcement for ...`
 
-MCL查询更新信息失败，你可以尝试编辑 `config.json` 更换 [`mirai_repo`](https://github.com/project-mirai/mirai-repo-mirror#%E4%BB%93%E5%BA%93%E9%95%9C%E5%83%8F)
+[MCL](https://github.com/iTXTech/mirai-console-loader) 查询更新信息失败，
+你可以尝试编辑 `config.json` 
+更换 [`mirai_repo`](https://github.com/project-mirai/mirai-repo-mirror#%E4%BB%93%E5%BA%93%E9%95%9C%E5%83%8F)
 
 > Login failed: Error(bot=..., code=..., title=....
 
@@ -29,18 +31,19 @@ MCL查询更新信息失败，你可以尝试编辑 `config.json` 更换 [`mirai
 1. 确认机器人收到消息  
    日志里会有消息记录，没有就是没收到，如果是群聊消息，注意是否已 `收入群助手`，这可能会导致收不到消息
 
-2. 确认是否已经安装 [chat-command](https://github.com/project-mirai/chat-command/releases/download/v0.6.0/chat-command-0.6.0.mirai2.jar)  
+2. 确认是否已经安装 [chat-command](https://github.com/project-mirai/chat-command/releases/latest)  
    如果插件的指令是对接的 `Mirai Console` 的指令接口，那它就需要 `chat-command`
 
 3. 确认是否已经授权给目标用户  
-   默认情况下所有用户都是没有权限的，聊天框下无法使用指令
+   默认情况下所有用户都是没有权限的，聊天框下无法使用指令  
+   PS: 如果使用了 LuckPerms-Mirai, 可通过在控制台执行 /lp verbose on 查看权限检测情况
 
 4. 确认日志中没有相关报错  
    如果插件指令执行出错，也有可能无法提供回复，请联系插件作者
 
 > 如何确认 `Mirai 版本` 或 `插件版本` 等信息
 
-可以启动 MCL 的情况下:  
+可以启动 Mirai Console 的情况下:  
 用指令 `/status`  
 
 无法启动的情况下:  
@@ -64,7 +67,7 @@ MCL查询更新信息失败，你可以尝试编辑 `config.json` 更换 [`mirai
 
 > IDEA 下 `import` 爆红，mirai 相关依赖全部无法解析
 
-IDEA 太旧了，没法解析新版 kotlin, 最好升级到最新版
+IDEA 版本过于老旧，无法分析新版本的 kotlin 依赖，请尝试升级 IDEA 后重试
 
 > 有些事件收到不到
 
@@ -73,7 +76,7 @@ IDEA 太旧了，没法解析新版 kotlin, 最好升级到最新版
 对于这些协议来说是不会收到的，因为这在他们对应官方客户端版本里本来就没有这些功能
 
 `GroupMessageEvent`  
-群事件收不到可能是因为你将群设置为`屏蔽群`或者`收入了群助手`
+群事件收不到可能是因为你将群设置为 `屏蔽群` 或者 `收入了群助手`
 
 另外如果消息是 `转发消息` 或 `卡片消息` 等特殊消息, 也有可能因为风控无法接收和发出
 
