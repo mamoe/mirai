@@ -72,6 +72,7 @@ Bot bot = BotFactory.INSTANCE.newBot(qq, password, new BotConfiguration() {{
     // 配置，例如：
     fileBasedDeviceInfo()
 }});
+Bot bot = BotFactory.INSTANCE.newBot(qq, password, configuration -> {})
 // 在 2.15.0 中加入
 Bot bot = BotFactory.INSTANCE.newBot(qq, BotAuthorization.byQRCode(), configuration -> {
     configuration.setProtocol(BotConfiguration.MiraiProtocol.ANDROID_WATCH);
