@@ -14,7 +14,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
 
-    //id("kotlinx-atomicfu")
+    id("kotlinx-atomicfu")
     id("signing")
     id("me.him188.kotlin-jvm-blocking-bridge")
     id("me.him188.kotlin-dynamic-delegation")
@@ -86,6 +86,10 @@ kotlin {
             }
         }
     }
+}
+
+atomicfu {
+    transformJvm = false
 }
 
 if (tasks.findByName("androidMainClasses") != null) {

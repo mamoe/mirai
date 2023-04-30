@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     kotlin("multiplatform")
-    // id("kotlinx-atomicfu")
+    id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
     id("me.him188.kotlin-jvm-blocking-bridge")
     id("me.him188.kotlin-dynamic-delegation")
@@ -186,6 +186,10 @@ kotlin {
 //            }
 //        }
     }
+}
+
+atomicfu {
+    transformJvm = false
 }
 
 afterEvaluate {
