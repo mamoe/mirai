@@ -68,7 +68,10 @@ object BinaryCompatibilityConfigurator {
         dir.resolve("build.gradle.kts").writeTextIfNeeded(
             applyTemplate(
                 project.path,
-                if (targetName == null) "classes/kotlin/main" else "classes/kotlin/$targetName/main"
+                listOfNotNull(
+                    if (targetName == null) "classes/kotlin/main" else "classes/kotlin/$targetName/main",
+                    if (targetName?.contains("android") == true) "tmp/kotlin-classes/debug" else ""
+                )
             )
         )
         dir.resolve(".gitignore").writeTextIfNeeded(
@@ -80,7 +83,12 @@ object BinaryCompatibilityConfigurator {
             findProject(getValidatorDir(dir))
                 ?.afterEvaluate {
                     if (targetName == null) {
-                        tasks.findByName("apiBuild")?.dependsOn(project.tasks.getByName("jar"))
+                        tasks.findByName("apiBuild")?.dependsOn(
+                            *listOfNotNull(
+                                project.tasks.getByName("jar"),
+                                project.tasks.findByName("compileDebugKotlinAndroid")
+                            ).toTypedArray()
+                        )
                     } else {
                         tasks.findByName("apiBuild")?.dependsOn(
                             if (targetName.contains("android")) {
@@ -94,13 +102,13 @@ object BinaryCompatibilityConfigurator {
         }
     }
 
-    fun applyTemplate(projectPath: String, buildDir: String): String {
+    fun applyTemplate(projectPath: String, buildDirs: List<String>): String {
         return this::class.java.classLoader
             .getResourceAsStream("binary-compatibility-validator-build.txt")!!
             .useToRun { readBytes() }
             .decodeToString()
             .replace("$\$PROJECT_PATH$$", projectPath)
-            .replace("$\$BUILD_DIR$$", buildDir)
+            .replace("$\$BUILD_DIR$$", buildDirs.joinToString("\n"))
             .replace("$\$PLUGIN_VERSION$$", Versions.binaryValidator)
     }
 }
