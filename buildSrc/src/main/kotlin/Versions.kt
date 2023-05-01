@@ -58,6 +58,7 @@ object Versions {
 
     const val androidGradlePlugin = "7.3.1"
     const val android = "4.1.1.4"
+    const val androidxAnnotation = "1.6.0"
 
     const val shadow = "8.1.0"
 
@@ -334,6 +335,7 @@ const val `jetbrains-annotations` = "org.jetbrains:annotations:19.0.0"
 
 const val `caller-finder` = "io.github.karlatemp:caller:1.1.1"
 
+const val `androidx-annotation` = "androidx.annotation:annotation:${Versions.androidxAnnotation}"
 const val `android-runtime` = "com.google.android:android:${Versions.android}"
 const val `netty-all` = "io.netty:netty-all:${Versions.netty}"
 const val `netty-handler` = "io.netty:netty-handler:${Versions.netty}"
