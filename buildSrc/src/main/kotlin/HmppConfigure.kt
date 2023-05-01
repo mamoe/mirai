@@ -166,12 +166,13 @@ const val JVM_TOOLCHAIN_VERSION = 8
  */
 fun Project.configureJvmTargetsHierarchical(androidNamespace: String) {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
+        jvmToolchain(JVM_TOOLCHAIN_VERSION)
+       
         val commonMain by sourceSets.getting
         val commonTest by sourceSets.getting
 
         if (IDEA_ACTIVE) {
             jvm("jvmBase") { // dummy target for resolution, not published
-                jvmToolchain(JVM_TOOLCHAIN_VERSION)
                 compilations.all {
                     // magic to help IDEA
                     this.compileTaskProvider.configure {
@@ -204,9 +205,7 @@ fun Project.configureJvmTargetsHierarchical(androidNamespace: String) {
         }
 
         if (isTargetEnabled("jvm")) {
-            jvm("jvm") {
-                jvmToolchain(JVM_TOOLCHAIN_VERSION)
-            }
+            jvm("jvm")
             val jvmMain by sourceSets.getting
             val jvmTest by sourceSets.getting
             jvmMain.dependsOn(jvmBaseMain)

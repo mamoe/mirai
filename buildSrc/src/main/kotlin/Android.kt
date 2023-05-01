@@ -53,7 +53,6 @@ fun Project.configureAndroidTarget(androidNamespace: String) {
 private fun Project.configureAndroidTargetWithJvm() {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
         jvm("android") {
-            jvmToolchain(JVM_TOOLCHAIN_VERSION)
             attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
 
             if (IDEA_ACTIVE) {
@@ -90,9 +89,7 @@ private fun Project.configureAndroidTargetWithSdk(androidNamespace: String) {
     }
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
         android {
-            if (IDEA_ACTIVE) {
-                attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "android") // workaround for IDE bug
-            }
+            publishLibraryVariants("release", "debug")
         }
 
         val jvmBaseMain = sourceSets.maybeCreate("jvmBaseMain")
