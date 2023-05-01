@@ -12,7 +12,6 @@
 plugins {
     kotlin("multiplatform")
     `maven-publish`
-    id("com.android.library")
 }
 
 version = Versions.console
@@ -22,12 +21,8 @@ kotlin {
     explicitApi()
     apply(plugin = "explicit-api")
 
-    configureJvmTargetsHierarchical()
+    configureJvmTargetsHierarchical("net.mamoe.mirai.compiler.annotations")
     configureNativeTargetsHierarchical(project)
 }
 
 configureMppPublishing()
-
-android {
-    namespace = "net.mamoe.mirai.compiler.annotations"
-}

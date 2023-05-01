@@ -16,7 +16,6 @@ import shadow.relocateCompileOnly
 import shadow.relocateImplementation
 
 plugins {
-    id("com.android.library")
     kotlin("multiplatform")
     id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
@@ -24,7 +23,6 @@ plugins {
     id("me.him188.kotlin-dynamic-delegation")
 //    id("me.him188.maven-central-publish")
     `maven-publish`
-    id("de.mannodermaus.android-junit5") version "1.8.2.1"
 }
 
 description = "Mirai Protocol implementation for QQ Android"
@@ -33,7 +31,7 @@ kotlin {
     explicitApi()
     apply(plugin = "explicit-api")
 
-    configureJvmTargetsHierarchical()
+    configureJvmTargetsHierarchical("net.mamoe.mirai.internal")
     configureNativeTargetsHierarchical(project)
     configureNativeTargetBinaries(project) // register native binaries for mirai-core only
 
@@ -270,7 +268,3 @@ configureBinaryValidators(setOf("jvm", "android").filterTargets())
 //    licenseFromGitHubProject("AGPLv3", "dev")
 //    publishPlatformArtifactsInRootModule = "jvm"
 //}
-
-android {
-    namespace = "net.mamoe.mirai.internal"
-}

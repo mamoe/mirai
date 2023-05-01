@@ -34,7 +34,7 @@ val ENABLE_ANDROID_INSTRUMENTED_TESTS by projectLazy {
 val Project.usingAndroidInstrumentedTests
     get() = ENABLE_ANDROID_INSTRUMENTED_TESTS && isAndroidSdkAvailable
 
-fun Project.configureAndroidTarget() {
+fun Project.configureAndroidTarget(androidNamespace: String) {
     if (ENABLE_ANDROID_INSTRUMENTED_TESTS && !isAndroidSdkAvailable) {
         if (!ProjectAndroidSdkAvailability.tryFixAndroidSdk(this)) {
             printAndroidNotInstalled()
@@ -43,7 +43,7 @@ fun Project.configureAndroidTarget() {
 
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
         if (project.usingAndroidInstrumentedTests) {
-            configureAndroidTargetWithSdk()
+            configureAndroidTargetWithSdk(androidNamespace)
         } else {
             configureAndroidTargetWithJvm()
         }
@@ -82,7 +82,12 @@ private fun Project.configureAndroidTargetWithJvm() {
 private const val PROP_MIRAI_ANDROID_SDK_KIND = "mirai.android.sdk.kind"
 
 @Suppress("UnstableApiUsage")
-private fun Project.configureAndroidTargetWithSdk() {
+private fun Project.configureAndroidTargetWithSdk(androidNamespace: String) {
+    apply(plugin = "com.android.library")
+    apply(plugin = "de.mannodermaus.android-junit5")
+    extensions.getByType(LibraryExtension::class).apply {
+        namespace = androidNamespace
+    }
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
         android {
             if (IDEA_ACTIVE) {
