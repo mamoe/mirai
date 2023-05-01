@@ -43,6 +43,7 @@ plugins {
     id("com.gradle.plugin-publish") version "1.1.0" apply false
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version Versions.binaryValidator apply false
     id("com.android.library") apply false
+    id("de.mannodermaus.android-junit5") version "1.8.2.1" apply false
 }
 
 osDetector = osdetector

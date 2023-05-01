@@ -12,7 +12,6 @@
 import shadow.relocateImplementation
 
 plugins {
-    id("com.android.library")
     kotlin("multiplatform")
     kotlin("plugin.serialization")
 
@@ -28,7 +27,7 @@ kotlin {
     explicitApi()
     apply(plugin = "explicit-api")
 
-    configureJvmTargetsHierarchical()
+    configureJvmTargetsHierarchical("net.mamoe.mirai.utils")
     configureNativeTargetsHierarchical(project)
 
     sourceSets {
@@ -109,7 +108,3 @@ configureMppPublishing()
 //    licenseFromGitHubProject("AGPLv3", "dev")
 //    publishPlatformArtifactsInRootModule = "jvm"
 //}
-
-android {
-    namespace = "net.mamoe.mirai.utils"
-}

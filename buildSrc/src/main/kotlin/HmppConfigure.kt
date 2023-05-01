@@ -164,7 +164,7 @@ const val JVM_TOOLCHAIN_VERSION = 8
  *
  * @see configureNativeTargetsHierarchical
  */
-fun Project.configureJvmTargetsHierarchical() {
+fun Project.configureJvmTargetsHierarchical(androidNamespace: String) {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
         val commonMain by sourceSets.getting
         val commonTest by sourceSets.getting
@@ -200,7 +200,7 @@ fun Project.configureJvmTargetsHierarchical() {
         }
 
         if (isTargetEnabled("android")) {
-            configureAndroidTarget()
+            configureAndroidTarget(androidNamespace)
         }
 
         if (isTargetEnabled("jvm")) {

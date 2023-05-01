@@ -12,7 +12,6 @@ import BinaryCompatibilityConfigurator.configureBinaryValidators
 import shadow.relocateCompileOnly
 
 plugins {
-    id("com.android.library")
     kotlin("multiplatform")
     kotlin("plugin.serialization")
 
@@ -31,7 +30,7 @@ kotlin {
     explicitApi()
     apply(plugin = "explicit-api")
 
-    configureJvmTargetsHierarchical()
+    configureJvmTargetsHierarchical("net.mamoe.mirai")
 
     configureNativeTargetsHierarchical(project)
 
@@ -125,7 +124,3 @@ configureBinaryValidators(setOf("jvm", "android").filterTargets())
 //    licenseFromGitHubProject("AGPLv3", "dev")
 //    publishPlatformArtifactsInRootModule = "jvm"
 //}
-
-android {
-    namespace = "net.mamoe.mirai"
-}
