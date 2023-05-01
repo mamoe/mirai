@@ -1,15 +1,3 @@
-# 构建 Core
-
-本文介绍如何构建 core 的 JVM 和 Native 目标。
-
-## 构建 core 的 JVM 目标
-
-方法与[构建 JVM 目标项目](README.md#构建-jvm-目标项目)
-类似，但需要使用 `:mirai-core:compileKotlinJvm` 和 `:mirai-core:jvmTest`
-分别用于编译和测试。提示：直接执行测试时也会自动先完成编译。
-
-## 构建 core 的 Native 目标
-
 [OpenSSL.def]: ../../mirai-core/src/nativeMain/cinterop/OpenSSL.def
 
 Kotlin 会自动配置 Native 编译器，要构建 Mirai 的 Native 目标还需要准备相关依赖。
@@ -174,6 +162,8 @@ cURL，在其他平台使用 [Ktor CIO](https://ktor.io/docs/http-client-engines
 ### 链接并构建动态链接库
 
 注意，只有 mirai-core 可以构建可用的动态链接库。所有动态链接库和静态链接库的构建都是默认关闭的，需要使用 `-Dmirai.native.binaries=true` 才能启用。
+
+## 构建 core 的 Native 目标
 
 在提供 `-Dmirai.native.binaries=true` 参数的情况下，执行 `:mirai-core:linkDebugSharedHost`
 或 `:mirai-core:linkReleaseSharedHost`。Debug 版本会保留调试符号，能显示完整错误堆栈；而
