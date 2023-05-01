@@ -65,6 +65,12 @@ kotlin {
             }
         }
 
+        findByName("androidMain")?.apply {
+            dependencies {
+                implementation(`androidx-annotation`)
+            }
+        }
+
         findByName("jvmMain")?.apply {
 
         }
