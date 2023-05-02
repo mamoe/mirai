@@ -15,17 +15,17 @@ import net.mamoe.mirai.utils.toUHexString
 import kotlin.jvm.JvmField
 
 internal class MiraiProtocolInternal(
-    @JvmField var apkId: String,
-    @JvmField var id: Long,
-    @JvmField var ver: String,
-    @JvmField var sdkVer: String,
-    @JvmField var miscBitMap: Int,
-    @JvmField var subSigMap: Int,
-    @JvmField var mainSigMap: Int,
-    @JvmField var sign: String,
-    @JvmField var buildTime: Long,
-    @JvmField var ssoVersion: Int,
-    @JvmField var supportsQRLogin: Boolean,
+    var apkId: String,
+    var id: Long,
+    var ver: String,
+    var sdkVer: String,
+    var miscBitMap: Int,
+    var subSigMap: Int,
+    var mainSigMap: Int,
+    var sign: String,
+    var buildTime: Long,
+    var ssoVersion: Int,
+    var supportsQRLogin: Boolean,
 
     // don't change property signatures, used externally.
 ) {
