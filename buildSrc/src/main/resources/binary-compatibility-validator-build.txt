@@ -15,8 +15,12 @@ plugins {
 description = "Binary compatibility validator for project $$PROJECT_PATH$$"
 
 tasks.withType(kotlinx.validation.KotlinApiBuildTask::class) {
+    val paths = """
+        $$BUILD_DIR$$
+        """
+        .lines().filter { it.isNotBlank() }.map { project("$$PROJECT_PATH$$").buildDir.resolve(it.trim()) }
     inputClassesDirs =
-        files(inputClassesDirs.files, project("$$PROJECT_PATH$$").buildDir.resolve("$$BUILD_DIR$$"))
+        files(inputClassesDirs.files, *paths.toTypedArray())
 }
 
 apiValidation {

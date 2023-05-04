@@ -17,12 +17,18 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler
 import net.mamoe.mirai.internal.test.runBlockingUnit
 import net.mamoe.mirai.internal.utils.accountSecretsFile
 import net.mamoe.mirai.utils.DeviceInfo
+import net.mamoe.mirai.utils.SecretsProtection
 import net.mamoe.mirai.utils.getRandomByteArray
 import net.mamoe.mirai.utils.writeBytes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class AccountSecretsTest : AbstractCommonNHTest() {
+    init {
+        overrideComponents.remove(AccountSecretsManager)
+        bot.account.accountSecretsKeyBuffer = SecretsProtection.EscapedByteBuffer(ByteArray(16))
+    }
+
     @Test
     fun `can login with no secrets`() = runBlockingUnit {
         val file = bot.configuration.accountSecretsFile()

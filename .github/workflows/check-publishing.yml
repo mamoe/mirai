@@ -84,17 +84,6 @@ jobs:
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *
 
-      # Prepare environment for linking on macOS
-      - if: ${{ env.isMac == 'true' }}
-        name: Install OpenSSL on Mac OS
-        run: >
-          git clone https://github.com/openssl/openssl.git --recursive &&
-          cd openssl &&
-          git checkout tags/openssl-3.0.3 &&
-          ./Configure --prefix=/opt/openssl --openssldir=/usr/local/ssl &&
-          make &&
-          sudo make install
-
       # Prepare environment for linking on Ubuntu
       - if: ${{ env.isUbuntu == 'true' }}
         name: Install OpenSSL on Ubuntu

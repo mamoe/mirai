@@ -69,7 +69,7 @@ nexusStaging {
 dependencies {
     implementation(`ktor-client-okhttp`)
     implementation(`kotlinx-serialization-json`)
-    implementation("org.jetbrains.kotlinx", "kotlinx-datetime", "0.4.0")
+    implementation("org.jetbrains.kotlinx", "kotlinx-datetime-jvm", "0.4.0")
 }
 
 tasks.register("updateSnapshotVersion") {

@@ -30,7 +30,7 @@
 
 [mirai-core-all]: ../../mirai-core-all
 
-[mirai-logging]: ../../logging/
+[mirai-logging]: ../../logging
 
 [mirai-logging-log4j2]: ../../logging/mirai-logging-log4j2
 
@@ -88,6 +88,10 @@ mirai 等。
 
 若在其他环境下无法正常编译, 请尝试选择上述一个环境配置。
 
+## 我不熟悉 Gradle 或 Kotlin / 我赶时间
+
+在 [SimpleInstructions](SimpleInstructions.md) 查看你可能想做的事情的简单命令。
+
 ## `mirai-core` 术语
 
 根据语境，mirai-core 有时候可能指 `mirai-core`
@@ -102,9 +106,9 @@ core'
 [HMPP]: https://kotlinlang.org/docs/multiplatform-discover-project.html
 
 core 三个模块都使用 Kotlin [HMPP] 功能，同时支持 JVM 和 Native
-两种平台。你可以在 [Kotlin 官方英文文档][HMPP] 了解 HMPP 模式。
+两种平台。你可以在 [Kotlin 官方文档][HMPP] 了解 HMPP 模式。
 
-core 的源集结构如图所示：
+core 的编译目标层级结构如图所示：
 
 ```
                      common
@@ -144,16 +148,16 @@ core 的源集结构如图所示：
 
 ### 关闭部分项目以提升速度
 
-你可以在项目根目录创建 `local.properties`，中按照如下配置，关闭部分项目来提升开发速度。
+你可以在项目根目录创建 `local.properties`，中按照如下配置，关闭部分项目来提升开发速度。在关闭后，请终止所有 Gradle 后台进程，以保证更改正确应用。
 
 ```properties
-# 关闭 IntelliJ IDEA 插件模块
+# 关闭 IntelliJ IDEA 插件模块，这可以避免下载 1~2GB 的依赖
 projects.mirai-console-intellij.enabled=false
 # 关闭 Gradle 插件模块
 projects.mirai-console-gradle.enabled=false
 # 关闭 mirai 依赖测试模块
 projects.mirai-deps-test.enabled=false
-# 用其他模块的路径替换 module-path，可关闭该模块
+# 也可以用其他模块的路径替换 module-path，可关闭该模块
 projects.module-path.enabled=false
 # 特殊配置，关闭 mirai-console 后端，这同时也会关闭全部 console 相关的项目
 projects.mirai-console.enabled=false
@@ -169,7 +173,7 @@ projects.mirai-logging.enabled=false
 
 所有目标默认都启用。
 
-**注意**，在关闭一个目标后，将无法编辑该目标的相关源集的源码。关闭 native 目标后也可能会影响 native 目标平台原生接口的数据类型。
+**注意**，在关闭一个目标后，将无法编辑该目标的相关源集的源码。关闭部分 native 目标后也可能会影响 native 目标平台原生接口的数据类型。
 因此若非主机性能太差或在 CI 机器运行，**不建议**关闭 native 目标。
 
 [//]: # (备注: 如果要发版, 必须开启全部目标, 否则会导致 metadata 中的平台不全)
@@ -183,25 +187,60 @@ projects.mirai-logging.enabled=false
 
 其中 xxx 表示构建目标名称。可用的目标名称有（区分大小写）：`jvm`、`android`、`macosX64`、`macosArm64`、`mingwX64`、`linuxX64`
 
-示例（前两条目前等价）：
+```
+# 禁用所有 native 目标，启用其他目标（启用 jvm 和 android）
+projects.mirai-core.targets=!native;others
 
-- `!native;others` 指定禁用所有 native 目标，启用其他目标
-- `jvm;android;!others` 指定启用 `jvm` 和 `android` 目标，禁用其他所有目标
-- `jvm;macosX64;!others` 指定启用 `jvm` 和 `macosX64` 目标，禁用其他所有目标
+# 启用 `jvm` 和 `android` 目标，禁用其他所有目标（禁用所有 native 目标）
+projects.mirai-core.targets=jvm;android;!others
 
+# 只启用 `jvm` 目标，禁用其他所有目标
+projects.mirai-core.targets=jvm;!others
+
+# 指定启用 `jvm` 和 `macosX64` 目标，禁用其他所有目标
+projects.mirai-core.targets=jvm;macosX64;!others
+```
 
 ### 直接启动 mirai-core 本地测试
 
-一般情况下, 只要 JVM 平台测试通过其他平台也能测试通过
+一般情况下, 只要 JVM 平台测试通过其他平台也能测试通过。
 
 在 JVM 平台直接启动 mirai-core, 见 [mirai-core/jvmTest](/mirai-core/src/jvmTest/README.md)
 
 在 native 平台直接启动 mirai-core, 见 [mirai-core/nativeTest](/mirai-core/src/nativeTest/kotlin/local/README.md)
 
+## 构建 mirai 项目 JAR 以及动态链接库
 
-## 构建
+查看 [Building](building/README.md)
 
-查看 [Building](Building.md)
+## 部署 mirai 到本地仓库
+
+[bignum]: https://github.com/ionspin/kotlin-multiplatform-bignum
+
+要部署 mirai 项目到本地 Maven 仓库（Maven Local），只需使用如下命令，其中 `2.99.0-local` 可为任意想在本地仓库发布的版本号。
+
+```shell
+./gradlew publishMiraiArtifactsToMavenLocal "-Dmirai.build.project.version=2.99.0-local"
+```
+
+注意，因为构建默认启用多线程，此操作可能会占用约 32GB 内存。如果主机条件不足，或希望减少内存占用，可以如下方式禁用多线程加速：
+
+```shell
+./gradlew publishMiraiArtifactsToMavenLocal "-Dmirai.build.project.version=2.99.0-local" "-Porg.gradle.parallel=false"
+```
+
+随后可通过 `implementation("net.mamoe:mirai-core:2.99.0-local")` 引入项目。
+
+由于 mirai 项目结构复杂，构建可能由于各种原因失败，mirai 提供依赖可用性测试。
+部署一份版本为 `2.99.0-deps-test` 的 mirai 到本地仓库，执行 `./gradlew :mirai-deps-test:test` 即可运行相关测试。若测试通过，则代表部署的项目可通过各种方式正常引入到其他项目。
+
+## 通过 Gradle Composite Build 引入 mirai
+
+若在 Gradle 通过 Composite Build 引入 mirai，则在编译时可能遇到依赖冲突问题。
+mirai 使用特定版本的 Ktor 2、[kt-bignum][bignum] 等库，会将它们的包名增加前缀 `net.mamoe.mirai.internal.deps.` 来避免产生冲突。
+但这个操作仅对部署的版本有效，在 Gradle 中构建时，仍然可能会有依赖冲突。但若在测试中没遇到问题，一般不用担心。
+
+要详细了解这个过程以及实现原理，请查看 [源码](../../buildSrc/src/main/kotlin/shadow/Relocation.kt)（含注释）。
 
 ## 寻找待解决的问题
 

@@ -10,13 +10,18 @@
 package net.mamoe.mirai.internal.network.auth
 
 import net.mamoe.mirai.auth.BotAuthInfo
-import net.mamoe.mirai.auth.BotAuthResult
 import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
+import net.mamoe.mirai.internal.utils.asUtilsLogger
 import net.mamoe.mirai.internal.utils.subLogger
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExceptionCollector
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.channels.OnDemandChannel
+import net.mamoe.mirai.utils.channels.OnDemandReceiveChannel
+import net.mamoe.mirai.utils.channels.ProducerFailureException
+import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.verbose
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.cancellation.CancellationException
 
 
 /**
@@ -33,60 +38,16 @@ internal class AuthControl(
 ) {
     internal val exceptionCollector = ExceptionCollector()
 
-    private val userDecisions: OnDemandConsumer<Throwable?, SsoProcessorImpl.AuthMethod> =
-        CoroutineOnDemandValueScope(parentCoroutineContext, logger.subLogger("AuthControl/UserDecisions")) { _ ->
-            /**
-             * Implements [BotAuthSessionInternal] from API, to be called by the user, to receive user's decisions.
-             */
-            val sessionImpl = object : BotAuthSessionInternal() {
-                private val authResultImpl = object : BotAuthResult {}
-
-                override suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthResult {
-                    runWrapInternalException {
-                        emit(SsoProcessorImpl.AuthMethod.Pwd(passwordMd5))
-                    }?.let { throw it }
-                    return authResultImpl
-                }
-
-                override suspend fun authByQRCode(): BotAuthResult {
-                    runWrapInternalException {
-                        emit(SsoProcessorImpl.AuthMethod.QRCode)
-                    }?.let { throw it }
-                    return authResultImpl
-                }
-
-                private inline fun <R> runWrapInternalException(block: () -> R): R {
-                    try {
-                        return block()
-                    } catch (e: IllegalProducerStateException) {
-                        if (e.lastStateWasSucceed) {
-                            throw IllegalStateException(
-                                "This login session has already completed. Please return the BotAuthResult you get from 'authBy*()' immediately",
-                                e
-                            )
-                        } else {
-                            throw e // internal bug
-                        }
-                    }
-                }
-            }
-
-            try {
-                logger.verbose { "[AuthControl/auth] Authorization started" }
-
-                authorization.authorize(sessionImpl, botAuthInfo)
-
-                logger.verbose { "[AuthControl/auth] Authorization exited" }
-                finish()
-            } catch (e: CancellationException) {
-                logger.verbose { "[AuthControl/auth] Authorization cancelled" }
-            } catch (e: Throwable) {
-                logger.verbose { "[AuthControl/auth] Authorization failed: $e" }
-                finishExceptionally(e)
-            }
+    private val userDecisions: OnDemandReceiveChannel<Throwable?, SsoProcessorImpl.AuthMethod> =
+        OnDemandChannel(
+            parentCoroutineContext,
+            logger.subLogger("AuthControl/UserDecisions").asUtilsLogger()
+        ) { _ ->
+            val sessionImpl = SafeBotAuthSession(this)
+            authorization.authorize(sessionImpl, botAuthInfo) // OnDemandChannel handles exceptions for us
         }
 
-    init {
+    fun start() {
         userDecisions.expectMore(null)
     }
 
@@ -97,7 +58,7 @@ internal class AuthControl(
         val rsp = try {
             userDecisions.receiveOrNull() ?: SsoProcessorImpl.AuthMethod.NotAvailable
         } catch (e: ProducerFailureException) {
-            SsoProcessorImpl.AuthMethod.Error(e)
+            SsoProcessorImpl.AuthMethod.Error(e.unwrap())
         }
 
         logger.debug { "[AuthControl/acquire] Authorization responded: $rsp" }
@@ -111,6 +72,6 @@ internal class AuthControl(
 
     fun actComplete() {
         logger.verbose { "[AuthControl/resume] Fire auth completed" }
-        userDecisions.finish()
+        userDecisions.close()
     }
 }

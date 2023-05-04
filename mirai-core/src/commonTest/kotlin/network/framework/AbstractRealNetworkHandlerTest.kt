@@ -13,15 +13,12 @@ package net.mamoe.mirai.internal.network.framework
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import net.mamoe.mirai.auth.BotAuthInfo
-import net.mamoe.mirai.auth.BotAuthResult
 import net.mamoe.mirai.internal.*
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.KeyWithCreationTime
 import net.mamoe.mirai.internal.network.KeyWithExpiry
 import net.mamoe.mirai.internal.network.WLoginSigInfo
 import net.mamoe.mirai.internal.network.WLoginSimpleInfo
-import net.mamoe.mirai.internal.network.auth.BotAuthSessionInternal
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.component.setAll
@@ -32,6 +29,7 @@ import net.mamoe.mirai.internal.network.handler.NetworkHandler.State
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcRespRegister
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.internal.utils.crypto.QQEcdh
 import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.utils.*
 import network.framework.components.TestEventDispatcherImpl
@@ -116,31 +114,6 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
         set(SsoProcessorContext, SsoProcessorContextImpl(bot))
         set(SsoProcessor, object : TestSsoProcessor(bot) {
             override suspend fun login(handler: NetworkHandler) {
-                val botAuthInfo = object : BotAuthInfo {
-                    override val id: Long get() = bot.id
-                    override val deviceInfo: DeviceInfo
-                        get() = get(SsoProcessorContext).device
-                    override val configuration: BotConfiguration
-                        get() = bot.configuration
-                }
-                val rsp = object : BotAuthResult {}
-
-                val session = object : BotAuthSessionInternal() {
-                    override suspend fun authByPassword(passwordMd5: SecretsProtection.EscapedByteBuffer): BotAuthResult {
-                        return rsp
-                    }
-
-                    override suspend fun authByQRCode(): BotAuthResult {
-                        return rsp
-                    }
-
-                }
-
-                bot.account.authorization.authorize(session, botAuthInfo)
-                bot.account.accountSecretsKeyBuffer = SecretsProtection.EscapedByteBuffer(
-                    bot.account.authorization.calculateSecretsKey(botAuthInfo)
-                )
-
                 nhEvents.add(NHEvent.Login)
                 super.login(handler)
             }
@@ -202,6 +175,15 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
             override fun attachJob(bot: AbstractBot, scope: CoroutineScope) {
             }
         })
+
+        set(EcdhInitialPublicKeyUpdater, object : EcdhInitialPublicKeyUpdater {
+            override suspend fun refreshInitialPublicKeyAndApplyEcdh() {
+            }
+
+            override fun getQQEcdh(): QQEcdh = QQEcdh()
+        })
+
+        set(AccountSecretsManager, MemoryAccountSecretsManager())
         // set(StateObserver, bot.run { stateObserverChain() })
     }
 
@@ -251,7 +233,7 @@ internal fun AbstractRealNetworkHandlerTest<*>.setSsoProcessor(action: suspend S
     }
 }
 
-private fun createWLoginSigInfo(
+internal fun createWLoginSigInfo(
     uin: Long,
     creationTime: Long = currentTimeSeconds(),
     random: Random = Random(1)

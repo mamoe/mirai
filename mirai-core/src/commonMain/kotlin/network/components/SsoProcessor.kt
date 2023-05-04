@@ -11,7 +11,8 @@ package net.mamoe.mirai.internal.network.components
 
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
-import net.mamoe.mirai.auth.*
+import net.mamoe.mirai.auth.BotAuthInfo
+import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.QRCodeLoginData
@@ -31,10 +32,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.UrlDeviceVerificat
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse.Captcha
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.*
-import net.mamoe.mirai.network.LoginFailedException
-import net.mamoe.mirai.network.RetryLaterException
-import net.mamoe.mirai.network.UnsupportedSliderCaptchaException
-import net.mamoe.mirai.network.WrongPasswordException
+import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import kotlin.coroutines.cancellation.CancellationException
@@ -116,7 +114,7 @@ internal interface SsoSession {
  *
  * Used by `NettyNetworkHandler.StateConnecting`.
  */
-internal class SsoProcessorImpl(
+internal open class SsoProcessorImpl(
     val ssoContext: SsoProcessorContext,
 ) : SsoProcessor {
 
@@ -154,23 +152,35 @@ internal class SsoProcessorImpl(
             get() = ssoContext.bot.configuration
     }
 
-    /**
-     * Do login. Throws [LoginFailedException] if failed
-     */
-    override suspend fun login(handler: NetworkHandler) {
+    protected open suspend fun doSlowLogin(
+        handler: NetworkHandler,
+        loginType: LoginType
+    ) {
+        SlowLoginImpl(handler, loginType).doLogin()
+    }
 
-        fun initAuthControl() {
+    protected open suspend fun doFastLogin(handler: NetworkHandler) {
+        FastLoginImpl(handler).doLogin()
+    }
+
+
+    /**
+     * Throws [LoginFailedException] if failed. Any other exceptions are considered as internal error.
+     */
+    final override suspend fun login(handler: NetworkHandler) {
+
+        fun initAndStartAuthControl() {
             authControl = AuthControl(
                 botAuthInfo,
                 ssoContext.bot.account.authorization,
                 ssoContext.bot.network.logger,
                 ssoContext.bot.coroutineContext, // do not use network context because network may restart whilst auth control should keep alive
-            )
+            ).also { it.start() }
         }
 
         suspend fun loginSuccess() {
             components[AccountSecretsManager].saveSecrets(ssoContext.account, AccountSecretsImpl(client))
-            registerClientOnline(handler)
+            sendRegister(handler)
             ssoContext.bot.logger.info { "Login successful." }
         }
 
@@ -193,9 +203,9 @@ internal class SsoProcessorImpl(
             if (client.wLoginSigInfoInitialized) {
                 ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyEcdh()
                 kotlin.runCatching {
-                    FastLoginImpl(handler).doLogin()
+                    doFastLogin(handler)
                 }.onFailure { e ->
-                    initAuthControl()
+                    initAndStartAuthControl()
                     authControl!!.exceptionCollector.collect(e)
 
                     throw SelectorRequireReconnectException()
@@ -207,7 +217,7 @@ internal class SsoProcessorImpl(
             }
         }
 
-        if (authControl == null) initAuthControl()
+        if (authControl == null) initAndStartAuthControl()
         val authControl0 = authControl!!
 
 
@@ -219,7 +229,7 @@ internal class SsoProcessorImpl(
             when (val authw = authControl0.acquireAuth().also { nextAuthMethod = it }) {
                 is AuthMethod.Error -> {
                     authControl = null
-                    throw authw.exception
+                    throw BotAuthorizationException(ssoContext.account.authorization, authw.exception)
                 }
 
                 AuthMethod.NotAvailable -> {
@@ -228,7 +238,8 @@ internal class SsoProcessorImpl(
                 }
 
                 is AuthMethod.Pwd -> {
-                    SlowLoginImpl(handler, LoginType.Password(authw.passwordMd5)).doLogin()
+                    val loginType = LoginType.Password(authw.passwordMd5)
+                    doSlowLogin(handler, loginType)
                 }
 
                 AuthMethod.QRCode -> {
@@ -236,7 +247,8 @@ internal class SsoProcessorImpl(
                         handler, client
                     ).process(handler, client)
 
-                    SlowLoginImpl(handler, LoginType.QRCode(rsp)).doLogin()
+                    val loginType = LoginType.QRCode(rsp)
+                    doSlowLogin(handler, loginType)
                 }
             }
 
@@ -270,7 +282,6 @@ internal class SsoProcessorImpl(
 
     }
 
-
     sealed class AuthMethod {
         object NotAvailable : AuthMethod() {
             override fun toString(): String = "NotAvailable"
@@ -287,7 +298,9 @@ internal class SsoProcessorImpl(
         /**
          * Exception in [BotAuthorization]
          */
-        class Error(val exception: Throwable) : AuthMethod() {
+        class Error(
+            val exception: Throwable // unwrapped
+        ) : AuthMethod() {
             override fun toString(): String = "Error[$exception]@${hashCode()}"
         }
     }
@@ -295,10 +308,6 @@ internal class SsoProcessorImpl(
     private var authControl: AuthControl? = null
 
     override suspend fun sendRegister(handler: NetworkHandler): StatSvc.Register.Response {
-        return registerClientOnline(handler).also { registerResp = it }
-    }
-
-    private suspend fun registerClientOnline(handler: NetworkHandler): StatSvc.Register.Response {
         return handler.sendAndExpect(StatSvc.Register.online(client)).also {
             registerResp = it
         }
@@ -316,7 +325,7 @@ internal class SsoProcessorImpl(
 
     // we have exactly two methods----slow and fast.
 
-    private abstract inner class LoginStrategy(
+    protected abstract inner class LoginStrategy(
         val handler: NetworkHandler,
     ) {
         protected val context get() = handler.context
@@ -477,12 +486,12 @@ internal class SsoProcessorImpl(
         }
     }
 
-    private sealed class LoginType {
+    protected sealed class LoginType {
         class Password(val passwordMd5: SecretsProtection.EscapedByteBuffer) : LoginType()
         class QRCode(val qrCodeLoginData: QRCodeLoginData) : LoginType()
     }
 
-    private inner class FastLoginImpl(handler: NetworkHandler) : LoginStrategy(handler) {
+    protected inner class FastLoginImpl(handler: NetworkHandler) : LoginStrategy(handler) {
         override suspend fun doLogin() {
             val login10 = handler.sendAndExpect(WtLogin10(client))
             check(login10 is LoginPacketResponse.Success) { "Fast login failed: $login10" }

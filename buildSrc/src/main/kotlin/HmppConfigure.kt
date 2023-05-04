@@ -12,6 +12,7 @@ import org.gradle.api.Project
 import org.gradle.api.attributes.Attribute
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getting
+import org.gradle.kotlin.dsl.provideDelegate
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
@@ -23,21 +24,22 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinTargetPreset
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import java.io.File
+import java.util.*
 
-val MIRAI_PLATFORM_ATTRIBUTE = Attribute.of(
+val MIRAI_PLATFORM_ATTRIBUTE: Attribute<String> = Attribute.of(
     "net.mamoe.mirai.platform", String::class.java
 )
 
 /**
  * Flags a target as an HMPP intermediate target
  */
-val MIRAI_PLATFORM_INTERMEDIATE = Attribute.of(
+val MIRAI_PLATFORM_INTERMEDIATE: Attribute<Boolean> = Attribute.of(
     "net.mamoe.mirai.platform.intermediate", Boolean::class.javaObjectType
 )
 
 val IDEA_ACTIVE = System.getProperty("idea.active") == "true" && System.getProperty("publication.test") != "true"
 
-val OS_NAME = System.getProperty("os.name").toLowerCase()
+val OS_NAME = System.getProperty("os.name").lowercase()
 
 lateinit var osDetector: OsDetector
 
@@ -152,22 +154,39 @@ val NATIVE_TARGETS by projectLazy { UNIX_LIKE_TARGETS + WIN_TARGETS }
 
 private val POSSIBLE_NATIVE_TARGETS by lazy { setOf("mingwX64", "macosX64", "macosArm64", "linuxX64") }
 
-fun Project.configureJvmTargetsHierarchical() {
+const val JVM_TOOLCHAIN_VERSION = 8
+
+/**
+ * ## Android Test 结构
+ *
+ * 如果[启用 Android Instrumented Test][ENABLE_ANDROID_INSTRUMENTED_TESTS], 将会配置使用 Android SDK 配置真 Android target,
+ * `androidMain` 将能访问 Android SDK, 也能获得针对 Android 的 IDE 错误检查.
+ *
+ * @see configureNativeTargetsHierarchical
+ */
+fun Project.configureJvmTargetsHierarchical(androidNamespace: String) {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
+        jvmToolchain(JVM_TOOLCHAIN_VERSION)
+       
         val commonMain by sourceSets.getting
         val commonTest by sourceSets.getting
 
         if (IDEA_ACTIVE) {
             jvm("jvmBase") { // dummy target for resolution, not published
                 compilations.all {
-                    this.compileTaskProvider.configure { // IDE complain
+                    // magic to help IDEA
+                    this.compileTaskProvider.configure {
                         enabled = false
-                    } 
+                    }
                 }
                 attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common) // magic
-                attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "jvmBase") // avoid resolution
-                attributes.attribute(MIRAI_PLATFORM_INTERMEDIATE, true)
+
+                // avoid resolution when other modules dependsOn this project
+                attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "jvmBase")
+                attributes.attribute(MIRAI_PLATFORM_INTERMEDIATE, true) // no shadow
             }
+        } else {
+            // if not in IDEA, no need to create intermediate targets.
         }
 
         val jvmBaseMain by lazy {
@@ -182,26 +201,11 @@ fun Project.configureJvmTargetsHierarchical() {
         }
 
         if (isTargetEnabled("android")) {
-            if (isAndroidSDKAvailable) {
-                jvm("android") {
-                    attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-                    if (IDEA_ACTIVE) {
-                        attributes.attribute(MIRAI_PLATFORM_ATTRIBUTE, "android") // avoid resolution
-                    }
-                }
-                val androidMain by sourceSets.getting
-                val androidTest by sourceSets.getting
-                androidMain.dependsOn(jvmBaseMain)
-                androidTest.dependsOn(jvmBaseTest)
-            } else {
-                printAndroidNotInstalled()
-            }
+            configureAndroidTarget(androidNamespace)
         }
 
         if (isTargetEnabled("jvm")) {
-            jvm("jvm") {
-
-            }
+            jvm("jvm")
             val jvmMain by sourceSets.getting
             val jvmTest by sourceSets.getting
             jvmMain.dependsOn(jvmBaseMain)
@@ -210,7 +214,9 @@ fun Project.configureJvmTargetsHierarchical() {
     }
 }
 
+
 /**
+ * Target 结构:
  * ```
  *                      common
  *                        |
@@ -226,7 +232,9 @@ fun Project.configureJvmTargetsHierarchical() {
  *                        <darwin targets>
  * ```
  *
- * `<darwin targets>`: macosX64, macosArm64, tvosX64, iosArm64, iosArm32...
+ * `<darwin targets>`: macosX64, macosArm64
+ *
+ * @see configureJvmTargetsHierarchical
  */
 fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
     project: Project
@@ -235,13 +243,14 @@ fun KotlinMultiplatformExtension.configureNativeTargetsHierarchical(
 
     val nativeMainSets = mutableListOf<KotlinSourceSet>()
     val nativeTestSets = mutableListOf<KotlinSourceSet>()
-    val nativeTargets = mutableListOf<KotlinTarget>() // actually KotlinNativeTarget, but KotlinNativeTarget is an internal API (complained by IDEA)
+    val nativeTargets =
+        mutableListOf<KotlinTarget>() // actually KotlinNativeTarget, but KotlinNativeTarget is an internal API (complained by IDEA)
 
 
     fun KotlinMultiplatformExtension.addNativeTarget(
         preset: KotlinTargetPreset<*>,
     ): KotlinTarget {
-        val target = targetFromPreset(preset, preset.name) 
+        val target = targetFromPreset(preset, preset.name)
         nativeMainSets.add(target.compilations[MAIN_COMPILATION_NAME].kotlinSourceSets.first())
         nativeTestSets.add(target.compilations[TEST_COMPILATION_NAME].kotlinSourceSets.first())
         nativeTargets.add(target)
@@ -387,10 +396,10 @@ fun KotlinMultiplatformExtension.configureNativeTargetBinaries(project: Project)
         val target = targets.getByName(targetName) as KotlinNativeTarget
         target.binaries {
             sharedLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-                baseName = project.name.toLowerCase().replace("-", "")
+                baseName = project.name.lowercase(Locale.ROOT).replace("-", "")
             }
             staticLib(listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-                baseName = project.name.toLowerCase().replace("-", "")
+                baseName = project.name.lowercase(Locale.ROOT).replace("-", "")
             }
         }
     }

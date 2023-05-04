@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -62,8 +62,8 @@ internal class Desensitizer private constructor(
 
                     val file: URL? =
                         File(filename).takeIf { it.isFile }?.toURI()?.toURL()
-                            ?: Thread.currentThread().contextClassLoader.getResource(filename)
-                            ?: Thread.currentThread().contextClassLoader.getResource("recording/configs/$filename")
+                            ?: Thread.currentThread().contextClassLoader?.getResource(filename)
+                            ?: Thread.currentThread().contextClassLoader?.getResource("recording/configs/$filename")
 
                     file?.readText()?.let { format.decodeFromString(it) } ?: kotlin.run {
                         logger.warning { "Couldn't find desensitization rules. You can set by system property 'mirai.network.recording.desensitization.filepath' to path to the desensitization configuration file, or use the 'local.desensitization.yml' by default." }

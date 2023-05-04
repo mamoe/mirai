@@ -70,7 +70,7 @@ fun Project.configureRemoteRepos() {
                     }
                 }
             } else {
-                println("SonaType is not available")
+                logger.info("Sonatype is not available, Maven Central repository is not configured")
             }
         }
     }

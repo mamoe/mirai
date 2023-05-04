@@ -60,6 +60,7 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
             }
         }, bot.logger, backgroundScope.coroutineContext)
 
+        control.start()
         control.assertRequire(SsoProcessorImpl.AuthMethod.Pwd::class)
         control.actComplete()
         control.assertRequire(SsoProcessorImpl.AuthMethod.NotAvailable::class)
@@ -78,6 +79,7 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
             }
         }, bot.logger, backgroundScope.coroutineContext)
 
+        control.start()
         control.assertRequire(SsoProcessorImpl.AuthMethod.Pwd::class)
         control.actMethodFailed(MyLoginFailedException())
 
@@ -100,6 +102,7 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
             }
         }, bot.logger, backgroundScope.coroutineContext)
 
+        control.start()
         control.assertRequire(SsoProcessorImpl.AuthMethod.Pwd::class)
         control.actComplete()
         control.assertRequire(SsoProcessorImpl.AuthMethod.NotAvailable::class)

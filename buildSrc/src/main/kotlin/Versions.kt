@@ -33,6 +33,8 @@ object Versions {
 
     const val kotlinCompiler = "1.8.10"
     const val kotlinStdlib = kotlinCompiler
+    const val kotlinLanguageVersionForTests = "1.9" // be curious!
+
     const val dokka = "1.8.10"
 
     const val kotlinCompilerForIdeaPlugin = "1.8.20-RC" // 231 bundles 1.8.20
@@ -54,8 +56,9 @@ object Versions {
     const val dynamicDelegation = "0.4.0-180.1"
     const val mavenCentralPublish = "1.0.0"
 
-    const val androidGradlePlugin = "4.1.1"
+    const val androidGradlePlugin = "7.3.1"
     const val android = "4.1.1.4"
+    const val androidxAnnotation = "1.6.0"
 
     const val shadow = "8.1.0"
 
@@ -119,6 +122,13 @@ class RelocatedDependency(
      */
     vararg val packages: String,
     /**
+     * Exclude them, so no transitive dependencies exposed to Maven and Kotlin JVM consumers
+     */
+    val notationsToExcludeInPom: RelocatableDependency = MultiplatformDependency.jvm(
+        notation.substringBefore(":"),
+        notation.substringAfter(":").substringBeforeLast(":")
+    ),
+    /**
      * Additional exclusions apart from everything from `org.jetbrains.kotlin` and `org.jetbrains.kotlinx`.
      */
     val exclusionAction: ExternalModuleDependency.() -> Unit = {},
@@ -140,14 +150,49 @@ fun KotlinDependencyHandler.implementationKotlinxIo(module: String) {
     }
 }
 
+
+class DependencyNotation(
+    val groupId: String,
+    val artifactId: String,
+) {
+    fun toMap(): Map<String, String> {
+        return mapOf("group" to groupId, "module" to artifactId)
+    }
+
+    override fun toString(): String {
+        return "$groupId:$artifactId"
+    }
+}
+
+sealed interface RelocatableDependency {
+    fun notations(): Sequence<DependencyNotation>
+}
+
+class SinglePlatformDependency(
+    val groupId: String,
+    val artifactId: String
+) : RelocatableDependency {
+    override fun notations(): Sequence<DependencyNotation> {
+        return sequenceOf(DependencyNotation(groupId, artifactId))
+    }
+}
+
+class CompositeDependency(
+    private val dependencies: List<RelocatableDependency>
+) : RelocatableDependency {
+    constructor(vararg dependencies: RelocatableDependency) : this(dependencies.toList())
+
+    override fun notations(): Sequence<DependencyNotation> = dependencies.asSequence().flatMap { it.notations() }
+}
+
 class MultiplatformDependency private constructor(
     private val groupId: String,
     private val baseArtifactId: String,
     vararg val targets: String,
-) {
-    fun notations(): Sequence<Map<String, String>> {
-        return sequenceOf(mapOf("group" to groupId, "module" to baseArtifactId))
-            .plus(targets.asSequence().map { mapOf("group" to groupId, "module" to "$baseArtifactId.$it") })
+) : RelocatableDependency {
+    override fun notations(): Sequence<DependencyNotation> {
+        return sequenceOf(DependencyNotation(groupId, baseArtifactId))
+            .plus(targets.asSequence().map { DependencyNotation(groupId, "$baseArtifactId-$it") })
     }
 
     companion object {
@@ -159,7 +204,7 @@ class MultiplatformDependency private constructor(
 
 fun ModuleDependency.exclude(multiplatformDependency: MultiplatformDependency) {
     multiplatformDependency.notations().forEach {
-        exclude(it)
+        exclude(it.toMap())
     }
 }
 
@@ -170,6 +215,7 @@ object ExcludeProperties {
     val `kotlinx-coroutines` = multiplatformJvm(groupId = "org.jetbrains.kotlinx", "kotlinx-coroutines")
     val `ktor-io` = multiplatformJvm(groupId = "io.ktor", "ktor-io")
     val `everything from slf4j` = exclude(groupId = "org.slf4j", null)
+    val `slf4j-api` = exclude(groupId = "org.slf4j", "slf4j-api")
 
     /**
      * @see org.gradle.kotlin.dsl.exclude
@@ -188,8 +234,12 @@ object ExcludeProperties {
 }
 
 val `ktor-io` = ktor("io", Versions.ktor)
-val `ktor-io_relocated` = RelocatedDependency(`ktor-io`, "io.ktor.utils.io") {
+val `ktor-io_relocated` = RelocatedDependency(
+    `ktor-io`, "io.ktor.utils.io",
+    notationsToExcludeInPom = MultiplatformDependency.jvm("io.ktor", "ktor-io")
+) {
     exclude(ExcludeProperties.`everything from slf4j`)
+    exclude(ExcludeProperties.`slf4j-api`)
 }
 
 val `ktor-http` = ktor("http", Versions.ktor)
@@ -198,7 +248,16 @@ val `ktor-serialization` = ktor("serialization", Versions.ktor)
 val `ktor-websocket-serialization` = ktor("websocket-serialization", Versions.ktor)
 
 val `ktor-client-core` = ktor("client-core", Versions.ktor)
-val `ktor-client-core_relocated` = RelocatedDependency(`ktor-client-core`, "io.ktor") {
+val `ktor-client-core_relocated` = RelocatedDependency(
+    `ktor-client-core`, "io.ktor",
+    notationsToExcludeInPom = CompositeDependency(
+        MultiplatformDependency.jvm("io.ktor", "ktor-io"),
+        MultiplatformDependency.jvm("io.ktor", "ktor-client-core"),
+        MultiplatformDependency.jvm("io.ktor", "ktor-client-okhttp"),
+        MultiplatformDependency.jvm("io.ktor", "ktor-http"),
+        MultiplatformDependency.jvm("io.ktor", "ktor-utils"),
+    )
+) {
     exclude(ExcludeProperties.`ktor-io`)
     exclude(ExcludeProperties.`everything from slf4j`)
 }
@@ -209,7 +268,21 @@ val `ktor-client-curl` = ktor("client-curl", Versions.ktor)
 val `ktor-client-darwin` = ktor("client-darwin", Versions.ktor)
 val `ktor-client-okhttp` = ktor("client-okhttp", Versions.ktor)
 val `ktor-client-okhttp_relocated` =
-    RelocatedDependency(ktor("client-okhttp", Versions.ktor), "io.ktor", "okhttp", "okio") {
+    RelocatedDependency(
+        ktor("client-okhttp", Versions.ktor), "io.ktor", "okhttp", "okio",
+        notationsToExcludeInPom = CompositeDependency(
+            MultiplatformDependency.jvm("io.ktor", "ktor-io"),
+            MultiplatformDependency.jvm("io.ktor", "ktor-client-core"),
+            MultiplatformDependency.jvm("io.ktor", "ktor-client-okhttp"),
+            MultiplatformDependency.jvm("io.ktor", "ktor-http"),
+            MultiplatformDependency.jvm("io.ktor", "ktor-serialization"),
+            MultiplatformDependency.jvm("io.ktor", "ktor-utils"),
+            MultiplatformDependency.jvm("io.ktor", "ktor-websockets"),
+            MultiplatformDependency.jvm("io.ktor", "ktor-websockets-serialization"),
+            MultiplatformDependency.jvm("com.squareup.okhttp3", "okhttp3"),
+            MultiplatformDependency.jvm("com.squareup.okio", "okio"),
+        )
+    ) {
         exclude(ExcludeProperties.`ktor-io`)
         exclude(ExcludeProperties.`everything from slf4j`)
     }
@@ -262,6 +335,7 @@ const val `jetbrains-annotations` = "org.jetbrains:annotations:19.0.0"
 
 const val `caller-finder` = "io.github.karlatemp:caller:1.1.1"
 
+const val `androidx-annotation` = "androidx.annotation:annotation:${Versions.androidxAnnotation}"
 const val `android-runtime` = "com.google.android:android:${Versions.android}"
 const val `netty-all` = "io.netty:netty-all:${Versions.netty}"
 const val `netty-handler` = "io.netty:netty-handler:${Versions.netty}"

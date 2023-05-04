@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -35,7 +35,7 @@ internal class InternalImageProtocolImpl : InternalImageProtocol {
      * - 上传给群的图片可以通过 GroupPicUp(groupCode=user.id) 或 OffPicUp(dstUin=user.id) 查询
      * - 上传给好友的图片可以通过 GroupPicUp(groupCode=group.id) 或 OffPicUp(dstUin=group.id) 查询
      */
-    fun interface ImageUploadedChecker<C : Contact?> {
+    interface ImageUploadedChecker<C : Contact?> {
         suspend fun isUploaded(
             bot: QQAndroidBot,
             context: C,

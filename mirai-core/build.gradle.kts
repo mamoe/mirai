@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -12,10 +12,12 @@
 import BinaryCompatibilityConfigurator.configureBinaryValidators
 import org.jetbrains.kotlin.gradle.plugin.mpp.AbstractNativeLibrary
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import shadow.relocateCompileOnly
+import shadow.relocateImplementation
 
 plugins {
     kotlin("multiplatform")
-    // id("kotlinx-atomicfu")
+    id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
     id("me.him188.kotlin-jvm-blocking-bridge")
     id("me.him188.kotlin-dynamic-delegation")
@@ -27,8 +29,9 @@ description = "Mirai Protocol implementation for QQ Android"
 
 kotlin {
     explicitApi()
+    apply(plugin = "explicit-api")
 
-    configureJvmTargetsHierarchical()
+    configureJvmTargetsHierarchical("net.mamoe.mirai.internal")
     configureNativeTargetsHierarchical(project)
     configureNativeTargetBinaries(project) // register native binaries for mirai-core only
 
@@ -45,6 +48,9 @@ kotlin {
                 implementation(project(":mirai-core-utils"))
                 implementation(`kotlinx-serialization-protobuf`)
                 implementation(`kotlinx-atomicfu`)
+
+                // runtime from mirai-core-utils
+                relocateCompileOnly(`ktor-io_relocated`)
 
 //                relocateImplementation(`ktor-http_relocated`)
 //                relocateImplementation(`ktor-serialization_relocated`)
@@ -76,15 +82,23 @@ kotlin {
 
         findByName("androidMain")?.apply {
             dependencies {
-                compileOnly(`android-runtime`)
+                if (rootProject.property("mirai.android.target.api.level")!!.toString().toInt() < 23) {
+                    // Ship with BC if we are targeting 23 or lower where AndroidKeyStore is not stable enough.
+                    // For more info, read `net.mamoe.mirai.internal.utils.crypto.EcdhAndroidKt.create` in `androidMain`.
+                    implementation(bouncycastle)
+                }
             }
         }
+
+        // For Android with JDK
         findByName("androidTest")?.apply {
             dependencies {
-                implementation(kotlin("test", Versions.kotlinCompiler))
-                implementation(kotlin("test-junit5", Versions.kotlinCompiler))
-                implementation(kotlin("test-annotations-common"))
-                implementation(kotlin("test-common"))
+                implementation(bouncycastle)
+            }
+        }
+        // For Android with SDK
+        findByName("androidUnitTest")?.apply {
+            dependencies {
                 implementation(bouncycastle)
             }
         }
@@ -118,11 +132,26 @@ kotlin {
 
 
         // Ktor
-
         findByName("commonMain")?.apply {
+            dependencies {
+                compileOnly(`ktor-io`)
+                implementation(`ktor-client-core`)
+            }
+        }
+        findByName("jvmBaseMain")?.apply {
+            // relocate for JVM like modules
             dependencies {
                 relocateCompileOnly(`ktor-io_relocated`) // runtime from mirai-core-utils
                 relocateImplementation(`ktor-client-core_relocated`)
+            }
+        }
+        configure(NATIVE_TARGETS.map { getByName(it + "Main") }
+                + NATIVE_TARGETS.map { getByName(it + "Test") }) {
+            // no relocation in native, include binaries
+            dependencies {
+                api(`ktor-io`) {
+                    exclude(ExcludeProperties.`slf4j-api`)
+                }
             }
         }
         findByName("jvmBaseMain")?.apply {
@@ -188,6 +217,10 @@ kotlin {
     }
 }
 
+atomicfu {
+    transformJvm = false
+}
+
 afterEvaluate {
     val main = projectDir.resolve("src/nativeTest/kotlin/local/TestMain.kt")
     if (!main.exists()) {
@@ -222,7 +255,7 @@ if (tasks.findByName("androidMainClasses") != null) {
         group = "verification"
         this.mustRunAfter("androidMainClasses")
     }
-    tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
+    tasks.getByName("androidBaseTest").dependsOn("checkAndroidApiLevel")
 }
 
 configureMppPublishing()

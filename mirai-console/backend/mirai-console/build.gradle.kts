@@ -10,6 +10,7 @@
 @file:Suppress("UnusedImport")
 
 import BinaryCompatibilityConfigurator.configureBinaryValidator
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -33,9 +34,11 @@ kotlin {
 
 // 搜索 mirai-console (包括 core) 直接使用并对外公开的类 (api)
 configurations.create("consoleRuntimeClasspath").attributes {
-    attribute(Usage.USAGE_ATTRIBUTE,
+    attribute(
+        Usage.USAGE_ATTRIBUTE,
         project.objects.named(Usage::class.java, Usage.JAVA_API)
     )
+    attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
 }.also { consoleRuntimeClasspath ->
     consoleRuntimeClasspath.exclude(group = "io.ktor")
 }
