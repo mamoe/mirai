@@ -58,22 +58,24 @@ Bot bot = BotFactory.INSTANCE.newBot(    );
 仅能在构造 Bot 时修改其配置：
 ```
 // Kotlin
+// 使用密码登录
 val bot = BotFactory.newBot(qq, password) {
     // 配置，例如：
     fileBasedDeviceInfo()
 }
-// 在 2.15.0 中加入
+// 在 2.15.0 中加入, 使用二维码登录
 val bot = BotFactory.newBot(qq, BotAuthorization.byQRCode()) {
     protocol = BotConfiguration.MiraiProtocol.ANDROID_WATCH
 }
 
 // Java
+// 使用密码登录
 Bot bot = BotFactory.INSTANCE.newBot(qq, password, new BotConfiguration() {{
     // 配置，例如：
     fileBasedDeviceInfo()
 }});
 Bot bot = BotFactory.INSTANCE.newBot(qq, password, configuration -> {})
-// 在 2.15.0 中加入
+// 在 2.15.0 中加入, 使用二维码登录
 Bot bot = BotFactory.INSTANCE.newBot(qq, BotAuthorization.byQRCode(), configuration -> {
     configuration.setProtocol(BotConfiguration.MiraiProtocol.ANDROID_WATCH);
 });
