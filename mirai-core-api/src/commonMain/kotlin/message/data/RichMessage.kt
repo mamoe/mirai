@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -39,6 +39,7 @@ import kotlin.jvm.*
 // using polymorphic serializer from Message.Serializer
 @NotStableForInheritance
 public interface RichMessage : MessageContent, ConstrainSingle {
+    @OptIn(MiraiExperimentalApi::class)
     override val key: MessageKey<RichMessage> get() = Key
 
     /**
@@ -185,6 +186,7 @@ public class SimpleServiceMessage(
  */
 @NotStableForInheritance
 public interface ServiceMessage : RichMessage, CodableMessage {
+    @OptIn(MiraiExperimentalApi::class)
     public companion object Key :
         AbstractPolymorphicMessageKey<RichMessage, ServiceMessage>(RichMessage, { it.safeCast() })
 

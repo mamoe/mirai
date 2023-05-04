@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -23,6 +23,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import java.time.*
 import java.time.temporal.TemporalAccessor
 import java.util.*
@@ -98,6 +99,7 @@ public interface CommandArgumentContext {
     private object TemporalCommandArgumentContext : CommandArgumentContext {
         private val cache = HashMap<KClass<*>, CommandValueArgumentParser<*>>()
 
+        @OptIn(MiraiExperimentalApi::class)
         private fun <T : TemporalAccessor> put(kClass: KClass<T>, now: () -> T, parse: (CharSequence) -> T) {
             cache[kClass] = TemporalArgumentParser(kClass.java, now, parse)
         }

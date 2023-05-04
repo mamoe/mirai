@@ -13,6 +13,7 @@ import net.mamoe.mirai.auth.BotAuthInfo
 import net.mamoe.mirai.auth.BotAuthResult
 import net.mamoe.mirai.auth.BotAuthSession
 import net.mamoe.mirai.auth.BotAuthorization
+import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import java.io.ByteArrayOutputStream
 
@@ -24,6 +25,7 @@ internal class ConsoleBotAuthorization(
         return delegate.invoke(session, info)
     }
 
+    @OptIn(ConsoleFrontEndImplementation::class)
     override fun calculateSecretsKey(bot: BotAuthInfo): ByteArray {
         val calc = MiraiConsoleImplementation.getBridge().consoleSecretsCalculator
 

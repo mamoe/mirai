@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,7 +16,6 @@ import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.command.resolve.InterceptedReason
 import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.contracts.contract
 
 /**
@@ -129,7 +128,6 @@ public sealed class CommandExecuteResult {
         public override val call: CommandCall,
         /** 尝试执行的指令 */
         @ExperimentalCommandDescriptors
-        @ConsoleExperimentalApi
         public val failureReasons: List<UnmatchedCommandSignature>,
     ) : Failure() {
         /** 指令执行时发生的错误, 总是 `null` */
@@ -141,14 +139,12 @@ public sealed class CommandExecuteResult {
 }
 
 @ExperimentalCommandDescriptors
-@ConsoleExperimentalApi
 public class UnmatchedCommandSignature(
     public val signature: CommandSignature,
     public val failureReason: FailureReason,
 )
 
 @ExperimentalCommandDescriptors
-@ConsoleExperimentalApi
 public sealed class FailureReason {
     public class InapplicableReceiverArgument(
         public override val parameter: CommandReceiverParameter<*>,

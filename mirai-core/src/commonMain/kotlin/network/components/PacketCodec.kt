@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -331,7 +331,7 @@ internal class PacketCodecImpl : PacketCodec {
             var decryptedData: String? = null
             if (remaining > 15) {
                 discardExact(12)
-                val encryptionMethod = this.readUShort().toInt()
+                val encryptionMethod = this.readShort().toUShort().toInt()
                 discardExact(1)
                 decryptedData = kotlin.runCatching {
                     decrypt(encryptionMethod).toUHexString()
@@ -348,10 +348,10 @@ internal class PacketCodecImpl : PacketCodec {
 
         this.discardExact(2)
         this.discardExact(2)
-        this.readUShort()
+        this.readShort().toUShort()
         this.readShort()
-        this.readUInt().toLong()
-        val encryptionMethod = this.readUShort().toInt()
+        this.readInt().toUInt().toLong()
+        val encryptionMethod = this.readShort().toUShort().toInt()
 
         this.discardExact(1)
         return decrypt(encryptionMethod)

@@ -20,6 +20,9 @@ description = "Mirai core mock testing framework"
 
 kotlin {
     explicitApiWarning()
+    optInForAllSourceSets("net.mamoe.mirai.LowLevelApi")
+    optInForAllSourceSets("net.mamoe.mirai.utils.MiraiInternalApi")
+    optInForAllSourceSets("net.mamoe.mirai.utils.MiraiExperimentalApi")
 }
 
 dependencies {

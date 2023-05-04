@@ -32,9 +32,19 @@ private fun Project.jvmVersion(): JavaVersion {
     }
 }
 
-fun Project.optInForAllTargets(qualifiedClassname: String) {
-    tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinCompile::class) {
-        kotlinOptions.freeCompilerArgs += "-Xopt-in=$qualifiedClassname"
+fun Project.optInForAllSourceSets(qualifiedClassname: String) {
+    kotlinSourceSets!!.all {
+        languageSettings {
+            optIn(qualifiedClassname)
+        }
+    }
+}
+
+fun Project.optInForTestSourceSets(qualifiedClassname: String) {
+    kotlinSourceSets!!.matching { it.name.contains("test", ignoreCase = true) }.all {
+        languageSettings {
+            optIn(qualifiedClassname)
+        }
     }
 }
 
@@ -167,26 +177,16 @@ val testExperimentalAnnotations = arrayOf(
     "io.ktor.util.KtorExperimentalAPI",
     "kotlin.io.path.ExperimentalPathApi",
     "kotlinx.coroutines.ExperimentalCoroutinesApi",
+    "kotlinx.serialization.ExperimentalSerializationApi",
+
     "net.mamoe.mirai.utils.TestOnly",
+    "net.mamoe.mirai.utils.MiraiInternalApi",
+    "net.mamoe.mirai.utils.MiraiExperimentalApi",
 )
 
 val experimentalAnnotations = arrayOf(
-    "kotlin.RequiresOptIn",
     "kotlin.contracts.ExperimentalContracts",
     "kotlin.experimental.ExperimentalTypeInference",
-    "kotlin.ExperimentalUnsignedTypes",
-
-    "kotlinx.serialization.ExperimentalSerializationApi",
-
-    "net.mamoe.mirai.utils.MiraiInternalApi",
-    "net.mamoe.mirai.utils.MiraiExperimentalApi",
-    "net.mamoe.mirai.LowLevelApi",
-
-    "net.mamoe.mirai.console.ConsoleFrontEndImplementation",
-    "net.mamoe.mirai.console.util.ConsoleInternalApi",
-    "net.mamoe.mirai.console.util.ConsoleExperimentalApi",
-
-    "io.ktor.utils.io.core.internal.DangerousInternalIoApi"
 )
 
 val testLanguageFeatures = listOf(

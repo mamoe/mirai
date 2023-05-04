@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,6 +10,7 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
+@file:OptIn(MiraiInternalApi::class)
 
 package net.mamoe.mirai.message.data
 
@@ -70,6 +71,7 @@ internal sealed class AbstractMessageChain : MessageChain {
     @MiraiInternalApi
     abstract val hasConstrainSingle: Boolean
 
+    @OptIn(MiraiInternalApi::class)
     override fun hashCode(): Int {
         var result = 1
         acceptChildren(object : RecursiveMessageVisitor<Unit>() {
@@ -110,6 +112,7 @@ internal sealed class AbstractMessageChain : MessageChain {
     }
 }
 
+@OptIn(MiraiInternalApi::class)
 internal val Message.hasConstrainSingle: Boolean
     get() {
         if (this is SingleMessage) return this is ConstrainSingle

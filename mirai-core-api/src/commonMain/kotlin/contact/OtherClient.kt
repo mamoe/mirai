@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -40,7 +40,11 @@ public interface OtherClient : Contact {
      *
      * 此 id 由其他客户端控制, 重启可能会变化.
      */
-    public override val id: Long get() = info.appId.toLongUnsigned()
+    public override val id: Long
+        get() {
+            @OptIn(MiraiInternalApi::class)
+            return info.appId.toLongUnsigned()
+        }
 
     override suspend fun sendMessage(message: Message): MessageReceipt<OtherClient> {
         throw UnsupportedOperationException("OtherClientImpl.sendMessage is not yet supported.")

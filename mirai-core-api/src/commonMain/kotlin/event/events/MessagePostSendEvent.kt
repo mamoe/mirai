@@ -37,6 +37,7 @@ import kotlin.jvm.JvmSynthetic
  * @see Contact.sendMessage 发送消息. 为广播这个事件的唯一途径
  * @see MessagePreSendEvent
  */
+@OptIn(MiraiInternalApi::class)
 public sealed class MessagePostSendEvent<C : Contact> : BotEvent, BotActiveEvent, AbstractEvent(), VerboseEvent {
     /** 发信目标. */
     public abstract val target: C
@@ -184,6 +185,7 @@ public sealed class TempMessagePostSendEvent @MiraiInternalApi constructor(
  * 在群临时会话消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
+@OptIn(MiraiInternalApi::class)
 public data class GroupTempMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: NormalMember,

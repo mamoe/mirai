@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -579,6 +579,7 @@ internal fun MessageScope.asSequence(): Sequence<MessageScope> {
     } else sequenceOf(this)
 }
 
+@OptIn(ConsoleExperimentalApi::class)
 private class CombinedScope(
     val first: MessageScope,
     val second: MessageScope,
@@ -602,6 +603,7 @@ private class CombinedScope(
     }
 }
 
+@OptIn(ConsoleExperimentalApi::class)
 private class CommandSenderAsMessageScope(
     private val sender: CommandSender,
 ) : MessageScope {
@@ -621,6 +623,7 @@ private class CommandSenderAsMessageScope(
     }
 }
 
+@OptIn(ConsoleExperimentalApi::class)
 private class ContactAsMessageScope(
     private val sender: Contact,
 ) : MessageScope {
@@ -636,6 +639,7 @@ private class ContactAsMessageScope(
     }
 }
 
+@OptIn(ConsoleExperimentalApi::class)
 private object NoopMessageScope : MessageScope {
     override val realTarget: Any?
         get() = null

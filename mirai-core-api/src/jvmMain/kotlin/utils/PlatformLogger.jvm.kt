@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("MemberVisibilityCanBePrivate")
@@ -61,6 +61,7 @@ public actual open class PlatformLogger constructor(  // same as StdoutLogger bu
      * 输出一条日志. [message] 末尾可能不带换行符.
      */
     protected open fun printLog(message: String?, priority: SimpleLogger.LogPriority) {
+        @OptIn(MiraiExperimentalApi::class)
         if (isColored) output("${priority.color}$currentTimeFormatted ${priority.simpleName}/$identity: $message${Color.RESET}")
         else output("$currentTimeFormatted ${priority.simpleName}/$identity: $message")
     }
@@ -68,6 +69,7 @@ public actual open class PlatformLogger constructor(  // same as StdoutLogger bu
     /**
      * 获取指定 [SimpleLogger.LogPriority] 的颜色
      */
+    @MiraiExperimentalApi
     protected open val SimpleLogger.LogPriority.color: Color
         get() = when (this) {
             SimpleLogger.LogPriority.VERBOSE -> Color.RESET
@@ -111,9 +113,12 @@ public actual open class PlatformLogger constructor(  // same as StdoutLogger bu
     @Deprecated("Use formatter instead.", level = DeprecationLevel.HIDDEN)
     protected open val timeFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE)
 
+    @Suppress("NewApi")
     protected open val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
-    private val currentTimeFormatted get() = formatter.format(LocalDateTime.now())
+    private val currentTimeFormatted
+        @Suppress("NewApi") // we are in JVM module
+        get() = formatter.format(LocalDateTime.now())
 
     @MiraiExperimentalApi("This is subject to change.")
     protected enum class Color(private val format: String) {

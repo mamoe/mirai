@@ -19,6 +19,7 @@ import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
+import net.mamoe.mirai.utils.MiraiInternalApi
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -40,12 +41,13 @@ public interface MessageSyncEvent : MessageEvent, OtherClientEvent {
  *
  * @see MessageSyncEvent
  */
+@OptIn(MiraiInternalApi::class)
 public class GroupTempMessageSyncEvent private constructor(
     private val _client: OtherClient?,
     public override val sender: NormalMember,
     public override val message: MessageChain,
     public override val time: Int,
-    @Suppress("UNUSED_PARAMETER") _primaryConstructorMark: Any?
+    @Suppress("UNUSED_PARAMETER", "LocalVariableName") _primaryConstructorMark: Any?
 ) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageSyncEvent {
     /**
      * @since 2.13
@@ -93,12 +95,13 @@ public class GroupTempMessageSyncEvent private constructor(
  *
  * @see MessageSyncEvent
  */
+@OptIn(MiraiInternalApi::class)
 public class FriendMessageSyncEvent private constructor(
     private val _client: OtherClient?,
     public override val sender: Friend,
     public override val message: MessageChain,
     public override val time: Int,
-    @Suppress("UNUSED_PARAMETER") _primaryConstructorMark: Any?
+    @Suppress("UNUSED_PARAMETER", "LocalVariableName") _primaryConstructorMark: Any?
 ) : AbstractMessageEvent(), FriendEvent, MessageSyncEvent {
     /**
      * @since 2.13
@@ -147,12 +150,13 @@ public class FriendMessageSyncEvent private constructor(
  *
  * @see MessageSyncEvent
  */
+@OptIn(MiraiInternalApi::class)
 public class StrangerMessageSyncEvent private constructor(
     private val _client: OtherClient?,
     public override val sender: Stranger,
     public override val message: MessageChain,
     public override val time: Int,
-    @Suppress("UNUSED_PARAMETER") _primaryConstructorMark: Any?,
+    @Suppress("UNUSED_PARAMETER", "LocalVariableName") _primaryConstructorMark: Any?,
 ) : AbstractMessageEvent(), StrangerEvent, MessageSyncEvent {
     /**
      * @since 2.13
@@ -201,6 +205,7 @@ public class StrangerMessageSyncEvent private constructor(
  *
  * @see MessageSyncEvent
  */
+@OptIn(MiraiInternalApi::class)
 public class GroupMessageSyncEvent private constructor(
     private val _client: OtherClient?,
     public override val group: Group,
@@ -208,7 +213,7 @@ public class GroupMessageSyncEvent private constructor(
     public override val sender: Member,
     public override val senderName: String,
     public override val time: Int,
-    @Suppress("UNUSED_PARAMETER") _primaryConstructorMark: Any?,
+    @Suppress("UNUSED_PARAMETER", "LocalVariableName") _primaryConstructorMark: Any?,
 ) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageSyncEvent {
     /**
      * @since 2.13

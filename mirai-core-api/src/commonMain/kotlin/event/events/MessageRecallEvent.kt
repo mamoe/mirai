@@ -59,6 +59,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     /**
      * 好友消息撤回事件
      */
+    @OptIn(MiraiInternalApi::class)
     public data class FriendRecall @MiraiInternalApi public constructor(
         public override val bot: Bot,
         public override val messageIds: IntArray,
@@ -88,9 +89,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
             if (!messageInternalIds.contentEquals(other.messageInternalIds)) return false
             if (messageTime != other.messageTime) return false
             if (operatorId != other.operatorId) return false
-            if (operator != other.operator) return false
-
-            return true
+            return operator == other.operator
         }
 
         override fun hashCode(): Int {
@@ -107,6 +106,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     /**
      * 群消息撤回事件.
      */
+    @OptIn(MiraiInternalApi::class)
     public data class GroupRecall @MiraiInternalApi constructor(
         public override val bot: Bot,
         public override val authorId: Long,
@@ -133,9 +133,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
             if (messageTime != other.messageTime) return false
             if (operator != other.operator) return false
             if (group != other.group) return false
-            if (author != other.author) return false
-
-            return true
+            return author == other.author
         }
 
         override fun hashCode(): Int {

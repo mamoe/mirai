@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,7 +9,6 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MiraiUtils")
-@file:Suppress("NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.utils
 
@@ -104,6 +103,7 @@ public fun ByteArray.checkOffsetAndLength(offset: Int, length: Int) {
     require(offset + length <= this.size) { "offset ($offset) + length ($length) > array.size (${this.size})" }
 }
 
+@OptIn(ExperimentalUnsignedTypes::class)
 public fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {
     if (length == 0) {
         return ""
@@ -121,10 +121,10 @@ public fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, len
     }
 }
 
-public inline fun ByteArray.toReadPacket(
+public fun ByteArray.toReadPacket(
     offset: Int = 0,
     length: Int = this.size - offset,
-    noinline release: (ByteArray) -> Unit = {}
+    release: (ByteArray) -> Unit = {}
 ): ByteReadPacket =
     ByteReadPacket(this, offset = offset, length = length, block = release)
 

@@ -45,6 +45,7 @@ import kotlin.jvm.JvmName
  *
  * 使用 [MessageEvent.isContextIdenticalWith] 可判断两个 [MessageEvent] 的语境是否相同. 有关"语境"的定义可查看 [MessageEvent.isContextIdenticalWith].
  */
+@OptIn(MiraiInternalApi::class)
 public sealed interface MessageEvent : Event, Packet, BotPassiveEvent {
     /**
      * 与这个消息事件相关的 [Bot]
@@ -109,7 +110,8 @@ public sealed interface UserMessageEvent : MessageEvent {
  *
  * @see MessageEvent
  */
-public class FriendMessageEvent constructor(
+@OptIn(MiraiInternalApi::class)
+public class FriendMessageEvent(
     public override val sender: Friend,
     public override val message: MessageChain,
     public override val time: Int
@@ -134,7 +136,8 @@ public class FriendMessageEvent constructor(
  *
  * @see MessageEvent
  */
-public class OtherClientMessageEvent constructor(
+@OptIn(MiraiInternalApi::class)
+public class OtherClientMessageEvent(
     public override val client: OtherClient,
     public override val message: MessageChain,
     public override val time: Int
@@ -173,6 +176,7 @@ public sealed interface GroupAwareMessageEvent : MessageEvent {
  *
  * @see MessageEvent
  */
+@OptIn(MiraiInternalApi::class)
 public class GroupMessageEvent(
     public override val senderName: String,
     /**
@@ -205,13 +209,14 @@ public class GroupMessageEvent(
  *
  * @see MessageEvent
  */
+@OptIn(MiraiInternalApi::class)
 @Deprecated(
     "mirai 正计划支持其他渠道发起的临时会话, 届时此事件会变动. 原 TempMessageEvent 已更改为 GroupTempMessageEvent",
     replaceWith = ReplaceWith("GroupTempMessageEvent", "net.mamoe.mirai.event.events.GroupTempMessageEvent"),
     DeprecationLevel.HIDDEN
 )
 @DeprecatedSinceMirai(hiddenSince = "2.0") // maybe 2.0
-public sealed class TempMessageEvent constructor(
+public sealed class TempMessageEvent(
     public override val sender: NormalMember,
     public override val message: MessageChain,
     public override val time: Int
@@ -254,7 +259,8 @@ public class GroupTempMessageEvent(
  *
  * @see MessageEvent
  */
-public class StrangerMessageEvent constructor(
+@OptIn(MiraiInternalApi::class)
+public class StrangerMessageEvent(
     public override val sender: Stranger,
     public override val message: MessageChain,
     public override val time: Int
