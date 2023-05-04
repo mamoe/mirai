@@ -9,8 +9,8 @@ Console，可参考 [Console 开发文档](../mirai-console/docs/README.md)。
 本文假设你使用 Windows 操作系统。但 Mirai Console 并不仅限于 Windows
 平台使用，在其他操作系统上的使用方法应当是类似的。
 
-> 重要：关闭 Mirai Console 需要通过 `stop` 命令关闭。
-> 直接关闭窗口会导致数据损坏、数据丢失、系统崩溃等错误。
+**重要**：关闭 Mirai Console 需要通过 `stop` 命令关闭。  
+直接关闭窗口会导致数据损坏、数据丢失、系统崩溃等错误。
 
 安装
 ----

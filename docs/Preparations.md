@@ -4,7 +4,7 @@
 
 ## JVM 环境要求
 
-- 桌面 JVM：最低 Java 8，但推荐 Java 17（要使用一键启动器，需要 11+）
+- 桌面 JVM：最低 Java 8，但推荐 Java 17（要使用一键启动器，需要 11 及以上）
 - Android：Android SDK 26+ （Android 8.0，Oreo)
 
 目前主要使用的自动启动器，[Mirai Console Loader](https://github.com/iTXTech/mirai-console-loader)

@@ -4,13 +4,12 @@
 
 > 'java' 不是内部或外部命令，也不是可运行的程序
 
-没有安装 `java`
+没有安装 Java。
 
 > `Failed to fetch announcement for ...`
 
-[MCL](https://github.com/iTXTech/mirai-console-loader) 查询更新信息失败，
-你可以尝试编辑 `config.json` 
-更换 [`mirai_repo`](https://github.com/project-mirai/mirai-repo-mirror#%E4%BB%93%E5%BA%93%E9%95%9C%E5%83%8F)
+[MCL](https://github.com/iTXTech/mirai-console-loader) 查询更新信息失败，可以尝试编辑 `config.json`，
+更换 [mirai repo](https://github.com/project-mirai/mirai-repo-mirror#%E4%BB%93%E5%BA%93%E9%95%9C%E5%83%8F)。
 
 > Login failed: Error(bot=..., code=..., title=....
 
@@ -22,9 +21,10 @@
 
 对于手动密码登录，第三个参数就是协议, 例如 `login 12345 114514 MACOS`  
 
-对于自动密码登录，你可以使用指令修改，例如 `autoLogin setConfig 12345 protocol MACOS`  
-也可以在 `Mirai Console` 关闭的情况下, 编辑 `config/Console/AutoLogin.yml` 文件  
-注意，文件中有一个账号为 `12345` 的示例，请注意确认修改的配置对应的账号，不要修改错了示例
+对于自动密码登录，可以使用指令修改，例如 `autoLogin setConfig 12345 protocol MACOS`，  
+也可以在 `Mirai Console` 关闭的情况下, 编辑 `config/Console/AutoLogin.yml` 文件。
+
+注意，文件中有一个账号为 `12345` 的示例，请注意确认修改的配置对应的账号，不要修改错了示例。
 
 > 聊天框无法使用指令(使用指令后没效果)
 
@@ -44,14 +44,14 @@
 > 如何确认 `Mirai 版本` 或 `插件版本` 等信息
 
 可以启动 `Mirai Console` 的情况下:  
-用指令 `/status`  
+使用指令 `/status` 。
 
 无法启动的情况下:  
 `Mirai Console` 的组件在 `libs` 文件夹下, 文件名包含 `版本信息`  
 
 > 找不到 `http api` 的相关配置文件
 
-你可能需要安装插件 https://github.com/project-mirai/mirai-api-http
+可能需要安装插件 <https://github.com/project-mirai/mirai-api-http>。
 
 > 如何添加 jvm 参数，例如 `-Dmirai.no-desktop=true`
 
@@ -82,4 +82,4 @@ IDEA 版本过于老旧，无法分析新版本的 kotlin 依赖，请尝试升�
 
 > 发送语音之后播放没有声音
 
-你可能需要 安装插件/引入依赖 https://github.com/project-mirai/mirai-silk-converter
+你可能需要安装插件或引入依赖 <https://github.com/project-mirai/mirai-silk-converter>。
