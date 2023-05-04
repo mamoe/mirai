@@ -73,6 +73,10 @@ internal class CoroutineOnDemandValueScope<T, V>(
                         }
                     }
 
+                    is ProducerState.ProducerReady -> {
+                        setStateProducing(state)
+                    }
+
                     else -> throw IllegalProducerStateException(state)
                 }
             }
@@ -96,10 +100,18 @@ internal class CoroutineOnDemandValueScope<T, V>(
         }
     }
 
+    private fun setStateProducing(state: ProducerState.ProducerReady<T, V>) {
+        val deferred = CompletableDeferred<V>(coroutineScope.coroutineContext.job)
+        if (!compareAndSetState(state, ProducerState.Producing(state.producer, deferred))) {
+            deferred.cancel() // avoid leak
+        }
+        // loop again
+    }
+
     private fun finishImpl(exception: Throwable?) {
         state.loop { state ->
             when (state) {
-                is ProducerState.Finished -> throw state.createAlreadyFinishedException(exception)
+                is ProducerState.Finished -> {} // ignore 
                 else -> {
                     if (compareAndSetState(state, ProducerState.Finished(state, exception))) {
                         val cancellationException = kotlinx.coroutines.CancellationException("Finished", exception)
@@ -153,6 +165,7 @@ internal class CoroutineOnDemandValueScope<T, V>(
                     }
                     return null
                 }
+
                 else -> throw IllegalProducerStateException(state)
             }
         }
@@ -172,11 +185,7 @@ internal class CoroutineOnDemandValueScope<T, V>(
                 }
 
                 is ProducerState.ProducerReady -> {
-                    val deferred = CompletableDeferred<V>(coroutineScope.coroutineContext.job)
-                    if (!compareAndSetState(state, ProducerState.Producing(state.producer, deferred))) {
-                        deferred.cancel() // avoid leak
-                    }
-                    // loop again
+                    setStateProducing(state)
                 }
 
                 is ProducerState.Producing -> return true // ok

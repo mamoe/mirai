@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.auth
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -133,6 +134,7 @@ internal sealed interface ProducerState<T, V> {
         val producerLatch = Latch<T>(parentCoroutineContext)
 
         override fun toString(): String {
+            @OptIn(ExperimentalCoroutinesApi::class)
             val completed =
                 value.runCatching { getCompleted().toString() }.getOrNull() // getCompleted() is experimental
             return "Consuming(value=$completed)"
@@ -154,16 +156,21 @@ internal sealed interface ProducerState<T, V> {
 
         fun createAlreadyFinishedException(cause: Throwable?): IllegalProducerStateException {
             val exception = exception
+            val causeMessage = if (cause == null) {
+                ""
+            } else {
+                ", but attempting to finish with the cause $cause"
+            }
             return if (exception == null) {
                 IllegalProducerStateException(
                     this,
-                    "Producer has already finished normally, but attempting to finish with the cause $cause. Previous state was: $previousState",
+                    "Producer has already finished normally$causeMessage. Previous state was: $previousState",
                     cause = cause
                 )
             } else {
                 IllegalProducerStateException(
                     this,
-                    "Producer has already finished with the suppressed exception, but attempting to finish with the cause $cause. Previous state was: $previousState",
+                    "Producer has already finished with the suppressed exception$causeMessage. Previous state was: $previousState",
                     cause = cause
                 ).apply {
                     addSuppressed(exception)

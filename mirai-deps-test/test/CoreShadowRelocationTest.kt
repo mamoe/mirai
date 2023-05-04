@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -117,8 +117,8 @@ class CoreShadowRelocationTest : AbstractTest() {
             """
             dependencies {
                 implementation("net.mamoe:mirai-core:$miraiLocalVersion") {
-                    exclude("net.mamoe", "mirai-core-api")
-                    exclude("net.mamoe", "mirai-core-utils")
+                    exclude("net.mamoe", "mirai-core-api-jvm")
+                    exclude("net.mamoe", "mirai-core-utils-jvm")
                 }
             }
         """.trimIndent()
@@ -130,6 +130,7 @@ class CoreShadowRelocationTest : AbstractTest() {
     @EnabledIf("isMiraiLocalAvailable", disabledReason = REASON_LOCAL_ARTIFACT_NOT_AVAILABLE)
     fun `test mirai-core-api without transitive mirai-core-utils`() {
         val fragment = buildTestCases {
+            -`mirai-core-utils`
             -both(`ktor-io`)
             -both(`ktor-client-core`)
             -both(`ktor-client-okhttp`)
@@ -143,7 +144,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             """
             dependencies {
                 implementation("net.mamoe:mirai-core-api:$miraiLocalVersion") {
-                    exclude("net.mamoe", "mirai-core-utils")
+                    exclude("net.mamoe", "mirai-core-utils-jvm")
                 }
             }
         """.trimIndent()
@@ -233,6 +234,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             val relocated: (FunctionTestCase.() -> FunctionTestCase)? = null,
         )
 
+        val `mirai-core-utils` = ClassTestCase("mirai-core-utils Symbol", "net.mamoe.mirai.utils.Symbol")
         val `ktor-io` = ClassTestCase("ktor-io ByteBufferChannel", ByteBufferChannel)
         val `ktor-client-core` = ClassTestCase("ktor-client-core HttpClient", HttpClient)
         val `ktor-client-okhttp` = ClassTestCase("ktor-client-core OkHttp", KtorOkHttp)
@@ -302,7 +304,7 @@ class CoreShadowRelocationTest : AbstractTest() {
             result.append(
                 """
                       @Test
-                      fun `no relocated ${name}`() {
+                      fun `no ${name}`() {
                         assertThrows<ClassNotFoundException> { Class.forName("$qualifiedClassName") }
                       }
                     """.trimIndent()

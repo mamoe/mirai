@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -8,6 +8,8 @@
  */
 
 @file:Suppress("UNUSED_VARIABLE")
+
+import shadow.relocateImplementation
 
 plugins {
     kotlin("multiplatform")
@@ -23,8 +25,9 @@ description = "mirai-core utilities"
 
 kotlin {
     explicitApi()
+    apply(plugin = "explicit-api")
 
-    configureJvmTargetsHierarchical()
+    configureJvmTargetsHierarchical("net.mamoe.mirai.utils")
     configureNativeTargetsHierarchical(project)
 
     sourceSets {
@@ -35,9 +38,17 @@ kotlin {
                 api(`kotlinx-serialization-json`)
                 api(`kotlinx-coroutines-core`)
 
-                implementation(`kotlinx-atomicfu`)
                 implementation(`kotlinx-serialization-protobuf`)
                 relocateImplementation(`ktor-io_relocated`)
+            }
+        }
+        configure(NATIVE_TARGETS.map { getByName(it + "Main") }
+                + NATIVE_TARGETS.map { getByName(it + "Test") }) {
+            dependencies {
+                // no relocation in native
+                implementation(`ktor-io`) {
+                    exclude(ExcludeProperties.`slf4j-api`)
+                }
             }
         }
 
@@ -56,8 +67,7 @@ kotlin {
 
         findByName("androidMain")?.apply {
             dependencies {
-                compileOnly(`android-runtime`)
-//                    api1(`ktor-client-android`)
+                implementation(`androidx-annotation`)
             }
         }
 
@@ -67,6 +77,7 @@ kotlin {
 
         findByName("jvmTest")?.apply {
             dependencies {
+                implementation(`kotlinx-coroutines-debug`)
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
         }
@@ -91,7 +102,7 @@ if (tasks.findByName("androidMainClasses") != null) {
         group = "verification"
         this.mustRunAfter("androidMainClasses")
     }
-    tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
+    tasks.getByName("androidBaseTest").dependsOn("checkAndroidApiLevel")
 }
 
 configureMppPublishing()

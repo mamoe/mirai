@@ -130,7 +130,7 @@ private fun Project.registerMavenPublications(target: KotlinTarget, isSingleTarg
 
     @Suppress("DEPRECATION")
     val sourcesJar by tasks.registering(Jar::class) {
-        classifier = "sources"
+        archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
     }
 

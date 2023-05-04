@@ -15,23 +15,27 @@ import net.mamoe.mirai.utils.toUHexString
 import kotlin.jvm.JvmField
 
 internal class MiraiProtocolInternal(
-    @JvmField internal val apkId: String,
-    @JvmField internal val id: Long,
-    @JvmField internal val ver: String,
-    @JvmField internal val buildVer: String,
-    @JvmField internal val sdkVer: String,
-    @JvmField internal val miscBitMap: Int,
-    @JvmField internal val subSigMap: Int,
-    @JvmField internal val mainSigMap: Int,
-    @JvmField internal val sign: String,
-    @JvmField internal val buildTime: Long,
-    @JvmField internal val ssoVersion: Int,
-    @JvmField internal val appKey: String,
-    @JvmField internal val supportsQRLogin: Boolean,
+    var apkId: String,
+    var id: Long,
+    var ver: String,
+    var buildVer: String,
+    var sdkVer: String,
+    var miscBitMap: Int,
+    var subSigMap: Int,
+    var mainSigMap: Int,
+    var sign: String,
+    var buildTime: Long,
+    var ssoVersion: Int,
+    var appKey: String,
+    var supportsQRLogin: Boolean,
+
+    // don't change property signatures, used externally.
 ) {
     internal companion object {
+        // don't change signature
         internal val protocols = EnumMap<MiraiProtocol, MiraiProtocolInternal>(MiraiProtocol::class)
 
+        // don't change signature
         operator fun get(protocol: MiraiProtocol): MiraiProtocolInternal =
             protocols[protocol] ?: error("Internal Error: Missing protocol $protocol")
 

@@ -10,9 +10,9 @@
 package net.mamoe.mirai.internal.test
 
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlin.test.Test
-
-internal expect fun initPlatform()
+import net.mamoe.mirai.IMirai
+import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.utils.setSystemProp
 
 /**
  * All test classes should inherit from [AbstractTest]
@@ -23,7 +23,15 @@ expect abstract class AbstractTest() { // public, can be used in other modules
     companion object
 }
 
-internal expect class PlatformInitializationTest() : AbstractTest {
-    @Test
-    fun test()
+internal fun initializeTestCommon() {
+    setSystemProp("mirai.network.packet.logger", "true")
+    setSystemProp("mirai.network.state.observer.logging", "true")
+    setSystemProp("mirai.network.show.all.components", "true")
+    setSystemProp("mirai.network.show.components.creation.stacktrace", "true")
+    setSystemProp("mirai.network.handler.selector.logging", "true")
+
+    Exception() // creates an exception to load relevant classes to estimate invocation time of test cases more accurately.
+    IMirai::class.simpleName // similarly, load classes.
+
+    Mirai // load services
 }
