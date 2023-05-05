@@ -58,18 +58,41 @@ fun <T> projectLazy(action: () -> T): Lazy<T> {
 
 
 private lateinit var localProperties: Properties
+private var localPropertiesEdition: Long = 0
 
-private fun Project.loadLocalPropertiesIfAbsent() {
-    if (::localProperties.isInitialized) return
+private fun Project.loadLocalPropertiesIfNecessary() {
+    val theFile = rootProject.projectDir.resolve("local.properties")
+
+    fun isNecessary(): Boolean {
+        if (!::localProperties.isInitialized) return true
+
+        if (theFile.exists()) {
+            if (localPropertiesEdition != theFile.lastModified()) {
+                return true
+            }
+        } else {
+            if (localPropertiesEdition != 0L) { // deleted
+                return true
+            }
+        }
+
+        return false
+    }
+
+    if (!isNecessary()) return
+
     localProperties = Properties().apply {
-        rootProject.projectDir.resolve("local.properties").takeIf { it.exists() }?.bufferedReader()?.use {
-            load(it)
+        localPropertiesEdition = if (theFile.exists()) {
+            theFile.bufferedReader().use { load(it) }
+            theFile.lastModified()
+        } else {
+            0
         }
     }
 }
 
 fun Project.getLocalProperty(name: String): String? {
-    loadLocalPropertiesIfAbsent()
+    loadLocalPropertiesIfNecessary()
     return localProperties.getProperty(name)
 }
 
