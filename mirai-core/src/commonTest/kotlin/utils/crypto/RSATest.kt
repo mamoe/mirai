@@ -9,10 +9,13 @@
 
 package net.mamoe.mirai.internal.utils.crypto
 
+import net.mamoe.mirai.internal.testFramework.Platform
+import net.mamoe.mirai.internal.testFramework.rules.DisabledOnJvmLikePlatform
 import kotlin.math.pow
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@DisabledOnJvmLikePlatform(Platform.AndroidUnitTest::class)
 class RSATest {
     @Test
     fun `can gen rsa key pair`() {
