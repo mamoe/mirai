@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -79,7 +79,7 @@ internal class TarsInput(
             return null
         }
         val var2 = try {
-            input.readUByte()
+            input.readByte().toUByte()
         } catch (e: EOFException) {
             // somehow `endOfInput` still returns false
             return null
@@ -87,7 +87,7 @@ internal class TarsInput(
         val type = var2 and 15u
         var tag = var2.toUInt() shr 4
         if (tag == 15u) {
-            tag = input.readUByte().toUInt()
+            tag = input.readByte().toUByte().toUInt()
         }
         return TarsHead(
             tag = tag.toInt(),
@@ -171,7 +171,7 @@ internal class TarsInput(
             Tars.LONG -> this.input.discardExact(8)
             Tars.FLOAT -> this.input.discardExact(4)
             Tars.DOUBLE -> this.input.discardExact(8)
-            Tars.STRING1 -> this.input.discardExact(this.input.readUByte().toInt())
+            Tars.STRING1 -> this.input.discardExact(this.input.readByte().toUByte().toInt())
             Tars.STRING4 -> this.input.discardExact(this.input.readInt())
             Tars.MAP -> { // map
                 debugLogger.structureHierarchy++
@@ -279,9 +279,9 @@ internal class TarsInput(
     fun readTarsStringValue(head: TarsHead): String {
         //debugLogger.println("readTarsStringValue: $head")
         return when (head.type) {
-            Tars.STRING1 -> input.readString(input.readUByte().toInt(), charset = charset)
+            Tars.STRING1 -> input.readString(input.readByte().toUByte().toInt(), charset = charset)
             Tars.STRING4 -> input.readString(
-                input.readUInt().toInt().also { require(it in 1 until 104857600) { "bad string length: $it" } },
+                input.readInt().toUInt().toInt().also { require(it in 1 until 104857600) { "bad string length: $it" } },
                 charset = charset
             )
             else -> error("type mismatch: $head, expecting 6 or 7 (for string)")

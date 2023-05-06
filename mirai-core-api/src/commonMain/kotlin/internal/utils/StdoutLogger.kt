@@ -37,6 +37,7 @@ import net.mamoe.mirai.utils.*
  * @see SingleFileLogger 使用单一文件记录日志
  * @see DirectoryLogger 在一个目录中按日期存放文件记录日志, 自动清理过期日志
  */
+@OptIn(MiraiExperimentalApi::class)
 internal open class StdoutLogger constructor(
     override val identity: String? = "Mirai",
     /**

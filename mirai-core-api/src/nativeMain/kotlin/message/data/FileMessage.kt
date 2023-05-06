@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -19,6 +19,7 @@ import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
@@ -64,6 +65,7 @@ public actual interface FileMessage : MessageContent, ConstrainSingle, CodableMe
 
     actual override fun contentToString(): String = "[文件]$name" // orthodox
 
+    @MiraiExperimentalApi
     actual override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:file:")
         builder.appendStringAsMiraiCode(id).append(",")
@@ -104,5 +106,5 @@ public actual interface FileMessage : MessageContent, ConstrainSingle, CodableMe
     }
 
     public actual object Serializer :
-        KSerializer<FileMessage> by FallbackFileMessageSerializer()
+        KSerializer<FileMessage> by @OptIn(MiraiInternalApi::class) FallbackFileMessageSerializer()
 }

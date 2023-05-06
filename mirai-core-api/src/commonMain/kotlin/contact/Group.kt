@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport", "NOTHING_TO_INLINE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport")
 @file:JvmBlockingBridge
 
 package net.mamoe.mirai.contact
@@ -23,10 +23,7 @@ import net.mamoe.mirai.contact.roaming.RoamingSupported
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.DeprecatedSinceMirai
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.NotStableForInheritance
+import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
@@ -125,7 +122,10 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported,
      * @param spec 头像的规格.
      * @since 2.11
      */
-    public override fun avatarUrl(spec: AvatarSpec): String = "http://p.qlogo.cn/gh/${id}/${id}/${spec.size}"
+    public override fun avatarUrl(spec: AvatarSpec): String {
+        @OptIn(MiraiInternalApi::class)
+        return "http://p.qlogo.cn/gh/${id}/${id}/${spec.size}"
+    }
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.
@@ -211,7 +211,7 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported,
     /**
      * 上传一个语音消息以备发送. 该方法已弃用且将在未来版本删除, 请使用 [uploadAudio].
      */
-    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
+    @Suppress("DEPRECATION_ERROR")
     @Deprecated(
         "use uploadAudio",
         replaceWith = ReplaceWith("uploadAudio(resource)"),
@@ -312,13 +312,13 @@ public interface GroupSettings {
  * 同 [get]. 在一些不适合使用 [get] 的情境下使用 [getMember].
  */
 @JvmSynthetic
-public inline fun Group.getMember(id: Long): NormalMember? = get(id)
+public fun Group.getMember(id: Long): NormalMember? = get(id)
 
 /**
  * 同 [getMemberOrFail]. 在一些不适合使用 [getOrFail] 的情境下使用 [getMemberOrFail].
  */
 @JvmSynthetic
-public inline fun Group.getMemberOrFail(id: Long): NormalMember = getOrFail(id)
+public fun Group.getMemberOrFail(id: Long): NormalMember = getOrFail(id)
 
 
 /**
@@ -326,5 +326,5 @@ public inline fun Group.getMemberOrFail(id: Long): NormalMember = getOrFail(id)
  *
  * @see Group.botMuteRemaining 剩余禁言时间
  */
-public inline val Group.isBotMuted: Boolean get() = this.botMuteRemaining != 0
+public val Group.isBotMuted: Boolean get() = this.botMuteRemaining != 0
 

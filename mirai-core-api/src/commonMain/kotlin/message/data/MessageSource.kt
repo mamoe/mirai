@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -22,7 +22,10 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.PermissionDeniedException
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.message.MessageReceipt
@@ -221,6 +224,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
         return visitor.visitMessageSource(this, data)
     }
 
+    @OptIn(MiraiInternalApi::class)
     @Deprecated("Do not use this serializer. Retrieve from `MessageSerializers.serializersModule`.")
     @DeprecatedSinceMirai(warningSince = "2.13")
     public object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("MessageSource")

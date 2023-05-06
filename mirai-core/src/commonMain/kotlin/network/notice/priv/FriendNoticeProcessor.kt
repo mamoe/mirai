@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -53,23 +53,24 @@ internal class FriendNoticeProcessor(
         var fromGroup = 0L
         var pbNick = ""
         msgBody.msgContent.read {
-            readUByte() // version
-            discardExact(readUByte().toInt()) //skip
-            readUShort() //source id
-            readUShort() //SourceSubID
-            discardExact(readUShort().toLong()) //skip size
-            if (readUShort().toInt() != 0) { //hasExtraInfo
-                discardExact(readUShort().toInt()) //mail address info, skip
+            readByte().toUByte() // version
+            discardExact(readByte().toUByte().toInt()) //skip
+            readShort().toUShort() //source id
+            readShort().toUShort() //SourceSubID
+            discardExact(readShort().toUShort().toLong()) //skip size
+            if (readShort().toUShort().toInt() != 0) { //hasExtraInfo
+                discardExact(readShort().toUShort().toInt()) //mail address info, skip
             }
-            discardExact(4 + readUShort().toInt()) //skip
-            for (i in 1..readUByte().toInt()) { //pb size
-                val type = readUShort().toInt()
-                val pbArray = ByteArray(readUShort().toInt() and 0xFF)
+            discardExact(4 + readShort().toUShort().toInt()) //skip
+            for (i in 1..readByte().toUByte().toInt()) { //pb size
+                val type = readShort().toUShort().toInt()
+                val pbArray = ByteArray(readShort().toUShort().toInt() and 0xFF)
                 readAvailable(pbArray)
                 when (type) {
                     1000 -> pbArray.loadAs(FrdSysMsg.GroupInfo.serializer()).let { fromGroup = it.groupUin }
                     1002 -> pbArray.loadAs(FrdSysMsg.FriendMiscInfo.serializer())
                         .let { pbNick = it.fromuinNick }
+
                     else -> {
                     } //ignore
                 }

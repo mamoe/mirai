@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,11 +14,12 @@
     "EXPERIMENTAL_API_USAGE",
     "unused",
     "UnusedImport",
-    "DEPRECATION_ERROR", "NOTHING_TO_INLINE", "MemberVisibilityCanBePrivate"
+    "DEPRECATION_ERROR", "MemberVisibilityCanBePrivate"
 )
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -189,6 +190,7 @@ public interface Image : Message, MessageContent, CodableMessage {
         deserialize = { Image(it) },
     )
 
+    @OptIn(MiraiInternalApi::class)
     @Deprecated(
         message = "For internal use only. Deprecated for removal. Please retrieve serializer from MessageSerializers.serializersModule.",
         level = DeprecationLevel.WARNING
@@ -212,7 +214,8 @@ public interface Image : Message, MessageContent, CodableMessage {
         // Without this implementation you will need `ignoreUnknownKeys` on deserialization.
         override fun deserialize(decoder: Decoder): Image {
             return decoder.decodeStructure(descriptor) {
-                if (this.decodeSequentially()) {
+                @OptIn(ExperimentalSerializationApi::class)
+                if (runCatching { this.decodeSequentially() }.getOrElse { false }) {
                     val imageId = this.decodeStringElement(descriptor, 0)
                     val size = this.decodeLongElement(descriptor, 1)
                     val type = this.decodeSerializableElement(descriptor, 2, ImageType.serializer())
@@ -237,6 +240,7 @@ public interface Image : Message, MessageContent, CodableMessage {
                                     index,
                                     ImageType.serializer()
                                 )
+
                                 3 -> width = this@decodeStructure.decodeIntElement(descriptor, index)
                                 4 -> height = this@decodeStructure.decodeIntElement(descriptor, index)
                                 5 -> isEmoji = this@decodeStructure.decodeBooleanElement(descriptor, index)
@@ -250,14 +254,16 @@ public interface Image : Message, MessageContent, CodableMessage {
         }
 
         override fun serialize(encoder: Encoder, value: Image) {
-            Delegate.serializer().serialize(encoder, Delegate(
-                value.imageId,
-                value.size,
-                value.imageType,
-                value.width,
-                value.height,
-                value.isEmoji
-            ))
+            Delegate.serializer().serialize(
+                encoder, Delegate(
+                    value.imageId,
+                    value.size,
+                    value.imageType,
+                    value.width,
+                    value.height,
+                    value.isEmoji
+                )
+            )
         }
 
         @SerialName(SERIAL_NAME)
@@ -321,17 +327,18 @@ public interface Image : Message, MessageContent, CodableMessage {
          */
         public var isEmoji: Boolean = false
 
-        /**
-         * 使用当前参数构造 [Image].
-         */
-        public fun build(): Image = InternalImageProtocol.instance.createImage(
-            imageId = imageId,
-            size = size,
-            type = type,
-            width = width,
-            height = height,
-            isEmoji = isEmoji,
-        )
+
+        public fun build(): Image {
+            @OptIn(MiraiInternalApi::class)
+            return InternalImageProtocol.instance.createImage(
+                imageId = imageId,
+                size = size,
+                type = type,
+                width = width,
+                height = height,
+                isEmoji = isEmoji,
+            )
+        }
 
         public companion object {
             /**
@@ -389,8 +396,10 @@ public interface Image : Message, MessageContent, CodableMessage {
          * @since 2.9.0
          */
         @JvmStatic
-        public suspend fun Image.isUploaded(bot: Bot): Boolean =
-            InternalImageProtocol.instance.isUploaded(bot, md5, size, null, imageType, width, height)
+        public suspend fun Image.isUploaded(bot: Bot): Boolean {
+            @OptIn(MiraiInternalApi::class)
+            return InternalImageProtocol.instance.isUploaded(bot, md5, size, null, imageType, width, height)
+        }
 
         /**
          * 当图片在服务器上存在时返回 `true`, 这意味着图片可以直接发送给 [contact].
@@ -407,7 +416,10 @@ public interface Image : Message, MessageContent, CodableMessage {
             bot: Bot,
             md5: ByteArray,
             size: Long,
-        ): Boolean = InternalImageProtocol.instance.isUploaded(bot, md5, size, null)
+        ): Boolean {
+            @OptIn(MiraiInternalApi::class)
+            return InternalImageProtocol.instance.isUploaded(bot, md5, size, null)
+        }
 
         /**
          * 由 [Image.imageId] 计算 [Image.md5].
@@ -415,7 +427,7 @@ public interface Image : Message, MessageContent, CodableMessage {
          * @since 2.9.0
          */
         public fun calculateImageMd5ByImageId(imageId: String): ByteArray {
-            @Suppress("DEPRECATION")
+            @OptIn(MiraiInternalApi::class)
             return when {
                 imageId matches IMAGE_ID_REGEX -> imageId.imageIdToMd5(1)
                 imageId matches IMAGE_RESOURCE_ID_REGEX_2 -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
@@ -476,7 +488,7 @@ public interface Image : Message, MessageContent, CodableMessage {
  */
 @JvmSynthetic
 @CName("", "Image_new")
-public inline fun Image(imageId: String): Image = Builder.newBuilder(imageId).build()
+public fun Image(imageId: String): Image = Builder.newBuilder(imageId).build()
 
 /**
  * 使用 [Image.Builder] 构建一个 [Image].

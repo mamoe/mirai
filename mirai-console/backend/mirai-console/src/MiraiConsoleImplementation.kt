@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -37,6 +37,7 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
+import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.*
 import java.nio.file.Path
@@ -171,9 +172,16 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      */
     public val commandManager: CommandManager
 
+    @ConsoleExperimentalApi
     public val dataStorageForJvmPluginLoader: PluginDataStorage
+
+    @ConsoleExperimentalApi
     public val configStorageForJvmPluginLoader: PluginDataStorage
+
+    @ConsoleExperimentalApi
     public val dataStorageForBuiltIns: PluginDataStorage
+
+    @ConsoleExperimentalApi
     public val configStorageForBuiltIns: PluginDataStorage
 
     /**
@@ -227,6 +235,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     /**
      * 前端预先定义的 [LoggerController], 以允许前端使用自己的配置系统
      */
+    @ConsoleExperimentalApi
     public val loggerController: LoggerController get() = LoggerControllerImpl()
 
     ///////////////////////////////////////////////////////////////////////////
@@ -259,7 +268,10 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     @ConsoleFrontEndImplementation
     @NotStableForInheritance
     public interface ConsoleDataScope {
+        @ConsoleExperimentalApi
         public val dataHolder: AutoSavePluginDataHolder
+
+        @ConsoleExperimentalApi
         public val configHolder: AutoSavePluginDataHolder
         public fun addAndReloadConfig(config: PluginConfig)
 
@@ -291,6 +303,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
              */
             public inline fun <reified T : PluginData> ConsoleDataScope.get(): T = get(T::class)
 
+            @ConsoleExperimentalApi
             @JvmStatic
             public fun createDefault(
                 coroutineContext: CoroutineContext,
@@ -412,13 +425,11 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      * Console 启动参数, 修改参数会改变默认行为
      * @since 2.10.0-RC
      */
-    @ConsoleExperimentalApi
     public class ConsoleLaunchOptions {
         @JvmField
         public var crashWhenPluginLoadFailed: Boolean = false
     }
 
-    @ConsoleExperimentalApi
     public val consoleLaunchOptions: ConsoleLaunchOptions
         get() = ConsoleLaunchOptions()
 
@@ -453,7 +464,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
                         runBlocking {
                             shutdown()
                         }
-                    } catch (_ : InterruptedException) {
+                    } catch (_: InterruptedException) {
 
                     }
                 }
@@ -483,6 +494,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
             currentBridge ?: throw UninitializedPropertyAccessException()
 
         /** 由前端调用, 初始化 [MiraiConsole] 实例并启动 */
+        @OptIn(ConsoleInternalApi::class)
         @JvmStatic
         @ConsoleFrontEndImplementation
         @Throws(MalformedMiraiConsoleImplementationError::class)

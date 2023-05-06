@@ -199,9 +199,9 @@ internal class WtLogin {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse {
 
-            val subCommand = readUShort() // subCommand
+            val subCommand = readShort().toUShort() // subCommand
             // println("subCommand=$subCommand")
-            val type = readUByte()
+            val type = readByte().toUByte()
             // println("type=$type")
 
             discardExact(2)
@@ -521,7 +521,7 @@ internal class WtLogin {
                                 it.read {
                                     //change interval (int time)
                                     discardExact(4)
-                                    readUInt().toLong()
+                                    readInt().toUInt().toLong()
                                 }
                             }
                                 ?: appPri
@@ -572,7 +572,7 @@ internal class WtLogin {
                                 it.read {
                                     //change interval (int time)
                                     discardExact(4)
-                                    readUInt().toLong()
+                                    readInt().toUInt().toLong()
                                 }
                             }
                                 ?: 4294967295L, // defaults {}, from asyncContext._G
@@ -773,8 +773,8 @@ internal class WtLogin {
             writeInt(currentTimeSeconds().toInt())
             writeByte(2)
             val bodyPacket = buildPacket(body)
-            writeUShort((43 + bodyPacket.remaining + 1).toUShort())
-            writeUShort(command.toUShort())
+            writeShort((43 + bodyPacket.remaining + 1).toUShort().toShort())
+            writeShort(command)
             writeFully(ByteArray(21) { 0 })
             writeByte(3)
             writeShort(0)
@@ -813,13 +813,13 @@ internal class WtLogin {
             check(remaining >= 48) { "remaining payload is too short, current is $remaining." }
 
             discardExact(5)
-            readUByte()
-            readUShort()
-            val command = readUShort().toInt()
+            readByte().toUByte()
+            readShort().toUShort()
+            val command = readShort().toUShort().toInt()
             discardExact(21)
-            readUByte()
-            readUShort()
-            readUShort()
+            readByte().toUByte()
+            readShort().toUShort()
+            readShort().toUShort()
             readInt()
             readLong()
 
@@ -831,7 +831,7 @@ internal class WtLogin {
                     val code = readByte().toInt()
                     check(code == 0) { "code is not 0 while parsing wtlogin.trans_emp with command 0x31." }
                     val sig = readUShortLVByteArray()
-                    readUShort()
+                    readShort().toUShort()
 
                     val tlv = _readTLVMap()
                     val data =
@@ -841,10 +841,10 @@ internal class WtLogin {
                 }
 
                 0x12 -> { // qr code state
-                    var length = readUShort().toInt()
+                    var length = readShort().toUShort().toInt()
                     if (length != 0) {
                         length--
-                        if (readUByte().toInt() == 2) {
+                        if (readByte().toUByte().toInt() == 2) {
                             readLong()
                             length -= 8
                         }
@@ -855,7 +855,7 @@ internal class WtLogin {
                     }
                     readInt()
 
-                    val code = readUByte().toInt()
+                    val code = readByte().toUByte().toInt()
                     if (code != 0) {
                         when (code) { // code
                             0x30 -> Response.QRCodeStatus(Response.QRCodeStatus.State.WAITING_FOR_SCAN)
@@ -872,7 +872,7 @@ internal class WtLogin {
                             throw InconsistentBotIdException(expected = client.uin, actual = uin)
                         }
                         readInt()
-                        readUShort()
+                        readShort().toUShort()
                         val tlv = _readTLVMap()
 
                         val tmpPwd = tlv.getOrFail(0x18) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -23,6 +23,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  *
  * @see MessageSubscribersBuilder 查看上层 API
  */
+@OptIn(MiraiInternalApi::class)
 public expect abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi internal constructor(
     ownerMessagePacket: M,
     stub: Any?,
@@ -50,7 +51,6 @@ public abstract class CommonMessageSelectBuilderUnit<M : MessageEvent, R> protec
     /**
      * 限制本次 select 的最长等待时间, 当超时后抛出 [TimeoutCancellationException]
      */
-    @Suppress("NOTHING_TO_INLINE")
     @MessageDsl
     public fun timeoutException(
         timeoutMillis: Long,

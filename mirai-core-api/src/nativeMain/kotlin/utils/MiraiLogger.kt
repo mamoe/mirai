@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -55,6 +55,7 @@ public actual interface MiraiLogger {
         }
 
         public actual companion object INSTANCE : Factory by loadService(Factory::class, fallbackImplementation = {
+            @OptIn(MiraiInternalApi::class)
             object : Factory {
                 override fun create(requester: KClass<*>): MiraiLogger {
                     return PlatformLogger(requester.simpleName ?: requester.qualifiedName)
@@ -182,5 +183,6 @@ public actual interface MiraiLogger {
 
     /** 根据优先级调用对应函数 */
     public actual fun call(priority: SimpleLogger.LogPriority, message: String?, e: Throwable?): Unit =
+        @OptIn(MiraiExperimentalApi::class)
         priority.correspondingFunction(this, message, e)
 }

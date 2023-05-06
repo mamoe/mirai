@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -7,10 +7,11 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE", "unused", "MemberVisibilityCanBePrivate")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.console.permission
 
+import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
@@ -22,6 +23,7 @@ import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.description
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.reflect.KClass
 
 /**
@@ -147,6 +149,7 @@ public interface PermissionService<P : Permission> {
          */
         @get:JvmName("getInstance")
         @JvmStatic
+        @OptIn(ConsoleFrontEndImplementation::class, MiraiExperimentalApi::class)
         public val INSTANCE: PermissionService<out Permission>
             get() {
                 if (!MiraiConsoleImplementation.getBridge().permissionSeviceLoaded) {

@@ -128,7 +128,7 @@ internal interface WtLoginExt { // so as not to register to global extension
         val appid = readInt().toLong().and(4294967295L)
         val stKey = ByteArray(16)
         readAvailable(stKey)
-        val stSigLength = readUShort().toInt()
+        val stSigLength = readShort().toUShort().toInt()
         val stSig = ByteArray(stSigLength)
         readAvailable(stSig)
         WLoginSigInfo.EncryptedDownloadSession(
@@ -150,7 +150,7 @@ internal interface WtLoginExt { // so as not to register to global extension
      * 设置 [QQAndroidClient.uin]
      */
     fun QQAndroidClient.analysisTlv113(t113: ByteArray) = t113.read {
-        _uin = readUInt().toLong()
+        _uin = readInt().toUInt().toLong()
 
         /*
         // nothing to do
@@ -166,7 +166,7 @@ internal interface WtLoginExt { // so as not to register to global extension
      */
     fun QQAndroidClient.analysisTlv130(t130: ByteArray) = t130.read {
         discardExact(2)
-        timeDifference = readUInt().toLong() - currentTimeSeconds()
+        timeDifference = readInt().toUInt().toLong() - currentTimeSeconds()
         ipFromT149 = readBytes(4)
     }
 

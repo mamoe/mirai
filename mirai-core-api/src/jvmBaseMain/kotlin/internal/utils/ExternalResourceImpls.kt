@@ -18,8 +18,6 @@ import net.mamoe.mirai.utils.*
 import java.io.Closeable
 import java.io.InputStream
 import java.io.RandomAccessFile
-import kotlin.io.buffered
-import kotlin.io.inputStream
 import kotlin.io.use
 
 
@@ -102,6 +100,7 @@ internal abstract class ExternalResourceHolder : Closeable {
 internal interface ExternalResourceInternal : ExternalResource {
     val holder: ExternalResourceHolder
 
+    @MiraiInternalApi
     override fun input(): Input = inputStream().asInput()
 }
 
@@ -164,6 +163,8 @@ internal class ExternalResourceImplByByteArray(
         get() = data//.clone()
 
     override fun inputStream(): InputStream = data.inputStream()
+
+    @MiraiInternalApi
     override fun input(): Input {
         return data.inputStream().asInput()
     }

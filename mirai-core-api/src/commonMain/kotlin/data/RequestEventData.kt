@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -15,6 +15,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
@@ -48,6 +49,7 @@ public sealed class RequestEventData {
 
         public val message: String,
     ) : RequestEventData() {
+        @OptIn(LowLevelApi::class)
         override suspend fun accept(bot: Bot) {
             Mirai.solveNewFriendRequestEvent(
                 bot,
@@ -64,6 +66,7 @@ public sealed class RequestEventData {
         }
 
         @JvmBlockingBridge
+        @OptIn(LowLevelApi::class)
         public suspend fun reject(bot: Bot, blackList: Boolean) {
             Mirai.solveNewFriendRequestEvent(
                 bot,
@@ -93,6 +96,7 @@ public sealed class RequestEventData {
         public val groupName: String,
     ) : RequestEventData() {
         override suspend fun accept(bot: Bot) {
+            @OptIn(LowLevelApi::class)
             Mirai.solveBotInvitedJoinGroupRequestEvent(
                 bot,
                 eventId = eventId,
@@ -103,6 +107,7 @@ public sealed class RequestEventData {
         }
 
         override suspend fun reject(bot: Bot) {
+            @OptIn(LowLevelApi::class)
             Mirai.solveBotInvitedJoinGroupRequestEvent(
                 bot,
                 eventId = eventId,
@@ -134,6 +139,7 @@ public sealed class RequestEventData {
         public val message: String,
     ) : RequestEventData() {
         override suspend fun accept(bot: Bot) {
+            @OptIn(LowLevelApi::class)
             Mirai.solveMemberJoinRequestEvent(
                 bot,
                 eventId = eventId,
@@ -158,6 +164,7 @@ public sealed class RequestEventData {
         @JvmBlockingBridge
         @JvmOverloads
         public suspend fun reject(bot: Bot, blackList: Boolean, message: String = "") {
+            @OptIn(LowLevelApi::class)
             Mirai.solveMemberJoinRequestEvent(
                 bot,
                 eventId = eventId,
@@ -181,6 +188,7 @@ public sealed class RequestEventData {
         @JvmStatic
         @JvmName("from")
         public fun NewFriendRequestEvent.toRequestEventData(): NewFriendRequest {
+            @OptIn(MiraiExperimentalApi::class)
             return NewFriendRequest(
                 eventId = eventId,
                 message = message,
@@ -193,6 +201,7 @@ public sealed class RequestEventData {
         @JvmStatic
         @JvmName("from")
         public fun BotInvitedJoinGroupRequestEvent.toRequestEventData(): BotInvitedJoinGroupRequest {
+            @OptIn(MiraiExperimentalApi::class)
             return BotInvitedJoinGroupRequest(
                 eventId = eventId,
                 invitor = invitorId,
@@ -205,6 +214,7 @@ public sealed class RequestEventData {
         @JvmStatic
         @JvmName("from")
         public fun MemberJoinRequestEvent.toRequestEventData(): MemberJoinRequest {
+            @OptIn(MiraiExperimentalApi::class)
             return MemberJoinRequest(
                 eventId = eventId,
                 requester = fromId,

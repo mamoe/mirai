@@ -35,6 +35,11 @@ kotlin {
     configureNativeTargetsHierarchical(project)
     configureNativeTargetBinaries(project) // register native binaries for mirai-core only
 
+    optInForAllSourceSets("net.mamoe.mirai.utils.MiraiExperimentalApi")
+    optInForAllSourceSets("net.mamoe.mirai.utils.MiraiInternalApi")
+    optInForAllSourceSets("net.mamoe.mirai.LowLevelApi")
+    optInForAllSourceSets("kotlinx.serialization.ExperimentalSerializationApi")
+
     sourceSets.apply {
 
         val commonMain by getting {
@@ -255,7 +260,7 @@ if (tasks.findByName("androidMainClasses") != null) {
         group = "verification"
         this.mustRunAfter("androidMainClasses")
     }
-    tasks.getByName("androidBaseTest").dependsOn("checkAndroidApiLevel")
+    tasks.findByName("androidTest")?.dependsOn("checkAndroidApiLevel")
 }
 
 configureMppPublishing()

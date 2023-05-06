@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -7,13 +7,12 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.core.*
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import kotlinx.serialization.*
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -218,6 +217,7 @@ internal object DeviceInfoCommonImpl {
     }
 
 
+    @OptIn(MiraiInternalApi::class)
     @Suppress("DuplicatedCode")
     fun equalsImpl(deviceInfo: DeviceInfo, other: Any?): Boolean = deviceInfo.run {
         if (deviceInfo === other) return true
@@ -251,6 +251,7 @@ internal object DeviceInfoCommonImpl {
         return true
     }
 
+    @OptIn(MiraiInternalApi::class)
     @Suppress("DuplicatedCode")
     fun hashCodeImpl(deviceInfo: DeviceInfo): Int = deviceInfo.run {
         var result = display.contentHashCode()
@@ -280,7 +281,7 @@ internal object DeviceInfoCommonImpl {
 }
 
 @Serializable
-private class DevInfo(
+private class DevInfo @OptIn(ExperimentalSerializationApi::class) constructor(
     @ProtoNumber(1) val bootloader: ByteArray,
     @ProtoNumber(2) val procVersion: ByteArray,
     @ProtoNumber(3) val codename: ByteArray,
@@ -293,6 +294,7 @@ private class DevInfo(
 )
 
 public fun DeviceInfo.generateDeviceInfoData(): ByteArray {
+    @OptIn(ExperimentalSerializationApi::class)
     return ProtoBuf.encodeToByteArray(
         DevInfo.serializer(), DevInfo(
             bootloader,
@@ -597,7 +599,6 @@ internal object DeviceInfoManager {
 /**
  * Defaults "%4;7t>;28<fc.5*6".toByteArray()
  */
-@Suppress("RemoveRedundantQualifierName") // bug
 internal fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
     (androidId + macAddress).md5()
 

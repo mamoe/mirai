@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -7,11 +7,14 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:OptIn(ConsoleFrontEndImplementation::class, ConsoleExperimentalApi::class, MiraiInternalApi::class)
+
 package net.mamoe.mirai.console.internal.plugin
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ensureActive
+import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.PluginDataStorage
@@ -24,6 +27,7 @@ import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.console.plugin.loader.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.name
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.*
 import java.io.File
 import java.nio.file.Path
@@ -45,7 +49,7 @@ internal class BuiltInJvmPluginLoaderImpl(
             MiraiLogger.Factory.create(JvmPluginLoader::class)
     }
 
-    fun pluginsFilesSequence(
+    private fun pluginsFilesSequence(
         files: Sequence<File> = PluginManager.pluginsFolder.listFiles().orEmpty().asSequence()
     ): Sequence<File> {
         val raw = files
@@ -74,7 +78,7 @@ internal class BuiltInJvmPluginLoaderImpl(
         get() = MiraiConsoleImplementation.getInstance().dataStorageForJvmPluginLoader
 
 
-    internal val jvmPluginLoadingCtx: JvmPluginsLoadingCtx by lazy {
+    private val jvmPluginLoadingCtx: JvmPluginsLoadingCtx by lazy {
         val legacyCompatibilityLayerClassLoader = LegacyCompatibilityLayerClassLoader.newInstance(
             BuiltInJvmPluginLoaderImpl::class.java.classLoader,
         )
@@ -166,7 +170,6 @@ internal class BuiltInJvmPluginLoaderImpl(
     }
 
 
-    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // doesn't matter
     override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description
 
     private val pluginFileToInstanceMap: MutableMap<File, JvmPlugin> = ConcurrentHashMap()

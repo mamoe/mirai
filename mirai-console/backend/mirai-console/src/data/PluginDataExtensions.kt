@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("unused", "INAPPLICABLE_JVM_NAME", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
@@ -14,7 +14,6 @@ package net.mamoe.mirai.console.data
 import net.mamoe.mirai.console.data.PluginDataExtensions.withDefault
 import net.mamoe.mirai.console.internal.data.ShadowMap
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
@@ -39,6 +38,7 @@ public object PluginDataExtensions {
         }
     }
 
+    @OptIn(ConsoleExperimentalApi::class)
     @Suppress("DELEGATED_MEMBER_HIDES_SUPERTYPE_OVERRIDE") // as designed
     public class NotNullMutableMap<K, V> internal constructor(
         private val delegate: MutableMap<K, V>
@@ -130,6 +130,7 @@ public object PluginDataExtensions {
     /**
      * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先调用 [defaultValueComputer] 并放入 [Map], 再返回调用的返回值
      */
+    @OptIn(ConsoleExperimentalApi::class)
     @JvmStatic
     @JvmName("withDefaultMapImmutableNotNull")
     public fun <K, V : Any> SerializerAwareValue<Map<K, V>>.withDefault(defaultValueComputer: (K) -> V): SerializerAwareValue<NotNullMap<K, V>> {
@@ -148,6 +149,7 @@ public object PluginDataExtensions {
         return (this as SerializerAwareValue<MutableMap<K, V>>).withDefault(defaultValueComputer) as SerializerAwareValue<Map<K, V>>
     }
 
+    @OptIn(ConsoleExperimentalApi::class)
     @JvmStatic
     @JvmName("withDefaultMapNotNull")
     public fun <K, V : Any> SerializerAwareValue<MutableMap<K, V>>.withDefault(defaultValueComputer: (K) -> V): SerializerAwareValue<NotNullMutableMap<K, V>> {
@@ -171,6 +173,7 @@ public object PluginDataExtensions {
     /**
      * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先调用 [defaultValueComputer] 并放入 [Map], 再返回调用的返回值
      */
+    @OptIn(ConsoleExperimentalApi::class)
     @LowPriorityInOverloadResolution
     @JvmStatic
     @JvmName("withDefaultMap")
@@ -218,6 +221,7 @@ public object PluginDataExtensions {
     /**
      * 替换 [MutableMap] 的 key
      */
+    @OptIn(ConsoleExperimentalApi::class)
     @JvmName("mapKeysNotNull")
     @JvmStatic
     public fun <OldK, NewK, V : Any> SerializerAwareValue<NotNullMutableMap<OldK, V>>.mapKeys(
@@ -246,6 +250,7 @@ public object PluginDataExtensions {
     /**
      * 替换 [MutableMap] 的 key
      */
+    @OptIn(ConsoleExperimentalApi::class)
     @JvmName("mapKeys")
     @JvmStatic
     public fun <OldK, NewK, V> SerializerAwareValue<MutableMap<OldK, V>>.mapKeys(
@@ -272,6 +277,7 @@ public object PluginDataExtensions {
     /**
      * 替换 [Map] 的 key
      */
+    @OptIn(ConsoleExperimentalApi::class)
     @JvmName("mapKeysImmutable")
     @JvmStatic
     public fun <OldK, NewK, V> SerializerAwareValue<Map<OldK, V>>.mapKeys(
@@ -300,6 +306,7 @@ public object PluginDataExtensions {
     /**
      * 替换 [Map] 的 key
      */
+    @OptIn(ConsoleExperimentalApi::class)
     @JvmName("mapKeysImmutableNotNull")
     @JvmStatic
     public fun <OldK, NewK, V : Any> SerializerAwareValue<NotNullMap<OldK, V>>.mapKeys(
