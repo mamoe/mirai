@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,11 +14,11 @@ package net.mamoe.mirai.console.command.parse
 import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.internal.data.castOrInternalError
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.utils.NotStableForInheritance
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.typeOf
@@ -27,20 +27,22 @@ import kotlin.reflect.typeOf
 /**
  * @see CommandValueArgument
  */
-@ExperimentalCommandDescriptors
-public interface CommandArgument
+@NotStableForInheritance
+public sealed interface CommandArgument
 
 /**
  * @see DefaultCommandValueArgument
  */
-@ExperimentalCommandDescriptors
-public interface CommandValueArgument : CommandArgument {
+@NotStableForInheritance
+public sealed interface CommandValueArgument : CommandArgument {
+    @ExperimentalCommandDescriptors
     public val type: KType
 
     /**
      * [MessageContent] if single argument
      * [MessageChain] is vararg
      */
+    @ExperimentalCommandDescriptors
     public val value: Message
 
     /**
@@ -54,12 +56,9 @@ public interface CommandValueArgument : CommandArgument {
 /**
  * The [CommandValueArgument] that doesn't vary in type (remaining [MessageContent]).
  */
-@ConsoleExperimentalApi
-@ExperimentalCommandDescriptors
 public data class DefaultCommandValueArgument(
     public override val value: Message,
 ) : CommandValueArgument {
-    @OptIn(ExperimentalStdlibApi::class)
     override val type: KType = typeOf<MessageContent>()
     override val typeVariants: List<TypeVariant<*>> = listOf(
         MessageContentTypeVariant,
@@ -124,7 +123,6 @@ private fun KType.createArray(size: Int): Array<Any?> {
 
 @OptIn(ExperimentalCommandDescriptors::class)
 private fun CommandValueArgument.mapToTypeOrNullImpl(expectingType: KType, value: Message): Any? {
-    @OptIn(ExperimentalStdlibApi::class)
     val result = typeVariants
         .filter { it.outType.isSubtypeOf(expectingType) }
         .ifEmpty {

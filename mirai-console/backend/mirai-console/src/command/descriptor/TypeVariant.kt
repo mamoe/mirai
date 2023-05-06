@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,6 +13,7 @@ import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.data.kClassQualifiedName
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.NotStableForInheritance
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -30,7 +31,7 @@ import kotlin.reflect.typeOf
  *
  * @see CommandValueArgument.typeVariants
  */
-@ExperimentalCommandDescriptors
+@NotStableForInheritance
 public interface TypeVariant<out OutType> {
     /**
      * The reified type of [OutType]
@@ -43,25 +44,21 @@ public interface TypeVariant<out OutType> {
      * @see CommandValueArgument.value
      */
     public fun mapValue(valueArgument: Message): OutType
+}
 
-    public companion object {
-        /**
-         * Creates a [TypeVariant] with reified [OutType].
-         */
-        @OptIn(ExperimentalStdlibApi::class)
-        @JvmSynthetic
-        public inline operator fun <reified OutType> invoke(crossinline block: (valueParameter: Message) -> OutType): TypeVariant<OutType> {
-            return object : TypeVariant<OutType> {
-                override val outType: KType = typeOf<OutType>()
-                override fun mapValue(valueArgument: Message): OutType = block(valueArgument)
-            }
-        }
+/**
+ * Creates a [TypeVariant] with reified [OutType].
+ * @since 2.15
+ */
+public inline fun <reified OutType> TypeVariant(crossinline mapValue: (valueParameter: Message) -> OutType): TypeVariant<OutType> {
+    return object : TypeVariant<OutType> {
+        override val outType: KType = typeOf<OutType>()
+        override fun mapValue(valueArgument: Message): OutType = mapValue(valueArgument)
     }
 }
 
 @ExperimentalCommandDescriptors
 public object MessageContentTypeVariant : TypeVariant<MessageContent> {
-    @OptIn(ExperimentalStdlibApi::class)
     override val outType: KType = typeOf<MessageContent>()
     override fun mapValue(valueArgument: Message): MessageContent =
         valueArgument.castOrNull<MessageContent>()
@@ -70,14 +67,12 @@ public object MessageContentTypeVariant : TypeVariant<MessageContent> {
 
 @ExperimentalCommandDescriptors
 public object MessageChainTypeVariant : TypeVariant<MessageChain> {
-    @OptIn(ExperimentalStdlibApi::class)
     override val outType: KType = typeOf<MessageChain>()
     override fun mapValue(valueArgument: Message): MessageChain = valueArgument.toMessageChain()
 }
 
 @ExperimentalCommandDescriptors
 public object ContentStringTypeVariant : TypeVariant<String> {
-    @OptIn(ExperimentalStdlibApi::class)
     override val outType: KType = typeOf<String>()
     override fun mapValue(valueArgument: Message): String = valueArgument.content
 }

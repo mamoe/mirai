@@ -31,7 +31,6 @@ import net.mamoe.mirai.message.data.MessageChain
  *
  * @see ResolvedCommandCallImpl
  */
-@ExperimentalCommandDescriptors
 public interface ResolvedCommandCall {
     /**
      * The [CommandSender] responsible to this call.
@@ -58,7 +57,7 @@ public interface ResolvedCommandCall {
      *
      * **Default implementation details**: Lazy calculation.
      */
-    @ConsoleExperimentalApi
+    @ExperimentalCommandDescriptors
     public val resolvedValueArguments: List<ResolvedCommandValueArgument<*>>
 
     /**

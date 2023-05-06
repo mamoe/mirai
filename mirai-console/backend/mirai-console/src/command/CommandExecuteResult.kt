@@ -21,7 +21,6 @@ import kotlin.contracts.contract
 /**
  * 指令的执行返回
  */
-@ExperimentalCommandDescriptors
 public sealed class CommandExecuteResult {
     /** 指令执行时发生的错误 (如果有) */
     public abstract val exception: Throwable?
@@ -127,7 +126,6 @@ public sealed class CommandExecuteResult {
         /** 解析的 [CommandCall] (如果匹配到) */
         public override val call: CommandCall,
         /** 尝试执行的指令 */
-        @ExperimentalCommandDescriptors
         public val failureReasons: List<UnmatchedCommandSignature>,
     ) : Failure() {
         /** 指令执行时发生的错误, 总是 `null` */
@@ -138,8 +136,7 @@ public sealed class CommandExecuteResult {
     }
 }
 
-@ExperimentalCommandDescriptors
-public class UnmatchedCommandSignature(
+public class UnmatchedCommandSignature @ExperimentalCommandDescriptors public constructor(
     public val signature: CommandSignature,
     public val failureReason: FailureReason,
 )

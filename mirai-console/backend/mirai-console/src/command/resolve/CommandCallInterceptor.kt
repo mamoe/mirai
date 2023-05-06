@@ -7,21 +7,19 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused", "NOTHING_TO_INLINE")
+@file:Suppress("unused")
 
 package net.mamoe.mirai.console.command.resolve
 
-import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandCallParser
 import net.mamoe.mirai.console.extensions.CommandCallInterceptorProvider
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
-import net.mamoe.mirai.console.internal.util.UNREACHABLE_CLAUSE
 import net.mamoe.mirai.console.util.safeCast
 import net.mamoe.mirai.message.data.Message
-import org.jetbrains.annotations.Contract
+import net.mamoe.mirai.utils.NotStableForInheritance
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -29,7 +27,6 @@ import kotlin.contracts.contract
 /**
  * 指令解析和调用拦截器. 用于在指令各解析阶段拦截或转换调用.
  */
-@ExperimentalCommandDescriptors
 public interface CommandCallInterceptor {
     /**
      * 在指令[语法解析][CommandCallParser]前调用.
@@ -70,9 +67,9 @@ public interface CommandCallInterceptor {
                 val intercepted = ext.instance.interceptBeforeCall(acc, caller)
                 intercepted?.fold(
                     onIntercepted = { return intercepted },
-                    otherwise = { it }
+                    onProceed = { it }
                 ) ?: acc
-            }.let { InterceptResult(it) }
+            }.let { InterceptResult.proceed(it) }
         }
 
         /**
@@ -85,9 +82,9 @@ public interface CommandCallInterceptor {
                 val intercepted = ext.instance.interceptCall(acc)
                 intercepted?.fold(
                     onIntercepted = { return intercepted },
-                    otherwise = { it }
+                    onProceed = { it }
                 ) ?: acc
-            }.let { InterceptResult(it) }
+            }.let { InterceptResult.proceed(it) }
         }
 
         /**
@@ -100,78 +97,95 @@ public interface CommandCallInterceptor {
                 val intercepted = ext.instance.interceptResolvedCall(acc)
                 intercepted?.fold(
                     onIntercepted = { return intercepted },
-                    otherwise = { it }
+                    onProceed = { it }
                 ) ?: acc
-            }.let { InterceptResult(it) }
+            }.let { InterceptResult.proceed(it) }
         }
     }
 }
+
 
 /**
  * [CommandCallInterceptor] 拦截结果
  */
-@ExperimentalCommandDescriptors
-public class InterceptResult<T> internal constructor(
-    private val _value: Any?,
-    @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?,
+public class InterceptResult<T> private constructor(
+    @Suppress("PropertyName")
+    @PublishedApi
+    internal val _value: Any?,
 ) {
     /**
-     * 构造一个 [InterceptResult], 以 [value] 继续处理后续指令执行.
+     * 当未被拦截时返回未被拦截的值, 否则返回 `null`.
      */
-    public constructor(value: T) : this(value as Any?, null)
-
-    /**
-     * 构造一个 [InterceptResult], 以 [原因][reason] 中断指令执行.
-     */
-    public constructor(reason: InterceptedReason) : this(reason as Any?, null)
-
-    @get:Contract(pure = true)
     public val value: T?
-        @Suppress("UNCHECKED_CAST")
         get() {
             val value = this._value
+            @Suppress("UNCHECKED_CAST")
             return if (value is InterceptedReason) null else value as T
         }
 
-    @get:Contract(pure = true)
+    /**
+     * 获取拦截原因, 当未被拦截时返回 `null`.
+     */
     public val reason: InterceptedReason?
         get() = this._value.safeCast()
+
+    /**
+     * 当被拦截时返回 `true`, 否则返回 `false`.
+     * @since 2.15
+     */
+    public val isIntercepted: Boolean get() = _value is InterceptedReason
+
+    public companion object {
+        /**
+         * 构造一个 [InterceptResult], 以 [value] 继续处理后续指令执行.
+         */
+        @JvmStatic
+        @JvmName("proceed")
+        public fun <T> proceed(value: T): InterceptResult<T> = InterceptResult(value)
+
+        /**
+         * 构造一个 [InterceptResult], 以 [原因][reason] 中断指令执行.
+         */
+        @JvmStatic
+        @JvmName("intercepted")
+        public fun <T> intercepted(reason: InterceptedReason): InterceptResult<T> = InterceptResult(reason)
+    }
 }
 
-@ExperimentalCommandDescriptors
 public inline fun <T, R> InterceptResult<T>.fold(
     onIntercepted: (reason: InterceptedReason) -> R,
-    otherwise: (call: T) -> R,
+    onProceed: (call: T) -> R,
 ): R {
     contract {
         callsInPlace(onIntercepted, InvocationKind.AT_MOST_ONCE)
-        callsInPlace(otherwise, InvocationKind.AT_MOST_ONCE)
+        callsInPlace(onProceed, InvocationKind.AT_MOST_ONCE)
     }
-    value?.let { return otherwise(it) }
-    reason?.let { return onIntercepted(it) }
-    UNREACHABLE_CLAUSE
-}
-
-@ExperimentalCommandDescriptors
-public inline fun <T : R, R> InterceptResult<T>.getOrElse(onIntercepted: (reason: InterceptedReason) -> R): R {
-    contract { callsInPlace(onIntercepted, InvocationKind.AT_MOST_ONCE) }
-    reason?.let(onIntercepted)
-    return value!!
+    val value = _value
+    if (value is InterceptedReason) {
+        return onIntercepted(value)
+    } else {
+        @Suppress("UNCHECKED_CAST")
+        return onProceed(value as T)
+    }
 }
 
 /**
- * 创建一个 [InterceptedReason]
- *
- * @see InterceptedReason.create
+ * 当 [InterceptResult] 为未被拦截时, 返回值. 当为被拦截时, 计算并返回 [onIntercepted].
  */
-@ExperimentalCommandDescriptors
-@JvmSynthetic
-public inline fun InterceptedReason(message: String): InterceptedReason = InterceptedReason.create(message)
+public inline fun <T : R, R> InterceptResult<T>.getOrElse(onIntercepted: (reason: InterceptedReason) -> R): R {
+    contract { callsInPlace(onIntercepted, InvocationKind.AT_MOST_ONCE) }
+    val value = _value
+    if (value is InterceptedReason) {
+        return onIntercepted(value)
+    }
+    @Suppress("UNCHECKED_CAST")
+    return value as R
+}
 
 /**
  * 拦截原因
  */
-@ExperimentalCommandDescriptors
+@NotStableForInheritance
 public interface InterceptedReason {
     public val message: String
 
@@ -179,10 +193,10 @@ public interface InterceptedReason {
         /**
          * 创建一个 [InterceptedReason]
          */
-        public fun create(message: String): InterceptedReason = InterceptedReasonData(message)
+        @JvmStatic
+        public fun simple(message: String): InterceptedReason = InterceptedReasonData(message)
     }
 }
 
 @OptIn(ExperimentalCommandDescriptors::class)
-@Serializable
 private data class InterceptedReasonData(override val message: String) : InterceptedReason

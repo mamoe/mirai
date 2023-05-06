@@ -9,16 +9,14 @@
 
 package net.mamoe.mirai.console.extensions
 
-import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.resolve.CommandCallInterceptor
 import net.mamoe.mirai.console.extension.AbstractInstanceExtensionPoint
 import net.mamoe.mirai.console.extension.InstanceExtension
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
-@ExperimentalCommandDescriptors
 public interface CommandCallInterceptorProvider : InstanceExtension<CommandCallInterceptor> {
+
     @OptIn(ConsoleExperimentalApi::class)
-    @ExperimentalCommandDescriptors
     public companion object ExtensionPoint :
         AbstractInstanceExtensionPoint<CommandCallInterceptorProvider, CommandCallInterceptor>(
             CommandCallInterceptorProvider::class

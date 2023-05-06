@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console.extensions
 
-import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCallParser
 import net.mamoe.mirai.console.extension.AbstractInstanceExtensionPoint
 import net.mamoe.mirai.console.extension.InstanceExtension
@@ -18,10 +17,9 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 /**
  * The provider of [CommandCallParser]
  */
-@ExperimentalCommandDescriptors
 public interface CommandCallParserProvider : InstanceExtension<CommandCallParser> {
+
     @OptIn(ConsoleExperimentalApi::class)
-    @ExperimentalCommandDescriptors
     public companion object ExtensionPoint :
         AbstractInstanceExtensionPoint<CommandCallParserProvider, CommandCallParser>(CommandCallParserProvider::class)
 }
