@@ -1,11 +1,13 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
+
+@file:OptIn(ConsoleExperimentalApi::class)
 
 package net.mamoe.mirai.console.terminal
 
@@ -14,6 +16,7 @@ import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.mamoe.mirai.console.terminal.noconsole.NoConsole
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.ConcurrentLinkedDeque
 import net.mamoe.mirai.utils.cast
 import org.jline.reader.MaskingCallback

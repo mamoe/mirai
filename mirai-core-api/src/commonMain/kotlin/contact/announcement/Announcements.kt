@@ -1,11 +1,13 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
+
+@file:JvmBlockingBridge
 
 package net.mamoe.mirai.contact.announcement
 
@@ -19,6 +21,7 @@ import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.Streamable
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 
 /**
@@ -55,7 +58,6 @@ public interface Announcements : Streamable<OnlineAnnouncement> {
      *
      * @see OnlineAnnouncement.delete
      */
-    @JvmBlockingBridge
     public suspend fun delete(fid: String): Boolean
 
     /**
@@ -64,7 +66,6 @@ public interface Announcements : Streamable<OnlineAnnouncement> {
      * @return 返回 `null` 表示不存在该 [fid] 的群公告
      * @throws IllegalStateException 当协议异常时抛出
      */
-    @JvmBlockingBridge
     public suspend fun get(fid: String): OnlineAnnouncement?
 
     /**
@@ -73,7 +74,6 @@ public interface Announcements : Streamable<OnlineAnnouncement> {
      * @throws IllegalStateException 当协议异常时抛出
      * @see Announcement.publishTo
      */
-    @JvmBlockingBridge
     public suspend fun publish(announcement: Announcement): OnlineAnnouncement
 
     /**
@@ -82,7 +82,6 @@ public interface Announcements : Streamable<OnlineAnnouncement> {
      * **注意**: 需要由调用方[关闭][ExternalResource.close] [resource].
      * @throws IllegalStateException 当协议异常时抛出
      */
-    @JvmBlockingBridge
     public suspend fun uploadImage(resource: ExternalResource): AnnouncementImage
 
     /**
@@ -96,6 +95,7 @@ public interface Announcements : Streamable<OnlineAnnouncement> {
      * @throws IllegalStateException 当协议异常时抛出
      *
      * @see OnlineAnnouncement.members
+     * @since 2.14
      */
     public suspend fun members(fid: String, confirmed: Boolean): List<NormalMember>
 
@@ -119,5 +119,6 @@ public interface Announcements : Streamable<OnlineAnnouncement> {
         level = DeprecationLevel.HIDDEN
     )
     @DeprecatedSinceMirai(hiddenSince = "2.13")
+    @JvmSynthetic // no blocking bridge
     public suspend fun asFlow0(): Flow<OnlineAnnouncement> = asFlow()
 }

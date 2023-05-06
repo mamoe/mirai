@@ -41,15 +41,20 @@ internal actual object PlatformLoginSolverImplementations {
  *
  * @see createBlocking
  */
-public class StandardCharImageLoginSolver @JvmOverloads constructor(
-    input: suspend () -> String = { readLine() ?: throw NoStandardInputForCaptchaException() },
+public class StandardCharImageLoginSolver
+@JvmOverloads constructor(
+    input: suspend () -> String = {
+        readlnOrNull() ?: @OptIn(MiraiInternalApi::class) throw NoStandardInputForCaptchaException()
+    },
     /**
      * 为 `null` 时使用 [Bot.logger]
      */
     private val loggerSupplier: (bot: Bot) -> MiraiLogger = { it.logger }
 ) : LoginSolver() {
     public constructor(
-        input: suspend () -> String = { readLine() ?: throw NoStandardInputForCaptchaException() },
+        input: suspend () -> String = {
+            readlnOrNull() ?: @OptIn(MiraiInternalApi::class) throw NoStandardInputForCaptchaException()
+        },
         overrideLogger: MiraiLogger?
     ) : this(input, { overrideLogger ?: it.logger })
 
@@ -383,6 +388,7 @@ private fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Doub
     }
 }
 
+@Suppress("LocalVariableName", "SpellCheckingInspection")
 private fun BufferedImage.renderQRCode(
     blackPlaceholder: String = "   ",
     whitePlaceholder: String = "   ",

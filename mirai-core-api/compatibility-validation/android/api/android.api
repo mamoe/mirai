@@ -131,6 +131,9 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public abstract fun setFileCacheStrategy (Lnet/mamoe/mirai/utils/FileCacheStrategy;)V
 }
 
+public abstract interface annotation class net/mamoe/mirai/LowLevelApi : java/lang/annotation/Annotation {
+}
+
 public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {
 	public fun getGroupVoiceDownloadUrl (Lnet/mamoe/mirai/Bot;[BJJ)Ljava/lang/String;
 	public abstract fun getGroupVoiceDownloadUrl (Lnet/mamoe/mirai/Bot;[BJJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -901,9 +904,11 @@ public abstract interface class net/mamoe/mirai/contact/announcement/Announcemen
 	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun get (Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public abstract fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun members (Ljava/lang/String;Z)Ljava/util/List;
 	public abstract fun members (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public abstract fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun remind (Ljava/lang/String;)V
 	public abstract fun remind (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
 	public abstract fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -3919,7 +3924,6 @@ public final class net/mamoe/mirai/message/data/Face$Companion {
 public abstract interface class net/mamoe/mirai/message/data/FileMessage : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
 	public static final field Key Lnet/mamoe/mirai/message/data/FileMessage$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
-	public fun appendMiraiCodeTo (Ljava/lang/StringBuilder;)V
 	public fun contentToString ()Ljava/lang/String;
 	public static fun create (Ljava/lang/String;ILjava/lang/String;J)Lnet/mamoe/mirai/message/data/FileMessage;
 	public abstract fun getId ()Ljava/lang/String;
@@ -4719,7 +4723,6 @@ public final class net/mamoe/mirai/message/data/MusicShare : net/mamoe/mirai/mes
 	public synthetic fun <init> (ILnet/mamoe/mirai/message/data/MusicKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public fun <init> (Lnet/mamoe/mirai/message/data/MusicKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public fun <init> (Lnet/mamoe/mirai/message/data/MusicKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public fun appendMiraiCodeTo (Ljava/lang/StringBuilder;)V
 	public final fun component1 ()Lnet/mamoe/mirai/message/data/MusicKind;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
@@ -5323,14 +5326,12 @@ public class net/mamoe/mirai/message/data/Voice : net/mamoe/mirai/message/data/P
 	public synthetic fun <init> (ILjava/lang/String;[BJILjava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public synthetic fun <init> (Ljava/lang/String;[BJILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun contentToString ()Ljava/lang/String;
-	public fun equals (Ljava/lang/Object;)Z
 	public static final fun fromAudio (Lnet/mamoe/mirai/message/data/Audio;)Lnet/mamoe/mirai/message/data/Voice;
 	public fun getFileName ()Ljava/lang/String;
 	public fun getFileSize ()J
 	public fun getMd5 ()[B
 	public fun getUrl ()Ljava/lang/String;
 	public final fun get_codec ()I
-	public fun hashCode ()I
 	public final fun toAudio ()Lnet/mamoe/mirai/message/data/Audio;
 	public fun toString ()Ljava/lang/String;
 	public static final fun write$Self (Lnet/mamoe/mirai/message/data/Voice;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V

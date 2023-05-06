@@ -9,6 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("BotEventsKt")
+@file:OptIn(MiraiInternalApi::class)
 
 package net.mamoe.mirai.event.events
 

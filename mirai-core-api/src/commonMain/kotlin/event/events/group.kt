@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,6 +13,7 @@
     "FunctionName", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "DEPRECATION_ERROR",
     "MemberVisibilityCanBePrivate"
 )
+@file:OptIn(MiraiInternalApi::class)
 
 package net.mamoe.mirai.event.events
 
@@ -337,7 +338,6 @@ public sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent(), GroupM
 /**
  * [Bot] 被邀请加入一个群.
  */
-@Suppress("DEPRECATION")
 public data class BotInvitedJoinGroupRequestEvent @MiraiInternalApi constructor(
     public override val bot: Bot,
     /**

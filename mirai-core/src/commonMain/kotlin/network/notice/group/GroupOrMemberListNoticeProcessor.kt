@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -135,16 +135,16 @@ internal class GroupOrMemberListNoticeProcessor(
     // 33
     private suspend fun NoticePipelineContext.processGroupJoin33(data: MsgComm.Msg) = data.context {
         msgBody.msgContent.read {
-            val groupCode = readUInt().toLong()
+            val groupCode = readInt().toUInt().toLong()
             if (remaining < 5) return
             discardExact(1)
-            val joinedMemberUin = readUInt().toLong()
+            val joinedMemberUin = readInt().toUInt().toLong()
 
             if (joinedMemberUin == bot.id && bot.getGroupByCodeOrUin(groupCode) != null) return // duplicate
 
             val group = bot.getGroupByCodeOrUin(groupCode) ?: bot.addNewGroupByCode(groupCode) ?: return
             val joinType = readByte().toInt()
-            val invitorUin = readUInt().toLong()
+            val invitorUin = readInt().toUInt().toLong()
             when (joinType) {
                 // 邀请加入
                 -125, 3 -> {
@@ -312,15 +312,15 @@ internal class GroupOrMemberListNoticeProcessor(
                 //                  3D C4 33 DD 01 00/01 .....
                 //                  3D C4 33 DD 01 01 C3 7E 2E 34 01
                 discardExact(5)
-                val kind = readUByte().toInt()
+                val kind = readByte().toUByte().toInt()
                 if (kind == 0xFF) {
-                    val from = readUInt().toLong()
-                    val to = readUInt().toLong()
+                    val from = readInt().toUInt().toLong()
+                    val to = readInt().toUInt().toLong()
 
                     handleGroupOwnershipTransfer(data, from, to)
                 } else {
-                    val var5 = if (kind == 0 || kind == 1) 0 else readUInt().toInt()
-                    val target = readUInt().toLong()
+                    val var5 = if (kind == 0 || kind == 1) 0 else readInt().toUInt().toInt()
+                    val target = readInt().toUInt().toLong()
 
                     if (var5 == 0) {
                         val newPermission = if (remaining == 1L) readByte() else return
@@ -344,11 +344,11 @@ internal class GroupOrMemberListNoticeProcessor(
                  */
 
                 data.msgData.read {
-                    readUInt().toLong() // groupCode
+                    readInt().toUInt().toLong() // groupCode
                     readByte().toInt() // follow type
-                    val target = readUInt().toLong()
-                    val kind = readUByte().toInt()
-                    val operator = readUInt().toLong()
+                    val target = readInt().toUInt().toLong()
+                    val kind = readByte().toUByte().toInt()
+                    val operator = readInt().toUInt().toLong()
                     val groupUin = data.fromUin
                     handleLeave(target, kind, operator, groupUin)
                 }

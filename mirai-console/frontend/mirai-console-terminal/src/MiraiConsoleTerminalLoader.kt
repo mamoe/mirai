@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -15,11 +15,12 @@
     "INVISIBLE_GETTER",
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER",
 )
-@file:OptIn(ConsoleInternalApi::class, ConsoleTerminalExperimentalApi::class)
+@file:OptIn(ConsoleInternalApi::class, ConsoleTerminalExperimentalApi::class, ConsoleFrontEndImplementation::class)
 
 package net.mamoe.mirai.console.terminal
 
 import kotlinx.coroutines.*
+import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
@@ -28,7 +29,10 @@ import net.mamoe.mirai.console.terminal.noconsole.SystemOutputPrintStream
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.childScope
+import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.info
+import net.mamoe.mirai.utils.verbose
 import org.jline.utils.Signals
 import java.io.FileDescriptor
 import java.io.FileOutputStream
@@ -48,6 +52,7 @@ object MiraiConsoleTerminalLoader {
 
     // Note: Do not run this in IDEA, as you will get invalid classpath and `java.lang.NoClassDefFoundError`.
     // Run `RunTerminal.kt` under `test` source set instead.
+    @OptIn(ConsoleExperimentalApi::class)
     @JvmStatic
     fun main(args: Array<String>) {
         parse(args, exitProcess = true)
@@ -179,6 +184,7 @@ object MiraiConsoleTerminalLoader {
     }
 }
 
+@OptIn(ConsoleExperimentalApi::class)
 internal object ConsoleDataHolder : AutoSavePluginDataHolder,
     CoroutineScope by MiraiConsole.childScope("ConsoleDataHolder") {
     @ConsoleExperimentalApi
@@ -194,6 +200,8 @@ private val shutdownSignals = arrayOf(
 )
 
 internal val signalHandler: (String) -> Unit = initSignalHandler()
+
+@OptIn(ConsoleExperimentalApi::class)
 private fun initSignalHandler(): (String) -> Unit {
     val shutdownMonitorLock = AtomicBoolean(false)
     val lastSignalTimestamp = AtomicLong(0)
@@ -223,7 +231,7 @@ private fun initSignalHandler(): (String) -> Unit {
         if (signalName !in shutdownSignals) return@handler
 
         MiraiConsole.mainLogger.debug { "Handled  signal $signalName" }
-        kotlin.run multiSignalHandler@{
+        run multiSignalHandler@{
             val crtTime = System.currentTimeMillis()
             val last = lastSignalTimestamp.getAndSet(crtTime)
             if (crtTime - last < 1000L) {

@@ -7,12 +7,11 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package net.mamoe.mirai.internal.message
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.*
 import kotlinx.serialization.encoding.*
 import net.mamoe.mirai.utils.cast
 import kotlin.jvm.JvmName

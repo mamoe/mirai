@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
 
@@ -118,6 +119,7 @@ public data class MusicShare(
     override fun contentToString(): String =
         brief.takeIf { it.isNotBlank() } ?: "[分享]$title" // empty content is not accepted by `sendMessage`
 
+    @MiraiExperimentalApi
     override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:musicshare:")
             .append(kind.name)

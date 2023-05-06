@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.console.internal.data
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.*
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -27,6 +28,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 
+@OptIn(ExperimentalSerializationApi::class)
 @Suppress("UNCHECKED_CAST")
 internal fun SerializersModule.serializerMirai(type: KType): KSerializer<Any?> {
     fun serializerByKTypeImpl(type: KType): KSerializer<*> {
@@ -69,6 +71,7 @@ internal fun SerializersModule.serializerMirai(type: KType): KSerializer<Any?> {
                         serializers[0],
                         serializers[1]
                     )
+
                     Map.Entry::class -> MapEntrySerializer(serializers[0], serializers[1])
                     Pair::class -> PairSerializer(serializers[0], serializers[1])
                     Triple::class -> TripleSerializer(serializers[0], serializers[1], serializers[2])
@@ -102,11 +105,9 @@ internal fun SerializersModule.serializerMirai(type: KType): KSerializer<Any?> {
  */
 @Suppress(
     "UNCHECKED_CAST",
-    "NO_REFLECTION_IN_CLASS_PATH",
     "UNSUPPORTED",
     "INVISIBLE_MEMBER",
     "INVISIBLE_REFERENCE",
-    "IMPLICIT_CAST_TO_ANY"
 )
 private fun <T : Any> KClass<T>.constructSerializerForGivenTypeArgs(vararg args: KSerializer<Any?>): KSerializer<T>? {
     val jClass = this.java

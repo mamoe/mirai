@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
- *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
 @file:Suppress("unused", "PropertyName", "PrivatePropertyName")
@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.data.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.TimedTask
 import net.mamoe.mirai.console.util.launchTimedTask
 import net.mamoe.mirai.utils.MiraiLogger
@@ -35,20 +36,27 @@ public open class AutoSavePluginData private constructor(
     // KEEP THIS PRIMARY CONSTRUCTOR FOR FUTURE USE: WE'LL SUPPORT SERIALIZERS_MODULE FOR POLYMORPHISM
     @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?,
 ) : AbstractPluginData() {
+    @OptIn(ConsoleExperimentalApi::class)
     private lateinit var owner_: AutoSavePluginDataHolder
+
+    @OptIn(ConsoleExperimentalApi::class)
     private val autoSaveIntervalMillis_: LongRange get() = owner_.autoSaveIntervalMillis
+
+    @OptIn(ConsoleExperimentalApi::class)
     private lateinit var storage_: PluginDataStorage
 
+    @ConsoleExperimentalApi
     public final override val saveName: String
         get() = _saveName
 
-    @Suppress("JoinDeclarationAndAssignment") // bug
+    // bug
     private lateinit var _saveName: String
 
     public constructor(saveName: String) : this(null) {
         _saveName = saveName
     }
 
+    @OptIn(ConsoleInternalApi::class, ConsoleExperimentalApi::class)
     private fun logException(e: Throwable) {
         owner_.coroutineContext[CoroutineExceptionHandler]?.handleException(owner_.coroutineContext, e)
             ?.let { return }
@@ -112,6 +120,7 @@ public open class AutoSavePluginData private constructor(
         }
     }
 
+    @OptIn(ConsoleExperimentalApi::class)
     private fun doSave() {
         debuggingLogger1.error { "doSave: ${this::class.qualifiedName}" }
         storage_.store(owner_, this)

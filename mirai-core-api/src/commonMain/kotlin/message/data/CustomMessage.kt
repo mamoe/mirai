@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,6 +10,7 @@
 package net.mamoe.mirai.message.data
 
 import io.ktor.utils.io.core.*
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -92,7 +93,10 @@ public sealed class CustomMessage : SingleMessage {
          */
         public abstract fun serializer(): KSerializer<M>
 
+        @OptIn(ExperimentalSerializationApi::class)
         public override fun dump(message: M): ByteArray = ProtoBuf.encodeToByteArray(serializer(), message)
+
+        @OptIn(ExperimentalSerializationApi::class)
         public override fun load(input: ByteArray): M = ProtoBuf.decodeFromByteArray(serializer(), input)
     }
 
@@ -127,7 +131,7 @@ public sealed class CustomMessage : SingleMessage {
         }
 
         @Serializable
-        private class CustomMessageFullData(
+        private class CustomMessageFullData @OptIn(ExperimentalSerializationApi::class) constructor(
             @ProtoNumber(1) val miraiVersionFlag: Int,
             @ProtoNumber(2) val typeName: String,
             @ProtoNumber(3) val data: ByteArray
@@ -137,6 +141,7 @@ public sealed class CustomMessage : SingleMessage {
         public class CustomMessageFullDataDeserializeUserException(public val body: ByteArray, cause: Throwable?) :
             RuntimeException(cause)
 
+        @OptIn(ExperimentalSerializationApi::class)
         @MiraiInternalApi
         public fun load(fullData: ByteReadPacket): CustomMessage? {
             val msg = kotlin.runCatching {
@@ -158,6 +163,7 @@ public sealed class CustomMessage : SingleMessage {
             }
         }
 
+        @OptIn(ExperimentalSerializationApi::class)
         @MiraiInternalApi
         public fun <M : CustomMessage> dump(factory: Factory<M>, message: M): ByteArray = buildPacket {
             ProtoBuf.encodeToByteArray(
@@ -213,8 +219,8 @@ public abstract class CustomMessageMetadata : CustomMessage(), MessageMetadata {
 }
 
 
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun <T : CustomMessageMetadata> T.customToStringImpl(factory: CustomMessage.Factory<*>): ByteArray {
+@OptIn(MiraiExperimentalApi::class)
+internal fun <T : CustomMessageMetadata> T.customToStringImpl(factory: CustomMessage.Factory<*>): ByteArray {
     @Suppress("UNCHECKED_CAST")
     return (factory as CustomMessage.Factory<T>).dump(this)
 }

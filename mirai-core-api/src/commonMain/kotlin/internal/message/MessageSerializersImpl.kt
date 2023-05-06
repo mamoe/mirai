@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,11 +17,11 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.overwriteWith
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.message.MessageSerializers
-import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.lateinitMutableProperty
-import net.mamoe.mirai.utils.map
-import net.mamoe.mirai.utils.takeElementsFrom
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.MessageSourceKind
+import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.utils.*
 import kotlin.jvm.Synchronized
 import kotlin.reflect.KClass
 
@@ -61,6 +61,7 @@ public open class MessageSourceSerializerImpl(serialName: String) :
 
 // Tests:
 // net.mamoe.mirai.internal.message.data.MessageSerializationTest
+@OptIn(MiraiExperimentalApi::class)
 internal object MessageSerializersImpl : MessageSerializers {
     private var serializersModuleField: SerializersModule by lateinitMutableProperty {
         SerializersModule { }

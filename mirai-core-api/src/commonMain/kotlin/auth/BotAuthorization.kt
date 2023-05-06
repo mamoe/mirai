@@ -59,6 +59,7 @@ public interface BotAuthorization {
     /**
      * 计算 `cache/account.secrets` 的加密秘钥
      */
+    @OptIn(MiraiInternalApi::class)
     public fun calculateSecretsKey(
         bot: BotAuthInfo,
     ): ByteArray = bot.deviceInfo.guid + bot.id.toByteArray()

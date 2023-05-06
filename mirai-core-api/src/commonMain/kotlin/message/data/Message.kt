@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,7 +9,6 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
-@file:Suppress("NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.message.data
 
@@ -255,7 +254,7 @@ public interface Message {
             // Future optimize:
             // When constrainSingleCount == 1, see if we can connect by CombinedMessage,
             // this need some kind of replacement of `hasConstrainSingle` with more information about MessageKeys.
-            @OptIn(MessageChainConstructor::class)
+            @OptIn(MessageChainConstructor::class, MiraiInternalApi::class)
             CombinedMessage(this, tail, false)
         } else {
             LinearMessageChainImpl.combineCreate(this, tail)
@@ -352,7 +351,7 @@ public interface Message {
 
 /** 将 [another] 按顺序连接到这个消息的尾部. */
 @JvmSynthetic
-public suspend inline operator fun Message.plus(another: Flow<Message>): MessageChain =
+public suspend operator fun Message.plus(another: Flow<Message>): MessageChain =
     another.fold(this) { acc, it -> acc + it }.toMessageChain()
 
 
@@ -360,7 +359,7 @@ public suspend inline operator fun Message.plus(another: Flow<Message>): Message
  * [Message.contentToString] 的捷径
  */
 @get:JvmSynthetic
-public inline val Message.content: String
+public val Message.content: String
     get() = contentToString()
 
 /**
@@ -397,8 +396,7 @@ public fun Message.isContentBlank(): Boolean {
 /**
  * 将此消息元素按顺序重复 [count] 次.
  */
-// inline: for future removal
-public inline fun Message.repeat(count: Int): MessageChain {
+public fun Message.repeat(count: Int): MessageChain {
     if (this is ConstrainSingle) {
         // fast-path
         return this.toMessageChain()
@@ -414,4 +412,4 @@ public inline fun Message.repeat(count: Int): MessageChain {
  * 将此消息元素按顺序重复 [count] 次.
  */
 @JvmSynthetic
-public inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
+public operator fun Message.times(count: Int): MessageChain = this.repeat(count)

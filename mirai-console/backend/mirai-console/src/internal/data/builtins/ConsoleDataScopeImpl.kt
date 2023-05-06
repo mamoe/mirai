@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -7,14 +7,18 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:OptIn(ConsoleFrontEndImplementation::class, ConsoleExperimentalApi::class)
+
 package net.mamoe.mirai.console.internal.data.builtins
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
 import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.TestOnly
 import net.mamoe.mirai.utils.childScope
 import net.mamoe.mirai.utils.minutesToMillis

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -159,7 +159,10 @@ public interface MiraiConsole : CoroutineScope {
      *
      * 对象以 [bridge][MiraiConsoleImplementationBridge] 实现, 将会桥接特定前端实现的 [MiraiConsoleImplementation] 到 [MiraiConsole].
      */
-    public companion object INSTANCE : MiraiConsole by dynamicDelegation({ MiraiConsoleImplementation.getBridge() }) {
+    public companion object INSTANCE : MiraiConsole by dynamicDelegation({
+        @OptIn(ConsoleFrontEndImplementation::class)
+        MiraiConsoleImplementation.getBridge()
+    }) {
         /**
          * 获取 [MiraiConsole] 的 [Job]
          */ // MiraiConsole.INSTANCE.getJob()
@@ -207,7 +210,7 @@ public interface MiraiConsole : CoroutineScope {
             configuration: BotConfiguration.() -> Unit = {}
         ): Bot = addBotImpl(id, authorization, configuration)
 
-        @Suppress("UNREACHABLE_CODE")
+        @OptIn(ConsoleFrontEndImplementation::class)
         private fun addBotImpl(id: Long, authorization: Any, configuration: BotConfiguration.() -> Unit = {}): Bot {
             when (authorization) {
                 is String -> {}
@@ -285,7 +288,7 @@ public interface MiraiConsole : CoroutineScope {
         public fun shutdown() {
             val consoleJob = job
             if (!consoleJob.isActive) return
-            @OptIn(DelicateCoroutinesApi::class)
+            @OptIn(DelicateCoroutinesApi::class, ConsoleFrontEndImplementation::class)
             GlobalScope.launch {
                 MiraiConsoleImplementation.shutdown()
             }
@@ -307,6 +310,7 @@ public interface MiraiConsole : CoroutineScope {
         @ConsoleExperimentalApi
         @JvmStatic
         public fun newProcessProgress(): ProcessProgress {
+            @OptIn(ConsoleFrontEndImplementation::class)
             return MiraiConsoleImplementation.getInstance().createNewProcessProgress()
         }
     }

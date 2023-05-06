@@ -19,6 +19,11 @@ plugins {
 
 val shadow: Configuration = project.configurations.create("shadow")
 
+kotlin {
+    optInForTestSourceSets("net.mamoe.mirai.console.util.ConsoleExperimentalApi")
+    optInForTestSourceSets("net.mamoe.mirai.console.ConsoleFrontEndImplementation")
+}
+
 dependencies {
     api(project(":mirai-core-api"))
     api(project(":mirai-console"))

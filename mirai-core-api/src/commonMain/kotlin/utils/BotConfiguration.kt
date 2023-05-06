@@ -54,7 +54,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * }})
  * ```
  */
-@Suppress("PropertyName")
+@OptIn(MiraiInternalApi::class)
 public open class BotConfiguration : AbstractBotConfiguration() { // open for Java
     ///////////////////////////////////////////////////////////////////////////
     // Coroutines

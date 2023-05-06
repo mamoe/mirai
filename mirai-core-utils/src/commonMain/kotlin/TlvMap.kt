@@ -170,9 +170,9 @@ public fun Input._readTLVMap(
     while (kotlin.run {
             try {
                 key = when (tagSize) {
-                    1 -> readUByte().toInt()
-                    2 -> readUShort().toInt()
-                    4 -> readUInt().toInt()
+                    1 -> readByte().toUByte().toInt()
+                    2 -> readShort().toUShort().toInt()
+                    4 -> readInt()
                     else -> error("Unsupported tag size: $tagSize")
                 }
             } catch (e: Exception) { // java.nio.BufferUnderflowException is not a EOFException...
@@ -209,7 +209,7 @@ public fun Input._readTLVMap(
             }
         } else {
             try {
-                val len = readUShort().toInt()
+                val len = readShort().toUShort().toInt()
                 val data = this.readBytes(len)
 //                println("Writing [${key.toUHexString()}]($len) => ${data.toUHexString()}")
                 map[key] = data

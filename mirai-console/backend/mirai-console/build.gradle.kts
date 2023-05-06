@@ -29,6 +29,11 @@ description = "Mirai Console Backend"
 
 kotlin {
     explicitApiWarning()
+    optInForAllSourceSets("kotlinx.serialization.ExperimentalSerializationApi")
+
+    optInForTestSourceSets("net.mamoe.mirai.console.ConsoleFrontEndImplementation")
+    optInForTestSourceSets("net.mamoe.mirai.console.ConsoleExperimentalApi")
+    optInForTestSourceSets("net.mamoe.mirai.console.ConsoleInternalApi")
 }
 
 
