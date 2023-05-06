@@ -18,7 +18,7 @@ import kotlin.test.assertEquals
 
 internal class AESTest {
     @Test
-    fun `can aes crypto works`() {
+    fun `can do crypto`() {
         val random = Random(currentTimeMillis())
         repeat(5) { i ->
             val key = getRandomString(16, random).encodeToByteArray()

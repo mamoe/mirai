@@ -18,7 +18,7 @@ import kotlin.test.assertEquals
 @DisabledOnJvmLikePlatform(Platform.AndroidUnitTest::class)
 class RSATest {
     @Test
-    fun `can gen rsa key pair`() {
+    fun `can generate key pair`() {
         repeat(4) { exp ->
             val keySize = 2.0.pow(9 + exp).toInt()
             val rsaKeyPair = generateRSAKeyPair(keySize)
