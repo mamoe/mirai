@@ -5370,10 +5370,6 @@ public final class net/mamoe/mirai/message/data/XmlMessageBuilder$ItemBuilder {
 public final class net/mamoe/mirai/message/data/visitor/MessageVisitorKt {
 }
 
-public final class net/mamoe/mirai/network/BotAuthorizationException : net/mamoe/mirai/network/LoginFailedException {
-	public final fun getAuthorization ()Lnet/mamoe/mirai/auth/BotAuthorization;
-}
-
 public abstract class net/mamoe/mirai/network/CustomLoginFailedException : net/mamoe/mirai/network/LoginFailedException {
 	public fun <init> (Z)V
 	public fun <init> (ZLjava/lang/String;)V
@@ -5589,7 +5585,6 @@ public final class net/mamoe/mirai/utils/BotConfiguration$MiraiProtocol : java/l
 
 public final class net/mamoe/mirai/utils/DeviceInfo {
 	public static final field Companion Lnet/mamoe/mirai/utils/DeviceInfo$Companion;
-	public synthetic fun <init> (I[B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[B[BLkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public fun <init> ([B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[B)V
 	public fun <init> ([B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[B[B)V
 	public fun equals (Ljava/lang/Object;)Z
@@ -5614,8 +5609,6 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 	public final fun getOsType ()[B
 	public final fun getProcVersion ()[B
 	public final fun getProduct ()[B
-	public final fun getQimei16 ()Ljava/lang/String;
-	public final fun getQimei36 ()Ljava/lang/String;
 	public final fun getSimInfo ()[B
 	public final fun getVersion ()Lnet/mamoe/mirai/utils/DeviceInfo$Version;
 	public final fun getWifiBSSID ()[B
@@ -5623,20 +5616,15 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 	public fun hashCode ()I
 	public static final fun random ()Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static final fun random (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfo;
-	public final fun setQimei16 (Ljava/lang/String;)V
-	public final fun setQimei36 (Ljava/lang/String;)V
-	public static final fun write$Self (Lnet/mamoe/mirai/utils/DeviceInfo;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
-public final class net/mamoe/mirai/utils/DeviceInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final class net/mamoe/mirai/utils/DeviceInfo$$serializer : kotlinx/serialization/KSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/utils/DeviceInfo$$serializer;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/utils/DeviceInfo;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public final class net/mamoe/mirai/utils/DeviceInfo$Companion {
@@ -5676,6 +5664,15 @@ public final class net/mamoe/mirai/utils/DeviceInfo$Version$$serializer : kotlin
 
 public final class net/mamoe/mirai/utils/DeviceInfo$Version$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/utils/DeviceInfoDelegateSerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/utils/DeviceInfoDelegateSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/utils/DeviceInfo;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/utils/DeviceInfo;)V
 }
 
 public final class net/mamoe/mirai/utils/DeviceInfoKt {
