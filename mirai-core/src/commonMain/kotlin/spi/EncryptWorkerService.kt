@@ -10,36 +10,50 @@
 
 package net.mamoe.mirai.internal.spi
 
-import kotlinx.atomicfu.AtomicRef
-import kotlinx.atomicfu.atomic
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.internal.spi.EncryptWorkerServiceContext.Companion.KEY_COMMAND_STR
 import net.mamoe.mirai.spi.BaseService
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import kotlin.jvm.JvmStatic
+import net.mamoe.mirai.spi.SpiServiceLoader
+import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.TypeKey
+import net.mamoe.mirai.utils.TypeSafeMap
+
 
 /**
  * @since 2.15.0
  */
-@MiraiExperimentalApi
-internal interface EncryptWorkerService : BaseService {
+public class EncryptWorkerServiceContext @MiraiInternalApi constructor(
+    /**
+     * [Bot.id]
+     */
+    public val id: Long,
+    /**
+     * Available keys:
+     * @see KEY_COMMAND_STR
+     */
+    public val extraArgs: TypeSafeMap = TypeSafeMap.EMPTY
+) {
+    public companion object {
+        public val KEY_COMMAND_STR: TypeKey<String> = TypeKey("KEY_COMMAND_STR")
+    }
+}
 
-    fun doTLVEncrypt(id: Long, tlvType: Int, payLoad: ByteArray, vararg extraArgs: Any?): ByteArray?
+/**
+ * @since 2.15.0
+ */
+public interface EncryptWorkerService : BaseService {
+    /**
+     * Returns `null` if not supported.
+     */
+    public fun encryptTlv(
+        context: EncryptWorkerServiceContext,
+        tlvType: Int,
+        payload: ByteArray, // Do not write to payload
+    ): ByteArray?
 
-    companion object : EncryptWorkerService {
+    public companion object {
+        private val loader = SpiServiceLoader(EncryptWorkerService::class)
 
-        private val instance: AtomicRef<EncryptWorkerService?> = atomic(null)
-
-        override fun doTLVEncrypt(
-            id: Long,
-            tlvType: Int,
-            payLoad: ByteArray,
-            vararg extraArgs: Any?
-        ): ByteArray? {
-            return instance.value?.doTLVEncrypt(id, tlvType, payLoad, extraArgs)
-        }
-
-        @JvmStatic
-        fun setService(service: EncryptWorkerService) {
-            instance.getAndSet(service)
-        }
+        internal val instance: EncryptWorkerService? get() = loader.service
     }
 }
