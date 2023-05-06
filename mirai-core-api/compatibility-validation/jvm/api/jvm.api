@@ -5370,6 +5370,10 @@ public final class net/mamoe/mirai/message/data/XmlMessageBuilder$ItemBuilder {
 public final class net/mamoe/mirai/message/data/visitor/MessageVisitorKt {
 }
 
+public final class net/mamoe/mirai/network/BotAuthorizationException : net/mamoe/mirai/network/LoginFailedException {
+	public final fun getAuthorization ()Lnet/mamoe/mirai/auth/BotAuthorization;
+}
+
 public abstract class net/mamoe/mirai/network/CustomLoginFailedException : net/mamoe/mirai/network/LoginFailedException {
 	public fun <init> (Z)V
 	public fun <init> (ZLjava/lang/String;)V

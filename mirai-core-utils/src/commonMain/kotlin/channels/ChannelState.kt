@@ -7,17 +7,18 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.internal.network.auth
+package net.mamoe.mirai.utils.channels
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
 
 /**
  * Producer states.
  */
-internal sealed interface ProducerState<T, V> {
+internal sealed interface ChannelState<T, V> {
     /*
      * 可变更状态的函数: [emit], [receiveOrNull], [expectMore], [finish], [finishExceptionally]
      * 
@@ -32,11 +33,6 @@ internal sealed interface ProducerState<T, V> {
      *                                         |
      *                                         | 调用 [expectMore]
      *                                         |
-     *                                         V 
-     *                                  CreatingProducer 
-     *                                         |
-     *                                         | 
-     *                                         |                                                     
      *                                         V                                                      
      *                                   ProducerReady (从此用户协程作为 producer 在后台运行)             
      *                                         |                                                      
@@ -97,41 +93,41 @@ internal sealed interface ProducerState<T, V> {
      */
     abstract override fun toString(): String
 
-    class JustInitialized<T, V> : ProducerState<T, V> {
+    class JustInitialized<T, V> : ChannelState<T, V> {
         override fun toString(): String = "JustInitialized"
     }
 
-    sealed interface HasProducer<T, V> : ProducerState<T, V> {
-        val producer: OnDemandProducerScope<T, V>
+    sealed interface HasProducer<T, V> : ChannelState<T, V> {
+        val producer: OnDemandSendChannel<T, V>
     }
 
-    // This is need — to ensure [launchProducer] is called exactly once.
-    class CreatingProducer<T, V>(
-        launchProducer: () -> OnDemandProducerScope<T, V>
-    ) : HasProducer<T, V> {
-        override val producer: OnDemandProducerScope<T, V> by lazy(launchProducer)
-        override fun toString(): String = "CreatingProducer"
-    }
-
+    // Producer is not running until `expectMore`. `emit` and `receiveOrNull` not allowed.
     class ProducerReady<T, V>(
-        override val producer: OnDemandProducerScope<T, V>,
+        launchProducer: () -> OnDemandSendChannel<T, V>,
     ) : HasProducer<T, V> {
+        // Lazily start the producer job since it's on-demand
+        override val producer: OnDemandSendChannel<T, V> by lazy(launchProducer) // `lazy` is synchronized
+
         override fun toString(): String = "ProducerReady"
     }
 
+    // Producer is running. `emit` and `receiveOrNull` both allowed.
     class Producing<T, V>(
-        override val producer: OnDemandProducerScope<T, V>,
-        val deferred: CompletableDeferred<V>,
+        override val producer: OnDemandSendChannel<T, V>,
+        parentJob: Job,
     ) : HasProducer<T, V> {
+        val deferred: CompletableDeferred<V> by lazy { CompletableDeferred<V>(parentJob) }
+
         override fun toString(): String = "Producing(deferred.completed=${deferred.isCompleted})"
     }
 
+    // Producer is suspended because it called `emit`. Expecting `receiveOrNull`.
     class Consuming<T, V>(
-        override val producer: OnDemandProducerScope<T, V>,
+        override val producer: OnDemandSendChannel<T, V>,
         val value: Deferred<V>,
         parentCoroutineContext: CoroutineContext,
     ) : HasProducer<T, V> {
-        val producerLatch = Latch<T>(parentCoroutineContext)
+        val producerLatch: CompletableDeferred<T> = CompletableDeferred(parentCoroutineContext[Job])
 
         override fun toString(): String {
             @OptIn(ExperimentalCoroutinesApi::class)
@@ -141,20 +137,21 @@ internal sealed interface ProducerState<T, V> {
         }
     }
 
+    // Producer is suspended. `expectMore` will resume producer with a ticket.
     class Consumed<T, V>(
-        override val producer: OnDemandProducerScope<T, V>,
-        val producerLatch: Latch<T>
+        override val producer: OnDemandSendChannel<T, V>,
+        val producerLatch: CompletableDeferred<T>
     ) : HasProducer<T, V> {
         override fun toString(): String = "Consumed($producerLatch)"
     }
 
     class Finished<T, V>(
-        val previousState: ProducerState<T, V>,
+        private val previousState: ChannelState<T, V>,
         val exception: Throwable?,
-    ) : ProducerState<T, V> {
-        val isSuccess get() = exception == null
+    ) : ChannelState<T, V> {
+        val isSuccess: Boolean get() = exception == null
 
-        fun createAlreadyFinishedException(cause: Throwable?): IllegalProducerStateException {
+        fun createAlreadyFinishedException(cause: Throwable?): IllegalChannelStateException {
             val exception = exception
             val causeMessage = if (cause == null) {
                 ""
@@ -162,13 +159,13 @@ internal sealed interface ProducerState<T, V> {
                 ", but attempting to finish with the cause $cause"
             }
             return if (exception == null) {
-                IllegalProducerStateException(
+                IllegalChannelStateException(
                     this,
                     "Producer has already finished normally$causeMessage. Previous state was: $previousState",
                     cause = cause
                 )
             } else {
-                IllegalProducerStateException(
+                IllegalChannelStateException(
                     this,
                     "Producer has already finished with the suppressed exception$causeMessage. Previous state was: $previousState",
                     cause = cause

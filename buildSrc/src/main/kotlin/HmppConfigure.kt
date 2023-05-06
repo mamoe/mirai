@@ -156,6 +156,10 @@ private val POSSIBLE_NATIVE_TARGETS by lazy { setOf("mingwX64", "macosX64", "mac
 
 const val JVM_TOOLCHAIN_VERSION = 8
 
+val JVM_TOOLCHAIN_ENABLED by projectLazy {
+    rootProject.getLocalProperty("mirai.enable.jvmtoolchain.special", true)
+}
+
 /**
  * ## Android Test 结构
  *
@@ -166,8 +170,10 @@ const val JVM_TOOLCHAIN_VERSION = 8
  */
 fun Project.configureJvmTargetsHierarchical(androidNamespace: String) {
     extensions.getByType(KotlinMultiplatformExtension::class.java).apply {
-        jvmToolchain(JVM_TOOLCHAIN_VERSION)
-       
+        if (JVM_TOOLCHAIN_ENABLED) {
+            jvmToolchain(JVM_TOOLCHAIN_VERSION)
+        }
+
         val commonMain by sourceSets.getting
         val commonTest by sourceSets.getting
 

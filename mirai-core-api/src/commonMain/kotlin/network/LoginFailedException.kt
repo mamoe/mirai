@@ -12,6 +12,7 @@
 package net.mamoe.mirai.network
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiInternalApi
 
@@ -74,6 +75,19 @@ public class RetryLaterException @MiraiInternalApi constructor(
 public class NoStandardInputForCaptchaException @MiraiInternalApi constructor(
     public override val cause: Throwable? = null
 ) : LoginFailedException(true, "no standard input for captcha")
+
+/**
+ * 表示在登录过程中, [BotAuthorization] 抛出的异常.
+ * @since 2.15
+ */
+public class BotAuthorizationException @MiraiInternalApi constructor(
+    public val authorization: BotAuthorization,
+    cause: Throwable?,
+) : LoginFailedException(
+    killBot = true,
+    "BotAuthorization(${authorization}) threw an exception during authorization process. See cause below.",
+    cause
+)
 
 /**
  * 当前 [LoginSolver] 不支持此验证方式

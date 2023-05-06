@@ -163,6 +163,8 @@ projects.module-path.enabled=false
 projects.mirai-console.enabled=false
 # 特殊配置，关闭 mirai-logging，这会关闭所有日志转接模块
 projects.mirai-logging.enabled=false
+# 特殊配置，是否取消指定 jvmToolchain，在本地 jvmTest 中需要访问 JDK 9+ 的内容时需要携带此配置
+mirai.enable.jvmtoolchain.special=false
 ```
 
 通常关闭 IDEA 插件和 Gradle 插件可以显著提高初始化速度（IDEA 插件项目在初始化时需要下载 1G 左右编译依赖）。
