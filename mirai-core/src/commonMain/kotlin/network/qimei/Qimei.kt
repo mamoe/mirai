@@ -109,7 +109,7 @@ internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
         DevicePayloadData(
             androidId = deviceInfo.androidId.decodeToString(),
             platformId = 1,
-            appKey = protocol.appKey, // TODO: move to MiraiProtocolInternal
+            appKey = protocol.appKey,
             appVersion = protocol.buildVer,
             beaconIdSrc = beaconId,
             brand = deviceInfo.brand.decodeToString(),
