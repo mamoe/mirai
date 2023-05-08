@@ -50,7 +50,6 @@ internal class DeviceInfoV1LegacyVersion(
 internal object DeviceInfoV1LegacySerializer : KSerializer<DeviceInfo> by DeviceInfoV1Legacy.serializer().map(
     DeviceInfoV1Legacy.serializer().descriptor.copy("DeviceInfo"),
     deserialize = {
-        @Suppress("DEPRECATION")
         DeviceInfo(
             display,
             product,

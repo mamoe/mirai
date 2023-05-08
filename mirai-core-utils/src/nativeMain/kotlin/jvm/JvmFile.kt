@@ -39,6 +39,7 @@ public actual class JvmFile {
     public actual fun length(): Long = throw NotImplementedError()
 
     public actual fun delete(): Boolean = throw NotImplementedError()
+    public actual fun exists(): Boolean = throw NotImplementedError()
 
     public actual fun listFiles(): Array<JvmFile>? = throw NotImplementedError()
 
@@ -55,4 +56,18 @@ public actual class JvmFile {
     public actual constructor(parent: String, child: String) {
         throw NotImplementedError()
     }
+}
+
+@Suppress("DEPRECATION_ERROR")
+@Deprecated("JvmFile is not implemented on native", level = DeprecationLevel.HIDDEN)
+@CompatibilityOnlyJvmFile
+public actual fun JvmFile.writeText(text: String) {
+    throw NotImplementedError()
+}
+
+@Suppress("DEPRECATION_ERROR")
+@Deprecated("JvmFile is not implemented on native", level = DeprecationLevel.HIDDEN)
+@CompatibilityOnlyJvmFile
+public actual fun JvmFile.readText(): String {
+    throw NotImplementedError()
 }

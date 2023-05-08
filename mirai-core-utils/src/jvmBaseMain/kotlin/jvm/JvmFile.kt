@@ -9,5 +9,18 @@
 
 package net.mamoe.mirai.utils.jvm
 
+import kotlin.io.readText as readTextKt
+import kotlin.io.writeText as writeTextKt
+
 @CompatibilityOnlyJvmFile
-public actual typealias JvmFile = java.io.File 
+public actual typealias JvmFile = java.io.File
+
+@CompatibilityOnlyJvmFile
+public actual fun JvmFile.writeText(text: String) {
+    return this.writeTextKt(text)
+}
+
+@CompatibilityOnlyJvmFile
+public actual fun JvmFile.readText(): String {
+    return this.readTextKt()
+}

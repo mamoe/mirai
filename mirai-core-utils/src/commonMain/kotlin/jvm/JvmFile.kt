@@ -11,7 +11,7 @@ package net.mamoe.mirai.utils.jvm
 
 import io.ktor.utils.io.errors.*
 
-@CompatibilityOnlyJvmFile
+@Suppress("DEPRECATION_ERROR")
 public expect class JvmFile {
     public constructor(pathname: String)
     public constructor(parent: String, child: String)
@@ -36,6 +36,7 @@ public expect class JvmFile {
 
     public fun length(): Long
     public fun delete(): Boolean
+    public fun exists(): Boolean
 
     public fun listFiles(): Array<JvmFile>?
 
@@ -43,6 +44,14 @@ public expect class JvmFile {
     public fun mkdirs(): Boolean
     public fun renameTo(file: JvmFile): Boolean
 }
+
+@Suppress("DEPRECATION_ERROR")
+@CompatibilityOnlyJvmFile
+public expect fun JvmFile.writeText(text: String)
+
+@Suppress("DEPRECATION_ERROR")
+@CompatibilityOnlyJvmFile
+public expect fun JvmFile.readText(): String
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS, AnnotationTarget.FUNCTION)
 @RequiresOptIn(

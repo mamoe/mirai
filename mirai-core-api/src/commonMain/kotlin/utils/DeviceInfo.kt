@@ -7,12 +7,15 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate")
+@file:Suppress("MemberVisibilityCanBePrivate", "DEPRECATION_ERROR")
 
 package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.core.*
-import kotlinx.serialization.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -21,9 +24,11 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.utils.DeviceInfoManager.Version.Companion.trans
-import kotlin.jvm.JvmInline
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
+import net.mamoe.mirai.utils.jvm.CompatibilityOnlyJvmFile
+import net.mamoe.mirai.utils.jvm.JvmFile
+import net.mamoe.mirai.utils.jvm.readText
+import net.mamoe.mirai.utils.jvm.writeText
+import kotlin.jvm.*
 import kotlin.random.Random
 
 internal const val DeviceInfoConstructorDeprecationMessage =
@@ -36,89 +41,133 @@ internal const val DeviceInfoConstructorDeprecationMessage =
  *
  * ## 自定义设备信息
  */
-public expect class DeviceInfo
-@Deprecated(DeviceInfoConstructorDeprecationMessage, level = DeprecationLevel.WARNING)
-@DeprecatedSinceMirai(warningSince = "2.15") // planned internal
-public constructor(
-    display: ByteArray,
-    product: ByteArray,
-    device: ByteArray,
-    board: ByteArray,
-    brand: ByteArray,
-    model: ByteArray,
-    bootloader: ByteArray,
-    fingerprint: ByteArray,
-    bootId: ByteArray,
-    procVersion: ByteArray,
-    baseBand: ByteArray,
-    version: Version,
-    simInfo: ByteArray,
-    osType: ByteArray,
-    macAddress: ByteArray,
-    wifiBSSID: ByteArray,
-    wifiSSID: ByteArray,
-    imsiMd5: ByteArray,
-    imei: String,
-    apn: ByteArray,
-    androidId: ByteArray,
+@Serializable(DeviceInfoV1LegacySerializer::class)
+public class DeviceInfo public constructor(
+    public val display: ByteArray,
+    public val product: ByteArray,
+    public val device: ByteArray,
+    public val board: ByteArray,
+    public val brand: ByteArray,
+    public val model: ByteArray,
+    public val bootloader: ByteArray,
+    public val fingerprint: ByteArray,
+    public val bootId: ByteArray,
+    public val procVersion: ByteArray,
+    public val baseBand: ByteArray,
+    public val version: Version,
+    public val simInfo: ByteArray,
+    public val osType: ByteArray,
+    public val macAddress: ByteArray,
+    public val wifiBSSID: ByteArray,
+    public val wifiSSID: ByteArray,
+    public val imsiMd5: ByteArray,
+    public val imei: String,
+    public val apn: ByteArray,
+    public val androidId: ByteArray,
 ) {
-    public val display: ByteArray
-    public val product: ByteArray
-    public val device: ByteArray
-    public val board: ByteArray
-    public val brand: ByteArray
-    public val model: ByteArray
-    public val bootloader: ByteArray
-    public val fingerprint: ByteArray
-    public val bootId: ByteArray
-    public val procVersion: ByteArray
-    public val baseBand: ByteArray
-    public val version: Version
-    public val simInfo: ByteArray
-    public val osType: ByteArray
-    public val macAddress: ByteArray
-    public val wifiBSSID: ByteArray
-    public val wifiSSID: ByteArray
-    public val imsiMd5: ByteArray
-    public val imei: String
-    public val apn: ByteArray
-    public val androidId: ByteArray
+    @Deprecated(
+        "This DeviceInfo constructor may randomize field `androidId` without your random instance. " +
+                "It is better to specify `android` id explicitly.",
+        replaceWith = ReplaceWith(
+            "net.mamoe.mirai.utils.DeviceInfo(display, product, device, board, brand, model, " +
+                    "bootloader, fingerprint, bootId, procVersion, baseBand, version, simInfo, osType, " +
+                    "macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn, androidId)"
+        ),
+        level = DeprecationLevel.WARNING
+    )
+    @DeprecatedSinceMirai(warningSince = "2.15")
+    public constructor(
+        display: ByteArray,
+        product: ByteArray,
+        device: ByteArray,
+        board: ByteArray,
+        brand: ByteArray,
+        model: ByteArray,
+        bootloader: ByteArray,
+        fingerprint: ByteArray,
+        bootId: ByteArray,
+        procVersion: ByteArray,
+        baseBand: ByteArray,
+        version: Version,
+        simInfo: ByteArray,
+        osType: ByteArray,
+        macAddress: ByteArray,
+        wifiBSSID: ByteArray,
+        wifiSSID: ByteArray,
+        imsiMd5: ByteArray,
+        imei: String,
+        apn: ByteArray
+    ) : this(
+        display, product, device, board, brand, model, bootloader,
+        fingerprint, bootId, procVersion, baseBand, version, simInfo,
+        osType, macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn,
+        androidId = display
+    )
 
-    public val ipAddress: ByteArray
+    public val ipAddress: ByteArray get() = byteArrayOf(192.toByte(), 168.toByte(), 1, 123)
+
+    init {
+        require(imsiMd5.size == 16) { "Bad `imsiMd5.size`. Required 16, given ${imsiMd5.size}." }
+    }
 
     @Transient
     @MiraiInternalApi
-    public val guid: ByteArray
+    public val guid: ByteArray = generateGuid(androidId, macAddress)
 
-    // @Serializable: use DeviceInfoVersionSerializer in commonMain.
-    public class Version(
-        incremental: ByteArray = "5891938".toByteArray(),
-        release: ByteArray = "10".toByteArray(),
-        codename: ByteArray = "REL".toByteArray(),
-        sdk: Int = 29
+    @Serializable
+    public class Version constructor(
+        public val incremental: ByteArray = "5891938".toByteArray(),
+        public val release: ByteArray = "10".toByteArray(),
+        public val codename: ByteArray = "REL".toByteArray(),
+        public val sdk: Int = 29
     ) {
-        public val incremental: ByteArray
-        public val release: ByteArray
-        public val codename: ByteArray
-        public val sdk: Int
+        /**
+         * @since 2.9
+         */
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is Version) return false
+
+            if (!incremental.contentEquals(other.incremental)) return false
+            if (!release.contentEquals(other.release)) return false
+            if (!codename.contentEquals(other.codename)) return false
+            return sdk == other.sdk
+        }
 
         /**
          * @since 2.9
          */
-        override fun equals(other: Any?): Boolean
-
-        /**
-         * @since 2.9
-         */
-        override fun hashCode(): Int
-
-        internal companion object {
-            fun serializer(): KSerializer<Version>
+        override fun hashCode(): Int {
+            var result = incremental.contentHashCode()
+            result = 31 * result + release.contentHashCode()
+            result = 31 * result + codename.contentHashCode()
+            result = 31 * result + sdk
+            return result
         }
     }
 
     public companion object {
-        internal val logger: MiraiLogger
+        internal val logger = MiraiLogger.Factory.create(DeviceInfo::class, "DeviceInfo")
+
+        /**
+         * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
+         */
+        @JvmOverloads
+        @JvmStatic
+        @JvmName("from")
+        @OptIn(CompatibilityOnlyJvmFile::class)
+        public fun JvmFile.loadAsDeviceInfo(
+            json: Json = DeviceInfoManager.format
+        ): DeviceInfo {
+            if (!this.exists() || this.length() == 0L) {
+                return random().also {
+                    this.writeText(DeviceInfoManager.serialize(it, json))
+                }
+            }
+            return DeviceInfoManager.deserialize(this.readText(), json) { upg ->
+                this.writeText(DeviceInfoManager.serialize(upg, json))
+            }
+        }
 
         /**
          * 生成随机 [DeviceInfo]
@@ -126,7 +175,7 @@ public constructor(
          * @since 2.0
          */
         @JvmStatic
-        public fun random(): DeviceInfo
+        public fun random(): DeviceInfo = random(Random.Default)
 
         /**
          * 使用特定随机数生成器生成 [DeviceInfo]
@@ -134,11 +183,9 @@ public constructor(
          * @since 2.9
          */
         @JvmStatic
-        public fun random(random: Random): DeviceInfo
-
-        @Deprecated(DeviceInfoConstructorDeprecationMessage, level = DeprecationLevel.WARNING)
-        @DeprecatedSinceMirai(warningSince = "2.15") // planned internal
-        public fun serializer(): KSerializer<DeviceInfo>
+        public fun random(random: Random): DeviceInfo {
+            return DeviceInfoCommonImpl.randomDeviceInfo(random)
+        }
 
         /**
          * 将此 [DeviceInfo] 序列化为字符串. 序列化的字符串可以在以后通过 [DeviceInfo.deserializeFromString] 反序列化为 [DeviceInfo].
@@ -148,7 +195,7 @@ public constructor(
          * @since 2.15
          */
         @JvmStatic
-        public fun serializeToString(deviceInfo: DeviceInfo): String
+        public fun serializeToString(deviceInfo: DeviceInfo): String = DeviceInfoManager.serialize(deviceInfo)
 
         /**
          * 将通过 [serializeToString] 序列化得到的字符串反序列化为 [DeviceInfo].
@@ -156,19 +203,29 @@ public constructor(
          * @since 2.15
          */
         @JvmStatic
-        public fun deserializeFromString(string: String): DeviceInfo
+        public fun deserializeFromString(string: String): DeviceInfo = DeviceInfoManager.deserialize(string)
     }
 
     /**
      * @since 2.9
      */
     @Suppress("DuplicatedCode")
-    override fun equals(other: Any?): Boolean
+    override fun equals(other: Any?): Boolean {
+        return DeviceInfoCommonImpl.equalsImpl(this, other)
+    }
+
 
     /**
      * @since 2.9
      */
-    override fun hashCode(): Int
+    override fun hashCode(): Int {
+        return DeviceInfoCommonImpl.hashCodeImpl(this)
+    }
+
+    @Suppress("ClassName", "WRONG_ANNOTATION_TARGET")
+    @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JvmName("\$serializer")
+    public object serializer : KSerializer<DeviceInfo> by DeviceInfoV1LegacySerializer
 }
 
 /**
