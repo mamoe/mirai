@@ -5438,6 +5438,20 @@ public final class net/mamoe/mirai/network/UnsupportedSmsLoginException : net/ma
 public final class net/mamoe/mirai/network/WrongPasswordException : net/mamoe/mirai/network/LoginFailedException {
 }
 
+public abstract interface class net/mamoe/mirai/spi/AudioToSilkService : net/mamoe/mirai/spi/BaseService {
+	public static final field Companion Lnet/mamoe/mirai/spi/AudioToSilkService$Companion;
+	public abstract fun convert (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun getInstance ()Lnet/mamoe/mirai/spi/AudioToSilkService;
+}
+
+public final class net/mamoe/mirai/spi/AudioToSilkService$Companion {
+	public final fun getInstance ()Lnet/mamoe/mirai/spi/AudioToSilkService;
+}
+
+public abstract interface class net/mamoe/mirai/spi/BaseService {
+	public fun getPriority ()I
+}
+
 public abstract class net/mamoe/mirai/utils/AbstractBotConfiguration {
 	public fun <init> ()V
 	public final fun fileBasedDeviceInfo ()V
