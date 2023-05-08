@@ -15,7 +15,6 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.core.*
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -163,7 +162,8 @@ internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
         )
     )
 
-    val resp = Json.decodeFromString<OLAAndroidResp>(
+    val resp = Json.decodeFromString(
+        OLAAndroidResp.serializer(),
         httpClient.post("https://snowflake.qq.com/ola/android") {
             userAgent(buildString {
                 append("Dalvik/")
@@ -193,7 +193,7 @@ internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
     }
 
     val decryptedData = aesDecrypt(resp.data.decodeBase64(), aesKey, aesKey)
-    val qimeiData = Json.decodeFromString<QimeiData>(decryptedData.decodeToString())
+    val qimeiData = Json.decodeFromString(QimeiData.serializer(), decryptedData.decodeToString())
 
     client.qimei36 = qimeiData.q36
     client.qimei16 = qimeiData.q16
