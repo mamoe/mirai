@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.random.Random
 
-@Serializable(DeviceInfoDelegateSerializer::class)
+@Serializable(DeviceInfoV1LegacySerializer::class)
 public actual class DeviceInfo public actual constructor(
     public actual val display: ByteArray,
     public actual val product: ByteArray,
@@ -37,44 +37,6 @@ public actual class DeviceInfo public actual constructor(
     public actual val apn: ByteArray,
     public actual val androidId: ByteArray,
 ) {
-
-    @Deprecated(
-        "This DeviceInfo constructor may randomize field `androidId` without your random instance. " +
-                "It is better to specify `android` id explicitly.",
-        replaceWith = ReplaceWith(
-            "net.mamoe.mirai.utils.DeviceInfo(display, product, device, board, brand, model, " +
-                    "bootloader, fingerprint, bootId, procVersion, baseBand, version, simInfo, osType, " +
-                    "macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn, androidId)"
-        )
-    )
-    public actual constructor(
-        display: ByteArray,
-        product: ByteArray,
-        device: ByteArray,
-        board: ByteArray,
-        brand: ByteArray,
-        model: ByteArray,
-        bootloader: ByteArray,
-        fingerprint: ByteArray,
-        bootId: ByteArray,
-        procVersion: ByteArray,
-        baseBand: ByteArray,
-        version: Version,
-        simInfo: ByteArray,
-        osType: ByteArray,
-        macAddress: ByteArray,
-        wifiBSSID: ByteArray,
-        wifiSSID: ByteArray,
-        imsiMd5: ByteArray,
-        imei: String,
-        apn: ByteArray
-    ) : this(
-        display, product, device, board, brand, model, bootloader,
-        fingerprint, bootId, procVersion, baseBand, version, simInfo,
-        osType, macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn,
-        androidId = display
-    )
-
     public actual val ipAddress: ByteArray get() = byteArrayOf(192.toByte(), 168.toByte(), 1, 123)
 
     init {
@@ -137,6 +99,22 @@ public actual class DeviceInfo public actual constructor(
         public actual fun random(random: Random): DeviceInfo {
             return DeviceInfoCommonImpl.randomDeviceInfo(random)
         }
+
+        /**
+         * 将此 [DeviceInfo] 序列化为字符串. 序列化的字符串可以在以后通过 [DeviceInfo.deserializeFromString] 反序列化为 [DeviceInfo].
+         *
+         * 序列化的字符串有兼容性保证, 在旧版 mirai 序列化的字符串, 可以在新版 mirai 使用. 但新版 mirai 序列化的字符串不一定能在旧版使用.
+         *
+         * @since 2.15
+         */
+        public actual fun serializeToString(deviceInfo: DeviceInfo): String = DeviceInfoManager.serialize(deviceInfo)
+
+        /**
+         * 将通过 [serializeToString] 序列化得到的字符串反序列化为 [DeviceInfo].
+         * 此函数兼容旧版 mirai 序列化的字符串.
+         * @since 2.15
+         */
+        public actual fun deserializeFromString(string: String): DeviceInfo = DeviceInfoManager.deserialize(string)
     }
 
     /**

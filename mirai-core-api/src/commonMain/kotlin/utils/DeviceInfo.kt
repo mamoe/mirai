@@ -23,9 +23,23 @@ import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.utils.DeviceInfoManager.Version.Companion.trans
 import kotlin.jvm.JvmInline
 import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmSynthetic
 import kotlin.random.Random
 
-public expect class DeviceInfo(
+internal const val DeviceInfoConstructorDeprecationMessage =
+    "Constructor and serializer of DeviceInfo is deprecated and will be removed in the future." +
+            "This is because new properties can be added and it requires too much effort to maintain public stability." +
+            "Please use DeviceInfo.serializeToString and DeviceInfo.deserializeFromString instead."
+
+/**
+ * 表示设备信息
+ *
+ * ## 自定义设备信息
+ */
+public expect class DeviceInfo
+@Deprecated(DeviceInfoConstructorDeprecationMessage, level = DeprecationLevel.WARNING)
+@DeprecatedSinceMirai(warningSince = "2.15") // planned internal
+public constructor(
     display: ByteArray,
     product: ByteArray,
     device: ByteArray,
@@ -48,38 +62,6 @@ public expect class DeviceInfo(
     apn: ByteArray,
     androidId: ByteArray,
 ) {
-    @Deprecated(
-        "This DeviceInfo constructor may randomize field `androidId` without your random instance. " +
-                "It is better to specify `androidId` explicitly.",
-        replaceWith = ReplaceWith(
-            "net.mamoe.mirai.utils.DeviceInfo(display, product, device, board, brand, model, " +
-                    "bootloader, fingerprint, bootId, procVersion, baseBand, version, simInfo, osType, " +
-                    "macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn, androidId)"
-        )
-    )
-    public constructor(
-        display: ByteArray,
-        product: ByteArray,
-        device: ByteArray,
-        board: ByteArray,
-        brand: ByteArray,
-        model: ByteArray,
-        bootloader: ByteArray,
-        fingerprint: ByteArray,
-        bootId: ByteArray,
-        procVersion: ByteArray,
-        baseBand: ByteArray,
-        version: Version,
-        simInfo: ByteArray,
-        osType: ByteArray,
-        macAddress: ByteArray,
-        wifiBSSID: ByteArray,
-        wifiSSID: ByteArray,
-        imsiMd5: ByteArray,
-        imei: String,
-        apn: ByteArray,
-    )
-
     public val display: ByteArray
     public val product: ByteArray
     public val device: ByteArray
@@ -154,7 +136,27 @@ public expect class DeviceInfo(
         @JvmStatic
         public fun random(random: Random): DeviceInfo
 
+        @Deprecated(DeviceInfoConstructorDeprecationMessage, level = DeprecationLevel.WARNING)
+        @DeprecatedSinceMirai(warningSince = "2.15") // planned internal
         public fun serializer(): KSerializer<DeviceInfo>
+
+        /**
+         * 将此 [DeviceInfo] 序列化为字符串. 序列化的字符串可以在以后通过 [DeviceInfo.deserializeFromString] 反序列化为 [DeviceInfo].
+         *
+         * 序列化的字符串有兼容性保证, 在旧版 mirai 序列化的字符串, 可以在新版 mirai 使用. 但新版 mirai 序列化的字符串不一定能在旧版使用.
+         *
+         * @since 2.15
+         */
+        @JvmStatic
+        public fun serializeToString(deviceInfo: DeviceInfo): String
+
+        /**
+         * 将通过 [serializeToString] 序列化得到的字符串反序列化为 [DeviceInfo].
+         * 此函数兼容旧版 mirai 序列化的字符串.
+         * @since 2.15
+         */
+        @JvmStatic
+        public fun deserializeFromString(string: String): DeviceInfo
     }
 
     /**
@@ -169,7 +171,18 @@ public expect class DeviceInfo(
     override fun hashCode(): Int
 }
 
+/**
+ * 将此 [DeviceInfo] 序列化为字符串. 序列化的字符串可以在以后通过 [DeviceInfo.deserializeFromString] 反序列化为 [DeviceInfo].
+ *
+ * 序列化的字符串有兼容性保证, 在旧版 mirai 序列化的字符串, 可以在新版 mirai 使用. 但新版 mirai 序列化的字符串不一定能在旧版使用.
+ *
+ * @since 2.15
+ */
+@JvmSynthetic
+public fun DeviceInfo.serializeToString(): String = DeviceInfo.serializeToString(this)
+
 internal object DeviceInfoCommonImpl {
+    @Suppress("DEPRECATION")
     fun randomDeviceInfo(random: Random) = DeviceInfo(
         display = "MIRAI.${getRandomString(6, '0'..'9', random)}.001".toByteArray(),
         product = "mirai".toByteArray(),
