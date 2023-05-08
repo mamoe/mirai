@@ -904,9 +904,11 @@ public abstract interface class net/mamoe/mirai/contact/announcement/Announcemen
 	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun get (Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public abstract fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun members (Ljava/lang/String;Z)Ljava/util/List;
 	public abstract fun members (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public abstract fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun remind (Ljava/lang/String;)V
 	public abstract fun remind (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
 	public abstract fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
