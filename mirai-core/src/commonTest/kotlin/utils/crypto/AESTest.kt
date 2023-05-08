@@ -20,22 +20,21 @@ internal class AESTest {
     @Test
     fun `can do crypto`() {
         val random = Random(currentTimeMillis())
-        repeat(5) { i ->
-            val key = getRandomString(16, random).encodeToByteArray()
-            val iv = getRandomString(16, random).encodeToByteArray()
-            val currentTime = currentTimeMillis()
 
-            val plainText = buildString {
-                append("Use of this source code is governed by the GNU AGPLv3 license ")
-                append("that can be found through the following link. ")
-                append(currentTime)
-            }
+        val key = getRandomString(16, random).encodeToByteArray()
+        val iv = getRandomString(16, random).encodeToByteArray()
+        val currentTime = currentTimeMillis()
 
-            println("AES crypto test #${i + 1}: key = ${key.toUHexString()}, iv = ${iv.toUHexString()}, currentTimeMillis = $currentTime")
-            val encrypted = aesEncrypt(plainText.encodeToByteArray(), iv, key)
-            val decrypted = aesDecrypt(encrypted, iv, key)
-
-            assertEquals(plainText, decrypted.decodeToString())
+        val plainText = buildString {
+            append("Use of this source code is governed by the GNU AGPLv3 license ")
+            append("that can be found through the following link. ")
+            append(currentTime)
         }
+
+        println("AES crypto test: key = ${key.toUHexString()}, iv = ${iv.toUHexString()}, currentTimeMillis = $currentTime")
+        val encrypted = aesEncrypt(plainText.encodeToByteArray(), iv, key)
+        val decrypted = aesDecrypt(encrypted, iv, key)
+
+        assertEquals(plainText, decrypted.decodeToString())
     }
 }

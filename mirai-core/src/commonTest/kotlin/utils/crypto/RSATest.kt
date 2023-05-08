@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.utils.crypto
 
-import net.mamoe.mirai.internal.testFramework.Platform
+import net.mamoe.mirai.internal.testFramework.*
 import net.mamoe.mirai.internal.testFramework.rules.DisabledOnJvmLikePlatform
 import kotlin.math.pow
 import kotlin.test.Test
@@ -17,15 +17,19 @@ import kotlin.test.assertEquals
 
 @DisabledOnJvmLikePlatform(Platform.AndroidUnitTest::class)
 class RSATest {
-    @Test
-    fun `can generate key pair`() {
-        repeat(4) { exp ->
-            val keySize = 2.0.pow(9 + exp).toInt()
-            val rsaKeyPair = generateRSAKeyPair(keySize)
-            println("RSA keygen test #${exp + 1}: keySize = $keySize")
-            println(rsaKeyPair.plainPubPemKey)
-            println(rsaKeyPair.plainPrivPemKey)
-        }
+    @TestFactory
+    fun `can generate key pair`(): DynamicTestsResult {
+        return runDynamicTests(buildList {
+            repeat(4) { exp ->
+                val keySize = 2.0.pow(9 + exp).toInt()
+                add(dynamicTest("RSAKeyGenLength$keySize") {
+                    val rsaKeyPair = generateRSAKeyPair(keySize)
+                    println("RSA keygen test #${exp + 1}: keySize = $keySize")
+                    println(rsaKeyPair.plainPubPemKey)
+                    println(rsaKeyPair.plainPrivPemKey)
+                })
+            }
+        })
     }
 
     @Test
