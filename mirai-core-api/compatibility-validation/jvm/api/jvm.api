@@ -5590,6 +5590,7 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 	public static final field Companion Lnet/mamoe/mirai/utils/DeviceInfo$Companion;
 	public fun <init> ([B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[B)V
 	public fun <init> ([B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[B[B)V
+	public static final fun deserializeFromString (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public fun equals (Ljava/lang/Object;)Z
 	public static final fun from (Ljava/io/File;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static final fun from (Ljava/io/File;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/utils/DeviceInfo;
@@ -5619,6 +5620,7 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 	public fun hashCode ()I
 	public static final fun random ()Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static final fun random (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfo;
+	public static final fun serializeToString (Lnet/mamoe/mirai/utils/DeviceInfo;)Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/utils/DeviceInfo$$serializer : kotlinx/serialization/KSerializer {
@@ -5631,11 +5633,13 @@ public final class net/mamoe/mirai/utils/DeviceInfo$$serializer : kotlinx/serial
 }
 
 public final class net/mamoe/mirai/utils/DeviceInfo$Companion {
+	public final fun deserializeFromString (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun from (Ljava/io/File;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun from (Ljava/io/File;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static synthetic fun from$default (Lnet/mamoe/mirai/utils/DeviceInfo$Companion;Ljava/io/File;Lkotlinx/serialization/json/Json;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun random ()Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun random (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfo;
+	public final fun serializeToString (Lnet/mamoe/mirai/utils/DeviceInfo;)Ljava/lang/String;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -5669,17 +5673,9 @@ public final class net/mamoe/mirai/utils/DeviceInfo$Version$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class net/mamoe/mirai/utils/DeviceInfoDelegateSerializer : kotlinx/serialization/KSerializer {
-	public static final field INSTANCE Lnet/mamoe/mirai/utils/DeviceInfoDelegateSerializer;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/utils/DeviceInfo;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/utils/DeviceInfo;)V
-}
-
 public final class net/mamoe/mirai/utils/DeviceInfoKt {
 	public static final fun generateDeviceInfoData (Lnet/mamoe/mirai/utils/DeviceInfo;)[B
+	public static final synthetic fun serializeToString (Lnet/mamoe/mirai/utils/DeviceInfo;)Ljava/lang/String;
 }
 
 public abstract interface class net/mamoe/mirai/utils/DeviceVerificationRequests {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,8 +16,11 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.random.Random
 
-@Serializable(DeviceInfoDelegateSerializer::class)
-public actual class DeviceInfo public actual constructor(
+@Serializable(DeviceInfoV1LegacySerializer::class)
+public actual class DeviceInfo
+@Deprecated(DeviceInfoConstructorDeprecationMessage, level = DeprecationLevel.WARNING)
+@DeprecatedSinceMirai(warningSince = "2.15") // planned internal
+public actual constructor(
     public actual val display: ByteArray,
     public actual val product: ByteArray,
     public actual val device: ByteArray,
@@ -47,9 +50,11 @@ public actual class DeviceInfo public actual constructor(
             "net.mamoe.mirai.utils.DeviceInfo(display, product, device, board, brand, model, " +
                     "bootloader, fingerprint, bootId, procVersion, baseBand, version, simInfo, osType, " +
                     "macAddress, wifiBSSID, wifiSSID, imsiMd5, imei, apn, androidId)"
-        )
+        ),
+        level = DeprecationLevel.WARNING
     )
-    public actual constructor(
+    @DeprecatedSinceMirai(warningSince = "2.15")
+    public constructor(
         display: ByteArray,
         product: ByteArray,
         device: ByteArray,
@@ -160,6 +165,24 @@ public actual class DeviceInfo public actual constructor(
         public actual fun random(random: Random): DeviceInfo {
             return DeviceInfoCommonImpl.randomDeviceInfo(random)
         }
+
+        /**
+         * 将此 [DeviceInfo] 序列化为字符串. 序列化的字符串可以在以后通过 [DeviceInfo.deserializeFromString] 反序列化为 [DeviceInfo].
+         *
+         * 序列化的字符串有兼容性保证, 在旧版 mirai 序列化的字符串, 可以在新版 mirai 使用. 但新版 mirai 序列化的字符串不一定能在旧版使用.
+         *
+         * @since 2.15
+         */
+        @JvmStatic
+        public actual fun serializeToString(deviceInfo: DeviceInfo): String = DeviceInfoManager.serialize(deviceInfo)
+
+        /**
+         * 将通过 [serializeToString] 序列化得到的字符串反序列化为 [DeviceInfo].
+         * 此函数兼容旧版 mirai 序列化的字符串.
+         * @since 2.15
+         */
+        @JvmStatic
+        public actual fun deserializeFromString(string: String): DeviceInfo = DeviceInfoManager.deserialize(string)
     }
 
     /**
@@ -180,5 +203,5 @@ public actual class DeviceInfo public actual constructor(
 
     @Suppress("ClassName")
     @Deprecated("For binary compatibility", level = DeprecationLevel.HIDDEN)
-    public object `$serializer` : KSerializer<DeviceInfo> by DeviceInfoDelegateSerializer
+    public object `$serializer` : KSerializer<DeviceInfo> by DeviceInfoV1LegacySerializer
 }
