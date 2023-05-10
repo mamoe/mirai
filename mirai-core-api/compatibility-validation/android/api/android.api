@@ -176,6 +176,8 @@ public abstract interface class net/mamoe/mirai/auth/BotAuthInfo {
 	public abstract fun getConfiguration ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public abstract fun getDeviceInfo ()Lnet/mamoe/mirai/utils/DeviceInfo;
 	public abstract fun getId ()J
+	public abstract fun getReLoginCause ()Ljava/lang/Throwable;
+	public abstract fun isFirstLogin ()Z
 }
 
 public abstract interface class net/mamoe/mirai/auth/BotAuthResult {

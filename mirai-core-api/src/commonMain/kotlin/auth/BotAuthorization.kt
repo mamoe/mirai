@@ -14,7 +14,6 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.utils.*
-import kotlin.jvm.JvmStatic
 
 /**
  * Bot 的登录鉴权方式
@@ -102,6 +101,8 @@ public interface BotAuthInfo {
     public val id: Long
     public val deviceInfo: DeviceInfo
     public val configuration: BotConfiguration
+    public val isFirstLogin: Boolean
+    public val reLoginCause: Throwable?
 }
 
 @NotStableForInheritance

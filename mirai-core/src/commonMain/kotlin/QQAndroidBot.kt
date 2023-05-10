@@ -141,14 +141,18 @@ internal open class QQAndroidBot constructor(
                     cause is ForceOfflineException -> {
                         eventDispatcher.broadcastAsync(BotOfflineEvent.Force(bot, cause.title, cause.message))
                     }
+
                     cause is StatSvc.ReqMSFOffline.MsfOfflineToken -> {
                         eventDispatcher.broadcastAsync(BotOfflineEvent.MsfOffline(bot, cause))
                     }
+
                     cause is NetworkException && cause.recoverable -> {
                         eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, cause))
                     }
+
                     cause is BotClosedByEvent -> {
                     }
+
                     else -> {
                         // any other unexpected exceptions considered as an error
 
@@ -165,6 +169,9 @@ internal open class QQAndroidBot constructor(
                     }
                 }
             },
+            StateChangedObserver("ReLoginCauseCatcher", State.OK, State.CLOSED) { new ->
+                get(SsoProcessor).reLoginCause = new.getCause()
+            }
         ).safe(logger.subLogger("StateObserver")) + LoggingStateObserver.createLoggingIfEnabled()
     }
 

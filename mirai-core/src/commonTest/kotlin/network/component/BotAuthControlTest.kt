@@ -36,6 +36,12 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
             get() = bot.components[SsoProcessorContext].device
         override val configuration: BotConfiguration
             get() = bot.configuration
+
+        override val isFirstLogin: Boolean
+            get() = false
+
+        override val reLoginCause: Throwable?
+            get() = null
     }
 
     private suspend fun AuthControl.assertRequire(exceptedType: KClass<*>) {

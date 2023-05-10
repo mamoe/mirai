@@ -47,6 +47,8 @@ internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcess
     }
 
     override var registerResp: StatSvc.Register.Response? = null
+
+    override var reLoginCause: Throwable? = null
     override suspend fun login(handler: NetworkHandler) {
         bot.network.logger.debug { "SsoProcessor.login" }
     }
