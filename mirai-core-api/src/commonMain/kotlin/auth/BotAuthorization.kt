@@ -12,11 +12,10 @@ package net.mamoe.mirai.auth
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.auth.ReAuthCause.*
+import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.event.events.BotOfflineEvent
 
 /**
  * Bot 的登录鉴权方式
@@ -112,107 +111,106 @@ public interface BotAuthInfo {
      *
      * 若在首次登录过程中多次进入[认证流程][BotAuthorization.authorize]，则这流程些均被视为首次登录。
      *
+     * @see Bot.login
      * @see BotAuthorization.authorize
      */
     public val isFirstLogin: Boolean
 
     /**
-     * 导致重新进入认证流程的原因
-     *
-     * 重新进入认证流程一般是第二次或多次进入认证流程，除了 [FastLoginError]。
-     *
-     * 第一次进入认证流程时该值为 `null`
-     *
+     * 导致进入[认证流程][BotAuthorization.authorize]的原因。
      */
-    public val reAuthCause: ReAuthCause?
+    public val reason: AuthReason
 }
 
 /**
- * 导致进行重新与服务器认证的原因
- *
- * @see ForceOffline
- * @see MsfOffline
- * @see FastLoginError
- * @see NetworkError
- * @see Unknown
+ * 导致进行[认证流程][BotAuthorization.authorize]的原因
  */
-@NotStableForInheritance
-public sealed class ReAuthCause(
-    public open val bot: Bot,
-    public open val message: String?
-) {
+public sealed class AuthReason {
+    public abstract val bot: Bot
+    public abstract val message: String?
+
+    /**
+     * Bot 全新[登录][Bot.login]
+     *
+     * 全新登录指登录前本地没有任何当前 Bot 的登录缓存信息而进行的登录。
+     *
+     * 全新登录时将会进入[认证流程][BotAuthorization.authorize]。
+     *
+     * @see Bot.login
+     * @see FastLoginError
+     */
+    public class FreshLogin @MiraiInternalApi constructor(
+        override val bot: Bot,
+        override val message: String?
+    ) : AuthReason()
+
     /**
      * Bot 被挤下线
      *
-     * 当 Bot 在其他客户端使用相同协议登录此账号时，会导致 Bot 掉线。
+     * 当 Bot 账号在其他客户端使用相同（或相似）协议登录时，Bot 会下线，
+     * 被挤下线后当前的登录会话将失效。
      *
-     * 会因此原因进行登录就说明 [BotConfiguration.autoReconnectOnForceOffline] 为 `true`。若该属性为 `false` 时则 mirai 不会自动在被挤下线时重新登录。
-     *
-     * 被挤下线后当前的 session 会失效，登录时会重新与服务器认证 Bot 账号信息。
+     * 当 [BotConfiguration.autoReconnectOnForceOffline] 为 `true` 时，
+     * Bot 会尝试重新登录，并会以此原因进入[认证流程][BotAuthorization.authorize]。
      *
      * @see BotConfiguration.autoReconnectOnForceOffline
      * @see BotOfflineEvent.Force
      */
-    public class ForceOffline(
+    public class ForceOffline @MiraiInternalApi constructor(
         override val bot: Bot,
         override val message: String?
-    ) : ReAuthCause(bot, message)
+    ) : AuthReason()
 
     /**
      * Bot 被服务器断开
      *
-     * 由于其他原因（账号被封禁，被其他客户端手动下线等）导致 Bot 掉线。
+     * 因其他原因导致 Bot 被服务器断开。这些原因包括账号被封禁、被其他客户端手动下线等，
+     * 被服务器断开下线后当前的登录会话将失效。
      *
-     * 一般情况下，被服务器断开后 mirai 会尝试重新登录。
-     *
-     * 被服务器断开下线后当前的 session 会失效，登录时会重新与服务器认证 Bot 账号信息。
+     * Bot 会尝试重新登录，并会以此原因进入[认证流程][BotAuthorization.authorize]。
      *
      * @see BotOfflineEvent.MsfOffline
      */
-    public class MsfOffline(
+    public class MsfOffline @MiraiInternalApi constructor(
         override val bot: Bot,
         override val message: String?
-    ) : ReAuthCause(bot, message)
+    ) : AuthReason()
 
     /**
-     * 由其他网络原因引起的掉线
+     * 由网络原因引起的掉线
      *
-     * 一般情况下，被服务器断开后 mirai 会尝试重新登录。
+     * 一般情况下，Bot 被服务器断开后会尝试重新登录。
      *
-     * 由网络问题引起的掉线不一定会使当前的 session 失效，
-     * 仅 session 失效时与服务器认证。
+     * 由网络问题引起的掉线不一定会使当前的登录会话失效，
+     * 仅登录会话失效时 Bot 会以此原因进入[认证流程][BotAuthorization.authorize]。
      */
-    public class NetworkError(
+    public class NetworkError @MiraiInternalApi constructor(
         override val bot: Bot,
         override val message: String?
-    ) : ReAuthCause(bot, message)
+    ) : AuthReason()
 
     /**
      * 快速登录失败
      *
-     * Bot 账号首次在 mirai [登录][Bot.login] 成功后，会保存登录 session 信息用于下次登录。
+     * Bot 账号首次 [登录][Bot.login] 成功后，会保存登录缓存信息用于下次登录。
      *
-     * 下次登录时，mirai 会首先使用 session 尝试快速登录，
-     * 若快速登录失败，则会使用 [BotAuthorization] 定义的流程进行登录。
+     * 下次登录时，Bot 会首先使用登录缓存信息尝试快速登录，
+     * 若快速登录失败，则会以此原因进入[认证流程][BotAuthorization.authorize]。
      *
-     * 注意：此原因在 _字面意义_ 上并不是“重新”与服务器认证，
-     * 因为出现此原因时，是 [BotAuthorization] 第一次进行认证流程。
-     *
-     * 但严格意义上，mirai 提前尝试使用快速登录进行了认证，
-     * 所以 “快速登陆失败后使用 [BotAuthorization] 定义的流程进行登录” 可以被认为是重新与服务器认证。
-     *
-     * @see BotAuthorization
+     * @see BotAuthorization.authorize
      * @see Bot.login
      */
-    public class FastLoginError(
+    public class FastLoginError @MiraiInternalApi constructor(
         override val bot: Bot,
         override val message: String?
-    ) : ReAuthCause(bot, message)
+    ) : AuthReason()
 
-    public class Unknown(
+    public class Unknown @MiraiInternalApi constructor(
         override val bot: Bot,
         public val cause: Throwable?
-    ) : ReAuthCause(bot, cause?.message)
+    ) : AuthReason() {
+        override val message: String? = cause?.message
+    }
 }
 
 @NotStableForInheritance

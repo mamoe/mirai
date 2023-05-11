@@ -11,9 +11,9 @@ package net.mamoe.mirai.internal.network.components
 
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
+import net.mamoe.mirai.auth.AuthReason
 import net.mamoe.mirai.auth.BotAuthInfo
 import net.mamoe.mirai.auth.BotAuthorization
-import net.mamoe.mirai.auth.ReAuthCause
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.QRCodeLoginData
@@ -56,8 +56,8 @@ internal interface SsoProcessor {
     val firstLoginSucceed: Boolean get() = firstLoginResult?.success ?: false
     val registerResp: StatSvc.Register.Response?
 
-    var reAuthCause: ReAuthCause?
     var isFirstLogin: Boolean
+    var authReason: AuthReason
 
     /**
      * Do login. Throws [LoginFailedException] if failed
@@ -147,7 +147,9 @@ internal open class SsoProcessorImpl(
     private val components get() = ssoContext.bot.components
 
     override var isFirstLogin: Boolean = true
-    override var reAuthCause: ReAuthCause? = null
+    override var authReason: AuthReason by lateinitMutableProperty {
+        AuthReason.FreshLogin(ssoContext.bot, null)
+    }
 
     private val botAuthInfo = object : BotAuthInfo {
         override val id: Long
@@ -158,8 +160,8 @@ internal open class SsoProcessorImpl(
             get() = ssoContext.bot.configuration
         override val isFirstLogin: Boolean
             get() = this@SsoProcessorImpl.isFirstLogin
-        override val reAuthCause: ReAuthCause?
-            get() = this@SsoProcessorImpl.reAuthCause
+        override val reason: AuthReason
+            get() = this@SsoProcessorImpl.authReason
     }
 
     protected open suspend fun doSlowLogin(
@@ -217,7 +219,7 @@ internal open class SsoProcessorImpl(
                 }.onFailure { e ->
                     // first fast-login exception should also be considered as re-auth cause.
                     if (isFirstLogin) {
-                        reAuthCause = ReAuthCause.FastLoginError(ssoContext.bot, e.message)
+                        authReason = AuthReason.FastLoginError(ssoContext.bot, e.message)
                     }
 
                     initAndStartAuthControl()
@@ -229,9 +231,10 @@ internal open class SsoProcessorImpl(
                 loginSuccess()
 
                 return
+            } else if (isFirstLogin) {
+                authReason = AuthReason.FreshLogin(ssoContext.bot, null)
             }
         }
-
         if (authControl == null) initAndStartAuthControl()
         val authControl0 = authControl!!
 

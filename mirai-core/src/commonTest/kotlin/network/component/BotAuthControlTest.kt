@@ -20,6 +20,7 @@ import net.mamoe.mirai.network.CustomLoginFailedException
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DeviceInfo
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
+import kotlin.properties.Delegates
 import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -37,8 +38,7 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
         override val isFirstLogin: Boolean
             get() = false
 
-        override val reAuthCause: ReAuthCause?
-            get() = null
+        override val reason: AuthReason by Delegates.notNull()
     }
 
     private suspend fun AuthControl.assertRequire(exceptedType: KClass<*>) {

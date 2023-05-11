@@ -10,8 +10,8 @@
 package net.mamoe.mirai.internal.network.auth
 
 import kotlinx.coroutines.test.runTest
+import net.mamoe.mirai.auth.AuthReason
 import net.mamoe.mirai.auth.BotAuthResult
-import net.mamoe.mirai.auth.ReAuthCause
 import net.mamoe.mirai.internal.MockAccount
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.components.AccountSecretsManager
@@ -22,17 +22,20 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPushForceOffline
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
-internal class ReAuthorizeTest : AbstractBotAuthTest() {
+internal class AuthorizationReasonTest : AbstractBotAuthTest() {
     @Test
     fun `first login without fast login`() = runTest {
         var isFirstLogin: Boolean = false
-        var reAuthCause: ReAuthCause? = ReAuthCause.Unknown(bot, null)
+        var authReason: AuthReason? = AuthReason.Unknown(bot, null)
 
         setAuthorization { auth, info ->
             isFirstLogin = info.isFirstLogin
-            reAuthCause = info.reAuthCause
+            authReason = info.reason
 
             auth.authByPassword("")
             return@setAuthorization object : BotAuthResult {}
@@ -53,8 +56,7 @@ internal class ReAuthorizeTest : AbstractBotAuthTest() {
         bot.login()
 
         assertTrue(isFirstLogin)
-        assertNull(reAuthCause)
-
+        assertIs<AuthReason.FreshLogin>(authReason)
     }
 
     @Test
@@ -81,11 +83,11 @@ internal class ReAuthorizeTest : AbstractBotAuthTest() {
     @Test
     fun `first login with fast login fail`() = runTest {
         var isFirstLogin: Boolean = false
-        var reAuthCause: ReAuthCause? = null
+        var authReason: AuthReason? = null
 
         setAuthorization { auth, info ->
             isFirstLogin = info.isFirstLogin
-            reAuthCause = info.reAuthCause
+            authReason = info.reason
 
             auth.authByPassword("")
             return@setAuthorization object : BotAuthResult {}
@@ -101,17 +103,17 @@ internal class ReAuthorizeTest : AbstractBotAuthTest() {
         bot.login()
 
         assertTrue(isFirstLogin)
-        assertIs<ReAuthCause.FastLoginError>(reAuthCause)
+        assertIs<AuthReason.FastLoginError>(authReason)
     }
 
     @Test
     fun `force offline`() = runTest {
         var isFirstLogin: Boolean = true
-        var reAuthCause: ReAuthCause? = null
+        var authReason: AuthReason? = null
 
         setAuthorization { auth, info ->
             isFirstLogin = info.isFirstLogin
-            reAuthCause = info.reAuthCause
+            authReason = info.reason
 
             auth.authByPassword("")
             return@setAuthorization object : BotAuthResult {}
@@ -142,6 +144,6 @@ internal class ReAuthorizeTest : AbstractBotAuthTest() {
         eventDispatcher.joinBroadcast() // why test finished before code reaches end??
 
         assertFalse(isFirstLogin)
-        assertIs<ReAuthCause.ForceOffline>(reAuthCause)
+        assertIs<AuthReason.ForceOffline>(authReason)
     }
 }

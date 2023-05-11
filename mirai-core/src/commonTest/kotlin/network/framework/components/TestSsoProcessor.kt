@@ -11,7 +11,7 @@ package net.mamoe.mirai.internal.network.framework.components
 
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
-import net.mamoe.mirai.auth.ReAuthCause
+import net.mamoe.mirai.auth.AuthReason
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.*
@@ -22,6 +22,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.utils.DeviceInfo
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.lateinitMutableProperty
+import kotlin.properties.Delegates
 import kotlin.random.Random
 
 internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcessor {
@@ -49,7 +50,7 @@ internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcess
 
     override var registerResp: StatSvc.Register.Response? = null
 
-    override var reAuthCause: ReAuthCause? = null
+    override var authReason: AuthReason by Delegates.notNull()
     override var isFirstLogin: Boolean = true
     override suspend fun login(handler: NetworkHandler) {
         bot.network.logger.debug { "SsoProcessor.login" }
