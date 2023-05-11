@@ -13,6 +13,7 @@ import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.auth.BotAuthInfo
 import net.mamoe.mirai.auth.BotAuthorization
+import net.mamoe.mirai.auth.ReAuthCause
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.QRCodeLoginData
@@ -55,7 +56,8 @@ internal interface SsoProcessor {
     val firstLoginSucceed: Boolean get() = firstLoginResult?.success ?: false
     val registerResp: StatSvc.Register.Response?
 
-    var reLoginCause: Throwable?
+    var reAuthCause: ReAuthCause?
+    var isFirstLogin: Boolean
 
     /**
      * Do login. Throws [LoginFailedException] if failed
@@ -144,8 +146,8 @@ internal open class SsoProcessorImpl(
     override val ssoSession: SsoSession get() = client
     private val components get() = ssoContext.bot.components
 
-    private var isFirstLogin: Boolean = true
-    override var reLoginCause: Throwable? = null
+    override var isFirstLogin: Boolean = true
+    override var reAuthCause: ReAuthCause? = null
 
     private val botAuthInfo = object : BotAuthInfo {
         override val id: Long
@@ -156,9 +158,8 @@ internal open class SsoProcessorImpl(
             get() = ssoContext.bot.configuration
         override val isFirstLogin: Boolean
             get() = this@SsoProcessorImpl.isFirstLogin
-        override val reLoginCause: Throwable?
-            get() = this@SsoProcessorImpl.reLoginCause
-                ?: authControl?.exceptionCollector?.getLast()?.unwrapCancellationException()
+        override val reAuthCause: ReAuthCause?
+            get() = this@SsoProcessorImpl.reAuthCause
     }
 
     protected open suspend fun doSlowLogin(
@@ -210,12 +211,15 @@ internal open class SsoProcessorImpl(
 
             // try fast login
             if (client.wLoginSigInfoInitialized) {
-                isFirstLogin = false
                 ssoContext.bot.components[EcdhInitialPublicKeyUpdater].refreshInitialPublicKeyAndApplyEcdh()
                 kotlin.runCatching {
                     doFastLogin(handler)
                 }.onFailure { e ->
-                    reLoginCause = e
+                    // first fast-login exception should also be considered as re-auth cause.
+                    if (isFirstLogin) {
+                        reAuthCause = ReAuthCause.FastLoginError(ssoContext.bot, e.message)
+                    }
+
                     initAndStartAuthControl()
                     authControl!!.exceptionCollector.collect(e)
 
@@ -230,8 +234,6 @@ internal open class SsoProcessorImpl(
 
         if (authControl == null) initAndStartAuthControl()
         val authControl0 = authControl!!
-
-        isFirstLogin = firstLoginResult?.success != true
 
         var nextAuthMethod: AuthMethod? = null
         try {

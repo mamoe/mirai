@@ -176,7 +176,7 @@ public abstract interface class net/mamoe/mirai/auth/BotAuthInfo {
 	public abstract fun getConfiguration ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public abstract fun getDeviceInfo ()Lnet/mamoe/mirai/utils/DeviceInfo;
 	public abstract fun getId ()J
-	public abstract fun getReLoginCause ()Ljava/lang/Throwable;
+	public abstract fun getReAuthCause ()Lnet/mamoe/mirai/auth/ReAuthCause;
 	public abstract fun isFirstLogin ()Z
 }
 
@@ -225,6 +225,42 @@ public final class net/mamoe/mirai/auth/QRCodeLoginListener$State : java/lang/En
 	public static final field WAITING_FOR_SCAN Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;
 	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;
 	public static fun values ()[Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;
+}
+
+public abstract class net/mamoe/mirai/auth/ReAuthCause {
+	public synthetic fun <init> (Lnet/mamoe/mirai/Bot;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/ReAuthCause$FastLoginError : net/mamoe/mirai/auth/ReAuthCause {
+	public fun <init> (Lnet/mamoe/mirai/Bot;Ljava/lang/String;)V
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/ReAuthCause$ForceOffline : net/mamoe/mirai/auth/ReAuthCause {
+	public fun <init> (Lnet/mamoe/mirai/Bot;Ljava/lang/String;)V
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/ReAuthCause$MsfOffline : net/mamoe/mirai/auth/ReAuthCause {
+	public fun <init> (Lnet/mamoe/mirai/Bot;Ljava/lang/String;)V
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/ReAuthCause$NetworkError : net/mamoe/mirai/auth/ReAuthCause {
+	public fun <init> (Lnet/mamoe/mirai/Bot;Ljava/lang/String;)V
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/ReAuthCause$Unknown : net/mamoe/mirai/auth/ReAuthCause {
+	public fun <init> (Lnet/mamoe/mirai/Bot;Ljava/lang/Throwable;)V
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public final fun getCause ()Ljava/lang/Throwable;
 }
 
 public abstract interface class net/mamoe/mirai/contact/AnonymousMember : net/mamoe/mirai/contact/Member {

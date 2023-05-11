@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.auth.ReAuthCause
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
@@ -170,7 +171,15 @@ internal open class QQAndroidBot constructor(
                 }
             },
             StateChangedObserver("ReLoginCauseCatcher", State.OK, State.CLOSED) { new ->
-                get(SsoProcessor).reLoginCause = new.getCause()
+                get(SsoProcessor).reAuthCause = when (val cause = new.getCause()) {
+                    is ForceOfflineException -> ReAuthCause.ForceOffline(bot, cause.message)
+                    is StatSvc.ReqMSFOffline.MsfOfflineToken -> ReAuthCause.MsfOffline(bot, cause.message)
+                    is NetworkException -> ReAuthCause.NetworkError(bot, cause.message)
+                    else -> ReAuthCause.Unknown(bot, cause)
+                }
+            },
+            StateChangedObserver("FirstLoginObserver", State.OK) {
+                get(SsoProcessor).isFirstLogin = false
             }
         ).safe(logger.subLogger("StateObserver")) + LoggingStateObserver.createLoggingIfEnabled()
     }
