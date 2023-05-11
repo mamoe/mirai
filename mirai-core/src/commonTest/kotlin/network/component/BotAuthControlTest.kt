@@ -11,10 +11,7 @@ package net.mamoe.mirai.internal.network.component
 
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
-import net.mamoe.mirai.auth.BotAuthInfo
-import net.mamoe.mirai.auth.BotAuthResult
-import net.mamoe.mirai.auth.BotAuthSession
-import net.mamoe.mirai.auth.BotAuthorization
+import net.mamoe.mirai.auth.*
 import net.mamoe.mirai.internal.network.auth.AuthControl
 import net.mamoe.mirai.internal.network.components.SsoProcessorContext
 import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
@@ -40,7 +37,7 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
         override val isFirstLogin: Boolean
             get() = false
 
-        override val reLoginCause: Throwable?
+        override val reAuthCause: ReAuthCause?
             get() = null
     }
 
