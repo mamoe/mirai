@@ -146,7 +146,7 @@ public sealed class ReAuthCause(
      *
      * 当 Bot 在其他客户端使用相同协议登录此账号时，会导致 Bot 掉线。
      *
-     * 若设置了 [BotConfiguration.autoReconnectOnForceOffline] 则 mirai 会尝试重新登录。
+     * 会因此原因进行登录就说明 [BotConfiguration.autoReconnectOnForceOffline] 为 `true`。若该属性为 `false` 时则 mirai 不会自动在被挤下线时重新登录。
      *
      * 被挤下线后当前的 session 会失效，登录时会重新与服务器认证 Bot 账号信息。
      *
