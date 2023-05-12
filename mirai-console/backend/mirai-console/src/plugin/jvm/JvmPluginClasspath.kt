@@ -45,8 +45,31 @@ public interface JvmPluginClasspath {
      * [pluginClassLoader] 是否可以通过 [ClassLoader.getResource] 获取 Mirai Console (包括依赖) 的相关资源
      *
      * 默认为 `false`
+     *
+     * @since 2.15.0
      */
+    @SettingProperty("resources.do-resolve-system", defaultValue = "false")
     public var shouldResolveConsoleSystemResource: Boolean
+
+    /**
+     * 当前插件是否可以被没有依赖此插件的插件使用
+     *
+     * 默认为 `true`
+     *
+     * @since 2.15.0
+     */
+    @SettingProperty("class.loading.open-to-independent", defaultValue = "true")
+    public var shouldBeResolvableToIndependent: Boolean
+
+    /**
+     * 当前插件是否应该搜索未依赖的插件的类路径
+     *
+     * 默认为 `true`
+     *
+     * @since 2.15.0
+     */
+    @SettingProperty("class.loading.load-independent", defaultValue = "true")
+    public var shouldResolveIndependent: Boolean
 
     /**
      * 将 [file] 加入 [classLoader] 的搜索路径内
@@ -70,4 +93,18 @@ public interface JvmPluginClasspath {
      */
     @kotlin.jvm.Throws(IllegalArgumentException::class, Exception::class)
     public fun downloadAndAddToPath(classLoader: ClassLoader, dependencies: Collection<String>)
+
+
+    /**
+     * 此注解仅用于注释 `options.properties` 的键值
+     *
+     * Note: `META-INF/mirai-console-plugin/options.properties`
+     *
+     * @since 2.15.0
+     */
+    @Retention(AnnotationRetention.SOURCE)
+    private annotation class SettingProperty(
+        val name: String,
+        val defaultValue: String = "",
+    )
 }
