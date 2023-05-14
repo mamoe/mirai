@@ -316,15 +316,15 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
                     }
 
                     openaccess.shouldBeResolvableToIndependent = options.prop(
-                        "class.loading.open-to-independent", "true"
+                        "class.loading.be-resolvable-to-independent", "true"
                     ) { it.toBooleanStrict() }
 
                     openaccess.shouldResolveIndependent = options.prop(
-                        "class.loading.load-independent", "true"
+                        "class.loading.resolve-independent", "true"
                     ) { it.toBooleanStrict() }
 
                     openaccess.shouldResolveConsoleSystemResource = options.prop(
-                        "resources.do-resolve-system", "false"
+                        "resources.resolve-console-system-resources", "false"
                     ) { it.toBooleanStrict() }
 
                 }.onFailure { err ->

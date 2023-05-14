@@ -18,7 +18,7 @@ public object Independent : KotlinPlugin(
 ) {
     override fun onEnable() {
         assertFails {
-            // parent's class.loading.open-to-independent = false
+            // parent's class.loading.be-resolvable-to-independent = false
             Class.forName("consoleittest.optionproperties.main.OptionsProperties")
         }
     }

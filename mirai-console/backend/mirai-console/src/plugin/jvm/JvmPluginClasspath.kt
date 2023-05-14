@@ -48,7 +48,7 @@ public interface JvmPluginClasspath {
      *
      * @since 2.15.0
      */
-    @SettingProperty("resources.do-resolve-system", defaultValue = "false")
+    @SettingProperty("resources.resolve-console-system-resources", defaultValue = "false")
     public var shouldResolveConsoleSystemResource: Boolean
 
     /**
@@ -58,7 +58,7 @@ public interface JvmPluginClasspath {
      *
      * @since 2.15.0
      */
-    @SettingProperty("class.loading.open-to-independent", defaultValue = "true")
+    @SettingProperty("class.loading.be-resolvable-to-independent", defaultValue = "true")
     public var shouldBeResolvableToIndependent: Boolean
 
     /**
@@ -68,7 +68,7 @@ public interface JvmPluginClasspath {
      *
      * @since 2.15.0
      */
-    @SettingProperty("class.loading.load-independent", defaultValue = "true")
+    @SettingProperty("class.loading.resolve-independent", defaultValue = "true")
     public var shouldResolveIndependent: Boolean
 
     /**
