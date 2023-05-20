@@ -29,10 +29,6 @@ internal const val DeviceInfoConstructorDeprecationMessage =
 
 /**
  * 表示设备信息
- *
- * ## 自定义设备信息
- *
- *
  */
 public expect class DeviceInfo
 @Deprecated(DeviceInfoConstructorDeprecationMessage, level = DeprecationLevel.WARNING)
