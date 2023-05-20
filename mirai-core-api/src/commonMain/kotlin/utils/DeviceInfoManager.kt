@@ -91,6 +91,7 @@ internal object DeviceInfoManager {
         val apn: ByteArray
     ) : Info {
         override fun toDeviceInfo(): DeviceInfo {
+            @Suppress("DEPRECATION", "DEPRECATION_ERROR")
             return DeviceInfo(
                 display = display,
                 product = product,
@@ -140,6 +141,7 @@ internal object DeviceInfoManager {
         val imei: String,
         val apn: String
     ) : Info {
+        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         override fun toDeviceInfo(): DeviceInfo = DeviceInfo(
             this.display.toByteArray(),
             this.product.toByteArray(),
@@ -190,6 +192,7 @@ internal object DeviceInfoManager {
         val apn: String,
         val androidId: String,
     ) : Info {
+        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         override fun toDeviceInfo(): DeviceInfo = DeviceInfo(
             this.display.toByteArray(),
             this.product.toByteArray(),
@@ -262,6 +265,7 @@ internal object DeviceInfoManager {
         isLenient = true
     }
 
+    @Suppress("unused")
     @Deprecated("ABI compatibility for device generator", level = DeprecationLevel.HIDDEN)
     @JvmName("deserialize")
     fun deserializeDeprecated(

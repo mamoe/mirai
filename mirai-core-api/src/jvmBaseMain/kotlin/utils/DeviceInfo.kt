@@ -44,8 +44,7 @@ public actual constructor(
     public actual val androidId: ByteArray,
 ) {
     @Deprecated(
-        "This DeviceInfo constructor may randomize field `androidId` without your random instance. " +
-                "It is better to specify `android` id explicitly.",
+        DeviceInfoConstructorDeprecationMessage,
         replaceWith = ReplaceWith(
             "net.mamoe.mirai.utils.DeviceInfo(display, product, device, board, brand, model, " +
                     "bootloader, fingerprint, bootId, procVersion, baseBand, version, simInfo, osType, " +
@@ -54,6 +53,7 @@ public actual constructor(
         level = DeprecationLevel.WARNING
     )
     @DeprecatedSinceMirai(warningSince = "2.15")
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
     public constructor(
         display: ByteArray,
         product: ByteArray,
