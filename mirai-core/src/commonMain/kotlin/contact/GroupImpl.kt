@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -311,7 +311,7 @@ internal abstract class CommonGroupImpl constructor(
     @Deprecated("use uploadAudio", replaceWith = ReplaceWith("uploadAudio(resource)"), level = DeprecationLevel.HIDDEN)
     @Suppress("OverridingDeprecatedMember", "DEPRECATION", "DEPRECATION_ERROR")
     override suspend fun uploadVoice(resource: ExternalResource): net.mamoe.mirai.message.data.Voice =
-        AudioToSilkService.convert(
+        AudioToSilkService.instance.convert(
             resource
         ).useAutoClose { res ->
             return bot.network.run {
@@ -359,7 +359,7 @@ internal abstract class CommonGroupImpl constructor(
         }.getOrThrow()
     }
 
-    override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio = AudioToSilkService.convert(
+    override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio = AudioToSilkService.instance.convert(
         resource
     ).useAutoClose { res ->
         return bot.network.run {
