@@ -20,6 +20,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import net.mamoe.mirai.utils.DeviceInfoManager.Version.Companion.trans
 import kotlin.jvm.JvmInline
+import kotlin.jvm.JvmName
 
 internal object DeviceInfoManager {
     sealed interface Info {
@@ -260,6 +261,13 @@ internal object DeviceInfoManager {
         ignoreUnknownKeys = true
         isLenient = true
     }
+
+    @Deprecated("ABI compatibility for device generator", level = DeprecationLevel.HIDDEN)
+    @JvmName("deserialize")
+    fun deserializeDeprecated(
+        string: String,
+        format: Json = this.format,
+    ): DeviceInfo = deserialize(string, format)
 
     @Throws(IllegalArgumentException::class, NumberFormatException::class) // in case malformed
     fun deserialize(
