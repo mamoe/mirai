@@ -35,7 +35,6 @@ internal object DeviceInfoManager {
     object HexStringSerializer : KSerializer<HexString> by String.serializer().map(
         String.serializer().descriptor.copy("HexString"),
         deserialize = {
-            println(it)
             HexString(it.hexToBytes())
         },
         serialize = { it.data.toUHexString("").lowercase() }
