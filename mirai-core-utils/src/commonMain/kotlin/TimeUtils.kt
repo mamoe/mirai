@@ -25,7 +25,11 @@ public expect fun currentTimeMillis(): Long
  */
 public fun currentTimeSeconds(): Long = currentTimeMillis() / 1000
 
-public expect fun currentTimeFormatted(format: String? = null): String
+public fun currentTimeFormatted(format: String? = null): String {
+    return formatTime(currentTimeMillis(), format)
+}
+
+public expect fun formatTime(epochTimeMillis: Long, format: String?): String
 
 
 // 临时使用, 待 Kotlin Duration 稳定后使用 Duration.

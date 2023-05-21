@@ -32,6 +32,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.UrlDeviceVerificat
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin.Login.LoginPacketResponse.Captcha
 import net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin.*
+import net.mamoe.mirai.internal.network.qimei.requestQimei
+import net.mamoe.mirai.internal.utils.subLogger
 import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
@@ -140,6 +142,8 @@ internal open class SsoProcessorImpl(
             ssoContext.bot.components[BotClientHolder].client = value
         }
 
+    private val qimeiLogger by lazy { ssoContext.bot.network.logger.subLogger("QimeiApi") }
+
     override val ssoSession: SsoSession get() = client
     private val components get() = ssoContext.bot.components
 
@@ -198,6 +202,12 @@ internal open class SsoProcessorImpl(
             components[CacheValidator].validate()
 
             components[BdhSessionSyncer].loadServerListFromCache()
+
+            try {
+                ssoContext.bot.requestQimei(qimeiLogger)
+            } catch (exception: Throwable) {
+                qimeiLogger.warning("Cannot get qimei from server.", exception)
+            }
 
             // try fast login
             if (client.wLoginSigInfoInitialized) {

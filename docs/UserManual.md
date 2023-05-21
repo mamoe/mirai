@@ -17,25 +17,7 @@ Mirai 控制台现在有两个版本，Mirai 插件在这两个版本的 Mirai C
 | 类型   | 长啥样?         | 好用吗?      | 怎么装?                  |
 |:-----|:-------------|:----------|:----------------------|
 | 纯控制台 | [MCLI-1.png] | 稳定，也适合服务器 | [使用纯控制台版本](#使用纯控制台版本) |
-| 图形界面 | [MCPS-1.png] | 测试版，不稳定   | [使用图形界面版本](#使用图形界面版本) |
-
-## 使用图形界面版本
-
-前往 [sonder-joker/mirai-compose](https://github.com/sonder-joker/mirai-compose/releases)
-下载适合你的系统的压缩包，  
->  MAC 系统下载 .dmg 后缀的文件  
->  Windows 系统下载 .msi 后缀的文件  
->  Linux 系统下载 .deb 后缀的文件  
-
-以 Windows 系统为例，以下为简要安装步骤：  
-
-1. 下载 `mirai-compose-<版本>.msi`
-2. 双击运行安装程序，选择一个合适的文件夹，然后点击安装
-3. 安装完毕后打开刚才指定的文件夹
-4. 双击启动其中的 `mirai-compose.exe` 即可开始运行
-5. 运行后点击左上角可以添加 QQ bot 账号
-
-安装插件只需要将下载好的插件置于 plugins 目录，安装完毕后重启 mirai-compose 以生效。
+| 图形界面 | [MCPS-1.png] | 测试版，不推荐使用 | [使用图形界面版本](#使用图形界面版本) |
 
 ## 使用纯控制台版本
 
@@ -50,7 +32,28 @@ Mirai 控制台现在有两个版本，Mirai 插件在这两个版本的 Mirai C
 
 安装插件只需要将下载好的插件置于 plugins 目录，然后重启 MCL 控制台即可。  
 
+## ~~使用图形界面版本~~
+
+开发者已停止更新，且有许多历史问题，故不推荐使用  
+前往 [sonder-joker/mirai-compose](https://github.com/sonder-joker/mirai-compose/releases)
+下载适合你的系统的压缩包，
+>  MAC 系统下载 .dmg 后缀的文件  
+>  Windows 系统下载 .msi 后缀的文件  
+>  Linux 系统下载 .deb 后缀的文件
+
+以 Windows 系统为例，以下为简要安装步骤：
+
+1. 下载 `mirai-compose-<版本>.msi`
+2. 双击运行安装程序，选择一个合适的文件夹，然后点击安装
+3. 安装完毕后打开刚才指定的文件夹
+4. 双击启动其中的 `mirai-compose.exe` 即可开始运行
+5. 运行后点击左上角可以添加 QQ bot 账号
+
+安装插件只需要将下载好的插件置于 plugins 目录，安装完毕后重启 mirai-compose 以生效。
+
 ## 解决问题
+
+请先阅读 [常见问题](Questions.md)  。
 
 如果遇到使用问题或想提建议，可以在 [issues](https://github.com/mamoe/mirai/issues)
 发表。也可以在[论坛](https://mirai.mamoe.net/)交流想法。

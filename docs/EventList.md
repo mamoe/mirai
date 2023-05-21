@@ -36,7 +36,11 @@
   - 好友消息: FriendMessagePreSendEvent
   - 群临时会话消息: GroupTempMessagePreSendEvent
   - 陌生人消息：StrangerMessagePreSendEvent
-  - 其他客户端消息：OtherClientMessagePreSendEvent
+- 从其他客户端同步消息 MessageSyncEvent
+  - 群消息: GroupMessageSyncEvent
+  - 好友消息: FriendMessageSyncEvent
+  - 群临时会话消息: GroupTempMessageSyncEvent
+  - 陌生人消息: StrangerMessageSyncEvent
 - 主动发送消息后: MessagePostSendEvent
   - 群消息: GroupMessagePostSendEvent
   - 好友消息: FriendMessagePostSendEvent
@@ -86,6 +90,7 @@
 ##### 名片和头衔
 - 成员群名片改动: MemberCardChangeEvent
 - 成员群特殊头衔改动: MemberSpecialTitleChangeEvent
+- 成员群荣誉改变: MemberHonorChangeEvent
 
 ##### 成员权限
 - 成员权限改变: MemberPermissionChangeEvent
@@ -102,3 +107,7 @@
 - 好友头像改变: FriendAvatarChangedEvent
 - 好友昵称改变: FriendNickChangedEvent
 - 好友输入状态改变: FriendInputStatusChangedEvent
+
+### 控制台
+- 自动登录执行后: StartupEvent [2.15.0, +∞)
+- 控制台启动完成: AutoLoginEvent [2.15.0, +∞)
