@@ -1,4 +1,10 @@
-headers = openssl/ec.h openssl/ecdh.h openssl/evp.h
+headers =   openssl/ec.h \
+            openssl/ecdh.h \
+            openssl/evp.h \
+            openssl/rsa.h \
+            openssl/pem.h \
+            openssl/x509.h \
+            openssl/err.h
 
 # -L/usr/local/opt/openssl@1.1/1.1.1o/lib  is for GitHub actions. See https://github.com/actions/virtual-environments/blob/main/images/macos/macos-12-Readme.md
 
@@ -46,3 +52,22 @@ compilerOpts =               -I/opt/openssl/include \
                              -I/usr/local/include/ \
                              -IC:/openssl/include/ \
                              -IC:/vcpkg/installed/x64-windows/include \
+
+---
+
+#include <openssl/evp.h>
+#include <openssl/rsa.h>
+
+static int _evpCipherCtxGetBlockSize(const EVP_CIPHER_CTX *ctx) {
+#ifdef EVP_CIPHER_CTX_block_size
+    return EVP_CIPHER_CTX_get_block_size(ctx);
+#endif
+    return EVP_CIPHER_CTX_block_size(ctx);
+}
+
+static int _evpPkeyCtxSetRSAKeygenBits(EVP_PKEY_CTX *ctx, int bits) {
+#ifdef EVP_PKEY_CTX_set_rsa_keygen_bits
+    return RSA_pkey_ctx_ctrl(ctx, EVP_PKEY_OP_KEYGEN, EVP_PKEY_CTRL_RSA_KEYGEN_BITS, bits, NULL);
+#endif
+    return EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, bits);
+}

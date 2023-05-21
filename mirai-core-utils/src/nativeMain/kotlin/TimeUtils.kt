@@ -32,18 +32,26 @@ public actual fun currentTimeMillis(): Long {
 
 private val timeLock = ReentrantLock()
 
-@OptIn(UnsafeNumber::class)
-public actual fun currentTimeFormatted(format: String?): String = timeLock.withLock {
+public actual fun formatTime(epochTimeMillis: Long, format: String?): String = timeLock.withLock {
+    val strftimeFormat = format
+        ?.replace("yyyy", "%Y")
+        ?.replace("MM", "%m")
+        ?.replace("dd", "%d")
+        ?.replace("HH", "%H")
+        ?.replace("mm", "%M")
+        ?.replace("ss", "%S")
+        ?: "%Y-%m-%d %H:%M:%S"
     memScoped {
         val timeT = alloc<time_tVar>()
-        time(timeT.ptr)
+        timeT.value = epochTimeMillis / 1000
 
         // http://www.cplusplus.com/reference/clibrary/ctime/localtime/
         // tm returns a static pointer which doesn't need to free
         val tm = localtime(timeT.ptr) // localtime is not thread-safe
 
         val bb = allocArray<ByteVar>(40)
-        strftime(bb, 40, "%Y-%m-%d %H:%M:%S", tm);
+
+        strftime(bb, 40, strftimeFormat, tm);
 
         bb.toKString()
     }

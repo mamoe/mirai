@@ -71,6 +71,7 @@ internal object WtLogin10 : WtLoginExt {
                     )
                     //t112(client.account.phoneNumber.encodeToByteArray())
                     t143(client.wLoginSigInfo.d2.data)
+                    t145(client.device.guid)
                     t142(client.apkId)
                     t154(sequenceId)
                     t18(appId, uin = client.uin)

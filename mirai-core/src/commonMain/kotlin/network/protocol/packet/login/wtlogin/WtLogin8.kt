@@ -43,7 +43,13 @@ internal object WtLogin8 : WtLoginExt {
                     t174(t174)
                     t17a(9)
                     t197()
+                    // Lcom/tencent/mobileqq/msf/core/auth/l;a(Ljava/lang/String;JLoicq/wlogin_sdk/request/WUserSigInfo;IIILoicq/wlogin_sdk/tools/ErrMsg;)V
+                    // a2.addAttribute("smsExtraData", WtloginHelper.getLoginResultData(wUserSigInfo, 1347));
+                    // wUserSigInfo.loginResultTLVMap.get(new Integer(1347)).get_data()
 
+                    // this.mUserSigInfo.loginResultTLVMap.put(new Integer(1347), async_contextVar._t543);
+                    // toServiceMsg.getAttribute("smsExtraData"))
+                    client.t543?.let { t542(it) }
                 }
             }
         }

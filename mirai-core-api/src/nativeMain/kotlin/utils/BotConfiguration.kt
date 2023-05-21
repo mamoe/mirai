@@ -41,7 +41,10 @@ public actual abstract class AbstractBotConfiguration { // open for Java
             if (!file.exists()) {
                 file.writeText(DeviceInfoManager.serialize(DeviceInfo.random(), BotConfiguration.json))
             }
-            DeviceInfoManager.deserialize(file.readText(), BotConfiguration.json)
+            DeviceInfoManager.deserialize(file.readText(), BotConfiguration.json) {
+                file.writeText(DeviceInfoManager.serialize(it, BotConfiguration.json))
+            }
+
         }
     }
 
