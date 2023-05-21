@@ -416,6 +416,62 @@ public final class JExample extends JavaPlugin {
 
 详细查看 [JavaPluginScheduler]。
 
+### 控制插件类路径
+
+[JvmPluginClasspath]: ../../backend/mirai-console/src/plugin/jvm/JvmPluginClasspath.kt
+
+Mirai Console 支持动态按需下载依赖和按需链接依赖 (通过 `JvmPluginClasspath.addToPath` 和 `JvmPluginClasspath.downloadAndAddToPath`)
+
+`JvmPluginClasspath` 还支持控制是否应该引用其他插件的类路径 & 是否允许其他非依赖此插件的插件使用此插件的类路径
+
+*Java* （Kotlin 类似）
+```java
+
+public final class JExample extends JavaPlugin {
+    //......
+    @Override
+    public void onLoad(PluginComponentStorage storage) {
+        getLogger().info(String.valueOf(getJvmPluginClasspath().getShouldResolveIndependent()));
+        getJvmPluginClasspath().addToPath(
+                getJvmPluginClasspath().getPluginIndependentLibrariesClassLoader(),
+                resolveDataFile("mylib.jar")
+        );
+    }
+}
+
+```
+
+
+详细查看 [JvmPluginClasspath]
+
+#### 通过配置文件控制类路径选项
+
+[JvmPluginClasspath] 中的部分选项可以通过配置文件指定, 虽然在代码中也可以修改, 但是通过配置文件指定是最好的。
+
+> 因为如果在代码中修改, 类链接会在选项修改之前完成，从而导致一些不正常的逻辑
+
+要使用配置文件控制 JvmPluginClasspath 中的选项, 需要创建名为 `META-INF/mirai-console-plugin/options.properties` 的资源文件
+
+> 通常情况这个文件的位置是 `src/main/resources/META-INF/mirai-console-plugin/options.properties`
+>
+> 如果没有资源文件夹, Intellij IDEA 在创建文件夹时会提示 resources 补全
+> 
+> ![CreateResourcesDir](./images/CreateResourcesDir.png)
+
+选项的键值已经在 [JvmPluginClasspath] 源文件中使用 `@SettingProperty` 注明
+
+示例:
+
+```properties
+# suppress inspection "UnusedProperty" for whole file
+
+resources.resolve-console-system-resources=false
+
+class.loading.be-resolvable-to-independent=false
+class.loading.resolve-independent=false
+
+```
+
 ## 访问数据目录和配置目录
 
 [`JvmPlugin`] 实现接口 [`PluginFileExtensions`]。插件可通过 `resolveDataFile`
