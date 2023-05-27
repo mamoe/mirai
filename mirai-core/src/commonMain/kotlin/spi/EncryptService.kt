@@ -34,6 +34,14 @@ public class EncryptServiceContext @MiraiInternalApi constructor(
     public val extraArgs: TypeSafeMap = TypeSafeMap.EMPTY
 ) {
     public companion object {
+        /**
+         * Possible values:
+         * - `810_a`
+         * - `810_f`
+         * - `810_2`
+         * - `810_7`
+         * - `810_9`
+         */
         public val KEY_COMMAND_STR: TypeKey<String> = TypeKey("KEY_COMMAND_STR")
     }
 }
