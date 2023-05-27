@@ -91,7 +91,7 @@ object BinaryCompatibilityConfigurator {
                         )
                     } else {
                         tasks.findByName("apiBuild")?.dependsOn(
-                            if (targetName.contains("android")) {
+                            if (targetName.contains("android") && ENABLE_ANDROID_INSTRUMENTED_TESTS) {
                                 project.tasks.getByName("bundleDebugAar")
                             } else {
                                 project.tasks.getByName("${targetName}Jar")
