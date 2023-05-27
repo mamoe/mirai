@@ -41,6 +41,7 @@ internal fun <T : BaseService> SpiServiceLoader(
 
 internal interface SpiServiceLoader<T : BaseService?> {
     val service: T
+    val allServices: List<T & Any>
 }
 
 internal class SpiServiceLoaderImpl<T : BaseService?>(
@@ -52,9 +53,15 @@ internal class SpiServiceLoaderImpl<T : BaseService?>(
     }
     private val lock = SynchronizedObject()
 
-    override val service: T get() = _service
+    override val service: T get() = _service.bestService
+    override val allServices: List<T & Any> get() = _service.allServices
 
-    private var _service: T by lateinitMutableProperty {
+    private class Loaded<T>(
+        val bestService: T,
+        val allServices: List<T & Any>,
+    )
+
+    private var _service: Loaded<T> by lateinitMutableProperty {
         synchronized(lock) {
             reloadAndSelect()
         }
@@ -66,9 +73,12 @@ internal class SpiServiceLoaderImpl<T : BaseService?>(
         }
     }
 
-    private fun reloadAndSelect(): T {
+    private fun reloadAndSelect(): Loaded<T> {
+        val allServices = loadServices(serviceType).toList()
+
         @Suppress("UNCHECKED_CAST")
-        return (loadServices(serviceType).minByOrNull { it.priority } ?: defaultInstance) as T
+        val bestService = (allServices.minByOrNull { it.priority } ?: defaultInstance) as T
+        return Loaded(bestService, allServices)
     }
 
     companion object {

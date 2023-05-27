@@ -11,7 +11,7 @@
 package net.mamoe.mirai.internal.spi
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.internal.spi.EncryptWorkerServiceContext.Companion.KEY_COMMAND_STR
+import net.mamoe.mirai.internal.spi.EncryptServiceContext.Companion.KEY_COMMAND_STR
 import net.mamoe.mirai.spi.BaseService
 import net.mamoe.mirai.spi.SpiServiceLoader
 import net.mamoe.mirai.utils.MiraiInternalApi
@@ -22,7 +22,7 @@ import net.mamoe.mirai.utils.TypeSafeMap
 /**
  * @since 2.15.0
  */
-public class EncryptWorkerServiceContext @MiraiInternalApi constructor(
+public class EncryptServiceContext @MiraiInternalApi constructor(
     /**
      * [Bot.id]
      */
@@ -41,19 +41,19 @@ public class EncryptWorkerServiceContext @MiraiInternalApi constructor(
 /**
  * @since 2.15.0
  */
-public interface EncryptWorkerService : BaseService {
+public interface EncryptService : BaseService {
     /**
      * Returns `null` if not supported.
      */
     public fun encryptTlv(
-        context: EncryptWorkerServiceContext,
+        context: EncryptServiceContext,
         tlvType: Int,
         payload: ByteArray, // Do not write to payload
     ): ByteArray?
 
     public companion object {
-        private val loader = SpiServiceLoader(EncryptWorkerService::class)
+        private val loader = SpiServiceLoader(EncryptService::class)
 
-        internal val instance: EncryptWorkerService? get() = loader.service
+        internal val instance: EncryptService? get() = loader.service
     }
 }
