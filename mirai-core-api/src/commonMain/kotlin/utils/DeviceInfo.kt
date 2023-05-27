@@ -23,15 +23,47 @@ import kotlin.jvm.JvmSynthetic
 import kotlin.random.Random
 
 internal const val DeviceInfoConstructorDeprecationMessage =
-    "Constructor and serializer of DeviceInfo is deprecated and will be removed in the future." +
-            "This is because new properties can be added and it requires too much effort to maintain public stability." +
-            "Please use DeviceInfo.serializeToString and DeviceInfo.deserializeFromString instead."
+    "DeviceInfo 构造器将会在未来删除. " +
+            "这是因为构造器导致维护变得十分困难. " +
+            "若要构造 DeviceInfo 实例, 请使用 DeviceInfoBuilder." +
+            "若要序列化, 请使用 DeviceInfo.serializeToString 和 DeviceInfo.deserializeFromString."
+
+internal const val DeviceInfoConstructorReplaceWith = "DeviceInfoBuilder.create()" +
+        ".display(display)" +
+        ".product(product)" +
+        ".device(device)" +
+        ".board(board)" +
+        ".brand(brand)" +
+        ".model(model)" +
+        ".bootloader(bootloader)" +
+        ".fingerprint(fingerprint)" +
+        ".bootId(bootId)" +
+        ".procVersion(procVersion)" +
+        ".baseBand(baseBand)" +
+        ".version(version)" +
+        ".simInfo(simInfo)" +
+        ".osType(osType)" +
+        ".macAddress(macAddress)" +
+        ".wifiBSSID(wifiBSSID)" +
+        ".wifiSSID(wifiSSID)" +
+        ".imsiMd5(imsiMd5)" +
+        ".imei(imei)" +
+        ".apn(apn)" +
+        ".androidId(androidId)" +
+        ".build()"
 
 /**
  * 表示设备信息
+ * @see DeviceInfoBuilder
  */
 public expect class DeviceInfo
-@Deprecated(DeviceInfoConstructorDeprecationMessage, level = DeprecationLevel.WARNING)
+@Deprecated(
+    DeviceInfoConstructorDeprecationMessage, level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith(
+        DeviceInfoConstructorReplaceWith,
+        "net.mamoe.mirai.utils.DeviceInfoBuilder"
+    )
+)
 @DeprecatedSinceMirai(warningSince = "2.15") // planned internal
 public constructor(
     display: ByteArray,
@@ -117,6 +149,7 @@ public constructor(
         /**
          * 生成随机 [DeviceInfo]
          *
+         * @see DeviceInfoBuilder
          * @since 2.0
          */
         @JvmStatic
@@ -125,6 +158,7 @@ public constructor(
         /**
          * 使用特定随机数生成器生成 [DeviceInfo]
          *
+         * @see DeviceInfoBuilder
          * @since 2.9
          */
         @JvmStatic

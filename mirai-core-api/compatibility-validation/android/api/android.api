@@ -5689,6 +5689,62 @@ public final class net/mamoe/mirai/utils/DeviceInfo$Version$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class net/mamoe/mirai/utils/DeviceInfoBuilder {
+	public static final field Companion Lnet/mamoe/mirai/utils/DeviceInfoBuilder$Companion;
+	public fun <init> ()V
+	public final fun androidId (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun androidId ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun apn (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun apn ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun baseBand (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun baseBand ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun board (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun board ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun bootId (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun bootId ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun bootloader (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun bootloader ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun brand (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun brand ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun build ()Lnet/mamoe/mirai/utils/DeviceInfo;
+	public final fun device (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun device ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun display (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun display ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun fingerprint (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun fingerprint ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public static final fun fromPrototype (Lnet/mamoe/mirai/utils/DeviceInfo;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public static final fun fromRandom ()Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public static final fun fromRandom (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun imei (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun imsiMd5 (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun imsiMd5 ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun macAddress (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun macAddress ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun model (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun model ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun osType (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun osType ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun procVersion (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun procVersion ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun product (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun product ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun simInfo (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun simInfo ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun version (Lnet/mamoe/mirai/utils/DeviceInfo$Version;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun wifiBSSID (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun wifiBSSID ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun wifiSSID (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun wifiSSID ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+}
+
+public final class net/mamoe/mirai/utils/DeviceInfoBuilder$Companion {
+	public final fun fromPrototype (Lnet/mamoe/mirai/utils/DeviceInfo;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun fromRandom ()Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun fromRandom (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public static synthetic fun fromRandom$default (Lnet/mamoe/mirai/utils/DeviceInfoBuilder$Companion;Lkotlin/random/Random;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+}
+
 public final class net/mamoe/mirai/utils/DeviceInfoKt {
 	public static final fun generateDeviceInfoData (Lnet/mamoe/mirai/utils/DeviceInfo;)[B
 	public static final synthetic fun serializeToString (Lnet/mamoe/mirai/utils/DeviceInfo;)Ljava/lang/String;
