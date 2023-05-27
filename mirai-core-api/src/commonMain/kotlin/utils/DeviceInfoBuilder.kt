@@ -11,7 +11,6 @@ package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.utils.DeviceInfoBuilder.Companion.fromPrototype
 import net.mamoe.mirai.utils.DeviceInfoBuilder.Companion.fromRandom
-import kotlin.jvm.JvmField
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
 import kotlin.random.Random
@@ -46,8 +45,7 @@ public class DeviceInfoBuilder internal constructor(
         this.product = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var device: ByteArray? = null
+    private var device: ByteArray? = null
     public fun device(value: ByteArray): DeviceInfoBuilder = apply {
         this.device = value
     }
@@ -56,8 +54,7 @@ public class DeviceInfoBuilder internal constructor(
         this.device = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var board: ByteArray? = null
+    private var board: ByteArray? = null
     public fun board(value: ByteArray): DeviceInfoBuilder = apply {
         this.board = value
     }
@@ -66,8 +63,7 @@ public class DeviceInfoBuilder internal constructor(
         this.board = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var brand: ByteArray? = null
+    private var brand: ByteArray? = null
     public fun brand(value: ByteArray): DeviceInfoBuilder = apply {
         this.brand = value
     }
@@ -76,8 +72,7 @@ public class DeviceInfoBuilder internal constructor(
         this.brand = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var model: ByteArray? = null
+    private var model: ByteArray? = null
     public fun model(value: ByteArray): DeviceInfoBuilder = apply {
         this.model = value
     }
@@ -86,8 +81,7 @@ public class DeviceInfoBuilder internal constructor(
         this.model = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var bootloader: ByteArray? = null
+    private var bootloader: ByteArray? = null
     public fun bootloader(value: ByteArray): DeviceInfoBuilder = apply {
         this.bootloader = value
     }
@@ -96,8 +90,7 @@ public class DeviceInfoBuilder internal constructor(
         this.bootloader = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var fingerprint: ByteArray? = null
+    private var fingerprint: ByteArray? = null
     public fun fingerprint(value: ByteArray): DeviceInfoBuilder = apply {
         this.fingerprint = value
     }
@@ -106,8 +99,7 @@ public class DeviceInfoBuilder internal constructor(
         this.fingerprint = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var bootId: ByteArray? = null
+    private var bootId: ByteArray? = null
     public fun bootId(value: ByteArray): DeviceInfoBuilder = apply {
         this.bootId = value
     }
@@ -116,8 +108,7 @@ public class DeviceInfoBuilder internal constructor(
         this.bootId = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var procVersion: ByteArray? = null
+    private var procVersion: ByteArray? = null
     public fun procVersion(value: ByteArray): DeviceInfoBuilder = apply {
         this.procVersion = value
     }
@@ -126,8 +117,7 @@ public class DeviceInfoBuilder internal constructor(
         this.procVersion = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var baseBand: ByteArray? = null
+    private var baseBand: ByteArray? = null
     public fun baseBand(value: ByteArray): DeviceInfoBuilder = apply {
         this.baseBand = value
     }
@@ -136,14 +126,12 @@ public class DeviceInfoBuilder internal constructor(
         this.baseBand = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var version: DeviceInfo.Version? = null
+    private var version: DeviceInfo.Version? = null
     public fun version(value: DeviceInfo.Version): DeviceInfoBuilder = apply {
         this.version = value
     }
 
-    @JvmField
-    internal var simInfo: ByteArray? = null
+    private var simInfo: ByteArray? = null
     public fun simInfo(value: ByteArray): DeviceInfoBuilder = apply {
         this.simInfo = value
     }
@@ -152,8 +140,7 @@ public class DeviceInfoBuilder internal constructor(
         this.simInfo = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var osType: ByteArray? = null
+    private var osType: ByteArray? = null
     public fun osType(value: ByteArray): DeviceInfoBuilder = apply {
         this.osType = value
     }
@@ -162,8 +149,7 @@ public class DeviceInfoBuilder internal constructor(
         this.osType = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var macAddress: ByteArray? = null
+    private var macAddress: ByteArray? = null
     public fun macAddress(value: ByteArray): DeviceInfoBuilder = apply {
         this.macAddress = value
     }
@@ -172,8 +158,7 @@ public class DeviceInfoBuilder internal constructor(
         this.macAddress = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var wifiBSSID: ByteArray? = null
+    private var wifiBSSID: ByteArray? = null
     public fun wifiBSSID(value: ByteArray): DeviceInfoBuilder = apply {
         this.wifiBSSID = value
     }
@@ -182,8 +167,7 @@ public class DeviceInfoBuilder internal constructor(
         this.wifiBSSID = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var wifiSSID: ByteArray? = null
+    private var wifiSSID: ByteArray? = null
     public fun wifiSSID(value: ByteArray): DeviceInfoBuilder = apply {
         this.wifiSSID = value
     }
@@ -192,8 +176,7 @@ public class DeviceInfoBuilder internal constructor(
         this.wifiSSID = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var imsiMd5: ByteArray? = null
+    private var imsiMd5: ByteArray? = null
     public fun imsiMd5(value: ByteArray): DeviceInfoBuilder = apply {
         this.imsiMd5 = value
     }
@@ -202,15 +185,13 @@ public class DeviceInfoBuilder internal constructor(
         this.imsiMd5 = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var imei: String? = null
+    private var imei: String? = null
     public fun imei(value: String): DeviceInfoBuilder = apply {
         this.imei = value
     }
 
 
-    @JvmField
-    internal var apn: ByteArray? = null
+    private var apn: ByteArray? = null
     public fun apn(value: ByteArray): DeviceInfoBuilder = apply {
         this.apn = value
     }
@@ -219,8 +200,7 @@ public class DeviceInfoBuilder internal constructor(
         this.apn = value.encodeToByteArray()
     }
 
-    @JvmField
-    internal var androidId: ByteArray? = null
+    private var androidId: ByteArray? = null
     public fun androidId(value: ByteArray): DeviceInfoBuilder = apply {
         this.androidId = value
     }
