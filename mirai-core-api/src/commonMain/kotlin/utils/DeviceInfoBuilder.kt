@@ -239,7 +239,7 @@ public class DeviceInfoBuilder internal constructor(
 
     public companion object {
         /**
-         * 构造一个以随机属性填充了的 [DeviceInfoBuilder].
+         * 构造一个以随机属性填充的 [DeviceInfoBuilder].
          */
         @JvmStatic
         @JvmOverloads
