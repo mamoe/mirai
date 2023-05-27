@@ -79,8 +79,8 @@ internal class EssencesImpl(
 
     private suspend fun source(digests: DigestMessage, parse: Boolean): MessageSource {
         return group.bot.buildMessageSource(MessageSourceKind.GROUP) {
-            ids = intArrayOf(digests.msgSeq)
-            internalIds = intArrayOf(digests.msgRandom)
+            ids = intArrayOf(digests.msgSeq.toInt())
+            internalIds = intArrayOf(digests.msgRandom.toInt())
             time = digests.senderTime
 
             fromId = digests.senderUin
@@ -122,8 +122,8 @@ internal class EssencesImpl(
     override suspend fun share(source: MessageSource): String {
         val share = group.bot.shareDigest(
             groupCode = group.id,
-            msgSeq = source.ids.first(),
-            msgRandom = source.internalIds.first(),
+            msgSeq = source.ids.first().toLong().and(0xFFFF_FFFF),
+            msgRandom = source.internalIds.first().toLong().and(0xFFFF_FFFF),
             targetGroupCode = 0
         )
         return "https://qun.qq.com/essence/share?_wv=3&_wwv=128&_wvx=2&sharekey=${share.shareKey}"
@@ -143,8 +143,8 @@ internal class EssencesImpl(
             try {
                 group.bot.cancelDigest(
                     groupCode = group.id,
-                    msgSeq = source.ids.first(),
-                    msgRandom = source.internalIds.first()
+                    msgSeq = source.ids.first().toLong().and(0xFFFF_FFFF),
+                    msgRandom = source.internalIds.first().toLong().and(0xFFFF_FFFF)
                 )
             } catch (cause: IllegalStateException) {
                 cause.addSuppressed(IllegalStateException(result.msg))
