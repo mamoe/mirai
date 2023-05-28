@@ -13,6 +13,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.random.Random
 
+/**
+ * 表示设备信息
+ * @see DeviceInfoBuilder
+ */
 @Serializable(DeviceInfoV1LegacySerializer::class)
 public actual class DeviceInfo
 @Deprecated(DeviceInfoConstructorDeprecationMessage, level = DeprecationLevel.WARNING)
@@ -90,6 +94,7 @@ public actual constructor(
         /**
          * 生成随机 [DeviceInfo]
          *
+         * @see DeviceInfoBuilder
          * @since 2.0
          */
         public actual fun random(): DeviceInfo = random(Random.Default)
@@ -97,6 +102,7 @@ public actual constructor(
         /**
          * 使用特定随机数生成器生成 [DeviceInfo]
          *
+         * @see DeviceInfoBuilder
          * @since 2.9
          */
         public actual fun random(random: Random): DeviceInfo {

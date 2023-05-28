@@ -16,6 +16,10 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.random.Random
 
+/**
+ * 表示设备信息
+ * @see DeviceInfoBuilder
+ */
 @Serializable(DeviceInfoV1LegacySerializer::class)
 public actual class DeviceInfo
 @Deprecated(DeviceInfoConstructorDeprecationMessage, level = DeprecationLevel.WARNING)
@@ -151,6 +155,7 @@ public actual constructor(
         /**
          * 生成随机 [DeviceInfo]
          *
+         * @see DeviceInfoBuilder
          * @since 2.0
          */
         @JvmStatic
@@ -159,6 +164,7 @@ public actual constructor(
         /**
          * 使用特定随机数生成器生成 [DeviceInfo]
          *
+         * @see DeviceInfoBuilder
          * @since 2.9
          */
         @JvmStatic
