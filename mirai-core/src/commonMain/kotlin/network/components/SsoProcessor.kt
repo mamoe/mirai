@@ -37,6 +37,7 @@ import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.jvm.Volatile
 
 /**
  * Handles login, and acts also as a mediator of [BotInitProcessor]

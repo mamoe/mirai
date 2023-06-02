@@ -16,6 +16,7 @@ import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.utils.*
+import kotlin.jvm.JvmStatic
 
 /**
  * Bot 的登录鉴权方式
