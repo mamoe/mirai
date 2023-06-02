@@ -236,8 +236,10 @@ internal open class SsoProcessorImpl(
                 authReason = AuthReason.FreshLogin(ssoContext.bot, null)
             }
         }
+
         if (authControl == null) initAndStartAuthControl()
         val authControl0 = authControl!!
+
 
         var nextAuthMethod: AuthMethod? = null
         try {
