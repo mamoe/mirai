@@ -134,6 +134,15 @@ internal object WtLogin9 : WtLoginExt {
                     // this.build().debugPrint("傻逼")
 
                     // ignored t318 because not logging in by QR
+                    if (client.useAndroid) {
+                        t544ForToken(
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 9,
+                            commandStr = "810_9"
+                        )
+                    }
                 }
             }
         }

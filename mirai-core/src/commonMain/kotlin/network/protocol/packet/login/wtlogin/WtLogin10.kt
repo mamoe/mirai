@@ -85,7 +85,15 @@ internal object WtLogin10 : WtLoginExt {
                     t194(client.device.imsiMd5)
                     t511()
                     t202(client.device.wifiBSSID, client.device.wifiSSID)
-                    //t544()
+                    if (client.useAndroid) {
+                        t544ForToken(
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 10,
+                            commandStr = "810_a"
+                        )
+                    }
                 }
 
             }

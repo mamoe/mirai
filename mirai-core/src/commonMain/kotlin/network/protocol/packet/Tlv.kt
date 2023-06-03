@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,6 +14,8 @@ package net.mamoe.mirai.internal.network.protocol.packet
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.LoginType
+import net.mamoe.mirai.internal.spi.EncryptService
+import net.mamoe.mirai.internal.spi.EncryptServiceContext
 import net.mamoe.mirai.internal.utils.GuidSource
 import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.internal.utils.NetworkType
@@ -961,10 +963,55 @@ internal fun TlvMapWriter.t548(
     }
 }
 
-internal fun TlvMapWriter.t544( // 1334
+
+internal fun TlvMapWriter.t544ForToken( // 1348
+    uin: Long,
+    guid: ByteArray,
+    sdkVersion: String,
+    subCommandId: Int,
+    commandStr: String
 ) {
+    val service = EncryptService.instance ?: return
     tlv(0x544) {
-        writeFully(byteArrayOf(0, 0, 0, 11)) // means native throws exception
+        buildPacket {
+            writeFully(buildPacket {
+                writeLong(uin)
+            }.readBytes(4))
+            writeShortLVByteArray(guid)
+            writeShortLVString(sdkVersion)
+            writeInt(subCommandId)
+            writeInt(0)
+        }.use { dataIn ->
+            service.encryptTlv(EncryptServiceContext(uin, buildTypeSafeMap {
+                set(EncryptServiceContext.KEY_COMMAND_STR, commandStr)
+            }), 0x544, dataIn.readBytes())
+        }.let { result ->
+            writeFully(result ?: "".toByteArray()) // Empty str means native throws exception
+        }
+    }
+}
+
+internal fun TlvMapWriter.t544ForVerify( // 1348
+    uin: Long,
+    guid: ByteArray,
+    sdkVersion: String,
+    subCommandId: Int,
+    commandStr: String
+) {
+    val service = EncryptService.instance ?: return
+    tlv(0x544) {
+        buildPacket {
+            writeLong(uin)
+            writeShortLVByteArray(guid)
+            writeShortLVString(sdkVersion)
+            writeInt(subCommandId)
+        }.use { dataIn ->
+            service.encryptTlv(EncryptServiceContext(uin, buildTypeSafeMap {
+                set(EncryptServiceContext.KEY_COMMAND_STR, commandStr)
+            }), 0x544, dataIn.readBytes())
+        }.let { result ->
+            writeFully(result ?: "".toByteArray()) // Empty str means native throws exception
+        }
     }
 }
 
