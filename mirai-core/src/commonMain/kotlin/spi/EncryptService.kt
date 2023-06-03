@@ -13,6 +13,7 @@ package net.mamoe.mirai.internal.spi
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.spi.BaseService
 import net.mamoe.mirai.spi.SpiServiceLoader
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.TypeKey
 import net.mamoe.mirai.utils.TypeSafeMap
@@ -30,6 +31,7 @@ public class EncryptServiceContext @MiraiInternalApi constructor(
 ) {
     public companion object {
         public val KEY_COMMAND_STR: TypeKey<String> = TypeKey("KEY_COMMAND_STR")
+        public val KEY_BOT_PROTOCOL: TypeKey<BotConfiguration.MiraiProtocol> = TypeKey("BOT_PROTOCOL")
     }
 }
 
