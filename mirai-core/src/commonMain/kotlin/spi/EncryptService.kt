@@ -11,7 +11,6 @@
 package net.mamoe.mirai.internal.spi
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.internal.spi.EncryptServiceContext.Companion.KEY_COMMAND_STR
 import net.mamoe.mirai.spi.BaseService
 import net.mamoe.mirai.spi.SpiServiceLoader
 import net.mamoe.mirai.utils.MiraiInternalApi
@@ -27,21 +26,9 @@ public class EncryptServiceContext @MiraiInternalApi constructor(
      * [Bot.id]
      */
     public val id: Long,
-    /**
-     * Available keys:
-     * @see KEY_COMMAND_STR
-     */
     public val extraArgs: TypeSafeMap = TypeSafeMap.EMPTY
 ) {
     public companion object {
-        /**
-         * Possible values:
-         * - `810_a`
-         * - `810_f`
-         * - `810_2`
-         * - `810_7`
-         * - `810_9`
-         */
         public val KEY_COMMAND_STR: TypeKey<String> = TypeKey("KEY_COMMAND_STR")
     }
 }
