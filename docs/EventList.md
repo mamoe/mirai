@@ -109,5 +109,5 @@
 - 好友输入状态改变: FriendInputStatusChangedEvent
 
 ### 控制台
-- 自动登录执行后: StartupEvent [2.15.0, +∞)
-- 控制台启动完成: AutoLoginEvent [2.15.0, +∞)
+- 自动登录执行后: AutoLoginEvent [2.15.0, +∞)
+- 控制台启动完成: StartupEvent [2.15.0, +∞)
