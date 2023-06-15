@@ -174,7 +174,7 @@ private fun Project.configureAndroidTargetWithSdk(androidNamespace: String) {
             targetCompatibility = JavaVersion.VERSION_1_8
         }
         buildTypes.getByName("release") {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
