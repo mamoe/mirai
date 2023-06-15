@@ -84,7 +84,6 @@ internal class QRCodeLoginProcessorImpl(
                 margin = qrCodeLoginListener.qrCodeMargin,
                 ecLevel = qrCodeLoginListener.qrCodeEcLevel,
             ),
-            attempts = 1
         )
         check(resp is WtLogin.TransEmp.Response.FetchQRCode) { "Cannot fetch qrcode, resp=$resp" }
         qrCodeLoginListener.onFetchQRCode(handler.context.bot, resp.imageData)

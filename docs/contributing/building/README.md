@@ -31,10 +31,6 @@ Gradle 任务：
 
 查看 [BuildingCoreAndroid](BuildingCoreAndroid.md)。
 
-### 构建 core 的 Native 目标
-
-查看 [BuildingCoreNative](BuildingCoreNative.md)。
-
 ## 构建 IntelliJ 插件
 
 可通过如下命令构建 IntelliJ 平台 IDE 的插件。构建成功的插件将可以在 `mirai-console/tools/intellij-plugin/build/distribution` 中找到。

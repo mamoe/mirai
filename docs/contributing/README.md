@@ -105,40 +105,26 @@ core'
 
 [HMPP]: https://kotlinlang.org/docs/multiplatform-discover-project.html
 
-core 三个模块都使用 Kotlin [HMPP] 功能，同时支持 JVM 和 Native
+core 三个模块都使用 Kotlin [HMPP] 功能，同时支持 JVM 和 Android
 两种平台。你可以在 [Kotlin 官方文档][HMPP] 了解 HMPP 模式。
 
 core 的编译目标层级结构如图所示：
 
 ```
-                     common
-                       |
-       /---------------+---------------\
-    jvmBase                          native
-    /    \                          /     \
-  jvm   android                  unix      \
-                                /    \     mingwX64
-                               /      \
-                           darwin     linuxX64
-                              |
-                              *
-                       <darwin targets>
+    common
+    /    \      
+  jvm   android 
 ```
 
-| 发布平台名称     | 描述               |
-|------------|------------------|
-| jvm        | JVM              |
-| android    | Android (Dalvik) |
-| mingwX64   | Windows x64      |
-| macosX64   | macOS x64        |
-| macosArm64 | macOS arm64      |
-| linuxX64   | Linux x64        |
+| 发布平台名称  | 描述               |
+|---------|------------------|
+| jvm     | JVM              |
+| android | Android (Dalvik) |
 
 备注：
 
 - common 包含全平台通用代码，绝大部分代码都位于 common；
 - jvmBase 包含针对 JVM 平台的通用代码；
-- `<darwin targets>` 为 macOS，iOS，WatchOS 等 Apple 平台目标。
 
 ## 开发提示
 
@@ -175,32 +161,24 @@ mirai.enable.jvmtoolchain.special=false
 
 所有目标默认都启用。
 
-**注意**，在关闭一个目标后，将无法编辑该目标的相关源集的源码。关闭部分 native 目标后也可能会影响 native 目标平台原生接口的数据类型。
-因此若非主机性能太差或在 CI 机器运行，**不建议**关闭 native 目标。
+**注意**，在关闭一个目标后，将无法编辑该目标的相关源集的源码。
+因此若非主机性能太差或在 CI 机器运行，**不建议**关闭目标。
 
 [//]: # (备注: 如果要发版, 必须开启全部目标, 否则会导致 metadata 中的平台不全)
 
 - `xxx`：显式启用 `xxx` 目标
 - `!xxx`：显式禁用 `xxx` 目标
-- `native`：显式启用所有 native 目标
-- `!native`：禁用没有显式启用的所有 native 目标
 - `others`：显式启用其他所有所有目标
 - `!others`：禁用没有显式启用的所有目标
 
-其中 xxx 表示构建目标名称。可用的目标名称有（区分大小写）：`jvm`、`android`、`macosX64`、`macosArm64`、`mingwX64`、`linuxX64`
+其中 xxx 表示构建目标名称。可用的目标名称有（区分大小写）：`jvm`、`android`
 
 ```
-# 禁用所有 native 目标，启用其他目标（启用 jvm 和 android）
-projects.mirai-core.targets=!native;others
-
-# 启用 `jvm` 和 `android` 目标，禁用其他所有目标（禁用所有 native 目标）
-projects.mirai-core.targets=jvm;android;!others
-
-# 只启用 `jvm` 目标，禁用其他所有目标
+# 只启用 `jvm` 目标，禁用其他所有目标 (Android)
 projects.mirai-core.targets=jvm;!others
 
-# 指定启用 `jvm` 和 `macosX64` 目标，禁用其他所有目标
-projects.mirai-core.targets=jvm;macosX64;!others
+# 启用 `jvm` 和 `android` 目标
+projects.mirai-core.targets=jvm;android
 ```
 
 ### 直接启动 mirai-core 本地测试
@@ -209,9 +187,7 @@ projects.mirai-core.targets=jvm;macosX64;!others
 
 在 JVM 平台直接启动 mirai-core, 见 [mirai-core/jvmTest](/mirai-core/src/jvmTest/README.md)
 
-在 native 平台直接启动 mirai-core, 见 [mirai-core/nativeTest](/mirai-core/src/nativeTest/kotlin/local/README.md)
-
-## 构建 mirai 项目 JAR 以及动态链接库
+## 构建 mirai 项目 JAR
 
 查看 [Building](building/README.md)
 
