@@ -26,7 +26,7 @@ internal object WtLogin7 : WtLoginExt {
         t174: ByteArray,
         code: String
     ) = WtLogin.Login.buildLoginOutgoingPacket(
-        client, bodyType = 2, remark = "7:submit-sms"
+        client, encryptMethod = PacketEncryptType.Empty, remark = "7:submit-sms"
     ) { sequenceId ->
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {

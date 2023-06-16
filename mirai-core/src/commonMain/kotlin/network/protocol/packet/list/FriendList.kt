@@ -42,7 +42,7 @@ internal class FriendList {
             targetGroupUin: Long,
             targetGroupCode: Long,
             nextUin: Long = 0
-        ) = buildOutgoingUniPacket(client, bodyType = 1, key = client.wLoginSigInfo.d2Key) {
+        ) = buildOutgoingUniPacket(client) {
             writeJceStruct(
                 RequestPacket.serializer(),
                 RequestPacket(
@@ -91,7 +91,7 @@ internal class FriendList {
 
         operator fun invoke(
             client: QQAndroidClient
-        ) = buildOutgoingUniPacket(client, bodyType = 1, key = client.wLoginSigInfo.d2Key) {
+        ) = buildOutgoingUniPacket(client) {
             writeJceStruct(
                 RequestPacket.serializer(),
                 RequestPacket(
@@ -134,7 +134,7 @@ internal class FriendList {
         operator fun invoke(
             client: QQAndroidClient,
             friend: Friend
-        ) = buildOutgoingUniPacket(client, bodyType = 1, key = client.wLoginSigInfo.d2Key) {
+        ) = buildOutgoingUniPacket(client) {
             writeJceStruct(
                 RequestPacket.serializer(),
                 RequestPacket(
@@ -188,7 +188,7 @@ internal class FriendList {
         fun forSingleFriend(
             client: QQAndroidClient,
             uin: Long
-        ) = buildOutgoingUniPacket(client, bodyType = 1, key = client.wLoginSigInfo.d2Key) {
+        ) = buildOutgoingUniPacket(client) {
             writeJceStruct(
                 RequestPacket.serializer(),
                 RequestPacket(
@@ -237,7 +237,7 @@ internal class FriendList {
             friendListCount: Int,
             groupListStartIndex: Int,
             groupListCount: Int
-        ) = buildOutgoingUniPacket(client, bodyType = 1, key = client.wLoginSigInfo.d2Key) {
+        ) = buildOutgoingUniPacket(client) {
             writeJceStruct(
                 RequestPacket.serializer(),
                 RequestPacket(

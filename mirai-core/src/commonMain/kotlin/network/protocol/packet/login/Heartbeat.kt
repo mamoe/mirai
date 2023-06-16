@@ -13,8 +13,8 @@ import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.protocol.packet.NO_ENCRYPT
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
+import net.mamoe.mirai.internal.network.protocol.packet.PacketEncryptType
 import net.mamoe.mirai.internal.network.protocol.packet.buildLoginOutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.writeSsoPacket
 import net.mamoe.mirai.internal.network.subAppId
@@ -28,7 +28,7 @@ internal class Heartbeat {
 
         operator fun invoke(
             client: QQAndroidClient
-        ) = buildLoginOutgoingPacket(client, 0, key = NO_ENCRYPT) {
+        ) = buildLoginOutgoingPacket(client, encryptMethod = PacketEncryptType.NoEncrypt) {
             writeSsoPacket(client, client.subAppId, commandName, sequenceId = it) {
 
             }

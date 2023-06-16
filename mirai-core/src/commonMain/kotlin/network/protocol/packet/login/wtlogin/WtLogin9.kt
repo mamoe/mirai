@@ -25,7 +25,7 @@ internal object WtLogin9 : WtLoginExt {
         passwordMd5: ByteArray,
         allowSlider: Boolean
     ) = WtLogin.Login.buildLoginOutgoingPacket(
-        client, bodyType = 2, remark = "9:password-login"
+        client, encryptMethod = PacketEncryptType.Empty, remark = "9:password-login"
     ) { sequenceId ->
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
@@ -154,7 +154,7 @@ internal object WtLogin9 : WtLoginExt {
         client: QQAndroidClient,
         data: QRCodeLoginData,
     ) = WtLogin.Login.buildLoginOutgoingPacket(
-        client, bodyType = 2, remark = "9:qrcode-login"
+        client, encryptMethod = PacketEncryptType.Empty, remark = "9:qrcode-login"
     ) { sequenceId ->
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {

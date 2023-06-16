@@ -27,7 +27,7 @@ internal object WtLogin15 : WtLoginExt {
     operator fun invoke(
         client: QQAndroidClient,
     ) = WtLogin.ExchangeEmp.buildOutgoingUniPacket(
-        client, bodyType = 2, key = ByteArray(16), remark = "15:refresh-keys"
+        client, encryptMethod = PacketEncryptType.Empty, remark = "15:refresh-keys"
     ) { sequenceId ->
 //        writeSsoPacket(client, client.subAppId, WtLogin.ExchangeEmp.commandName, sequenceId = sequenceId) {
         writeOicqRequestPacket(

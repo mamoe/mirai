@@ -115,7 +115,7 @@ internal class WtLogin {
         object SubCommand17 {
             operator fun invoke(
                 client: QQAndroidClient
-            ) = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
+            ) = buildLoginOutgoingPacket(client, encryptMethod = PacketEncryptType.Empty) { sequenceId ->
                 writeSsoPacket(
                     client,
                     client.subAppId,
@@ -669,7 +669,7 @@ internal class WtLogin {
             size: Int,
             margin: Int,
             ecLevel: Int
-        ) = TransEmp.buildLoginOutgoingPacket(client, bodyType = 2, uin = "") { sequenceId ->
+        ) = TransEmp.buildLoginOutgoingPacket(client, encryptMethod = PacketEncryptType.Empty, uin = "") { sequenceId ->
             writeSsoPacket(client, client.subAppId, TransEmp.commandName, sequenceId = sequenceId) {
                 writeOicqRequestPacket(client, uin = 0, commandId = 0x812) {
                     val code2dPacket = buildCode2dPacket(0, 0, 0x31) {
@@ -742,7 +742,7 @@ internal class WtLogin {
         fun QueryQRCodeStatus(
             client: QQAndroidClient,
             sig: ByteArray,
-        ) = TransEmp.buildLoginOutgoingPacket(client, bodyType = 2, uin = "") { sequenceId ->
+        ) = TransEmp.buildLoginOutgoingPacket(client, encryptMethod = PacketEncryptType.Empty, uin = "") { sequenceId ->
             writeSsoPacket(client, client.subAppId, TransEmp.commandName, sequenceId = sequenceId) {
                 writeOicqRequestPacket(client, uin = 0, commandId = 0x812) {
                     val code2dPacket = buildCode2dPacket(1, 0, 0x12) {

@@ -30,7 +30,7 @@ internal object WtLogin10 : WtLoginExt {
         mainSigMap: Int = client.mainSigMap,
         remark: String = "10:fast-login",
     ) = WtLogin.ExchangeEmp.buildLoginOutgoingPacket(
-        client, bodyType = 2, key = ByteArray(16), remark = remark
+        client, encryptMethod = PacketEncryptType.Empty, remark = remark
     ) { sequenceId ->
         writeSsoPacket(
             client,
