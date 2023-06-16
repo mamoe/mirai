@@ -47,11 +47,6 @@ import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
-import kotlin.native.CName
 
 /**
  * 自定义表情 (收藏的表情) 和普通图片.
@@ -487,7 +482,6 @@ public interface Image : Message, MessageContent, CodableMessage {
  * @see IMirai.createImage
  */
 @JvmSynthetic
-@CName("", "Image_new")
 public fun Image(imageId: String): Image = Builder.newBuilder(imageId).build()
 
 /**
@@ -497,7 +491,6 @@ public fun Image(imageId: String): Image = Builder.newBuilder(imageId).build()
  * @since 2.9.0
  */
 @JvmSynthetic
-@CName("", "Image_new2")
 public inline fun Image(imageId: String, builderAction: Builder.() -> Unit = {}): Image =
     Builder.newBuilder(imageId).apply(builderAction).build()
 

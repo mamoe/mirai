@@ -26,11 +26,6 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.map
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
-import kotlin.native.CName
 
 /**
  * 文件消息.
@@ -133,6 +128,5 @@ internal open class FallbackFileMessageSerializer :
  * @since 2.5
  */
 @JvmSynthetic
-@CName("", "FileMessage_new")
 public fun FileMessage(id: String, internalId: Int, name: String, size: Long): FileMessage =
     FileMessage.create(id, internalId, name, size)

@@ -15,7 +15,6 @@ expect fun currentPlatform(): Platform
 enum class PlatformRuntime {
     JVM,
     DALVIK,
-    NATIVE,
 }
 
 // see `@DisabledOnPlatform`
@@ -33,19 +32,5 @@ sealed class Platform(
     object AndroidInstrumentedTest : Android(PlatformRuntime.DALVIK)
 
     object Jvm : JvmLike(PlatformRuntime.JVM)
-
-    sealed class Native : Platform(PlatformRuntime.NATIVE)
-
-    sealed class Windows : Native()
-    object MingwX64 : Windows()
-
-    sealed class UnixLike : Native()
-
-    sealed class Linux : UnixLike()
-    object LinuxX64 : Linux()
-
-    sealed class Macos : UnixLike()
-    object MacosX64 : Macos()
-    object MacosArm64 : Macos()
 }
 

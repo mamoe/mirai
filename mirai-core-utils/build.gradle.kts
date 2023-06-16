@@ -28,7 +28,6 @@ kotlin {
     apply(plugin = "explicit-api")
 
     configureJvmTargetsHierarchical("net.mamoe.mirai.utils")
-    configureNativeTargetsHierarchical(project)
 
     sourceSets {
         val commonMain by getting {
@@ -40,15 +39,6 @@ kotlin {
 
                 implementation(`kotlinx-serialization-protobuf`)
                 relocateImplementation(`ktor-io_relocated`)
-            }
-        }
-        configure(NATIVE_TARGETS.map { getByName(it + "Main") }
-                + NATIVE_TARGETS.map { getByName(it + "Test") }) {
-            dependencies {
-                // no relocation in native
-                implementation(`ktor-io`) {
-                    exclude(ExcludeProperties.`slf4j-api`)
-                }
             }
         }
 
@@ -79,12 +69,6 @@ kotlin {
             dependencies {
                 implementation(`kotlinx-coroutines-debug`)
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
-            }
-        }
-
-        findByName("nativeMain")?.apply {
-            dependencies {
-//                implementation("com.soywiz.korlibs.krypto:krypto:2.4.12") // ':mirai-core-utils:compileNativeMainKotlinMetadata' fails because compiler cannot find reference
             }
         }
     }

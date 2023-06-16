@@ -90,7 +90,6 @@ abstract class AbstractTest {
 
     lateinit var mainSrcDir: File
     lateinit var commonMainSrcDir: File
-    lateinit var nativeMainSrcDir: File
     lateinit var testDir: File
     lateinit var buildFile: File
     lateinit var settingsFile: File
@@ -154,7 +153,6 @@ abstract class AbstractTest {
         }
         mainSrcDir = tempDir.resolve("src/main/kotlin").apply { mkdirs() }
         commonMainSrcDir = tempDir.resolve("src/commonMain/kotlin").apply { mkdirs() }
-        nativeMainSrcDir = tempDir.resolve("src/nativeMain/kotlin").apply { mkdirs() }
         testDir = tempDir.resolve("src/test/kotlin").apply { mkdirs() }
 
         buildFile = tempDir.resolve("build.gradle.kts")
