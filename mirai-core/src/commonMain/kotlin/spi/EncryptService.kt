@@ -13,10 +13,7 @@ package net.mamoe.mirai.internal.spi
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.spi.BaseService
 import net.mamoe.mirai.spi.SpiServiceLoader
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.TypeKey
-import net.mamoe.mirai.utils.TypeSafeMap
+import net.mamoe.mirai.utils.*
 
 
 /**
@@ -32,6 +29,8 @@ public class EncryptServiceContext @MiraiInternalApi constructor(
     public companion object {
         public val KEY_COMMAND_STR: TypeKey<String> = TypeKey("KEY_COMMAND_STR")
         public val KEY_BOT_PROTOCOL: TypeKey<BotConfiguration.MiraiProtocol> = TypeKey("BOT_PROTOCOL")
+        public val KEY_APP_QUA: TypeKey<String> = TypeKey("KEY_APP_QUA")
+        public val KEY_CHANNEL_PROXY: TypeKey<EncryptService.ChannelProxy> = TypeKey("KEY_CHANNEL_PROXY")
     }
 }
 
@@ -39,6 +38,8 @@ public class EncryptServiceContext @MiraiInternalApi constructor(
  * @since 2.15.0
  */
 public interface EncryptService : BaseService {
+    public fun initialize(context: EncryptServiceContext)
+
     /**
      * Returns `null` if not supported.
      */
@@ -48,9 +49,34 @@ public interface EncryptService : BaseService {
         payload: ByteArray, // Do not write to payload
     ): ByteArray?
 
+    public fun qSecurityGetSign(
+        context: EncryptServiceContext,
+        sequenceId: Int,
+        commandName: String,
+        payload: ByteArray
+    ): SignResult?
+
+    public class SignResult(
+        public val sign: ByteArray = EMPTY_BYTE_ARRAY,
+        public val token: ByteArray = EMPTY_BYTE_ARRAY,
+        public val extra: ByteArray = EMPTY_BYTE_ARRAY,
+    )
+
+    public class ChannelResult(
+        public val cmd: String,
+        public val data: ByteArray,
+        public val success: Int,
+        public val callbackId: Long
+    )
+
+    public interface ChannelProxy {
+        public suspend fun sendMessage(remark: String, commandName: String, uin: Long, data: ByteArray): ChannelResult?
+    }
+
     public companion object {
         private val loader = SpiServiceLoader(EncryptService::class)
 
         internal val instance: EncryptService? get() = loader.service
     }
+
 }

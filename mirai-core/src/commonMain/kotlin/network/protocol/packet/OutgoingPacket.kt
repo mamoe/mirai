@@ -11,18 +11,19 @@ package net.mamoe.mirai.internal.network.protocol.packet
 
 
 import io.ktor.utils.io.core.*
-import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.appClientVersion
+import kotlinx.serialization.encodeToByteArray
+import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.components.EcdhInitialPublicKeyUpdater
+import net.mamoe.mirai.internal.network.protocol.data.proto.SSOReserveField
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
+import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.internal.spi.EncryptService
+import net.mamoe.mirai.internal.spi.EncryptServiceContext
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeHex
 import net.mamoe.mirai.internal.utils.io.writeIntLVPacket
-import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.utils.Either
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.Either.Companion.fold
-import net.mamoe.mirai.utils.KEY_16_ZEROS
-import net.mamoe.mirai.utils.TestOnly
 import kotlin.random.Random
 
 @Suppress("unused")
@@ -242,6 +243,37 @@ internal fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPacket(
 
 private inline val BRP_STUB get() = ByteReadPacket.Empty
 
+internal fun createChannelProxy(client: QQAndroidClient): EncryptService.ChannelProxy {
+    return object : EncryptService.ChannelProxy {
+        override suspend fun sendMessage(
+            remark: String,
+            commandName: String,
+            uin: Long,
+            data: ByteArray
+        ): EncryptService.ChannelResult? {
+            if (commandName == "trpc.o3.ecdh_access.EcdhAccess.SsoEstablishShareKey") {
+                val packet = client.bot.network.sendAndExpect<Packet>(
+                    WtLogin.Login.buildLoginOutgoingPacket(
+                        client = client,
+                        encryptMethod = PacketEncryptType.Empty,
+                        uin = uin.toString(),
+                        remark = remark
+                    ) {
+                        writeSsoPacket(
+                            client,
+                            client.subAppId,
+                            sequenceId = it,
+                            commandName = commandName,
+                            body = { writeFully(data) }
+                        )
+                    }
+                )
+                TODO("parse packet to ChannelResult")
+            }
+            return null
+        }
+    }
+}
 
 internal inline fun BytePacketBuilder.writeSsoPacket(
     client: QQAndroidClient,
@@ -269,6 +301,42 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
      *
      * 00 00 00 04
      */
+    val encryptWorker = EncryptService.instance
+
+    val reserveField = if (
+        commandName.startsWith("wtlogin")
+        || commandName == MessageSvcPbSendMsg.commandName
+        || encryptWorker != null
+    ) {
+
+        val signResult = encryptWorker?.qSecurityGetSign(
+            EncryptServiceContext(client.uin, buildTypeSafeMap {
+                set(EncryptServiceContext.KEY_APP_QUA, "V1_AND_SQ_8.9.58_4106_YYB_D") // 8.9.58
+                set(EncryptServiceContext.KEY_CHANNEL_PROXY, createChannelProxy(client))
+            }),
+            sequenceId,
+            commandName,
+            buildPacket(body).readBytes()
+        )
+        if (signResult != null) ProtoBufForCache.encodeToByteArray(
+            SSOReserveField.ReserveFields(
+                flag = 0,
+                qimei = client.qimei16?.toByteArray() ?: EMPTY_BYTE_ARRAY,
+                newconn_flag = 0,
+                uid = client.uin.toString(),
+                imsi = 0,
+                network_type = 1,
+                ip_stack_type = 1,
+                message_type = 0,
+                sec_info = SSOReserveField.SsoSecureInfo(
+                    sec_sig = signResult.sign,
+                    sec_device_token = signResult.token,
+                    sec_extra = signResult.extra
+                )
+            )
+        ) else EMPTY_BYTE_ARRAY
+    } else EMPTY_BYTE_ARRAY
+
     writeIntLVPacket(lengthOffset = { it + 4 }) {
         writeInt(sequenceId)
         writeInt(subAppId.toInt())
@@ -281,27 +349,32 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
             writeInt((extraData.remaining + 4).toInt())
             writePacket(extraData)
         }
-        commandName.let {
-            writeInt(it.length + 4)
-            writeText(it)
-        }
 
-        writeInt(4 + 4)
+        writeInt(commandName.length + 4)
+        writeText(commandName)
+
+        writeInt(client.outgoingPacketSessionId.size + 4)
         writeFully(client.outgoingPacketSessionId) //  02 B0 5B 8B
 
-        client.device.imei.let {
-            writeInt(it.length + 4)
-            writeText(it)
+        if (commandName.startsWith("wtlogin")) {
+            writeText(client.device.imei)
+            writeInt(0x4)
+
+            writeShort((client.ksid.size + 2).toShort())
+            writeFully(client.ksid)
+
+            writeInt(reserveField.size + 4)
+            writeFully(reserveField)
         }
 
-        writeInt(4)
-
-        client.ksid.let {
-            writeShort((it.size + 2).toShort())
-            writeFully(it)
+        if (commandName == MessageSvcPbSendMsg.commandName && encryptWorker != null) {
+            writeInt(reserveField.size + 4)
+            writeFully(reserveField)
         }
 
-        writeInt(4)
+        val qimei16Bytes = client.qimei16?.toByteArray() ?: EMPTY_BYTE_ARRAY
+        writeInt(qimei16Bytes.size + 4)
+        writeFully(qimei16Bytes)
     }
 
     // body
