@@ -78,7 +78,7 @@ internal class StatSvc {
 
         operator fun invoke(
             client: QQAndroidClient
-        ) = buildLoginOutgoingPacket(client, 1) {
+        ) = buildLoginOutgoingPacket(client, PacketEncryptType.D2) {
             writeProtoBuf(
                 StatSvcGetOnline.ReqBody.serializer(), StatSvcGetOnline.ReqBody(
                     uin = client.uin,
@@ -112,9 +112,7 @@ internal class StatSvc {
             client: QQAndroidClient
         ) = buildLoginOutgoingPacket(
             client,
-            bodyType = 1,
-            extraData = client.wLoginSigInfo.d2.data,
-            key = client.wLoginSigInfo.d2Key
+            encryptMethod = PacketEncryptType.D2
         ) {
             writeSsoPacket(client, client.subAppId, commandName, sequenceId = it) {
 
@@ -205,7 +203,7 @@ internal class StatSvc {
             applyAction: SvcReqRegister.() -> Unit = {}
         ) = buildLoginOutgoingPacket(
             client,
-            bodyType = 1,
+            encryptMethod = PacketEncryptType.D2,
             extraData = client.wLoginSigInfo.d2.data,
             key = client.wLoginSigInfo.d2Key,
             remark = name,

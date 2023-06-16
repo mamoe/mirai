@@ -29,7 +29,7 @@ internal object WtLogin8 : WtLoginExt {
         client: QQAndroidClient,
         t174: ByteArray
     ) = WtLogin.Login.buildLoginOutgoingPacket(
-        client, bodyType = 2, remark = "8:request-sms"
+        client, encryptMethod = PacketEncryptType.Empty, remark = "8:request-sms"
     ) { sequenceId ->
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {

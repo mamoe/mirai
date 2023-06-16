@@ -74,67 +74,100 @@ internal class IncomingPacket private constructor(
     }
 }
 
+internal enum class PacketEncryptType {
+    NoEncrypt { // 0x00
+        override fun defaultKey(client: QQAndroidClient): ByteArray = NO_ENCRYPT
+    },
+    D2 { //0x01
+        override fun defaultKey(client: QQAndroidClient): ByteArray {
+            return client.wLoginSigInfo.d2Key
+        }
+    },
+    Empty { // 16 zeros,// 0x02
+        override fun defaultKey(client: QQAndroidClient): ByteArray {
+            return KEY_16_ZEROS
+        }
+    },
+    ;
+
+    inline val codec: Byte get() = ordinal.toByte()
+
+    abstract fun defaultKey(client: QQAndroidClient): ByteArray
+}
+
+
 @Suppress("DuplicatedCode")
-internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildOutgoingUniPacket(
+internal fun <R : Packet?> buildRawUniPacket(
     client: QQAndroidClient,
-    bodyType: Byte = 1, // 1: PB?
-    remark: String? = this.commandName,
-    commandName: String = this.commandName,
-    key: ByteArray = client.wLoginSigInfo.d2Key,
+    encryptMethod: PacketEncryptType = PacketEncryptType.D2,
+    remark: String?,
+    commandName: String,
+    key: ByteArray = encryptMethod.defaultKey(client),
     extraData: ByteReadPacket = BRP_STUB,
+    uin: String = client.uin.toString(),
     sequenceId: Int = client.nextSsoSequenceId(),
-    crossinline body: BytePacketBuilder.(sequenceId: Int) -> Unit
+    body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacketWithRespType<R> {
 
     return OutgoingPacketWithRespType(remark, commandName, sequenceId, buildPacket {
         writeIntLVPacket(lengthOffset = { it + 4 }) {
-            writeInt(0x0B)
-            writeByte(bodyType)
+            writeInt(0x0B) // req type simple
+            writeByte(encryptMethod.codec)
             writeInt(sequenceId)
             writeByte(0)
-            client.uin.toString().let {
+            uin.let {
                 writeInt(it.length + 4)
                 writeText(it)
             }
-            encryptAndWrite(key) {
+
+            if (encryptMethod === PacketEncryptType.NoEncrypt) {
                 writeUniPacket(commandName, client.outgoingPacketSessionId, extraData) {
                     body(sequenceId)
+                }
+            } else {
+                encryptAndWrite(key) {
+                    writeUniPacket(commandName, client.outgoingPacketSessionId, extraData) {
+                        body(sequenceId)
+                    }
                 }
             }
         }
     })
 }
 
+@Suppress("DuplicatedCode")
+internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildOutgoingUniPacket(
+    client: QQAndroidClient,
+    encryptMethod: PacketEncryptType = PacketEncryptType.D2,
+    remark: String? = this.commandName,
+    commandName: String = this.commandName,
+    key: ByteArray = encryptMethod.defaultKey(client),
+    extraData: ByteReadPacket = BRP_STUB,
+    uin: String = client.uin.toString(),
+    sequenceId: Int = client.nextSsoSequenceId(),
+    noinline body: BytePacketBuilder.(sequenceId: Int) -> Unit
+): OutgoingPacketWithRespType<R> =
+    buildRawUniPacket(client, encryptMethod, remark, commandName, key, extraData, uin, sequenceId, body)
 
 internal inline fun <R : Packet?> IncomingPacketFactory<R>.buildResponseUniPacket(
     client: QQAndroidClient,
-    bodyType: Byte = 1, // 1: PB?
-    name: String? = this.responseCommandName,
+    encryptMethod: PacketEncryptType = PacketEncryptType.D2, // 1: PB?
+    remark: String? = this.responseCommandName,
     commandName: String = this.responseCommandName,
-    key: ByteArray = client.wLoginSigInfo.d2Key,
+    key: ByteArray = encryptMethod.defaultKey(client),
     extraData: ByteReadPacket = BRP_STUB,
     sequenceId: Int = client.nextSsoSequenceId(),
-    crossinline body: BytePacketBuilder.(sequenceId: Int) -> Unit = {}
-): OutgoingPacketWithRespType<R> {
-    @Suppress("DuplicatedCode")
-    return OutgoingPacketWithRespType(name, commandName, sequenceId, buildPacket {
-        writeIntLVPacket(lengthOffset = { it + 4 }) {
-            writeInt(0x0B)
-            writeByte(bodyType)
-            writeInt(sequenceId)
-            writeByte(0)
-            client.uin.toString().let {
-                writeInt(it.length + 4)
-                writeText(it)
-            }
-            encryptAndWrite(key) {
-                writeUniPacket(commandName, client.outgoingPacketSessionId, extraData) {
-                    body(sequenceId)
-                }
-            }
-        }
-    })
-}
+    noinline body: BytePacketBuilder.(sequenceId: Int) -> Unit = {}
+): OutgoingPacketWithRespType<R> = buildRawUniPacket(
+    client = client,
+    encryptMethod = encryptMethod,
+    remark = remark,
+    commandName = commandName,
+    key = key,
+    extraData = extraData,
+    sequenceId = sequenceId,
+    body = body
+)
 
 
 private inline fun BytePacketBuilder.writeUniPacket(
@@ -169,26 +202,28 @@ internal val NO_ENCRYPT: ByteArray = ByteArray(0)
 /**
  * com.tencent.qphone.base.util.CodecWarpper#encodeRequest(int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, byte[], int, int, java.lang.String, byte, byte, byte, byte[], byte[], boolean)
  */
-internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPacket(
+internal fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPacket(
     client: QQAndroidClient,
-    bodyType: Byte,
+    encryptMethod: PacketEncryptType,
     uin: String = client.uin.toString(),
-    extraData: ByteArray = EMPTY_BYTE_ARRAY,
+    extraData: ByteArray = if (encryptMethod == PacketEncryptType.D2) client.wLoginSigInfo.d2.data else EMPTY_BYTE_ARRAY,
     remark: String? = null,
     commandName: String = this.commandName,
-    key: ByteArray = KEY_16_ZEROS,
-    crossinline body: BytePacketBuilder.(sequenceId: Int) -> Unit
+    key: ByteArray = encryptMethod.defaultKey(client),
+    body: BytePacketBuilder.(sequenceId: Int) -> Unit
 ): OutgoingPacketWithRespType<R> {
     val sequenceId: Int = client.nextSsoSequenceId()
 
     return OutgoingPacketWithRespType(remark, commandName, sequenceId, buildPacket {
         writeIntLVPacket(lengthOffset = { it + 4 }) {
-            writeInt(0x00_00_00_0A)
-            writeByte(bodyType)
-            extraData.let {
+            writeInt(0x00_00_00_0A) // packet login
+            writeByte(encryptMethod.codec) // encrypt type
+
+            extraData.let { // actually d2 key if encryptMethod = d2
                 writeInt(it.size + 4)
                 writeFully(it)
             }
+
             writeByte(0x00)
 
             uin.let {
@@ -196,7 +231,7 @@ internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPac
                 writeText(it)
             }
 
-            if (key === NO_ENCRYPT) {
+            if (encryptMethod == PacketEncryptType.NoEncrypt) {
                 body(sequenceId)
             } else {
                 encryptAndWrite(key) { body(sequenceId) }
