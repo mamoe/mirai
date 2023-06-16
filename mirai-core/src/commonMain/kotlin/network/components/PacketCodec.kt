@@ -122,21 +122,25 @@ internal class PacketCodecImpl : PacketCodec {
 
             val raw = try {
                 when (encryptMethod) {
+                    // empty key
                     2 -> TEA.decrypt(buffer, DECRYPTER_16_ZERO, size)
-                1 -> {
-                    TEA.decrypt(buffer, kotlin.runCatching { client.wLoginSigInfo.d2Key }.getOrElse {
-                        throw PacketCodecException(
-                            "Received packet needed d2Key to decrypt but d2Key doesn't existed, ignoring. Please report to https://github.com/mamoe/mirai/issues/new/choose if you see anything abnormal",
-                            PROTOCOL_UPDATED
-                        )
-                    }, size)
-                }
-
+                    // d2 key
+                    1 -> {
+                        TEA.decrypt(buffer, kotlin.runCatching { client.wLoginSigInfo.d2Key }.getOrElse {
+                            throw PacketCodecException(
+                                "Received packet needed d2Key to decrypt but d2Key doesn't existed, ignoring. Please report to https://github.com/mamoe/mirai/issues/new/choose if you see anything abnormal",
+                                PROTOCOL_UPDATED
+                            )
+                        }, size)
+                    }
+                    // no encrypt
                     0 -> buffer
                     else -> throw PacketCodecException("Unknown encrypt type=$encryptMethod", PROTOCOL_UPDATED)
                 }.let { decryptedData ->
                     when (type) {
+                        // login
                         0x0A -> parseSsoFrame(client, decryptedData)
+                        // simple
                         0x0B -> parseSsoFrame(client, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
                         else -> throw PacketCodecException(
                             "unknown packet type: ${type.toByte().toUHexString()}",
@@ -171,7 +175,7 @@ internal class PacketCodecImpl : PacketCodec {
                     raw.sequenceId,
                     raw.body.withUse {
                         try {
-                                parseOicqResponse(client, raw.commandName)
+                            parseOicqResponse(client, raw.commandName)
                         } catch (e: Throwable) {
                             throw PacketCodecException(e, PacketCodecException.Kind.OTHER)
                         }

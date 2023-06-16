@@ -17,10 +17,14 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
+import net.mamoe.mirai.internal.network.protocol.packet.createChannelProxy
+import net.mamoe.mirai.internal.spi.EncryptService
+import net.mamoe.mirai.internal.spi.EncryptServiceContext
 import net.mamoe.mirai.internal.utils.crypto.QQEcdh
 import net.mamoe.mirai.internal.utils.crypto.QQEcdhInitialPublicKey
 import net.mamoe.mirai.internal.utils.crypto.verify
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.buildTypeSafeMap
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -33,6 +37,8 @@ internal interface EcdhInitialPublicKeyUpdater {
      * Refresh the [QQEcdhInitialPublicKey]
      */
     suspend fun refreshInitialPublicKeyAndApplyEcdh()
+
+    suspend fun initializeSsoSecureEcdh()
 
     fun getQQEcdh(): QQEcdh
 
@@ -103,6 +109,19 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
         }
         bot.client.ecdhInitialPublicKey = initialPublicKey
         qqEcdh = QQEcdh(initialPublicKey)
+    }
+
+    override suspend fun initializeSsoSecureEcdh() {
+        val encryptWorker = EncryptService.instance
+
+        if (encryptWorker == null) {
+            logger.info("EncryptService SPI is not provided, sso secure ecdh will not be initialized.")
+            return
+        }
+
+        encryptWorker.initialize(EncryptServiceContext(bot.id, buildTypeSafeMap {
+            set(EncryptServiceContext.KEY_CHANNEL_PROXY, createChannelProxy(bot.client))
+        }))
     }
 
 

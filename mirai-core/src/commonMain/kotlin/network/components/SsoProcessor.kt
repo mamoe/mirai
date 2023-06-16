@@ -39,7 +39,6 @@ import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.jvm.Volatile
 
 /**
  * Handles login, and acts also as a mediator of [BotInitProcessor]
@@ -213,8 +212,8 @@ internal open class SsoProcessorImpl(
             }
 
             components[CacheValidator].validate()
-
             components[BdhSessionSyncer].loadServerListFromCache()
+            components[EcdhInitialPublicKeyUpdater].initializeSsoSecureEcdh()
 
             try {
                 ssoContext.bot.requestQimei(qimeiLogger)

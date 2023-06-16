@@ -180,6 +180,9 @@ internal abstract class AbstractRealNetworkHandlerTest<H : NetworkHandler> : Abs
             override suspend fun refreshInitialPublicKeyAndApplyEcdh() {
             }
 
+            override suspend fun initializeSsoSecureEcdh() {
+            }
+
             override fun getQQEcdh(): QQEcdh = QQEcdh()
         })
 
