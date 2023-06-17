@@ -22,7 +22,6 @@ kotlin {
     apply(plugin = "explicit-api")
 
     configureJvmTargetsHierarchical("net.mamoe.mirai.compiler.annotations")
-    configureNativeTargetsHierarchical(project)
 }
 
 configureMppPublishing()

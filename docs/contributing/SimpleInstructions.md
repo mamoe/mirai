@@ -29,5 +29,3 @@
       ./gradlew publishMiraiArtifactsToMavenLocal "-Dprojects.mirai-core.targets=jvm;android;!others"
       ```
       若上述命令不工作，尝试在 Android Studio 中打开项目并在 Studio 的终端中执行命令。
-- 我是 mirai native 用户，我需要 `.dll/.so/.dylib`：
-  你不能简单地构建这些动态链接库，因为它们需要依赖。阅读 [BuildingCoreNative](building/BuildingCoreNative.md)。

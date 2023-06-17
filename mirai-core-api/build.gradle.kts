@@ -32,8 +32,6 @@ kotlin {
 
     configureJvmTargetsHierarchical("net.mamoe.mirai")
 
-    configureNativeTargetsHierarchical(project)
-
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -85,11 +83,6 @@ kotlin {
         findByName("jvmTest")?.apply {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
-            }
-        }
-
-        findByName("nativeMain")?.apply {
-            dependencies {
             }
         }
     }
