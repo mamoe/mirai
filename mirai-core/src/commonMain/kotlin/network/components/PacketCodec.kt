@@ -18,7 +18,7 @@ import net.mamoe.mirai.internal.network.components.PacketCodecException.Kind.*
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
-import net.mamoe.mirai.internal.network.protocol.packet.sso.PREFIX_TRPC_SSO
+import net.mamoe.mirai.internal.network.protocol.packet.sso.TRpcRawPacket
 import net.mamoe.mirai.internal.utils.crypto.Ecdh
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.utils.*
@@ -174,7 +174,7 @@ internal class PacketCodecImpl : PacketCodec {
                                 "which may means protocol is updated.",
                         flag3Exception
                     )
-                } else if (raw.commandName.startsWith(PREFIX_TRPC_SSO)) {
+                } else if (raw.commandName.startsWith(TRpcRawPacket.COMMAND_PREFIX)) {
                     PacketLogger.verbose { "received a trpc native packet: ${raw.commandName}" }
                 } else {
                     throw flag3Exception
@@ -194,7 +194,7 @@ internal class PacketCodecImpl : PacketCodec {
                         raw.commandName,
                         raw.sequenceId,
                         raw.body.withUse {
-                            if (raw.commandName.startsWith(PREFIX_TRPC_SSO)) {
+                            if (raw.commandName.startsWith(TRpcRawPacket.COMMAND_PREFIX)) {
                                 readBytes()
                             } else {
                                 try {

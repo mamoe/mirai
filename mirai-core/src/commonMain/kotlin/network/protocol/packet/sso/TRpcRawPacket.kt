@@ -14,12 +14,22 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 
-internal object SsoEstablishShareKey : OutgoingPacketFactory<SsoEstablishShareKey.RawData>(
-    "trpc.o3.ecdh_access.EcdhAccess.SsoEstablishShareKey"
-) {
+internal abstract class TRpcRawPacket(commandName: String) :
+    OutgoingPacketFactory<TRpcRawPacket.RawData>(commandName) {
     internal class RawData(val data: ByteArray) : Packet
 
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): RawData {
         return RawData(readBytes())
     }
+
+    companion object {
+        const val COMMAND_PREFIX = "trpc.o3"
+    }
 }
+
+internal object SsoEstablishShareKey :
+    TRpcRawPacket("$COMMAND_PREFIX.ecdh_access.EcdhAccess.SsoEstablishShareKey")
+
+internal object SsoSecureA2Access :
+    TRpcRawPacket("$COMMAND_PREFIX.ecdh_access.EcdhAccess.SsoSecureA2Access")
+
