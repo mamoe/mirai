@@ -365,21 +365,16 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
         writeInt(client.outgoingPacketSessionId.size + 4)
         writeFully(client.outgoingPacketSessionId) //  02 B0 5B 8B
 
-        if (commandName.startsWith("wtlogin")) {
-            writeText(client.device.imei)
-            writeInt(0x4)
+        writeInt(client.device.imei.length + 4)
+        writeText(client.device.imei)
+        writeInt(0x4)
 
-            writeShort((client.ksid.size + 2).toShort())
-            writeFully(client.ksid)
+        writeShort((client.ksid.size + 2).toShort())
+        writeFully(client.ksid)
 
-            writeInt(reserveField.size + 4)
-            writeFully(reserveField)
-        }
+        writeInt(reserveField.size + 4)
+        writeFully(reserveField)
 
-        if (commandName == MessageSvcPbSendMsg.commandName && encryptWorker != null) {
-            writeInt(reserveField.size + 4)
-            writeFully(reserveField)
-        }
 
         val qimei16Bytes = client.qimei16?.toByteArray() ?: EMPTY_BYTE_ARRAY
         writeInt(qimei16Bytes.size + 4)
