@@ -195,8 +195,10 @@ internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
     val decryptedData = aesDecrypt(resp.data.decodeBase64(), aesKey, aesKey)
     val qimeiData = Json.decodeFromString(QimeiData.serializer(), decryptedData.decodeToString())
 
-    client.qimei36 = qimeiData.q36
-    client.qimei16 = qimeiData.q16
+    client.bot.components[SsoProcessorContext].let { context ->
+        context.qimei36 = qimeiData.q36
+        context.qimei16 = qimeiData.q16
+    }
 }
 
 private val dalvikVersions = mapOf(
