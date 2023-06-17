@@ -16,7 +16,7 @@ import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.components.EcdhInitialPublicKeyUpdater
 import net.mamoe.mirai.internal.network.protocol.data.proto.SSOReserveField
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
-import net.mamoe.mirai.internal.network.protocol.packet.sso.SsoEstablishShareKey
+import net.mamoe.mirai.internal.network.protocol.packet.sso.TRpcRawPacket
 import net.mamoe.mirai.internal.spi.EncryptService
 import net.mamoe.mirai.internal.spi.EncryptServiceContext
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
@@ -260,13 +260,14 @@ internal fun createChannelProxy(client: QQAndroidClient): EncryptService.Channel
             uin: Long,
             data: ByteArray
         ): EncryptService.ChannelResult? {
-            if (commandName == SsoEstablishShareKey.commandName) {
+            if (commandName.startsWith(TRpcRawPacket.COMMAND_PREFIX)) {
                 val packet = client.bot.network.sendAndExpect(
-                    SsoEstablishShareKey.buildLoginOutgoingPacket(
+                    TRpcRawPacket.buildLoginOutgoingPacket(
                         client = client,
                         encryptMethod = PacketEncryptType.Empty,
                         uin = uin.toString(),
-                        remark = remark
+                        remark = remark,
+                        commandName = commandName,
                     ) {
                         writeSsoPacket(
                             client,
@@ -277,7 +278,7 @@ internal fun createChannelProxy(client: QQAndroidClient): EncryptService.Channel
                         )
                     }
                 )
-                return EncryptService.ChannelResult(SsoEstablishShareKey.commandName, packet.data)
+                return EncryptService.ChannelResult(commandName, packet.data)
             }
             return null
         }

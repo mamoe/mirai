@@ -392,11 +392,16 @@ internal class PacketCodecImpl : PacketCodec {
      * This function wraps exceptions into [IncomingPacket]
      */
     override suspend fun processBody(bot: QQAndroidBot, input: RawIncomingPacket): IncomingPacket? {
-        val factory = KnownPacketFactories.findPacketFactory(input.commandName) ?: return null
+        val factory = KnownPacketFactories.findPacketFactory(input.commandName)
+            ?: TRpcRawPacket.takeIf { input.commandName.startsWith(TRpcRawPacket.COMMAND_PREFIX) }
+            ?: return null
 
         return kotlin.runCatching {
             input.body.toReadPacket().use { body ->
                 when (factory) {
+                    // specially
+                    is TRpcRawPacket -> TRpcRawPacket.decode(input, body)
+
                     is OutgoingPacketFactory -> factory.decode(bot, body)
                     is IncomingPacketFactory -> factory.decode(bot, body, input.sequenceId)
                 }
