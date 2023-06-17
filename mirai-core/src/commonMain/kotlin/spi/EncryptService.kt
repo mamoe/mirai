@@ -72,8 +72,6 @@ public interface EncryptService : BaseService {
     public class ChannelResult(
         public val cmd: String,
         public val data: ByteArray,
-        public val success: Int,
-        public val callbackId: Long
     )
 
     public interface ChannelProxy {
