@@ -147,6 +147,8 @@ internal class PacketCodecImpl : PacketCodec {
                     PacketEncryptType.NoEncrypt -> buffer
                     else -> throw PacketCodecException("Unknown encrypt type=$encryptMethod", PROTOCOL_UPDATED)
                 }.let { decryptedData ->
+                    PacketLogger.verbose { "Parsing: type=${packetType}: len=${decryptedData.size}, value=${decryptedData.toUHexString()}" }
+
                     when (packetType) {
                         IncomingPacketType.Login -> parseSsoFrame(client, decryptedData)
                         IncomingPacketType.Simple -> parseSsoFrame(
@@ -157,6 +159,13 @@ internal class PacketCodecImpl : PacketCodec {
                             "unknown packet type: ${packetType.value.toUHexString()}",
                             PROTOCOL_UPDATED
                         )
+                    }.also { pkg ->
+                        PacketLogger.debug {
+                            "result: ${pkg.commandName}, seq=${pkg.sequenceId}, ${
+                                pkg.body.copy()
+                                    .useBytes { data: ByteArray, length: Int -> data.toUHexString(length = length) }
+                            }"
+                        }
                     }
                 }
             } catch (e: Exception) {
