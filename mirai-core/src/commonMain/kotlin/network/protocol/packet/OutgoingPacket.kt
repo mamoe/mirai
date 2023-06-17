@@ -16,7 +16,7 @@ import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.components.EcdhInitialPublicKeyUpdater
 import net.mamoe.mirai.internal.network.protocol.data.proto.SSOReserveField
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
-import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.internal.network.protocol.packet.sso.SsoEstablishShareKey
 import net.mamoe.mirai.internal.spi.EncryptService
 import net.mamoe.mirai.internal.spi.EncryptServiceContext
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
@@ -75,25 +75,34 @@ internal class IncomingPacket private constructor(
     }
 }
 
-internal enum class PacketEncryptType {
-    NoEncrypt { // 0x00
+internal enum class PacketEncryptType(val value: Int) {
+    NoEncrypt(0x00) { // 0x00
         override fun defaultKey(client: QQAndroidClient): ByteArray = NO_ENCRYPT
     },
-    D2 { //0x01
+    D2(0x01) { //0x01
         override fun defaultKey(client: QQAndroidClient): ByteArray {
             return client.wLoginSigInfo.d2Key
         }
     },
-    Empty { // 16 zeros,// 0x02
+    Empty(0x02) { // 16 zeros,// 0x02
         override fun defaultKey(client: QQAndroidClient): ByteArray {
             return KEY_16_ZEROS
         }
     },
+    Unknown(-1) {
+        override fun defaultKey(client: QQAndroidClient): ByteArray {
+            error("unreachable")
+        }
+    }
     ;
 
     inline val codec: Byte get() = ordinal.toByte()
 
     abstract fun defaultKey(client: QQAndroidClient): ByteArray
+
+    companion object {
+        internal fun of(value: Int) = enumValues<PacketEncryptType>().find { it.value == value } ?: Unknown
+    }
 }
 
 
@@ -251,9 +260,9 @@ internal fun createChannelProxy(client: QQAndroidClient): EncryptService.Channel
             uin: Long,
             data: ByteArray
         ): EncryptService.ChannelResult? {
-            if (commandName == "trpc.o3.ecdh_access.EcdhAccess.SsoEstablishShareKey") {
-                val packet = client.bot.network.sendAndExpect<Packet>(
-                    WtLogin.Login.buildLoginOutgoingPacket(
+            if (commandName == SsoEstablishShareKey.commandName) {
+                val packet = client.bot.network.sendAndExpect(
+                    SsoEstablishShareKey.buildLoginOutgoingPacket(
                         client = client,
                         encryptMethod = PacketEncryptType.Empty,
                         uin = uin.toString(),
@@ -268,7 +277,7 @@ internal fun createChannelProxy(client: QQAndroidClient): EncryptService.Channel
                         )
                     }
                 )
-                TODO("parse packet to ChannelResult")
+                return EncryptService.ChannelResult(SsoEstablishShareKey.commandName, packet.data)
             }
             return null
         }

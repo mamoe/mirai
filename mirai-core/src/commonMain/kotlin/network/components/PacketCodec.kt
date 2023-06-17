@@ -18,6 +18,7 @@ import net.mamoe.mirai.internal.network.components.PacketCodecException.Kind.*
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.internal.network.protocol.packet.sso.PREFIX_TRPC_SSO
 import net.mamoe.mirai.internal.utils.crypto.Ecdh
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.utils.*
@@ -95,6 +96,17 @@ internal class PacketCodecException(
 //    }
 }
 
+internal enum class IncomingPacketType(val value: Int) {
+    Login(0x0A),
+    Simple(0x0B),
+    Unknown(-1)
+    ;
+
+    companion object {
+        internal fun of(value: Int) = enumValues<IncomingPacketType>().find { it.value == value } ?: Unknown
+    }
+}
+
 internal class PacketCodecImpl : PacketCodec {
 
     override fun decodeRaw(
@@ -102,15 +114,15 @@ internal class PacketCodecImpl : PacketCodec {
         input: ByteReadPacket
     ): RawIncomingPacket = input.run {
         // packet type
-        val type = readInt()
+        val packetType = IncomingPacketType.of(readInt())
 
         PacketLogger.verbose { "开始处理一个包" }
 
-        val encryptMethod = readByte().toInt()
+        val encryptMethod = PacketEncryptType.of(readByte().toInt())
         val flag3 = readByte().toInt()
         val flag3Exception = if (flag3 != 0) {
             PacketCodecException(
-                "Illegal flag3. Expected 0, whereas got $flag3. packet type=$type, encrypt method=$encryptMethod. ",
+                "Illegal flag3. Expected 0, whereas got $flag3. packet type=$packetType, encrypt method=$encryptMethod. ",
                 kind = PROTOCOL_UPDATED
             )
         } else null
@@ -122,10 +134,8 @@ internal class PacketCodecImpl : PacketCodec {
 
             val raw = try {
                 when (encryptMethod) {
-                    // empty key
-                    2 -> TEA.decrypt(buffer, DECRYPTER_16_ZERO, size)
-                    // d2 key
-                    1 -> {
+                    PacketEncryptType.Empty -> TEA.decrypt(buffer, DECRYPTER_16_ZERO, size)
+                    PacketEncryptType.D2 -> {
                         TEA.decrypt(buffer, kotlin.runCatching { client.wLoginSigInfo.d2Key }.getOrElse {
                             throw PacketCodecException(
                                 "Received packet needed d2Key to decrypt but d2Key doesn't existed, ignoring. Please report to https://github.com/mamoe/mirai/issues/new/choose if you see anything abnormal",
@@ -133,17 +143,18 @@ internal class PacketCodecImpl : PacketCodec {
                             )
                         }, size)
                     }
-                    // no encrypt
-                    0 -> buffer
+
+                    PacketEncryptType.NoEncrypt -> buffer
                     else -> throw PacketCodecException("Unknown encrypt type=$encryptMethod", PROTOCOL_UPDATED)
                 }.let { decryptedData ->
-                    when (type) {
-                        // login
-                        0x0A -> parseSsoFrame(client, decryptedData)
-                        // simple
-                        0x0B -> parseSsoFrame(client, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
+                    when (packetType) {
+                        IncomingPacketType.Login -> parseSsoFrame(client, decryptedData)
+                        IncomingPacketType.Simple -> parseSsoFrame(
+                            client,
+                            decryptedData
+                        ) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
                         else -> throw PacketCodecException(
-                            "unknown packet type: ${type.toByte().toUHexString()}",
+                            "unknown packet type: ${packetType.value.toUHexString()}",
                             PROTOCOL_UPDATED
                         )
                     }
@@ -163,24 +174,38 @@ internal class PacketCodecImpl : PacketCodec {
                                 "which may means protocol is updated.",
                         flag3Exception
                     )
+                } else if (raw.commandName.startsWith(PREFIX_TRPC_SSO)) {
+                    PacketLogger.verbose { "received a trpc native packet: ${raw.commandName}" }
                 } else {
                     throw flag3Exception
                 }
             }
 
             when (encryptMethod) {
-                0, 1 -> RawIncomingPacket(raw.commandName, raw.sequenceId, raw.body.readBytes())
-                2 -> RawIncomingPacket(
+                PacketEncryptType.NoEncrypt,
+                PacketEncryptType.D2 -> RawIncomingPacket(
                     raw.commandName,
                     raw.sequenceId,
-                    raw.body.withUse {
-                        try {
-                            parseOicqResponse(client, raw.commandName)
-                        } catch (e: Throwable) {
-                            throw PacketCodecException(e, PacketCodecException.Kind.OTHER)
-                        }
-                    }
+                    raw.body.readBytes()
                 )
+
+                PacketEncryptType.Empty -> {
+                    RawIncomingPacket(
+                        raw.commandName,
+                        raw.sequenceId,
+                        raw.body.withUse {
+                            if (raw.commandName.startsWith(PREFIX_TRPC_SSO)) {
+                                readBytes()
+                            } else {
+                                try {
+                                    parseOicqResponse(client, raw.commandName)
+                                } catch (e: Throwable) {
+                                    throw PacketCodecException(e, PacketCodecException.Kind.OTHER)
+                                }
+                            }
+                        }
+                    )
+                }
 
                 else -> error("unreachable")
             }
