@@ -18,6 +18,7 @@ import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.internal.BotAccount
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.AccountSecrets
+import net.mamoe.mirai.internal.network.components.SsoProcessorContext
 import net.mamoe.mirai.internal.network.components.SsoSession
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
@@ -177,8 +178,8 @@ internal open class QQAndroidClient(
     /**
      * t545
      */
-    var qimei16: String? = null
-    var qimei36: String? = null
+    val qimei16: String? get() = bot.components[SsoProcessorContext].qimei16
+    val qimei36: String? get() = bot.components[SsoProcessorContext].qimei36
 }
 
 internal val QQAndroidClient.apkId: ByteArray get() = protocol.apkId.toByteArray()

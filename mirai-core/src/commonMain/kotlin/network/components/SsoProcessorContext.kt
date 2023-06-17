@@ -32,6 +32,12 @@ internal interface SsoProcessorContext {
 
     val configuration: BotConfiguration get() = bot.configuration
 
+    /**
+     * t545
+     */
+    var qimei16: String?
+    var qimei36: String?
+
     companion object : ComponentKey<SsoProcessorContext>
 }
 
@@ -42,6 +48,10 @@ internal class SsoProcessorContextImpl(
     override val device: DeviceInfo = configuration.createDeviceInfo(bot)
     override val protocol: BotConfiguration.MiraiProtocol get() = configuration.protocol
     override val configuration: BotConfiguration get() = bot.configuration
+
+
+    override var qimei16: String? = null
+    override var qimei36: String? = null
 }
 
 internal fun BotConfiguration.createDeviceInfo(bot: Bot): DeviceInfo = deviceInfo?.invoke(bot) ?: DeviceInfo.random()
