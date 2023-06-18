@@ -12,11 +12,11 @@ package net.mamoe.mirai.internal.network.protocol.packet
 
 import io.ktor.utils.io.core.*
 import kotlinx.serialization.encodeToByteArray
+import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.components.EcdhInitialPublicKeyUpdater
 import net.mamoe.mirai.internal.network.protocol.data.proto.SSOReserveField
-import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.internal.network.protocol.packet.sso.TRpcRawPacket
 import net.mamoe.mirai.internal.spi.EncryptService
 import net.mamoe.mirai.internal.spi.EncryptServiceContext
@@ -314,14 +314,10 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
      * 00 00 00 04
      */
     val encryptWorker = EncryptService.instance
+    val bodyBytes = buildPacket(body).readBytes()
+    val reserveField = if (encryptWorker != null) {
 
-    val reserveField = if (
-        commandName.startsWith("wtlogin")
-        || commandName == MessageSvcPbSendMsg.commandName
-        || encryptWorker != null
-    ) {
-
-        val signResult = encryptWorker?.qSecurityGetSign(
+        val signResult = encryptWorker.qSecurityGetSign(
             EncryptServiceContext(client.uin, buildTypeSafeMap {
                 set(EncryptServiceContext.KEY_APP_QUA, "V1_AND_SQ_8.9.58_4106_YYB_D") // 8.9.58
                 set(EncryptServiceContext.KEY_CHANNEL_PROXY, createChannelProxy(client.bot))
@@ -330,25 +326,27 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
             }),
             sequenceId,
             commandName,
-            buildPacket(body).readBytes()
+            bodyBytes
         )
-        if (signResult != null) ProtoBufForCache.encodeToByteArray(
-            SSOReserveField.ReserveFields(
-                flag = 0,
-                qimei = client.qimei16?.toByteArray() ?: EMPTY_BYTE_ARRAY,
-                newconn_flag = 0,
-                uid = client.uin.toString(),
-                imsi = 0,
-                network_type = 1,
-                ip_stack_type = 1,
-                message_type = 0,
-                sec_info = SSOReserveField.SsoSecureInfo(
-                    sec_sig = signResult.sign,
-                    sec_device_token = signResult.token,
-                    sec_extra = signResult.extra
+        if (signResult != null)
+            ProtoBuf.encodeToByteArray(
+                SSOReserveField.ReserveFields(
+                    flag = 0,
+                    qimei = client.qimei16?.toByteArray() ?: EMPTY_BYTE_ARRAY,
+                    newconnFlag = 0,
+                    uid = client.uin.toString(),
+                    imsi = 0,
+                    networkType = 1,
+                    ipStackType = 1,
+                    messageType = 0,
+                    secInfo = SSOReserveField.SsoSecureInfo(
+                        secSig = signResult.sign,
+                        secDeviceToken = signResult.token,
+                        secExtra = signResult.extra
+                    ),
+                    ssoIpOrigin = 0,
                 )
-            )
-        ) else EMPTY_BYTE_ARRAY
+            ) else EMPTY_BYTE_ARRAY
     } else EMPTY_BYTE_ARRAY
 
     writeIntLVPacket(lengthOffset = { it + 4 }) {
@@ -387,7 +385,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
     }
 
     // body
-    writeIntLVPacket(lengthOffset = { it + 4 }, builder = body)
+    writeIntLVPacket(lengthOffset = { it + 4 }, builder = { writeFully(bodyBytes) })
 }
 
 internal fun BytePacketBuilder.writeOicqRequestPacket(
