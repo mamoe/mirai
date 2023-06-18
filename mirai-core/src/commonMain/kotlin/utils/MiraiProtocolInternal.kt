@@ -12,7 +12,6 @@ package net.mamoe.mirai.internal.utils
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import net.mamoe.mirai.utils.EnumMap
 import net.mamoe.mirai.utils.toUHexString
-import kotlin.jvm.JvmField
 
 internal class MiraiProtocolInternal(
     var apkId: String,
@@ -40,35 +39,35 @@ internal class MiraiProtocolInternal(
             protocols[protocol] ?: error("Internal Error: Missing protocol $protocol")
 
         init {
-            //Updated from 8.9.35 (2023/4/9)
+            //Updated from MiraiGo (2023/6/18)
             protocols[MiraiProtocol.ANDROID_PHONE] = MiraiProtocolInternal(
                 apkId = "com.tencent.mobileqq",
-                id = 537153295,
-                ver = "8.9.35",
-                buildVer = "8.9.35.10440",
-                sdkVer = "6.0.0.2535",
+                id = 537163098,
+                ver = "8.9.58",
+                buildVer = "8.9.58.11170",
+                sdkVer = "6.0.0.2545",
                 miscBitMap = 150470524,
                 subSigMap = 0x10400,
                 mainSigMap = 34869344 or 192,
                 sign = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
-                buildTime = 1676531414L,
-                ssoVersion = 19,
+                buildTime = 1684467300L,
+                ssoVersion = 20,
                 appKey = "0S200MNJT807V3GE",
                 supportsQRLogin = false,
             )
-            //Updated from MiraiGo (2023/3/7)
+            //Updated from MiraiGo (2023/6/18)
             protocols[MiraiProtocol.ANDROID_PAD] = MiraiProtocolInternal(
                 apkId = "com.tencent.mobileqq",
-                id = 537151218,
-                ver = "8.9.33",
-                buildVer = "8.9.33.10335",
-                sdkVer = "6.0.0.2534",
+                id = 537161402,
+                ver = "8.9.58",
+                buildVer = "8.9.58.11170",
+                sdkVer = "6.0.0.2545",
                 miscBitMap = 150470524,
                 subSigMap = 0x10400,
-                mainSigMap = 16724722,
+                mainSigMap = 34869344 or 192,
                 sign = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D",
-                buildTime = 1673599898L,
-                ssoVersion = 19,
+                buildTime = 1684467300L,
+                ssoVersion = 20,
                 appKey = "0S200MNJT807V3GE",
                 supportsQRLogin = false,
             )
