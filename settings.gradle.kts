@@ -29,6 +29,10 @@ pluginManagement {
     }
 }
 
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.4.0"
+}
+
 rootProject.name = "mirai"
 
 runCatching { rootProject.projectDir.resolve("local.properties").let { if (!it.exists()) it.createNewFile() } }

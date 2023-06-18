@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -9,17 +9,17 @@
 
 package net.mamoe.mirai.spi
 
-import io.ktor.utils.io.errors.*
-import net.mamoe.mirai.utils.*
-import kotlin.coroutines.cancellation.CancellationException
+import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.runAutoClose
+import net.mamoe.mirai.utils.useAutoClose
+import net.mamoe.mirai.utils.withAutoClose
 import kotlin.jvm.JvmStatic
 
 /**
  * 将源音频文件转换为 silk v3 with tencent 格式
  *
  * @since 2.8.0
- */
-@MiraiExperimentalApi
+ */ // stable since 2.15
 public interface AudioToSilkService : BaseService {
     /**
      * implementation note:
@@ -35,24 +35,19 @@ public interface AudioToSilkService : BaseService {
      * @see [runAutoClose]
      * @see [useAutoClose]
      */
-    @Throws(IOException::class, CancellationException::class)
     public suspend fun convert(source: ExternalResource): ExternalResource
 
-    @MiraiExperimentalApi
-    public companion object : AudioToSilkService {
-        private val loader = SPIServiceLoader(object : AudioToSilkService {
-            override suspend fun convert(source: ExternalResource): ExternalResource = source
-        }, AudioToSilkService::class)
-
-        @Suppress("BlockingMethodInNonBlockingContext")
-        @Throws(IOException::class, CancellationException::class)
-        override suspend fun convert(source: ExternalResource): ExternalResource {
-            return loader.service.convert(source)
+    public companion object {
+        private val loader = SpiServiceLoader(AudioToSilkService::class) {
+            object : AudioToSilkService {
+                override suspend fun convert(source: ExternalResource): ExternalResource = source
+            }
         }
 
+        /**
+         * 获取当前实例
+         */
         @JvmStatic
-        public fun setService(service: AudioToSilkService) {
-            loader.service = service
-        }
+        public val instance: AudioToSilkService get() = loader.service
     }
 }

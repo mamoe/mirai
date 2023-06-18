@@ -307,6 +307,33 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
                 .forEach { pkg ->
                     pluginMainPackages.add(pkg)
                 }
+
+            zipFile.getEntry("META-INF/mirai-console-plugin/options.properties")?.let { optionsEntry ->
+                runCatching {
+                    val options = Properties()
+                    zipFile.getInputStream(optionsEntry).bufferedReader().use { reader ->
+                        options.load(reader)
+                    }
+
+                    openaccess.shouldBeResolvableToIndependent = options.prop(
+                        "class.loading.be-resolvable-to-independent", "true"
+                    ) { it.toBooleanStrict() }
+
+                    openaccess.shouldResolveIndependent = options.prop(
+                        "class.loading.resolve-independent", "true"
+                    ) { it.toBooleanStrict() }
+
+                    openaccess.shouldResolveConsoleSystemResource = options.prop(
+                        "resources.resolve-console-system-resources", "false"
+                    ) { it.toBooleanStrict() }
+
+                }.onFailure { err ->
+                    throw IllegalStateException(
+                        "Exception while reading META-INF/mirai-console-plugin/options.properties",
+                        err
+                    )
+                }
+            }
         }
         pluginSharedCL = DynLibClassLoader.newInstance(
             ctx.sharedLibrariesLoader, "SharedCL{${file.name}}", "${file.name}[shared]"
@@ -450,9 +477,17 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
                 return super.findClass(name)
             }
         } catch (error: ClassNotFoundException) {
+            if (!openaccess.shouldResolveIndependent) {
+                return ctx.consoleClassLoader.loadClass(name)
+            }
+
             // Finally, try search from other plugins and console system
             ctx.pluginClassLoaders.forEach { other ->
                 if (other !== this && other !in dependencies) {
+
+                    if (!other.openaccess.shouldBeResolvableToIndependent)
+                        return@forEach
+
                     other.resolvePluginPublicClass(name)?.let {
                         if (undefinedDependencies.add(other.file.name)) {
                             linkedLogger.warning { "Linked class $name in ${other.file.name} but plugin not depend on it." }
@@ -545,6 +580,8 @@ internal class JvmPluginClassLoaderN : URLClassLoader {
             get() = pluginIndependentCL
 
         override var shouldResolveConsoleSystemResource: Boolean = false
+        override var shouldBeResolvableToIndependent: Boolean = true
+        override var shouldResolveIndependent: Boolean = true
 
         private val permitted by lazy {
             arrayOf(
@@ -630,5 +667,21 @@ private fun <E> compoundEnumerations(iter: Iterator<Enumeration<E>>): Enumeratio
             }
             throw NoSuchElementException()
         }
+    }
+}
+
+private fun Properties.prop(key: String, def: String): String {
+    try {
+        return getProperty(key, def)
+    } catch (err: Throwable) {
+        throw IllegalStateException("Exception while reading `$key`", err)
+    }
+}
+
+private inline fun <T> Properties.prop(key: String, def: String, dec: (String) -> T): T {
+    try {
+        return getProperty(key, def).let(dec)
+    } catch (err: Throwable) {
+        throw IllegalStateException("Exception while reading `$key`", err)
     }
 }

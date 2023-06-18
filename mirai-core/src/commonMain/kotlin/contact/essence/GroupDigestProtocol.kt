@@ -60,9 +60,9 @@ internal data class DigestMessage(
     @SerialName("msg_content")
     val msgContent: List<JsonObject> = emptyList(),
     @SerialName("msg_random")
-    val msgRandom: Int = 0,
+    val msgRandom: Long = 0,
     @SerialName("msg_seq")
-    val msgSeq: Int = 0,
+    val msgSeq: Long = 0,
     @SerialName("sender_nick")
     val senderNick: String = "",
     @SerialName("sender_time")
@@ -108,7 +108,7 @@ internal suspend fun QQAndroidBot.getDigestList(
 }
 
 internal suspend fun QQAndroidBot.cancelDigest(
-    groupCode: Long, msgSeq: Int, msgRandom: Int
+    groupCode: Long, msgSeq: Long, msgRandom: Long
 ) {
     val data = components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/group_digest/cancel_digest")
@@ -133,7 +133,7 @@ internal suspend fun QQAndroidBot.cancelDigest(
 }
 
 internal suspend fun QQAndroidBot.shareDigest(
-    groupCode: Long, msgSeq: Int, msgRandom: Int, targetGroupCode: Long
+    groupCode: Long, msgSeq: Long, msgRandom: Long, targetGroupCode: Long
 ): DigestShare {
     return components[HttpClientProvider].getHttpClient().get {
         url("https://qun.qq.com/cgi-bin/group_digest/share_digest")

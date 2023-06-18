@@ -71,6 +71,7 @@ internal object WtLogin10 : WtLoginExt {
                     )
                     //t112(client.account.phoneNumber.encodeToByteArray())
                     t143(client.wLoginSigInfo.d2.data)
+                    t145(client.device.guid)
                     t142(client.apkId)
                     t154(sequenceId)
                     t18(appId, uin = client.uin)
@@ -84,7 +85,15 @@ internal object WtLogin10 : WtLoginExt {
                     t194(client.device.imsiMd5)
                     t511()
                     t202(client.device.wifiBSSID, client.device.wifiSSID)
-                    //t544()
+                    if (client.useAndroid) {
+                        t544ForToken(
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 10,
+                            commandStr = "810_a"
+                        )
+                    }
                 }
 
             }

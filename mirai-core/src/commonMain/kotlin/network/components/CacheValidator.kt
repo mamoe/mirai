@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.network.components
 
 import io.ktor.utils.io.core.*
-import net.mamoe.mirai.internal.network.ProtoBufForCache
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.io.writeShortLVString
@@ -61,7 +60,7 @@ internal class CacheValidatorImpl(
             val device = ssoProcessorContext.device
 
             @Suppress("INVISIBLE_MEMBER")
-            writeFully(ProtoBufForCache.encodeToByteArray(DeviceInfo.serializer(), device))
+            writeFully(device.serializeToString().encodeToByteArray())
         }.let { pkg ->
             try {
                 pkg.readBytes()
