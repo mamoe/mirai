@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.network.protocol.packet
 
 import io.ktor.utils.io.core.*
 import kotlinx.serialization.encodeToByteArray
+import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.components.EcdhInitialPublicKeyUpdater
 import net.mamoe.mirai.internal.network.protocol.data.proto.SSOReserveField
@@ -252,7 +253,7 @@ internal fun <R : Packet?> OutgoingPacketFactory<R>.buildLoginOutgoingPacket(
 
 private inline val BRP_STUB get() = ByteReadPacket.Empty
 
-internal fun createChannelProxy(client: QQAndroidClient): EncryptService.ChannelProxy {
+internal fun createChannelProxy(bot: QQAndroidBot): EncryptService.ChannelProxy {
     return object : EncryptService.ChannelProxy {
         override suspend fun sendMessage(
             remark: String,
@@ -261,6 +262,7 @@ internal fun createChannelProxy(client: QQAndroidClient): EncryptService.Channel
             data: ByteArray
         ): EncryptService.ChannelResult? {
             if (commandName.startsWith(TRpcRawPacket.COMMAND_PREFIX)) {
+                val client = bot.client
                 val packet = client.bot.network.sendAndExpect(
                     TRpcRawPacket.buildLoginOutgoingPacket(
                         client = client,
@@ -322,7 +324,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
         val signResult = encryptWorker?.qSecurityGetSign(
             EncryptServiceContext(client.uin, buildTypeSafeMap {
                 set(EncryptServiceContext.KEY_APP_QUA, "V1_AND_SQ_8.9.58_4106_YYB_D") // 8.9.58
-                set(EncryptServiceContext.KEY_CHANNEL_PROXY, createChannelProxy(client))
+                set(EncryptServiceContext.KEY_CHANNEL_PROXY, createChannelProxy(client.bot))
             }),
             sequenceId,
             commandName,

@@ -31,6 +31,7 @@ public class EncryptServiceContext @MiraiInternalApi constructor(
         public val KEY_BOT_PROTOCOL: TypeKey<BotConfiguration.MiraiProtocol> = TypeKey("BOT_PROTOCOL")
         public val KEY_APP_QUA: TypeKey<String> = TypeKey("KEY_APP_QUA")
         public val KEY_CHANNEL_PROXY: TypeKey<EncryptService.ChannelProxy> = TypeKey("KEY_CHANNEL_PROXY")
+        public val KEY_DEVICE_INFO: TypeKey<DeviceInfo> = TypeKey("KEY_DEVICE_INFO")
     }
 }
 
