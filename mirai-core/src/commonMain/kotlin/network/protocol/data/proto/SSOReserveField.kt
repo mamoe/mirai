@@ -17,46 +17,46 @@ import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
 internal class SSOReserveField {
     @Serializable
     internal class ReserveFields(
-        @JvmField @ProtoNumber(1) val client_ipcookie: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(2) val flag: Int = 0,
-        @JvmField @ProtoNumber(3) val env_id: Int = 0,
-        @JvmField @ProtoNumber(4) val locale_id: Int = 0,
-        @JvmField @ProtoNumber(5) val qimei: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(6) val env: String = "",
-        @JvmField @ProtoNumber(7) val newconn_flag: Int = 0,
-        @JvmField @ProtoNumber(8) val trace_parent: String = "",
-        @JvmField @ProtoNumber(9) val uid: String = "",
-        @JvmField @ProtoNumber(10) val imsi: Int = 0,
-        @JvmField @ProtoNumber(11) val network_type: Int = 0,
-        @JvmField @ProtoNumber(12) val ip_stack_type: Int = 0,
-        @JvmField @ProtoNumber(13) val message_type: Int = 0,
-        @JvmField @ProtoNumber(14) val trpc_rsp: SsoTrpcResponse? = null,
-        @JvmField @ProtoNumber(15) val trans_info: List<SsoMapEntry>? = null,
-        @JvmField @ProtoNumber(16) val sec_info: SsoSecureInfo? = null,
-        @JvmField @ProtoNumber(17) val sec_sig_flag: Int = 0,
-        @JvmField @ProtoNumber(18) val nt_core_version: Int = 0,
-        @JvmField @ProtoNumber(19) val sso_route_cost: Int = 0,
-        @JvmField @ProtoNumber(20) val sso_ip_origin: Int = 0,
-        @JvmField @ProtoNumber(21) val presure_token: ByteArray = EMPTY_BYTE_ARRAY,
-    ) : ProtoBuf
-
-    @Serializable
-    internal class SsoSecureInfo(
-        @JvmField @ProtoNumber(1) val sec_sig: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(2) val sec_device_token: ByteArray = EMPTY_BYTE_ARRAY,
-        @JvmField @ProtoNumber(3) val sec_extra: ByteArray = EMPTY_BYTE_ARRAY,
-    ) : ProtoBuf
-
-    @Serializable
-    internal class SsoTrpcResponse(
-        @JvmField @ProtoNumber(1) val ret: Int = 0,
-        @JvmField @ProtoNumber(2) val func_ret: Int = 0,
-        @JvmField @ProtoNumber(3) val error_msg: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(8) @JvmField val clientIpcookie: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(9) @JvmField val flag: Int = 0,
+        @ProtoNumber(10) @JvmField val envId: Int = 0,
+        @ProtoNumber(11) @JvmField val localeId: Int = 2052,
+        @ProtoNumber(12) @JvmField val qimei: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(13) @JvmField val env: String = "",
+        @ProtoNumber(14) @JvmField val newconnFlag: Int = 0,
+        @ProtoNumber(15) @JvmField val traceParent: String = "",
+        @ProtoNumber(16) @JvmField val uid: String = "",
+        @ProtoNumber(18) @JvmField val imsi: Int = 0,
+        @ProtoNumber(19) @JvmField val networkType: Int = 0,
+        @ProtoNumber(20) @JvmField val ipStackType: Int = 0,
+        @ProtoNumber(21) @JvmField val messageType: Int = 0,
+        @ProtoNumber(22) @JvmField val trpcRsp: SsoTrpcResponse? = null,
+        @ProtoNumber(23) @JvmField val transInfo: List<SsoMapEntry> = emptyList(),
+        @ProtoNumber(24) @JvmField val secInfo: SsoSecureInfo? = null,
+        @ProtoNumber(25) @JvmField val secSigFlag: Int = 0,
+        @ProtoNumber(26) @JvmField val ntCoreVersion: Int = 0,
+        @ProtoNumber(27) @JvmField val ssoRouteCost: Int = 0,
+        @ProtoNumber(28) @JvmField val ssoIpOrigin: Int = 0,
+        @ProtoNumber(30) @JvmField val presureToken: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class SsoMapEntry(
-        @JvmField @ProtoNumber(1) val key: String = "",
-        @JvmField @ProtoNumber(2) val value: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(1) @JvmField val key: String = "",
+        @ProtoNumber(2) @JvmField val value: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    internal class SsoSecureInfo(
+        @ProtoNumber(1) @JvmField val secSig: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(2) @JvmField val secDeviceToken: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(3) @JvmField val secExtra: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    internal class SsoTrpcResponse(
+        @ProtoNumber(1) @JvmField val ret: Int = 0,
+        @ProtoNumber(2) @JvmField val funcRet: Int = 0,
+        @ProtoNumber(3) @JvmField val errorMsg: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 }
