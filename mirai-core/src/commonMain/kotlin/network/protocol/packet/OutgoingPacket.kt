@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.sso.TRpcRawPacket
 import net.mamoe.mirai.internal.spi.EncryptService
 import net.mamoe.mirai.internal.spi.EncryptServiceContext
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
+import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.internal.utils.io.writeHex
 import net.mamoe.mirai.internal.utils.io.writeIntLVPacket
 import net.mamoe.mirai.utils.*
@@ -130,15 +131,66 @@ internal fun <R : Packet?> buildRawUniPacket(
                 writeInt(it.length + 4)
                 writeText(it)
             }
+            val encryptWorker = EncryptService.instance
+            val bodyBytes = buildPacket { body(sequenceId) }.readBytes()
+            val signDataPacket = if (encryptWorker != null) {
 
+                val signResult = encryptWorker.qSecurityGetSign(
+                    EncryptServiceContext(client.uin, buildTypeSafeMap {
+                        set(EncryptServiceContext.KEY_APP_QUA, "V1_AND_SQ_8.9.58_4106_YYB_D") // 8.9.58
+                        set(EncryptServiceContext.KEY_CHANNEL_PROXY, createChannelProxy(client.bot))
+                        set(EncryptServiceContext.KEY_DEVICE_INFO, client.device)
+                        set(EncryptServiceContext.KEY_QIMEI36, client.qimei36 ?: "")
+                    }),
+                    sequenceId,
+                    commandName,
+                    bodyBytes
+                )
+                if (signResult != null)
+                    buildPacket {
+                        writeProtoBuf(
+                            SSOReserveField.ReserveFields.serializer(),
+                            SSOReserveField.ReserveFields(
+                                flag = 0,
+                                qimei = client.qimei16?.toByteArray() ?: EMPTY_BYTE_ARRAY,
+                                newconnFlag = 0,
+                                uid = client.uin.toString(),
+                                imsi = 0,
+                                networkType = 1,
+                                ipStackType = 1,
+                                messageType = 0,
+                                secInfo = SSOReserveField.SsoSecureInfo(
+                                    secSig = signResult.sign,
+                                    secDeviceToken = signResult.token,
+                                    secExtra = signResult.extra
+                                ),
+                                ssoIpOrigin = 0,
+                            )
+                        )
+                    } else BRP_STUB
+            } else BRP_STUB
+
+            if (signDataPacket != BRP_STUB && (extraData != BRP_STUB && extraData.remaining != 0L)) {
+                throw IllegalStateException("$commandName cmd needs sign but has extraData!")
+            }
             if (encryptMethod === PacketEncryptType.NoEncrypt) {
-                writeUniPacket(commandName, client.outgoingPacketSessionId, extraData) {
-                    body(sequenceId)
+                writeUniPacket(
+                    commandName,
+                    client.outgoingPacketSessionId,
+                    signDataPacket,
+                    (client.qimei16?.encodeToByteArray() ?: EMPTY_BYTE_ARRAY)
+                ) {
+                    writeFully(bodyBytes)
                 }
             } else {
                 encryptAndWrite(key) {
-                    writeUniPacket(commandName, client.outgoingPacketSessionId, extraData) {
-                        body(sequenceId)
+                    writeUniPacket(
+                        commandName,
+                        client.outgoingPacketSessionId,
+                        signDataPacket,
+                        (client.qimei16?.encodeToByteArray() ?: EMPTY_BYTE_ARRAY)
+                    ) {
+                        writeFully(bodyBytes)
                     }
                 }
             }
@@ -183,8 +235,9 @@ internal inline fun <R : Packet?> IncomingPacketFactory<R>.buildResponseUniPacke
 
 private inline fun BytePacketBuilder.writeUniPacket(
     commandName: String,
-    unknownData: ByteArray,
+    outgoingPacketSessionId: ByteArray,
     extraData: ByteReadPacket = BRP_STUB,
+    qimei16: ByteArray = EMPTY_BYTE_ARRAY,
     crossinline body: BytePacketBuilder.() -> Unit
 ) {
     writeIntLVPacket(lengthOffset = { it + 4 }) {
@@ -193,8 +246,8 @@ private inline fun BytePacketBuilder.writeUniPacket(
             writeText(it)
         }
 
-        writeInt(4 + 4)
-        writeFully(unknownData) //  02 B0 5B 8B
+        writeInt(outgoingPacketSessionId.size + 4)
+        writeFully(outgoingPacketSessionId) //  02 B0 5B 8B
 
         if (extraData === BRP_STUB) {
             writeInt(0x04)
@@ -202,6 +255,9 @@ private inline fun BytePacketBuilder.writeUniPacket(
             writeInt((extraData.remaining + 4).toInt())
             writePacket(extraData)
         }
+
+        writeInt(qimei16.size + 4)
+        writeFully(qimei16)
     }
 
     // body
