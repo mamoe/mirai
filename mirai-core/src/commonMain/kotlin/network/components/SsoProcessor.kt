@@ -200,13 +200,15 @@ internal open class SsoProcessorImpl(
 
             components[CacheValidator].validate()
             components[BdhSessionSyncer].loadServerListFromCache()
-            components[EcdhInitialPublicKeyUpdater].initializeSsoSecureEcdh()
 
             try {
                 ssoContext.bot.requestQimei(qimeiLogger)
             } catch (exception: Throwable) {
                 qimeiLogger.warning("Cannot get qimei from server.", exception)
             }
+
+            // trpc ecdh service needs qimei to init
+            components[EcdhInitialPublicKeyUpdater].initializeSsoSecureEcdh()
 
             // try fast login
             if (client.wLoginSigInfoInitialized) {
