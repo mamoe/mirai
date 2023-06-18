@@ -16,11 +16,13 @@ import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.components.PacketCodec.Companion.PacketLogger
 import net.mamoe.mirai.internal.network.components.PacketCodecException.Kind.*
 import net.mamoe.mirai.internal.network.handler.selector.NetworkException
+import net.mamoe.mirai.internal.network.protocol.data.proto.SSOReserveField
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.protocol.packet.sso.TRpcRawPacket
 import net.mamoe.mirai.internal.utils.crypto.Ecdh
 import net.mamoe.mirai.internal.utils.crypto.TEA
+import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.utils.*
 
 
@@ -266,7 +268,15 @@ internal class PacketCodecImpl : PacketCodec {
                 if (PacketLogger.isEnabled) {
                     val extraData = readBytes(readInt() - 4)
                     if (extraData.isNotEmpty()) {
-                        PacketLogger.verbose { "(sso/inner)extraData = ${extraData.toUHexString()}" }
+                        PacketLogger.verbose {
+                            "(sso/inner)extraData = ${extraData.toUHexString()}, result= ${
+                                kotlin.runCatching {
+                                    readProtoBuf(
+                                        SSOReserveField.ReserveFields.serializer()
+                                    ).structureToString()
+                                }.getOrElse { e -> "error: " + e.message }
+                            }"
+                        }
                     }
                 } else {
                     discardExact(readInt() - 4)
