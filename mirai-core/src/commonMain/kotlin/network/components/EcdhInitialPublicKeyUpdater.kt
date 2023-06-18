@@ -120,7 +120,9 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
         }
 
         encryptWorker.initialize(EncryptServiceContext(bot.id, buildTypeSafeMap {
-            set(EncryptServiceContext.KEY_CHANNEL_PROXY, createChannelProxy(bot.client))
+            set(EncryptServiceContext.KEY_CHANNEL_PROXY, createChannelProxy(bot))
+            set(EncryptServiceContext.KEY_DEVICE_INFO, bot.client.device)
+            set(EncryptServiceContext.KEY_BOT_PROTOCOL, bot.configuration.protocol)
         }))
     }
 
