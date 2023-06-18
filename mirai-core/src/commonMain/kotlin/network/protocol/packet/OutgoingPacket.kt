@@ -325,6 +325,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
             EncryptServiceContext(client.uin, buildTypeSafeMap {
                 set(EncryptServiceContext.KEY_APP_QUA, "V1_AND_SQ_8.9.58_4106_YYB_D") // 8.9.58
                 set(EncryptServiceContext.KEY_CHANNEL_PROXY, createChannelProxy(client.bot))
+                set(EncryptServiceContext.KEY_QIMEI36, client.qimei36 ?: "")
             }),
             sequenceId,
             commandName,

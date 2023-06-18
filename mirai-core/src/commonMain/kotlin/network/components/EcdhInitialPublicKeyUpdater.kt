@@ -123,6 +123,7 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
             set(EncryptServiceContext.KEY_CHANNEL_PROXY, createChannelProxy(bot))
             set(EncryptServiceContext.KEY_DEVICE_INFO, bot.client.device)
             set(EncryptServiceContext.KEY_BOT_PROTOCOL, bot.configuration.protocol)
+            set(EncryptServiceContext.KEY_QIMEI36, bot.client.qimei36 ?: "")
         }))
     }
 
