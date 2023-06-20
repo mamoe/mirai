@@ -26,7 +26,7 @@ internal abstract class AbstractBotAuthTest : AbstractCommonNHTestWithSelector()
         overrideComponents[SsoProcessor] = SsoProcessorImpl(overrideComponents[SsoProcessorContext])
     }
 
-    protected fun setAuthorization(authorize: (session: BotAuthSession, info: BotAuthInfo) -> BotAuthResult) {
+    protected fun setAuthorization(authorize: suspend (session: BotAuthSession, info: BotAuthInfo) -> BotAuthResult) {
         // Run a real SsoProcessor, just without sending packets
         bot.account.authorization = object : BotAuthorization {
             override suspend fun authorize(session: BotAuthSession, info: BotAuthInfo): BotAuthResult {

@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.auth.AuthReason
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
@@ -141,14 +142,18 @@ internal open class QQAndroidBot constructor(
                     cause is ForceOfflineException -> {
                         eventDispatcher.broadcastAsync(BotOfflineEvent.Force(bot, cause.title, cause.message))
                     }
+
                     cause is StatSvc.ReqMSFOffline.MsfOfflineToken -> {
                         eventDispatcher.broadcastAsync(BotOfflineEvent.MsfOffline(bot, cause))
                     }
+
                     cause is NetworkException && cause.recoverable -> {
                         eventDispatcher.broadcastAsync(BotOfflineEvent.Dropped(bot, cause))
                     }
+
                     cause is BotClosedByEvent -> {
                     }
+
                     else -> {
                         // any other unexpected exceptions considered as an error
 
@@ -165,6 +170,17 @@ internal open class QQAndroidBot constructor(
                     }
                 }
             },
+            StateChangedObserver("ReLoginCauseCatcher", State.OK, State.CLOSED) { new ->
+                get(SsoProcessor).authReason = when (val cause = new.getCause()) {
+                    is ForceOfflineException -> AuthReason.ForceOffline(bot, cause.message)
+                    is StatSvc.ReqMSFOffline.MsfOfflineToken -> AuthReason.MsfOffline(bot, cause.message)
+                    is NetworkException -> AuthReason.NetworkError(bot, cause.message)
+                    else -> AuthReason.Unknown(bot, cause)
+                }
+            },
+            StateChangedObserver("FirstLoginObserver", State.OK) {
+                get(SsoProcessor).isFirstLogin = false
+            }
         ).safe(logger.subLogger("StateObserver")) + LoggingStateObserver.createLoggingIfEnabled()
     }
 
