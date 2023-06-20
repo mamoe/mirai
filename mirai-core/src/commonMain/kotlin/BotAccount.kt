@@ -17,8 +17,13 @@ import net.mamoe.mirai.utils.TestOnly
 
 internal class BotAccount(
     internal val id: Long,
-    val authorization: BotAuthorization,
+    authorization: BotAuthorization,
 ) {
+    var authorization: BotAuthorization = authorization
+        // FIXME: Making this mutable is very bad. 
+        //  But I had to do this because the current test framework is bad, and I don't have time to do a major rewrite. 
+        @TestOnly set
+
     @TestOnly // to be compatible with your local tests :)
     constructor(
         id: Long, pwd: String

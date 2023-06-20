@@ -21,24 +21,78 @@ import java.util.*
 
 object BuildSrcRootProjectHolder {
     lateinit var value: Project
+    var lastUpdateTime: Long = 0
 }
 
 val rootProject: Project get() = BuildSrcRootProjectHolder.value
 
+fun <T> projectLazy(action: () -> T): Lazy<T> {
+    val projLazy = object : Lazy<T> {
+        private lateinit var delegate: Lazy<T>
+        private var holdTime: Long = -1
+
+        override val value: T
+            get() {
+                if (holdTime != BuildSrcRootProjectHolder.lastUpdateTime) {
+                    synchronized(this) {
+                        if (holdTime != BuildSrcRootProjectHolder.lastUpdateTime) {
+                            delegate = lazy(action)
+                            holdTime = BuildSrcRootProjectHolder.lastUpdateTime
+                        }
+                    }
+                }
+                return delegate.value
+            }
+
+        override fun isInitialized(): Boolean {
+            if (!::delegate.isInitialized) return false
+
+            if (holdTime == BuildSrcRootProjectHolder.lastUpdateTime) {
+                return delegate.isInitialized()
+            }
+            return false
+        }
+    }
+    return projLazy
+}
+
 
 private lateinit var localProperties: Properties
+private var localPropertiesEdition: Long = 0
 
-private fun Project.loadLocalPropertiesIfAbsent() {
-    if (::localProperties.isInitialized) return
+private fun Project.loadLocalPropertiesIfNecessary() {
+    val theFile = rootProject.projectDir.resolve("local.properties")
+
+    fun isNecessary(): Boolean {
+        if (!::localProperties.isInitialized) return true
+
+        if (theFile.exists()) {
+            if (localPropertiesEdition != theFile.lastModified()) {
+                return true
+            }
+        } else {
+            if (localPropertiesEdition != 0L) { // deleted
+                return true
+            }
+        }
+
+        return false
+    }
+
+    if (!isNecessary()) return
+
     localProperties = Properties().apply {
-        rootProject.projectDir.resolve("local.properties").takeIf { it.exists() }?.bufferedReader()?.use {
-            load(it)
+        localPropertiesEdition = if (theFile.exists()) {
+            theFile.bufferedReader().use { load(it) }
+            theFile.lastModified()
+        } else {
+            0
         }
     }
 }
 
 fun Project.getLocalProperty(name: String): String? {
-    loadLocalPropertiesIfAbsent()
+    loadLocalPropertiesIfNecessary()
     return localProperties.getProperty(name)
 }
 

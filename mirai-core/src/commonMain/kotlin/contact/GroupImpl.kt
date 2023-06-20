@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -19,6 +19,7 @@ import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
+import net.mamoe.mirai.contact.essence.Essences
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.data.GroupHonorType
@@ -29,6 +30,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.active.GroupActiveImpl
 import net.mamoe.mirai.internal.contact.announcement.AnnouncementsImpl
+import net.mamoe.mirai.internal.contact.essence.EssencesImpl
 import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplGroup
@@ -309,7 +311,7 @@ internal abstract class CommonGroupImpl constructor(
     @Deprecated("use uploadAudio", replaceWith = ReplaceWith("uploadAudio(resource)"), level = DeprecationLevel.HIDDEN)
     @Suppress("OverridingDeprecatedMember", "DEPRECATION", "DEPRECATION_ERROR")
     override suspend fun uploadVoice(resource: ExternalResource): net.mamoe.mirai.message.data.Voice =
-        AudioToSilkService.convert(
+        AudioToSilkService.instance.convert(
             resource
         ).useAutoClose { res ->
             return bot.network.run {
@@ -357,7 +359,7 @@ internal abstract class CommonGroupImpl constructor(
         }.getOrThrow()
     }
 
-    override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio = AudioToSilkService.convert(
+    override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio = AudioToSilkService.instance.convert(
         resource
     ).useAutoClose { res ->
         return bot.network.run {
@@ -392,6 +394,27 @@ internal abstract class CommonGroupImpl constructor(
     }
 
     override val roamingMessages: RoamingMessages by lazy { RoamingMessagesImplGroup(this) }
+
+    // 鉴于在 [essences] 中 有相同的功能的 Web API 所以此方法移除
+//    override suspend fun removeEssenceMessage(source: MessageSource): Boolean {
+//        checkBotPermission(MemberPermission.ADMINISTRATOR)
+//        val result = bot.network.sendAndExpect(
+//            TroopEssenceMsgManager.RemoveEssence(
+//                bot.client,
+//                this@CommonGroupImpl.uin,
+//                source.internalIds.first(),
+//                source.ids.first()
+//            ), 5000, 2
+//        )
+//        return result.success
+//    }
+
+    override val essences: Essences by lazy {
+        EssencesImpl(
+            this as GroupImpl,
+            bot.network.logger.subLogger("Group $id"),
+        )
+    }
 
     override fun toString(): String = "Group($id)"
 }

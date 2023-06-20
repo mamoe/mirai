@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -29,8 +29,13 @@ pluginManagement {
     }
 }
 
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.4.0"
+}
+
 rootProject.name = "mirai"
 
+runCatching { rootProject.projectDir.resolve("local.properties").let { if (!it.exists()) it.createNewFile() } }
 
 val localProperties = Properties().apply {
     rootProject.projectDir.resolve("local.properties").takeIf { it.exists() }?.bufferedReader()?.use {
@@ -112,7 +117,8 @@ fun includeBinaryCompatibilityValidatorProjects() {
         if (!validationDir.exists()) continue
         validationDir.listFiles().orEmpty<File>().forEach { dir ->
             if (dir.resolve("build.gradle.kts").isFile) {
-                val path = ":validator" + project.path + ":${dir.name}"
+                // Also change: BinaryCompatibilityConfigurator.getValidatorDir
+                val path = ":validator" + project.path + "-validator:${dir.name}"
                 include(path)
                 project(path).projectDir = dir
 //            project(path).name = "${project.name}-validator-${dir.name}"
@@ -163,8 +169,6 @@ fun includeConsoleIntegrationTestProjects() {
         .filter { it.isDirectory }
         .forEach { includeConsoleITPlugin(":mirai-console.integration-test:", it) }
 }
-
-
 
 
 fun getLocalProperty(name: String): String? {

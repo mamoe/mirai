@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -52,7 +52,8 @@ object BinaryCompatibilityConfigurator {
         }
     }
 
-    private fun Project.getValidatorDir(dir: File) = ":validator" + project.path + ":${dir.name}"
+    // Also change: settings.gradle.kts:116
+    private fun Project.getValidatorDir(dir: File) = ":validator" + project.path + "-validator:${dir.name}"
 
     private fun File.writeTextIfNeeded(text: String) {
         if (!this.exists()) return this.writeText(text)
@@ -67,7 +68,10 @@ object BinaryCompatibilityConfigurator {
         dir.resolve("build.gradle.kts").writeTextIfNeeded(
             applyTemplate(
                 project.path,
-                if (targetName == null) "classes/kotlin/main" else "classes/kotlin/$targetName/main"
+                listOfNotNull(
+                    if (targetName == null) "classes/kotlin/main" else "classes/kotlin/$targetName/main",
+                    if (targetName?.contains("android") == true) "tmp/kotlin-classes/debug" else ""
+                )
             )
         )
         dir.resolve(".gitignore").writeTextIfNeeded(
@@ -79,21 +83,32 @@ object BinaryCompatibilityConfigurator {
             findProject(getValidatorDir(dir))
                 ?.afterEvaluate {
                     if (targetName == null) {
-                        tasks.findByName("apiBuild")?.dependsOn(project.tasks.getByName("jar"))
+                        tasks.findByName("apiBuild")?.dependsOn(
+                            *listOfNotNull(
+                                project.tasks.getByName("jar"),
+                                project.tasks.findByName("compileDebugKotlinAndroid")
+                            ).toTypedArray()
+                        )
                     } else {
-                        tasks.findByName("apiBuild")?.dependsOn(project.tasks.getByName("${targetName}Jar"))
+                        tasks.findByName("apiBuild")?.dependsOn(
+                            if (targetName.contains("android") && ENABLE_ANDROID_INSTRUMENTED_TESTS) {
+                                project.tasks.getByName("bundleDebugAar")
+                            } else {
+                                project.tasks.getByName("${targetName}Jar")
+                            }
+                        )
                     }
                 }
         }
     }
 
-    fun applyTemplate(projectPath: String, buildDir: String): String {
+    fun applyTemplate(projectPath: String, buildDirs: List<String>): String {
         return this::class.java.classLoader
             .getResourceAsStream("binary-compatibility-validator-build.txt")!!
             .useToRun { readBytes() }
             .decodeToString()
             .replace("$\$PROJECT_PATH$$", projectPath)
-            .replace("$\$BUILD_DIR$$", buildDir)
+            .replace("$\$BUILD_DIR$$", buildDirs.joinToString("\n"))
             .replace("$\$PLUGIN_VERSION$$", Versions.binaryValidator)
     }
 }

@@ -32,6 +32,7 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
     /**
      * 这个 [PluginData] 保存时使用的名称.
      */
+    @ConsoleExperimentalApi
     public abstract override val saveName: String
 
     /**
@@ -66,6 +67,7 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
     /**
      * 使用 `by value()` 时自动调用此方法, 添加对 [Value] 的值修改的跟踪, 并创建 [ValueNode] 加入 [valueNodes]
      */
+    @OptIn(ConsoleExperimentalApi::class)
     public operator fun <T : SerializerAwareValue<*>> T.provideDelegate(
         thisRef: Any?,
         property: KProperty<*>,

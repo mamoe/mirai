@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -18,9 +18,6 @@ import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
-import kotlin.native.CName
 
 /**
  * 闪照. 闪照的内容取决于 [image] 代表的图片.
@@ -42,6 +39,7 @@ import kotlin.native.CName
  *
  * @see Image 查看图片相关信息
  */
+@OptIn(MiraiExperimentalApi::class)
 @Serializable
 @SerialName(FlashImage.SERIAL_NAME)
 public data class FlashImage(
@@ -96,7 +94,6 @@ public data class FlashImage(
  * 将普通图片转换为闪照.
  */
 @JvmSynthetic
-@CName("", "FlashImage_new")
 public inline fun FlashImage(imageId: String): FlashImage = FlashImage.from(imageId)
 
 /**

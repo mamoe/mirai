@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -165,6 +165,7 @@ public data class ForwardMessage(
     /**
      * 消息节点
      */
+    @OptIn(MiraiExperimentalApi::class)
     @Serializable
     public data class Node(
         /**
@@ -394,6 +395,7 @@ public annotation class ForwardMessageDsl
  *
  * `S named "name1" named "name2" says M` 最终的发送人名称为 `"name2"`
  */
+@OptIn(MiraiExperimentalApi::class)
 public class ForwardMessageBuilder private constructor(
     /**
      * 消息语境. 可为 [Group] 或 [User]. 用来确定某 ID 的用户的昵称.
@@ -769,6 +771,7 @@ public class ForwardMessageBuilder private constructor(
     }
 }
 
+@OptIn(MiraiExperimentalApi::class)
 private fun ForwardMessage.INode.toNode(): ForwardMessage.Node {
     return ForwardMessage.Node(senderId, time, senderName, messageChain)
 }

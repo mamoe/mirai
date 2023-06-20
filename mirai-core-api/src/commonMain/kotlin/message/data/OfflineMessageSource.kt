@@ -37,7 +37,7 @@ public abstract class OfflineMessageSource : MessageSource() {
     /**
      * 消息种类
      */
-    public abstract val kind: MessageSourceKind
+    public abstract override val kind: MessageSourceKind
 
     final override fun toString(): String {
         return "[mirai:source:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, from $fromId to $targetId at $time]"

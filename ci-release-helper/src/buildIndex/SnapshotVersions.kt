@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -20,7 +20,8 @@ import kotlinx.serialization.json.Json
 object GetNextSnapshotIndex {
     @JvmStatic
     fun main(args: Array<String>) {
-        val branch = args.getOrNull(0) ?: error("Missing branch argument")
+        val branch = args.getOrNull(0)?.replace(Regex("""[/\\.,`~!@#$%^&*(){}\[\]|;]"""), "-")
+            ?: error("Missing branch argument")
         val commitRef = args.getOrNull(1) ?: error("Missing commitRef argument")
 
 
@@ -40,7 +41,7 @@ object GetNextSnapshotIndex {
                 }
                 println()
 
-                println("<SNAPSHOT_VERSION_START>${index.value}<SNAPSHOT_VERSION_END>")
+                println("<SNAPSHOT_VERSION_START>$branch-${index.value}<SNAPSHOT_VERSION_END>")
             }
         }
     }
@@ -52,13 +53,14 @@ suspend fun HttpClient.getExistingIndex(
     commitRef: String,
 ): Index? {
     // https://build.mirai.mamoe.net/v1/mirai-core/dev/indexes/?commitRef=29121565132bed6e996f3de32faaf49106ae8e39
-    val resp = get("https://build.mirai.mamoe.net/v1/$module/$branch/indexes/") {
-        basicAuth(
-            System.getenv("mirai.build.index.auth.username"),
-            System.getenv("mirai.build.index.auth.password")
-        )
-        parameter("commitRef", commitRef)
-    }
+    val resp =
+        get("https://build.mirai.mamoe.net/v1/${module.encodeURLPathPart()}/${branch.encodeURLPathPart()}/indexes/") {
+            basicAuth(
+                System.getenv("mirai.build.index.auth.username"),
+                System.getenv("mirai.build.index.auth.password")
+            )
+            parameter("commitRef", commitRef)
+        }
     if (!resp.status.isSuccess()) {
         val body = runCatching { resp.bodyAsText() }.getOrNull()
         throw IllegalStateException("Request failed: ${resp.status}  $body")
@@ -74,7 +76,7 @@ suspend fun HttpClient.createBranch(
     branch: String,
 ): Boolean {
     // https://build.mirai.mamoe.net/v1/mirai-core/dev/indexes/?commitRef=29121565132bed6e996f3de32faaf49106ae8e39
-    val resp = put("https://build.mirai.mamoe.net/v1/$module/$branch") {
+    val resp = put("https://build.mirai.mamoe.net/v1/${module.encodeURLPathPart()}/${branch.encodeURLPathPart()}") {
         basicAuth(
             System.getenv("mirai.build.index.auth.username"),
             System.getenv("mirai.build.index.auth.password")
@@ -88,13 +90,14 @@ suspend fun HttpClient.postNextIndex(
     branch: String,
     commitRef: String,
 ): Index {
-    val resp = post("https://build.mirai.mamoe.net/v1/$module/$branch/indexes/next") {
-        basicAuth(
-            System.getenv("mirai.build.index.auth.username"),
-            System.getenv("mirai.build.index.auth.password")
-        )
-        parameter("commitRef", commitRef)
-    }
+    val resp =
+        post("https://build.mirai.mamoe.net/v1/${module.encodeURLPathPart()}/${branch.encodeURLPathPart()}/indexes/next") {
+            basicAuth(
+                System.getenv("mirai.build.index.auth.username"),
+                System.getenv("mirai.build.index.auth.password")
+            )
+            parameter("commitRef", commitRef)
+        }
     if (!resp.status.isSuccess()) {
         val body = runCatching { resp.bodyAsText() }.getOrNull()
         throw IllegalStateException("Request failed: ${resp.status}  $body")

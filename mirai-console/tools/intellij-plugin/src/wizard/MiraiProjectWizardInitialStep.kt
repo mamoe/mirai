@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -39,6 +39,7 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
     private val pluginInfoProperty = propertyGraph.lazyProperty { "" }
     private val miraiVersionKindProperty = propertyGraph.property(MiraiVersionKind.Stable)
     private val miraiVersionProperty = propertyGraph.property("0.1.0")
+    private val useProxyRepoProperty = propertyGraph.property(true)
 
     var pluginVersion by pluginVersionProperty.trim()
     var pluginName by pluginNameProperty.trim()
@@ -53,6 +54,8 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
     var kotlinStdlibVersion = Versions.KOTLIN.text
 
     private lateinit var miraiVersionCell: Cell<ComboBox<String>>
+
+    var useProxyRepo by useProxyRepoProperty
 
     override fun addFieldsAfter(layout: Panel) {
         layout.group(message("title.plugin.description")) {
@@ -141,6 +144,9 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                 updateVersionItems(miraiVersionKindCell, miraiVersionCell)
                 rowComment(message("comment.mirai.version"))
             }
+            row {
+                checkBox(message("text.use.proxy.repo")).enabled(true).bindSelected(useProxyRepoProperty)
+            }
         }
 
         // Update default values
@@ -181,7 +187,8 @@ class MiraiProjectWizardInitialStep(contextProvider: StarterContextProvider) : S
                     KOTLIN_STARTER_LANGUAGE -> LanguageType.Kotlin
                     JAVA_STARTER_LANGUAGE -> LanguageType.Java
                     else -> error("Unsupported language type: $language")
-                }
+                },
+                useProxyRepo = useProxyRepo
             )
         )
     }

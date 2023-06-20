@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -32,7 +32,10 @@ public class ContactList<out C : Contact>
     /**
      * 获取一个 [Contact.id] 为 [id] 的元素. 在不存在时返回 `null`.
      */
-    public operator fun get(id: Long): C? = delegate.firstOrNull { it.id == id }
+    public operator fun get(id: Long): C? {
+        @OptIn(MiraiInternalApi::class)
+        return delegate.firstOrNull { it.id == id }
+    }
 
     /**
      * 获取一个 [Contact.id] 为 [id] 的元素. 在不存在时抛出 [NoSuchElementException].
@@ -42,14 +45,28 @@ public class ContactList<out C : Contact>
     /**
      * 删除 [Contact.id] 为 [id] 的元素.
      */
-    public fun remove(id: Long): Boolean = delegate.removeAll { it.id == id }
+    public fun remove(id: Long): Boolean {
+        @OptIn(MiraiInternalApi::class)
+        return delegate.removeAll { it.id == id }
+    }
 
     /**
      * 当存在 [Contact.id] 为 [id] 的元素时返回 `true`.
      */
     public operator fun contains(id: Long): Boolean = get(id) != null
 
-    override fun toString(): String = delegate.joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
-    override fun equals(other: Any?): Boolean = other is ContactList<*> && delegate == other.delegate
-    override fun hashCode(): Int = delegate.hashCode()
+    override fun toString(): String {
+        @OptIn(MiraiInternalApi::class)
+        return delegate.joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
+    }
+
+    override fun equals(other: Any?): Boolean {
+        @OptIn(MiraiInternalApi::class)
+        return other is ContactList<*> && delegate == other.delegate
+    }
+
+    override fun hashCode(): Int {
+        @OptIn(MiraiInternalApi::class)
+        return delegate.hashCode()
+    }
 }

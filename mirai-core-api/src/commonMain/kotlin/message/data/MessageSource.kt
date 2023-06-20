@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -22,7 +22,10 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.PermissionDeniedException
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.message.MessageReceipt
@@ -207,6 +210,13 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      */
     public abstract val isOriginalMessageInitialized: Boolean
 
+    /**
+     * 消息种类
+     *
+     * @since 2.15
+     */
+    public abstract val kind: MessageSourceKind
+
     public abstract override fun toString(): String
 
     @MiraiInternalApi
@@ -214,6 +224,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
         return visitor.visitMessageSource(this, data)
     }
 
+    @OptIn(MiraiInternalApi::class)
     @Deprecated("Do not use this serializer. Retrieve from `MessageSerializers.serializersModule`.")
     @DeprecatedSinceMirai(warningSince = "2.13")
     public object Serializer : KSerializer<MessageSource> by MessageSourceSerializerImpl("MessageSource")
@@ -376,26 +387,18 @@ public enum class MessageSourceKind {
     STRANGER
 }
 
-/**
- * 获取 [MessageSourceKind]
+/*
+  public static final net.mamoe.mirai.message.data.MessageSourceKind getKind(net.mamoe.mirai.message.data.MessageSource);
+  public static final net.mamoe.mirai.message.data.MessageSourceKind getKind(net.mamoe.mirai.message.data.OnlineMessageSource);
  */
-public val MessageSource.kind: MessageSourceKind
-    get() = when (this) {
-        is OnlineMessageSource -> kind
-        is OfflineMessageSource -> kind
-    }
+@JvmName("getKind")
+@Deprecated("For ABI compatibility", level = DeprecationLevel.HIDDEN)
+public fun getKindLegacy(source: MessageSource): MessageSourceKind = source.kind
 
-/**
- * 获取 [MessageSourceKind]
- */
-public val OnlineMessageSource.kind: MessageSourceKind
-    get() = when (subject) {
-        is Group -> MessageSourceKind.GROUP
-        is Friend -> MessageSourceKind.FRIEND
-        is Member -> MessageSourceKind.TEMP
-        is Stranger -> MessageSourceKind.STRANGER
-        else -> error("Internal error: OnlineMessageSource.kind reached an unexpected clause, subject=$subject")
-    }
+@JvmName("getKind")
+@Deprecated("For ABI compatibility", level = DeprecationLevel.HIDDEN)
+public fun getKindLegacy(source: OnlineMessageSource): MessageSourceKind = source.kind
+
 
 // For MessageChain, no need to expose to Java.
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -153,7 +153,7 @@ internal class FileMessageProtocol : MessageProtocol() {
                 val var7 = readByte()
                 if (var7 == 1.toByte()) {
                     while (remaining > 2) {
-                        val proto = readProtoBuf(ObjMsg.ObjMsg.serializer(), readUShort().toInt())
+                        val proto = readProtoBuf(ObjMsg.ObjMsg.serializer(), readShort().toUShort().toInt())
                         // proto.msgType=6
 
                         val file = proto.msgContentInfo.firstOrNull()?.msgFile ?: continue // officially get(0) only.

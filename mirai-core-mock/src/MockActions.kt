@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -24,6 +24,7 @@ import net.mamoe.mirai.mock.database.removeMessageInfo
 import net.mamoe.mirai.mock.utils.NudgeDsl
 import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.mock.utils.nudged0
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.cast
 
 @JvmBlockingBridge
@@ -32,6 +33,7 @@ public object MockActions {
     /**
      * 修改 [MockUserOrBot.nick] 并广播相关事件 (如 [FriendNickChangedEvent])
      */
+    @OptIn(MiraiInternalApi::class)
     @JvmStatic
     public suspend fun fireNickChanged(target: MockUserOrBot, value: String) {
         when (target) {
@@ -63,6 +65,7 @@ public object MockActions {
     /**
      * 修改 [MockNormalMember.nameCard] 并广播 [MemberCardChangeEvent]
      */
+    @OptIn(MiraiInternalApi::class)
     @JvmStatic
     public suspend fun fireNameCardChanged(member: MockNormalMember, value: String) {
         val ov = member.nameCard
@@ -73,6 +76,7 @@ public object MockActions {
     /**
      * 修改 [MockNormalMember.specialTitle] 并广播 [MemberSpecialTitleChangeEvent]
      */
+    @OptIn(MiraiInternalApi::class)
     @JvmStatic
     public suspend fun fireSpecialTitleChanged(member: MockNormalMember, value: String) {
         val ov = member.specialTitle
@@ -88,6 +92,7 @@ public object MockActions {
     /**
      * 修改一名成员的权限并广播 [MemberPermissionChangeEvent]
      */
+    @OptIn(MiraiInternalApi::class)
     @JvmStatic
     public suspend fun firePermissionChanged(member: MockNormalMember, perm: MemberPermission) {
         if (perm == MemberPermission.OWNER || member == member.group.owner) {
@@ -117,6 +122,7 @@ public object MockActions {
      *
      * @param operator 当 [operator] 为 null 时代表是发送者自己撤回
      */
+    @OptIn(MiraiInternalApi::class)
     @JvmStatic
     public suspend fun fireMessageRecalled(source: MessageSource, operator: User? = null) {
         fun notSupported(): Nothing = error("Unsupported message source kind: ${source.kind}: ${source.javaClass}")

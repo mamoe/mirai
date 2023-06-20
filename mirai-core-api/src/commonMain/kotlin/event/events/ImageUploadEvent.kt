@@ -35,6 +35,7 @@ import kotlin.jvm.JvmName
  *
  * @see Contact.uploadImage 上传图片. 为广播这个事件的唯一途径
  */
+@OptIn(MiraiInternalApi::class)
 public data class BeforeImageUploadEvent @MiraiInternalApi constructor(
     public val target: Contact,
     public val source: ExternalResource
@@ -54,6 +55,7 @@ public data class BeforeImageUploadEvent @MiraiInternalApi constructor(
  * @see Succeed
  * @see Failed
  */
+@OptIn(MiraiInternalApi::class)
 public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent(), VerboseEvent {
     public abstract val target: Contact
     public abstract val source: ExternalResource

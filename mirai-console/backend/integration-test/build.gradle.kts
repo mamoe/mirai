@@ -100,7 +100,10 @@ allprojects {
             runCatching {
                 val tk = tasks.named<Jar>("jar")
                 subplugins.add(tk)
-                mcit_test.configure { dependsOn(tk) }
+                mcit_test.configure {
+                    dependsOn(tk)
+                    inputs.files(tk)
+                }
             }
         }
     }

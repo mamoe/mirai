@@ -7,6 +7,9 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+import shadow.registerRegularShadowTaskForJvmProject
+import shadow.shadowImplementation
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -15,6 +18,11 @@ plugins {
 }
 
 val shadow: Configuration = project.configurations.create("shadow")
+
+kotlin {
+    optInForTestSourceSets("net.mamoe.mirai.console.util.ConsoleExperimentalApi")
+    optInForTestSourceSets("net.mamoe.mirai.console.ConsoleFrontEndImplementation")
+}
 
 dependencies {
     api(project(":mirai-core-api"))

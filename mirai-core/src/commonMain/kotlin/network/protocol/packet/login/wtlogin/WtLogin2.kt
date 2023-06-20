@@ -10,12 +10,10 @@
 package net.mamoe.mirai.internal.network.protocol.packet.login.wtlogin
 
 import io.ktor.utils.io.core.*
-import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.miscBitMap
+import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
-import net.mamoe.mirai.internal.network.subAppId
-import net.mamoe.mirai.internal.network.subSigMap
+import net.mamoe.mirai.utils._writeTlvMap
 
 
 internal object WtLogin2 : WtLoginExt {
@@ -26,19 +24,22 @@ internal object WtLogin2 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(2) // subCommand
-                writeShort(
-                    if (client.t547 == null) {
-                        4
-                    } else {
-                        5
+
+                _writeTlvMap {
+                    t193(ticket)
+                    t8(2052)
+                    t104(client.t104)
+                    t116(client.miscBitMap, client.subSigMap)
+                    client.t547?.let { t547(it) }
+                    if (client.useAndroid) {
+                        t544ForVerify(
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 2,
+                            commandStr = "810_2"
+                        )
                     }
-                ) // count of TLVs
-                t193(ticket)
-                t8(2052)
-                t104(client.t104)
-                t116(client.miscBitMap, client.subSigMap)
-                client.t547?.let {
-                    t547(it)
                 }
             }
         }
@@ -52,19 +53,22 @@ internal object WtLogin2 : WtLoginExt {
         writeSsoPacket(client, client.subAppId, WtLogin.Login.commandName, sequenceId = sequenceId) {
             writeOicqRequestPacket(client, commandId = 0x0810) {
                 writeShort(2) // subCommand
-                writeShort(
-                    if (client.t547 == null) {
-                        4
-                    } else {
-                        5
+
+                _writeTlvMap {
+                    t2(captchaAnswer, captchaSign, 0)
+                    t8(2052)
+                    t104(client.t104)
+                    t116(client.miscBitMap, client.subSigMap)
+                    client.t547?.let { t547(it) }
+                    if (client.useAndroid) {
+                        t544ForVerify(
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 2,
+                            commandStr = "810_2"
+                        )
                     }
-                ) // count of TLVs
-                t2(captchaAnswer, captchaSign, 0)
-                t8(2052)
-                t104(client.t104)
-                t116(client.miscBitMap, client.subSigMap)
-                client.t547?.let {
-                    t547(it)
                 }
             }
         }

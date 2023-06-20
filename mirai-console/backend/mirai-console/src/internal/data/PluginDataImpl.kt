@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -8,9 +8,11 @@
  */
 
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "EXPOSED_SUPER_CLASS")
+@file:OptIn(ConsoleExperimentalApi::class)
 
 package net.mamoe.mirai.console.internal.data
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.builtins.serializer
@@ -23,6 +25,7 @@ import net.mamoe.mirai.console.data.AbstractPluginData.ValueNode
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.ValueName
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.yamlkt.Comment
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer
 import java.lang.reflect.Constructor
@@ -44,6 +47,7 @@ internal abstract class PluginDataImpl {
         return valueNodes.firstOrNull { it.valueName == name }
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     internal open val updaterSerializer: KSerializer<Unit> = object : KSerializer<Unit> {
         override val descriptor: SerialDescriptor by lazy {
             check(this@PluginDataImpl is AbstractPluginData)
@@ -54,11 +58,10 @@ internal abstract class PluginDataImpl {
             }
         }
 
-        @Suppress("UNCHECKED_CAST")
         override fun deserialize(decoder: Decoder) {
             val descriptor = descriptor
             with(decoder.beginStructure(descriptor)) {
-                if (decodeSequentially()) {
+                if (runCatching { decodeSequentially() }.getOrElse { false }) {
                     var index = 0
                     repeat(decodeCollectionSize(descriptor)) {
                         val valueName = decodeSerializableElement(descriptor, index++, String.serializer())
@@ -95,7 +98,6 @@ internal abstract class PluginDataImpl {
             }
         }
 
-        @Suppress("UNCHECKED_CAST")
         override fun serialize(encoder: Encoder, value: Unit) {
             check(this@PluginDataImpl is AbstractPluginData)
 

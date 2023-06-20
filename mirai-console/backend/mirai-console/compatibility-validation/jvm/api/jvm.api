@@ -42,6 +42,11 @@ public abstract interface class net/mamoe/mirai/console/MiraiConsoleFrontEndDesc
 	public fun render ()Ljava/lang/String;
 }
 
+public final class net/mamoe/mirai/console/MiraiConsoleImplementation$ConsoleLaunchOptions {
+	public field crashWhenPluginLoadFailed Z
+	public fun <init> ()V
+}
+
 public final class net/mamoe/mirai/console/MiraiConsoleKt {
 	public static final fun getRootDir (Lnet/mamoe/mirai/console/MiraiConsole;)Ljava/io/File;
 }
@@ -105,13 +110,10 @@ public final class net/mamoe/mirai/console/command/BuiltInCommands {
 
 public final class net/mamoe/mirai/console/command/BuiltInCommands$AutoLoginCommand : net/mamoe/mirai/console/command/CompositeCommand, net/mamoe/mirai/console/command/BuiltInCommandInternal {
 	public static final field INSTANCE Lnet/mamoe/mirai/console/command/BuiltInCommands$AutoLoginCommand;
-	public final fun add (Lnet/mamoe/mirai/console/command/CommandSender;JLjava/lang/String;Lnet/mamoe/mirai/console/internal/data/builtins/AutoLoginConfig$Account$PasswordKind;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun add$default (Lnet/mamoe/mirai/console/command/BuiltInCommands$AutoLoginCommand;Lnet/mamoe/mirai/console/command/CommandSender;JLjava/lang/String;Lnet/mamoe/mirai/console/internal/data/builtins/AutoLoginConfig$Account$PasswordKind;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun clear (Lnet/mamoe/mirai/console/command/CommandSender;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun list (Lnet/mamoe/mirai/console/command/CommandSender;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun remove (Lnet/mamoe/mirai/console/command/CommandSender;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun removeConfig (Lnet/mamoe/mirai/console/command/CommandSender;JLnet/mamoe/mirai/console/internal/data/builtins/AutoLoginConfig$Account$ConfigurationKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun setConfig (Lnet/mamoe/mirai/console/command/CommandSender;JLnet/mamoe/mirai/console/internal/data/builtins/AutoLoginConfig$Account$ConfigurationKey;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/mamoe/mirai/console/command/BuiltInCommands$HelpCommand : net/mamoe/mirai/console/command/SimpleCommand, net/mamoe/mirai/console/command/BuiltInCommandInternal {
@@ -1108,6 +1110,7 @@ public abstract interface class net/mamoe/mirai/console/data/PluginConfig : net/
 
 public abstract interface class net/mamoe/mirai/console/data/PluginData {
 	public abstract fun getSaveName ()Ljava/lang/String;
+	public fun getSaveType ()Lnet/mamoe/mirai/console/data/PluginData$SaveType;
 	public abstract fun getSerializersModule ()Lkotlinx/serialization/modules/SerializersModule;
 	public abstract fun getUpdaterSerializer ()Lkotlinx/serialization/KSerializer;
 }
@@ -2022,8 +2025,12 @@ public abstract interface class net/mamoe/mirai/console/plugin/jvm/JvmPluginClas
 	public abstract fun getPluginFile ()Ljava/io/File;
 	public abstract fun getPluginIndependentLibrariesClassLoader ()Ljava/lang/ClassLoader;
 	public abstract fun getPluginSharedLibrariesClassLoader ()Ljava/lang/ClassLoader;
+	public abstract fun getShouldBeResolvableToIndependent ()Z
 	public abstract fun getShouldResolveConsoleSystemResource ()Z
+	public abstract fun getShouldResolveIndependent ()Z
+	public abstract fun setShouldBeResolvableToIndependent (Z)V
 	public abstract fun setShouldResolveConsoleSystemResource (Z)V
+	public abstract fun setShouldResolveIndependent (Z)V
 }
 
 public abstract interface class net/mamoe/mirai/console/plugin/jvm/JvmPluginDescription : net/mamoe/mirai/console/plugin/description/PluginDescription {
@@ -2156,6 +2163,7 @@ public class net/mamoe/mirai/console/util/AnsiMessageBuilder : java/io/Serializa
 	public fun gray ()Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
 	public fun green ()Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
 	public fun hashCode ()I
+	public static final fun isAnsiSupported (Lnet/mamoe/mirai/console/command/CommandSender;)Z
 	public fun lightBlue ()Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
 	public fun lightCyan ()Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
 	public fun lightGreen ()Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
@@ -2179,6 +2187,7 @@ public final class net/mamoe/mirai/console/util/AnsiMessageBuilder$Companion {
 	public final fun from (Ljava/lang/StringBuilder;)Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
 	public final fun from (Ljava/lang/StringBuilder;Z)Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
 	public static synthetic fun from$default (Lnet/mamoe/mirai/console/util/AnsiMessageBuilder$Companion;Ljava/lang/StringBuilder;ZILjava/lang/Object;)Lnet/mamoe/mirai/console/util/AnsiMessageBuilder;
+	public final fun isAnsiSupported (Lnet/mamoe/mirai/console/command/CommandSender;)Z
 }
 
 public final class net/mamoe/mirai/console/util/AnsiMessageBuilderKt {

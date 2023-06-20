@@ -84,7 +84,6 @@ internal class QRCodeLoginProcessorImpl(
                 margin = qrCodeLoginListener.qrCodeMargin,
                 ecLevel = qrCodeLoginListener.qrCodeEcLevel,
             ),
-            attempts = 1
         )
         check(resp is WtLogin.TransEmp.Response.FetchQRCode) { "Cannot fetch qrcode, resp=$resp" }
         qrCodeLoginListener.onFetchQRCode(handler.context.bot, resp.imageData)
@@ -97,7 +96,7 @@ internal class QRCodeLoginProcessorImpl(
         sig: ByteArray
     ): WtLogin.TransEmp.Response {
         logger.debug { "querying qrcode state." }
-        val resp = handler.sendAndExpect(WtLogin.TransEmp.QueryQRCodeStatus(client, sig), attempts = 1, timeout = 500)
+        val resp = handler.sendAndExpect(WtLogin.TransEmp.QueryQRCodeStatus(client, sig))
         check(
             resp is WtLogin.TransEmp.Response.QRCodeStatus || resp is WtLogin.TransEmp.Response.QRCodeConfirmed
         ) { "Cannot query qrcode status, resp=$resp" }
@@ -112,6 +111,14 @@ internal class QRCodeLoginProcessorImpl(
     }
 
     override suspend fun process(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginData {
+        return try {
+            process0(handler, client)
+        } finally {
+            qrCodeLoginListener.onCompleted()
+        }
+    }
+
+    private suspend fun process0(handler: NetworkHandler, client: QQAndroidClient): QRCodeLoginData {
         main@ while (true) {
             val qrCodeData = requestQRCode(handler, client)
             state@ while (true) {

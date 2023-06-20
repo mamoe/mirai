@@ -60,6 +60,12 @@ public interface QRCodeLoginListener {
     public fun onIntervalLoop() {
     }
 
+    /**
+     * 当二维码登录扫描完毕时执行, 在此执行资源释放
+     */
+    public fun onCompleted() {
+    }
+
     public enum class State {
         /**
          * 等待扫描中，请在此阶段请扫描二维码.

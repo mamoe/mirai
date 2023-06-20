@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -252,8 +252,9 @@ public actual interface MiraiLogger {
     public actual fun error(message: String?, e: Throwable?)
 
     /** 根据优先级调用对应函数 */
+
     public actual fun call(priority: SimpleLogger.LogPriority, message: String?, e: Throwable?): Unit =
-        priority.correspondingFunction(this, message, e)
+        @OptIn(MiraiExperimentalApi::class) priority.correspondingFunction(this, message, e)
 
     @Deprecated("plus 设计不佳, 请避免使用.", level = DeprecationLevel.HIDDEN) // deprecated since 2.7
     @DeprecatedSinceMirai(warningSince = "2.7", errorSince = "2.10", hiddenSince = "2.11")
@@ -265,7 +266,6 @@ public actual interface MiraiLogger {
  * @since 2.13
  */
 internal object MiraiLoggerFactoryImplementationBridge : MiraiLogger.Factory {
-    @Suppress("ObjectPropertyName")
     private var _instance by lateinitMutableProperty {
         createPlatformInstance()
     }
@@ -332,6 +332,7 @@ internal object MiraiLoggerFactoryImplementationBridge : MiraiLogger.Factory {
 }
 
 private class DefaultFactory : MiraiLogger.Factory {
+    @OptIn(MiraiInternalApi::class)
     override fun create(requester: Class<*>, identity: String?): MiraiLogger {
         return PlatformLogger(identity ?: requester.kotlin.simpleName ?: requester.simpleName)
     }

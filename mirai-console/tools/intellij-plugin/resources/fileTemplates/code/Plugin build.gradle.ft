@@ -9,7 +9,12 @@ group = '$GROUP_ID'
 version = '$VERSION'
 
 repositories {
-    #if ($USE_PROXY_REPO) maven { url 'https://maven.aliyun.com/repository/public' } #end
-
+#if($USE_PROXY_REPO)
+    maven { url 'https://maven.aliyun.com/repository/public' }
+#end
     mavenCentral()
+}
+
+mirai {
+    jvmTarget JavaVersion.VERSION_1_8
 }

@@ -274,7 +274,7 @@ ij_editorconfig_space_before_colon = false
 ij_editorconfig_space_before_comma = false
 ij_editorconfig_spaces_around_assignment_operators = true
 
-[{*.ant, *.fxml, *.jhm, *.jnlp, *.jrxml, *.pom, *.qrc, *.rng, *.tld, *.wadl, *.wsdd, *.wsdl, *.xjb, *.xml, *.xsd, *.xsl, *.xslt, *.xul}]
+[{*.ant,*.fxml,*.jhm,*.jnlp,*.jrxml,*.pom,*.qrc,*.rng,*.tld,*.wadl,*.wsdd,*.wsdl,*.xjb,*.xml,*.xsd,*.xsl,*.xslt,*.xul}]
 ij_xml_align_attributes = true
 ij_xml_align_text = false
 ij_xml_attribute_wrap = normal
@@ -293,7 +293,7 @@ ij_xml_space_inside_empty_tag = false
 ij_xml_text_wrap = normal
 ij_xml_use_custom_settings = false
 
-[{*.bash, *.sh, *.zsh}]
+[{*.bash,*.sh,*.zsh}]
 indent_size = 2
 tab_width = 2
 ij_shell_binary_ops_start_line = false
@@ -303,7 +303,7 @@ ij_shell_redirect_followed_by_space = false
 ij_shell_switch_cases_indented = false
 ij_shell_use_unix_line_separator = true
 
-[{*.kt, *.kts}]
+[{*.kt,*.kts}]
 ij_kotlin_align_in_columns_case_branch = false
 ij_kotlin_align_multiline_binary_operation = false
 ij_kotlin_align_multiline_extends_list = false
@@ -385,7 +385,7 @@ ij_kotlin_wrap_elvis_expressions = 1
 ij_kotlin_wrap_expression_body_functions = 1
 ij_kotlin_wrap_first_method_in_call_chain = false
 
-[{*.cjs, *.js}]
+[{*.cjs,*.js}]
 ij_continuation_indent_size = 4
 ij_javascript_align_imports = false
 ij_javascript_align_multiline_array_initializer_expression = false
@@ -541,7 +541,6 @@ ij_javascript_ternary_operation_wrap = off
 ij_javascript_union_types_wrap = on_every_item
 ij_javascript_use_chained_calls_group_indents = false
 ij_javascript_use_double_quotes = true
-ij_javascript_use_explicit_js_extension = global
 ij_javascript_use_path_mapping = always
 ij_javascript_use_public_modifier = false
 ij_javascript_use_semicolon_after_statement = true
@@ -550,10 +549,10 @@ ij_javascript_while_brace_force = never
 ij_javascript_while_on_new_line = false
 ij_javascript_wrap_comments = false
 
-[{*.ft, *.vm, *.vsl}]
+[{*.ft,*.vm,*.vsl}]
 ij_vtl_keep_indents_on_empty_lines = false
 
-[{*.gant, *.gradle, *.groovy, *.gson, *.gy}]
+[{*.gant,*.gradle,*.groovy,*.gson,*.gy}]
 ij_groovy_align_group_field_declarations = false
 ij_groovy_align_multiline_array_initializer_expression = false
 ij_groovy_align_multiline_assignment = false
@@ -732,7 +731,7 @@ ij_groovy_while_brace_force = never
 ij_groovy_while_on_new_line = false
 ij_groovy_wrap_long_lines = false
 
-[{*.har, *.jsb2, *.jsb3, *.json, .babelrc, .eslintrc, .stylelintrc, bowerrc, jest.config}]
+[{*.har,*.jsb2,*.jsb3,*.json,.babelrc,.eslintrc,.stylelintrc,bowerrc,jest.config}]
 indent_size = 2
 ij_json_keep_blank_lines_in_code = 0
 ij_json_keep_indents_on_empty_lines = false
@@ -745,7 +744,7 @@ ij_json_spaces_within_braces = false
 ij_json_spaces_within_brackets = false
 ij_json_wrap_long_lines = false
 
-[{*.htm, *.html, *.sht, *.shtm, *.shtml}]
+[{*.htm,*.html,*.sht,*.shtm,*.shtml}]
 ij_html_add_new_line_before_tags = body, div, p, form, h1, h2, h3
 ij_html_align_attributes = true
 ij_html_align_text = false
@@ -771,115 +770,18 @@ ij_html_space_after_tag_name = false
 ij_html_space_around_equality_in_attribute = false
 ij_html_space_inside_empty_tag = false
 ij_html_text_wrap = normal
-ij_html_uniform_ident = false
 
-[{*.markdown, *.md, *.mkd}]
+[{*.markdown,*.md,*.mkd}]
 ij_markdown_wrap_text_if_long = false
 ij_markdown_wrap_text_inside_blockquotes = false
-ij_markdown_abbreviations_placement = 0
-ij_markdown_abbreviations_sort = 0
-ij_markdown_attribute_class = 0
-ij_markdown_attribute_equal_space = 0
-ij_markdown_attribute_id = 0
-ij_markdown_attribute_value_quotes = 0
-ij_markdown_attributes_combine_consecutive = false
-ij_markdown_attributes_sort = false
-ij_markdown_attributes_spaces = 0
-ij_markdown_atx_header_trailing_marker = 0
-ij_markdown_block_quote_markers = 0
-ij_markdown_bullet_list_item_marker = 0
-ij_markdown_code_fence_marker_length = 3
-ij_markdown_code_fence_marker_type = 0
-ij_markdown_code_fence_match_closing_marker = false
-ij_markdown_code_fence_minimize_indent = false
-ij_markdown_code_fence_space_before_info = false
-ij_markdown_code_keep_trailing_spaces = 0
-ij_markdown_definition_marker_spaces = 3
-ij_markdown_definition_marker_type = 0
-ij_markdown_enumerated_reference_format_placement = 0
-ij_markdown_enumerated_reference_format_sort = 0
-ij_markdown_escape_numbered_lead_in_on_wrap = true
-ij_markdown_escape_special_chars_on_wrap = true
-ij_markdown_footnote_placement = 0
-ij_markdown_footnote_sort = 0
-ij_markdown_format_with_soft_wrap = 0
-ij_markdown_heading_preference = 0
-ij_markdown_keep_at_start_explicit_link = 0
-ij_markdown_keep_at_start_image_links = 0
-ij_markdown_keep_blank_lines = 2
-ij_markdown_keep_trailing_spaces = 1
-ij_markdown_list_add_blank_line_before = false
-ij_markdown_list_align_numeric = 0
-ij_markdown_list_ordered_task_item_priority = 1
-ij_markdown_list_renumber_items = true
-ij_markdown_list_reset_first_item_number = false
-ij_markdown_list_spacing = 0
-ij_markdown_macro_placement = 0
-ij_markdown_macro_sort = 0
-ij_markdown_new_bullet_list_item_marker = 1
-ij_markdown_para_wrap_text = true
-ij_markdown_reference_placement = 0
-ij_markdown_reference_sort = 0
-ij_markdown_setext_header_equalize_marker = true
-ij_markdown_smart_edit_atx_header = true
-ij_markdown_smart_edit_setext_header = true
-ij_markdown_smart_edit_table_separator_line = true
-ij_markdown_smart_edit_tables = false
-ij_markdown_smart_enter_atx_header = true
-ij_markdown_smart_enter_setext_header = true
-ij_markdown_space_after_atx_marker = 1
-ij_markdown_tab_size = 4
-ij_markdown_table_adjust_column_width = true
-ij_markdown_table_apply_column_alignment = true
-ij_markdown_table_caption = 0
-ij_markdown_table_caption_spaces = 0
-ij_markdown_table_fill_missing_columns = true
-ij_markdown_table_lead_trail_pipes = true
-ij_markdown_table_left_align_marker = 1
-ij_markdown_table_space_around_pipe = true
-ij_markdown_table_trim_cells = false
-ij_markdown_task_list_item_case = 0
-ij_markdown_task_list_item_placement = 0
-ij_markdown_toc_format_on_save = false
-ij_markdown_toc_generate_html = false
-ij_markdown_toc_generate_numbered_list = false
-ij_markdown_toc_generate_structure = 0
-ij_markdown_toc_generate_text_only = false
-ij_markdown_toc_heading_levels = 12
-ij_markdown_toc_title = Table of Contents
-ij_markdown_toc_title_level = 1
-ij_markdown_toc_update_on_doc_format = 1
-ij_markdown_trailing_spaces_option_1 = 0
-ij_markdown_trailing_spaces_option_10 = 0
-ij_markdown_trailing_spaces_option_11 = 0
-ij_markdown_trailing_spaces_option_12 = 0
-ij_markdown_trailing_spaces_option_13 = 0
-ij_markdown_trailing_spaces_option_14 = 0
-ij_markdown_trailing_spaces_option_15 = 0
-ij_markdown_trailing_spaces_option_16 = 0
-ij_markdown_trailing_spaces_option_17 = 0
-ij_markdown_trailing_spaces_option_18 = 0
-ij_markdown_trailing_spaces_option_19 = 0
-ij_markdown_trailing_spaces_option_2 = 0
-ij_markdown_trailing_spaces_option_20 = 0
-ij_markdown_trailing_spaces_option_3 = 0
-ij_markdown_trailing_spaces_option_4 = 0
-ij_markdown_trailing_spaces_option_5 = 0
-ij_markdown_trailing_spaces_option_6 = 0
-ij_markdown_trailing_spaces_option_7 = 0
-ij_markdown_trailing_spaces_option_8 = 0
-ij_markdown_trailing_spaces_option_9 = 0
-ij_markdown_unescape_special_chars_on_wrap = true
-ij_markdown_use_actual_char_width = true
-ij_markdown_verbatim_minimize_indent = false
 
-[{*.properties, spring.handlers, spring.schemas}]
+[{*.properties,spring.handlers,spring.schemas}]
 ij_properties_align_group_field_declarations = false
 ij_properties_keep_blank_lines = false
 ij_properties_key_value_delimiter = equals
 ij_properties_spaces_around_key_value_delimiter = false
 
-[{*.yaml, *.yml}]
+[{*.yaml,*.yml}]
 indent_size = 2
 ij_yaml_align_values_properties = do_not_align
 ij_yaml_autoinsert_sequence_marker = true

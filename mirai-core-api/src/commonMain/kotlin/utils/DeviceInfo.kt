@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -7,26 +7,65 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package net.mamoe.mirai.utils
 
 import io.ktor.utils.io.core.*
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.utils.DeviceInfoManager.Version.Companion.trans
-import kotlin.jvm.JvmInline
 import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmSynthetic
 import kotlin.random.Random
 
-public expect class DeviceInfo(
+internal const val DeviceInfoConstructorDeprecationMessage =
+    "DeviceInfo 构造器将会在未来删除. " +
+            "这是因为构造器导致维护变得十分困难. " +
+            "若要构造 DeviceInfo 实例, 请使用 DeviceInfoBuilder." +
+            "若要序列化, 请使用 DeviceInfo.serializeToString 和 DeviceInfo.deserializeFromString."
+
+internal const val DeviceInfoConstructorReplaceWith = "DeviceInfoBuilder.create()" +
+        ".display(display)" +
+        ".product(product)" +
+        ".device(device)" +
+        ".board(board)" +
+        ".brand(brand)" +
+        ".model(model)" +
+        ".bootloader(bootloader)" +
+        ".fingerprint(fingerprint)" +
+        ".bootId(bootId)" +
+        ".procVersion(procVersion)" +
+        ".baseBand(baseBand)" +
+        ".version(version)" +
+        ".simInfo(simInfo)" +
+        ".osType(osType)" +
+        ".macAddress(macAddress)" +
+        ".wifiBSSID(wifiBSSID)" +
+        ".wifiSSID(wifiSSID)" +
+        ".imsiMd5(imsiMd5)" +
+        ".imei(imei)" +
+        ".apn(apn)" +
+        ".androidId(androidId)" +
+        ".build()"
+
+/**
+ * 表示设备信息
+ * @see DeviceInfoBuilder
+ */
+public expect class DeviceInfo
+@Deprecated(
+    DeviceInfoConstructorDeprecationMessage, level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith(
+        DeviceInfoConstructorReplaceWith,
+        "net.mamoe.mirai.utils.DeviceInfoBuilder"
+    )
+)
+@DeprecatedSinceMirai(warningSince = "2.15") // planned internal
+public constructor(
     display: ByteArray,
     product: ByteArray,
     device: ByteArray,
@@ -46,9 +85,9 @@ public expect class DeviceInfo(
     wifiSSID: ByteArray,
     imsiMd5: ByteArray,
     imei: String,
-    apn: ByteArray
+    apn: ByteArray,
+    androidId: ByteArray,
 ) {
-
     public val display: ByteArray
     public val product: ByteArray
     public val device: ByteArray
@@ -69,14 +108,13 @@ public expect class DeviceInfo(
     public val imsiMd5: ByteArray
     public val imei: String
     public val apn: ByteArray
-
     public val androidId: ByteArray
+
     public val ipAddress: ByteArray
 
     @Transient
     @MiraiInternalApi
     public val guid: ByteArray
-
 
     // @Serializable: use DeviceInfoVersionSerializer in commonMain.
     public class Version(
@@ -99,6 +137,10 @@ public expect class DeviceInfo(
          * @since 2.9
          */
         override fun hashCode(): Int
+
+        internal companion object {
+            fun serializer(): KSerializer<Version>
+        }
     }
 
     public companion object {
@@ -107,6 +149,7 @@ public expect class DeviceInfo(
         /**
          * 生成随机 [DeviceInfo]
          *
+         * @see DeviceInfoBuilder
          * @since 2.0
          */
         @JvmStatic
@@ -115,12 +158,33 @@ public expect class DeviceInfo(
         /**
          * 使用特定随机数生成器生成 [DeviceInfo]
          *
+         * @see DeviceInfoBuilder
          * @since 2.9
          */
         @JvmStatic
         public fun random(random: Random): DeviceInfo
 
+        @Deprecated(DeviceInfoConstructorDeprecationMessage, level = DeprecationLevel.WARNING)
+        @DeprecatedSinceMirai(warningSince = "2.15") // planned internal
         public fun serializer(): KSerializer<DeviceInfo>
+
+        /**
+         * 将此 [DeviceInfo] 序列化为字符串. 序列化的字符串可以在以后通过 [DeviceInfo.deserializeFromString] 反序列化为 [DeviceInfo].
+         *
+         * 序列化的字符串有兼容性保证, 在旧版 mirai 序列化的字符串, 可以在新版 mirai 使用. 但新版 mirai 序列化的字符串不一定能在旧版使用.
+         *
+         * @since 2.15
+         */
+        @JvmStatic
+        public fun serializeToString(deviceInfo: DeviceInfo): String
+
+        /**
+         * 将通过 [serializeToString] 序列化得到的字符串反序列化为 [DeviceInfo].
+         * 此函数兼容旧版 mirai 序列化的字符串.
+         * @since 2.15
+         */
+        @JvmStatic
+        public fun deserializeFromString(string: String): DeviceInfo
     }
 
     /**
@@ -135,7 +199,74 @@ public expect class DeviceInfo(
     override fun hashCode(): Int
 }
 
+/**
+ * 将此 [DeviceInfo] 序列化为字符串. 序列化的字符串可以在以后通过 [DeviceInfo.deserializeFromString] 反序列化为 [DeviceInfo].
+ *
+ * 序列化的字符串有兼容性保证, 在旧版 mirai 序列化的字符串, 可以在新版 mirai 使用. 但新版 mirai 序列化的字符串不一定能在旧版使用.
+ *
+ * @since 2.15
+ */
+@JvmSynthetic
+public fun DeviceInfo.serializeToString(): String = DeviceInfo.serializeToString(this)
+
+@Serializable
+private class DevInfo @OptIn(ExperimentalSerializationApi::class) constructor(
+    @ProtoNumber(1) val bootloader: ByteArray,
+    @ProtoNumber(2) val procVersion: ByteArray,
+    @ProtoNumber(3) val codename: ByteArray,
+    @ProtoNumber(4) val incremental: ByteArray,
+    @ProtoNumber(5) val fingerprint: ByteArray,
+    @ProtoNumber(6) val bootId: ByteArray,
+    @ProtoNumber(7) val androidId: ByteArray,
+    @ProtoNumber(8) val baseBand: ByteArray,
+    @ProtoNumber(9) val innerVersion: ByteArray
+)
+
+/**
+ * 不要使用这个 API, 此 API 在未来可能会被删除
+ */
+public fun DeviceInfo.generateDeviceInfoData(): ByteArray { // ?? why is this public?
+
+    @OptIn(ExperimentalSerializationApi::class)
+    return ProtoBuf.encodeToByteArray(
+        DevInfo.serializer(), DevInfo(
+            bootloader,
+            procVersion,
+            version.codename,
+            version.incremental,
+            fingerprint,
+            bootId,
+            androidId,
+            baseBand,
+            version.incremental
+        )
+    )
+}
+
+/**
+ * Defaults "%4;7t>;28<fc.5*6".toByteArray()
+ */
+internal fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
+    (androidId + macAddress).md5()
+
+
+/*
+fun DeviceInfo.toOidb0x769DeviceInfo() : Oidb0x769.DeviceInfo = Oidb0x769.DeviceInfo(
+    brand = brand.encodeToString(),
+    model = model.encodeToString(),
+    os = Oidb0x769.OS(
+        version = version.release.encodeToString(),
+        sdk = version.sdk.toString(),
+        kernel = version.kernel
+    )
+)
+*/
+
+/**
+ * @see DeviceInfoManager
+ */
 internal object DeviceInfoCommonImpl {
+    @Suppress("DEPRECATION")
     fun randomDeviceInfo(random: Random) = DeviceInfo(
         display = "MIRAI.${getRandomString(6, '0'..'9', random)}.001".toByteArray(),
         product = "mirai".toByteArray(),
@@ -160,7 +291,8 @@ internal object DeviceInfoCommonImpl {
         wifiSSID = "<unknown ssid>".toByteArray(),
         imsiMd5 = getRandomByteArray(16, random).md5(),
         imei = "86${getRandomIntString(12, random)}".let { it + luhn(it) },
-        apn = "wifi".toByteArray()
+        apn = "wifi".toByteArray(),
+        androidId = getRandomByteArray(8, random).toUHexString("").lowercase().encodeToByteArray()
     )
 
     /**
@@ -182,11 +314,14 @@ internal object DeviceInfoCommonImpl {
     }
 
 
+    @OptIn(MiraiInternalApi::class)
     @Suppress("DuplicatedCode")
     fun equalsImpl(deviceInfo: DeviceInfo, other: Any?): Boolean = deviceInfo.run {
         if (deviceInfo === other) return true
         if (!isSameType(this, other)) return false
 
+        // also remember to add equal compare to JvmDeviceInfoTest.`can read legacy v1`
+        // when adding new field compare here.
         if (!display.contentEquals(other.display)) return false
         if (!product.contentEquals(other.product)) return false
         if (!device.contentEquals(other.device)) return false
@@ -208,10 +343,12 @@ internal object DeviceInfoCommonImpl {
         if (imei != other.imei) return false
         if (!apn.contentEquals(other.apn)) return false
         if (!guid.contentEquals(other.guid)) return false
+        if (!androidId.contentEquals(other.androidId)) return false
 
         return true
     }
 
+    @OptIn(MiraiInternalApi::class)
     @Suppress("DuplicatedCode")
     fun hashCodeImpl(deviceInfo: DeviceInfo): Int = deviceInfo.run {
         var result = display.contentHashCode()
@@ -235,273 +372,7 @@ internal object DeviceInfoCommonImpl {
         result = 31 * result + imei.hashCode()
         result = 31 * result + apn.contentHashCode()
         result = 31 * result + guid.contentHashCode()
+        result = 31 * result + androidId.contentHashCode()
         return result
     }
 }
-
-@Serializable
-private class DevInfo(
-    @ProtoNumber(1) val bootloader: ByteArray,
-    @ProtoNumber(2) val procVersion: ByteArray,
-    @ProtoNumber(3) val codename: ByteArray,
-    @ProtoNumber(4) val incremental: ByteArray,
-    @ProtoNumber(5) val fingerprint: ByteArray,
-    @ProtoNumber(6) val bootId: ByteArray,
-    @ProtoNumber(7) val androidId: ByteArray,
-    @ProtoNumber(8) val baseBand: ByteArray,
-    @ProtoNumber(9) val innerVersion: ByteArray
-)
-
-public fun DeviceInfo.generateDeviceInfoData(): ByteArray {
-    return ProtoBuf.encodeToByteArray(
-        DevInfo.serializer(), DevInfo(
-            bootloader,
-            procVersion,
-            version.codename,
-            version.incremental,
-            fingerprint,
-            bootId,
-            androidId,
-            baseBand,
-            version.incremental
-        )
-    )
-}
-
-internal object DeviceInfoManager {
-    sealed interface Info {
-        fun toDeviceInfo(): DeviceInfo
-    }
-
-    @Serializable(HexStringSerializer::class)
-    @JvmInline
-    value class HexString(
-        val data: ByteArray
-    )
-
-    object HexStringSerializer : KSerializer<HexString> by String.serializer().map(
-        String.serializer().descriptor.copy("HexString"),
-        deserialize = { HexString(it.hexToBytes()) },
-        serialize = { it.data.toUHexString("").lowercase() }
-    )
-
-    // Note: property names must be kept intact during obfuscation process if applied.
-    @Serializable
-    class Wrapper<T : Info>(
-        @Suppress("unused") val deviceInfoVersion: Int, // used by plain jsonObject
-        val data: T
-    )
-
-    private object DeviceInfoVersionSerializer : KSerializer<DeviceInfo.Version> by SerialData.serializer().map(
-        resultantDescriptor = SerialData.serializer().descriptor,
-        deserialize = {
-            DeviceInfo.Version(incremental, release, codename, sdk)
-        },
-        serialize = {
-            SerialData(incremental, release, codename, sdk)
-        }
-    ) {
-        @SerialName("Version")
-        @Serializable
-        private class SerialData(
-            val incremental: ByteArray = "5891938".toByteArray(),
-            val release: ByteArray = "10".toByteArray(),
-            val codename: ByteArray = "REL".toByteArray(),
-            val sdk: Int = 29
-        )
-    }
-
-    @Serializable
-    class V1(
-        val display: ByteArray,
-        val product: ByteArray,
-        val device: ByteArray,
-        val board: ByteArray,
-        val brand: ByteArray,
-        val model: ByteArray,
-        val bootloader: ByteArray,
-        val fingerprint: ByteArray,
-        val bootId: ByteArray,
-        val procVersion: ByteArray,
-        val baseBand: ByteArray,
-        val version: @Serializable(DeviceInfoVersionSerializer::class) DeviceInfo.Version,
-        val simInfo: ByteArray,
-        val osType: ByteArray,
-        val macAddress: ByteArray,
-        val wifiBSSID: ByteArray,
-        val wifiSSID: ByteArray,
-        val imsiMd5: ByteArray,
-        val imei: String,
-        val apn: ByteArray
-    ) : Info {
-        override fun toDeviceInfo(): DeviceInfo {
-            return DeviceInfo(
-                display = display,
-                product = product,
-                device = device,
-                board = board,
-                brand = brand,
-                model = model,
-                bootloader = bootloader,
-                fingerprint = fingerprint,
-                bootId = bootId,
-                procVersion = procVersion,
-                baseBand = baseBand,
-                version = version,
-                simInfo = simInfo,
-                osType = osType,
-                macAddress = macAddress,
-                wifiBSSID = wifiBSSID,
-                wifiSSID = wifiSSID,
-                imsiMd5 = imsiMd5,
-                imei = imei,
-                apn = apn
-            )
-        }
-    }
-
-
-    @Serializable
-    class V2(
-        val display: String,
-        val product: String,
-        val device: String,
-        val board: String,
-        val brand: String,
-        val model: String,
-        val bootloader: String,
-        val fingerprint: String,
-        val bootId: String,
-        val procVersion: String,
-        val baseBand: HexString,
-        val version: Version,
-        val simInfo: String,
-        val osType: String,
-        val macAddress: String,
-        val wifiBSSID: String,
-        val wifiSSID: String,
-        val imsiMd5: HexString,
-        val imei: String,
-        val apn: String
-    ) : Info {
-        override fun toDeviceInfo(): DeviceInfo = DeviceInfo(
-            this.display.toByteArray(),
-            this.product.toByteArray(),
-            this.device.toByteArray(),
-            this.board.toByteArray(),
-            this.brand.toByteArray(),
-            this.model.toByteArray(),
-            this.bootloader.toByteArray(),
-            this.fingerprint.toByteArray(),
-            this.bootId.toByteArray(),
-            this.procVersion.toByteArray(),
-            this.baseBand.data,
-            this.version.trans(),
-            this.simInfo.toByteArray(),
-            this.osType.toByteArray(),
-            this.macAddress.toByteArray(),
-            this.wifiBSSID.toByteArray(),
-            this.wifiSSID.toByteArray(),
-            this.imsiMd5.data,
-            this.imei,
-            this.apn.toByteArray()
-        )
-    }
-
-    @Serializable
-    class Version(
-        val incremental: String,
-        val release: String,
-        val codename: String,
-        val sdk: Int = 29
-    ) {
-        companion object {
-            fun DeviceInfo.Version.trans(): Version {
-                return Version(incremental.decodeToString(), release.decodeToString(), codename.decodeToString(), sdk)
-            }
-
-            fun Version.trans(): DeviceInfo.Version {
-                return DeviceInfo.Version(incremental.toByteArray(), release.toByteArray(), codename.toByteArray(), sdk)
-            }
-        }
-    }
-
-    fun DeviceInfo.toCurrentInfo(): V2 = V2(
-        display.decodeToString(),
-        product.decodeToString(),
-        device.decodeToString(),
-        board.decodeToString(),
-        brand.decodeToString(),
-        model.decodeToString(),
-        bootloader.decodeToString(),
-        fingerprint.decodeToString(),
-        bootId.decodeToString(),
-        procVersion.decodeToString(),
-        HexString(baseBand),
-        version.trans(),
-        simInfo.decodeToString(),
-        osType.decodeToString(),
-        macAddress.decodeToString(),
-        wifiBSSID.decodeToString(),
-        wifiSSID.decodeToString(),
-        HexString(imsiMd5),
-        imei,
-        apn.decodeToString()
-    )
-
-    internal val format = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-    }
-
-    @Throws(IllegalArgumentException::class, NumberFormatException::class) // in case malformed
-    fun deserialize(string: String, format: Json = this.format): DeviceInfo {
-        val element = format.parseToJsonElement(string)
-
-        return when (val version = element.jsonObject["deviceInfoVersion"]?.jsonPrimitive?.content?.toInt() ?: 1) {
-            /**
-             * @since 2.0
-             */
-            1 -> format.decodeFromJsonElement(V1.serializer(), element)
-            /**
-             * @since 2.9
-             */
-            2 -> format.decodeFromJsonElement(Wrapper.serializer(V2.serializer()), element).data
-            else -> throw IllegalArgumentException("Unsupported deviceInfoVersion: $version")
-        }.toDeviceInfo()
-    }
-
-    fun serialize(info: DeviceInfo, format: Json = this.format): String {
-        return format.encodeToString(
-            Wrapper.serializer(V2.serializer()),
-            Wrapper(2, info.toCurrentInfo())
-        )
-    }
-
-    fun toJsonElement(info: DeviceInfo, format: Json = this.format): JsonElement {
-        return format.encodeToJsonElement(
-            Wrapper.serializer(V2.serializer()),
-            Wrapper(2, info.toCurrentInfo())
-        )
-    }
-}
-
-/**
- * Defaults "%4;7t>;28<fc.5*6".toByteArray()
- */
-@Suppress("RemoveRedundantQualifierName") // bug
-internal fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
-    (androidId + macAddress).md5()
-
-
-/*
-fun DeviceInfo.toOidb0x769DeviceInfo() : Oidb0x769.DeviceInfo = Oidb0x769.DeviceInfo(
-    brand = brand.encodeToString(),
-    model = model.encodeToString(),
-    os = Oidb0x769.OS(
-        version = version.release.encodeToString(),
-        sdk = version.sdk.toString(),
-        kernel = version.kernel
-    )
-)
-*/

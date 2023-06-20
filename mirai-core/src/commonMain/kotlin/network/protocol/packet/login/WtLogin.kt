@@ -125,20 +125,21 @@ internal class WtLogin {
                 ) {
                     writeOicqRequestPacket(client, commandId = 0x0810) {
                         writeShort(17) // subCommand
-                        writeShort(12)
-                        t100(16, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
-                        t108(client.ksid)
-                        t109(client.device.androidId)
-                        t8(2052)
-                        t142(client.apkId)
-                        t145(client.device.guid)
-                        t154(0)
-                        // 需要 t112, 但在实现 QR 时删除了 phoneNumber
-//                        t112(client.account.phoneNumber.encodeToByteArray())
-                        t116(client.miscBitMap, client.subSigMap)
-                        t521()
-                        t52c()
-                        t52d(client.device.generateDeviceInfoData())
+                        _writeTlvMap {
+                            t100(16, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
+                            t108(client.ksid)
+                            t109(client.device.androidId)
+                            t8(2052)
+                            t142(client.apkId)
+                            t145(client.device.guid)
+                            t154(0)
+                            // 需要 t112, 但在实现 QR 时删除了 phoneNumber
+//t112(client.account.phoneNumber.encodeToByteArray())
+                            t116(client.miscBitMap, client.subSigMap)
+                            t521()
+                            t52c()
+                            t52d(client.device.generateDeviceInfoData())
+                        }
                     }
                 }
             }
@@ -198,9 +199,9 @@ internal class WtLogin {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse {
 
-            val subCommand = readUShort() // subCommand
+            val subCommand = readShort().toUShort() // subCommand
             // println("subCommand=$subCommand")
-            val type = readUByte()
+            val type = readByte().toUByte()
             // println("type=$type")
 
             discardExact(2)
@@ -215,6 +216,7 @@ internal class WtLogin {
             tlvMap[0x403]?.let { bot.client.randSeed = it }
             tlvMap[0x402]?.let { bot.client.t402 = it }
             tlvMap[0x546]?.let { bot.client.analysisTlv546(it) }
+            tlvMap[0x543]?.let { bot.client.t543 = it }
             // tlvMap[0x402]?.let { t402 ->
 //            bot.client.G = buildPacket {
 //                writeFully(bot.client.device.guid)
@@ -519,7 +521,7 @@ internal class WtLogin {
                                 it.read {
                                     //change interval (int time)
                                     discardExact(4)
-                                    readUInt().toLong()
+                                    readInt().toUInt().toLong()
                                 }
                             }
                                 ?: appPri
@@ -570,7 +572,7 @@ internal class WtLogin {
                                 it.read {
                                     //change interval (int time)
                                     discardExact(4)
-                                    readUInt().toLong()
+                                    readInt().toUInt().toLong()
                                 }
                             }
                                 ?: 4294967295L, // defaults {}, from asyncContext._G
@@ -677,53 +679,54 @@ internal class WtLogin {
                         writeByte(8)
                         writeShortLVPacket { }
 
-                        writeShort(6)
-                        t16(
-                            client.ssoVersion,
-                            client.subAppId,
-                            client.device.guid,
-                            client.apkId,
-                            client.apkVersionName,
-                            client.apkSignatureMd5
-                        )
-                        t1b(
-                            size = size,
-                            margin = margin,
-                            ecLevel = ecLevel
-                        )
-                        t1d(client.miscBitMap)
-
-                        val protocol = client.bot.configuration.protocol
-                        when (protocol) {
-                            BotConfiguration.MiraiProtocol.MACOS -> t1f(
-                                false,
-                                "Mac OSX".toByteArray(),
-                                "10".toByteArray(),
-                                "mac carrier".toByteArray(),
-                                client.device.apn,
-                                2
+                        _writeTlvMap {
+                            t16(
+                                client.ssoVersion,
+                                client.subAppId,
+                                client.device.guid,
+                                client.apkId,
+                                client.apkVersionName,
+                                client.apkSignatureMd5
                             )
-
-                            BotConfiguration.MiraiProtocol.ANDROID_WATCH -> t1f(
-                                false,
-                                client.device.osType,
-                                "7.1.2".toByteArray(),
-                                "China Mobile GSM".toByteArray(),
-                                client.device.apn,
-                                2
+                            t1b(
+                                size = size,
+                                margin = margin,
+                                ecLevel = ecLevel
                             )
+                            t1d(client.miscBitMap)
 
-                            else -> error("protocol $protocol doesn't support qrcode login.")
-                        }
-
-                        t33(client.device.guid)
-                        t35(
+                            val protocol = client.bot.configuration.protocol
                             when (protocol) {
-                                BotConfiguration.MiraiProtocol.MACOS -> 5
-                                BotConfiguration.MiraiProtocol.ANDROID_WATCH -> 8
-                                else -> error("assertion")
+                                BotConfiguration.MiraiProtocol.MACOS -> t1f(
+                                    false,
+                                    "Mac OSX".toByteArray(),
+                                    "10".toByteArray(),
+                                    "mac carrier".toByteArray(),
+                                    client.device.apn,
+                                    2
+                                )
+
+                                BotConfiguration.MiraiProtocol.ANDROID_WATCH -> t1f(
+                                    false,
+                                    client.device.osType,
+                                    "7.1.2".toByteArray(),
+                                    "China Mobile GSM".toByteArray(),
+                                    client.device.apn,
+                                    2
+                                )
+
+                                else -> error("protocol $protocol doesn't support qrcode login.")
                             }
-                        )
+
+                            t33(client.device.guid)
+                            t35(
+                                when (protocol) {
+                                    BotConfiguration.MiraiProtocol.MACOS -> 5
+                                    BotConfiguration.MiraiProtocol.ANDROID_WATCH -> 8
+                                    else -> error("assertion")
+                                }
+                            )
+                        }
                     }
                     writeByte(0)
                     writeShort(code2dPacket.remaining.toShort())
@@ -770,8 +773,8 @@ internal class WtLogin {
             writeInt(currentTimeSeconds().toInt())
             writeByte(2)
             val bodyPacket = buildPacket(body)
-            writeUShort((43 + bodyPacket.remaining + 1).toUShort())
-            writeUShort(command.toUShort())
+            writeShort((43 + bodyPacket.remaining + 1).toUShort().toShort())
+            writeShort(command)
             writeFully(ByteArray(21) { 0 })
             writeByte(3)
             writeShort(0)
@@ -810,13 +813,13 @@ internal class WtLogin {
             check(remaining >= 48) { "remaining payload is too short, current is $remaining." }
 
             discardExact(5)
-            readUByte()
-            readUShort()
-            val command = readUShort().toInt()
+            readByte().toUByte()
+            readShort().toUShort()
+            val command = readShort().toUShort().toInt()
             discardExact(21)
-            readUByte()
-            readUShort()
-            readUShort()
+            readByte().toUByte()
+            readShort().toUShort()
+            readShort().toUShort()
             readInt()
             readLong()
 
@@ -828,7 +831,7 @@ internal class WtLogin {
                     val code = readByte().toInt()
                     check(code == 0) { "code is not 0 while parsing wtlogin.trans_emp with command 0x31." }
                     val sig = readUShortLVByteArray()
-                    readUShort()
+                    readShort().toUShort()
 
                     val tlv = _readTLVMap()
                     val data =
@@ -838,10 +841,10 @@ internal class WtLogin {
                 }
 
                 0x12 -> { // qr code state
-                    var length = readUShort().toInt()
+                    var length = readShort().toUShort().toInt()
                     if (length != 0) {
                         length--
-                        if (readUByte().toInt() == 2) {
+                        if (readByte().toUByte().toInt() == 2) {
                             readLong()
                             length -= 8
                         }
@@ -852,7 +855,7 @@ internal class WtLogin {
                     }
                     readInt()
 
-                    val code = readUByte().toInt()
+                    val code = readByte().toUByte().toInt()
                     if (code != 0) {
                         when (code) { // code
                             0x30 -> Response.QRCodeStatus(Response.QRCodeStatus.State.WAITING_FOR_SCAN)
@@ -869,7 +872,7 @@ internal class WtLogin {
                             throw InconsistentBotIdException(expected = client.uin, actual = uin)
                         }
                         readInt()
-                        readUShort()
+                        readShort().toUShort()
                         val tlv = _readTLVMap()
 
                         val tmpPwd = tlv.getOrFail(0x18) {

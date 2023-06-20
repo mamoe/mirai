@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -52,7 +52,7 @@ internal inline fun BytePacketBuilder.writeIntLVPacket(
     crossinline builder: BytePacketBuilder.() -> Unit,
 ): Int =
     buildPacket(builder).use {
-        if (tag != null) writeUByte(tag)
+        if (tag != null) writeByte(tag.toByte())
         val length = lengthOffset.invoke(it.remaining).coerceAtMostOrFail(0xFFFFFFFFL)
         writeInt(length.toInt())
         writePacket(it)
@@ -64,9 +64,9 @@ internal inline fun BytePacketBuilder.writeShortLVPacket(
     lengthOffset: ((Long) -> Long) = { it },
     crossinline builder: BytePacketBuilder.() -> Unit,
 ): Int = buildPacket(builder).use {
-    if (tag != null) writeUByte(tag)
+    if (tag != null) writeByte(tag.toByte())
     val length = lengthOffset.invoke(it.remaining).coerceAtMostOrFail(0xFFFFFFFFL)
-    writeUShort(length.toUShort())
+    writeShort(length.toUShort().toShort())
     writePacket(it)
     return length.toInt()
 }
@@ -76,7 +76,7 @@ internal inline fun BytePacketBuilder.writeShortLVString(str: String) = writeSho
 internal fun BytePacketBuilder.writeHex(uHex: String) {
     uHex.split(" ").forEach {
         if (it.isNotBlank()) {
-            writeUByte(it.toUByte(16))
+            writeByte(it.toUByte(16).toByte())
         }
     }
 }

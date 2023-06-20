@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -7,7 +7,6 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
 
@@ -23,14 +22,10 @@ import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.map
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
-import kotlin.native.CName
 
 /**
  * 文件消息.
@@ -75,6 +70,7 @@ public expect interface FileMessage : MessageContent, ConstrainSingle, CodableMe
 
     open override fun contentToString(): String
 
+    @MiraiExperimentalApi
     open override fun appendMiraiCodeTo(builder: StringBuilder)
 
     /**
@@ -119,7 +115,7 @@ internal open class FallbackFileMessageSerializer :
     @Suppress("ANNOTATION_ARGUMENT_MUST_BE_CONST")
     @SerialName(FileMessage.SERIAL_NAME)
     @Serializable
-    data class Delegate constructor(
+    data class Delegate(
         val id: String,
         val internalId: Int,
         val name: String,
@@ -132,6 +128,5 @@ internal open class FallbackFileMessageSerializer :
  * @since 2.5
  */
 @JvmSynthetic
-@CName("", "FileMessage_new")
-public inline fun FileMessage(id: String, internalId: Int, name: String, size: Long): FileMessage =
+public fun FileMessage(id: String, internalId: Int, name: String, size: Long): FileMessage =
     FileMessage.create(id, internalId, name, size)

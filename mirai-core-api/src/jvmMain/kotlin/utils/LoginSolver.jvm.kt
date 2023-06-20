@@ -41,15 +41,20 @@ internal actual object PlatformLoginSolverImplementations {
  *
  * @see createBlocking
  */
-public class StandardCharImageLoginSolver @JvmOverloads constructor(
-    input: suspend () -> String = { readLine() ?: throw NoStandardInputForCaptchaException() },
+public class StandardCharImageLoginSolver
+@JvmOverloads constructor(
+    input: suspend () -> String = {
+        readlnOrNull() ?: @OptIn(MiraiInternalApi::class) throw NoStandardInputForCaptchaException()
+    },
     /**
      * 为 `null` 时使用 [Bot.logger]
      */
     private val loggerSupplier: (bot: Bot) -> MiraiLogger = { it.logger }
 ) : LoginSolver() {
     public constructor(
-        input: suspend () -> String = { readLine() ?: throw NoStandardInputForCaptchaException() },
+        input: suspend () -> String = {
+            readlnOrNull() ?: @OptIn(MiraiInternalApi::class) throw NoStandardInputForCaptchaException()
+        },
         overrideLogger: MiraiLogger?
     ) : this(input, { overrideLogger ?: it.logger })
 
@@ -87,8 +92,8 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
                     }
 
                     tempFile.writeBytes(data)
-                    logger.info { "[QRCodeLogin] 将会显示二维码图片，若看不清图片，请查看文件 ${tempFile.absolutePath}" }
-                    logger.info { "[QRCodeLogin] Displaying qrcode image. If not clear, view file ${tempFile.absolutePath}." }
+                    logger.info { "[QRCodeLogin] 将会显示二维码图片，若看不清图片，请查看文件 file://${tempFile.absolutePath}" }
+                    logger.info { "[QRCodeLogin] Displaying qrcode image. If not clear, view file file://${tempFile.absolutePath}." }
                 } catch (e: Exception) {
                     logger.warning("[QRCodeLogin] 无法写出二维码图片. 请尽量关闭终端个性化样式后扫描二维码字符图片", e)
                     logger.warning(
@@ -167,8 +172,8 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
             logger.info { "[PicCaptcha] Picture captcha required. Captcha consists of 4 letters." }
             try {
                 tempFile.writeBytes(data)
-                logger.info { "[PicCaptcha] 将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}" }
-                logger.info { "[PicCaptcha] Displaying char-image. If not clear, view file ${tempFile.absolutePath}." }
+                logger.info { "[PicCaptcha] 将会显示字符图片. 若看不清字符图片, 请查看文件 file://${tempFile.absolutePath}" }
+                logger.info { "[PicCaptcha] Displaying char-image. If not clear, view file file://${tempFile.absolutePath}." }
             } catch (e: Exception) {
                 logger.warning("[PicCaptcha] 无法写出验证码文件, 请尝试查看以上字符图片", e)
                 logger.warning("[PicCaptcha] Failed to export captcha image. Please see the char-image.", e)
@@ -203,10 +208,10 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
         logger.info { "[SliderCaptcha] Slider captcha required. Please solve the captcha with following link. Type ticket here after completion." }
         logger.info { "[SliderCaptcha] @see https://github.com/project-mirai/mirai-login-solver-selenium" }
         logger.info { "[SliderCaptcha] @see https://docs.mirai.mamoe.net/mirai-login-solver-selenium/" }
-        logger.info { "[SliderCaptcha] 或者输入 TxCaptchaHelper 来使用 TxCaptchaHelper 完成滑动验证码" }
-        logger.info { "[SliderCaptcha] Or type `TxCaptchaHelper` to resolve slider captcha with TxCaptchaHelper.apk" }
+        logger.info { "[SliderCaptcha] 或者输入 helper 来使用 TxCaptchaHelper 完成滑动验证码" }
+        logger.info { "[SliderCaptcha] Or type helper to resolve slider captcha with TxCaptchaHelper.apk" }
         logger.warning { "[SliderCaptcha] TxCaptchaHelper 的在线服务疑似被屏蔽，可能无法使用。TxCaptchaHelper 现已无法满足登录QQ机器人，请在以下链接下载全新的验证器" }
-        logger.warning { "[SliderCaptcha] The service of `TxCaptchaHelper` might be blocked. We recommend you to download the new login solver plugin in below link." }
+        logger.warning { "[SliderCaptcha] The service of TxCaptchaHelper might be blocked. We recommend you to download the new login solver plugin in below link." }
         logger.warning { "[SliderCaptcha] @see https://github.com/KasukuSakura/mirai-login-solver-sakura" }
         logger.info { "[SliderCaptcha] Captcha link: $url" }
 
@@ -229,7 +234,7 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
         }
 
         return input().also {
-            if (it == "TxCaptchaHelper" || it == "`TxCaptchaHelper`") {
+            if (it == "TxCaptchaHelper" || it == "`TxCaptchaHelper`" || it == "helper" || it == "`helper`") {
                 return runTxCaptchaHelper()
             }
             logger.info { "[SliderCaptcha] 正在提交中..." }
@@ -383,6 +388,7 @@ private fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Doub
     }
 }
 
+@Suppress("LocalVariableName", "SpellCheckingInspection")
 private fun BufferedImage.renderQRCode(
     blackPlaceholder: String = "   ",
     whitePlaceholder: String = "   ",

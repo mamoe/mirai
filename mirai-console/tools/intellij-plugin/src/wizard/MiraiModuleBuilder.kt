@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -82,7 +82,7 @@ class MiraiModuleBuilder : StarterModuleBuilder() {
                 "GROUP_ID" to projectCoordinates.groupId,
                 "VERSION" to projectCoordinates.version,
                 "PROJECT_NAME" to starterContext,
-                "USE_PROXY_REPO" to "true",
+                "USE_PROXY_REPO" to useProxyRepo,
                 "ARTIFACT_ID" to projectCoordinates.artifactId,
                 "MODULE_NAME" to projectCoordinates.moduleName,
 
@@ -108,6 +108,10 @@ class MiraiModuleBuilder : StarterModuleBuilder() {
         val model = starterContext.getUserData(MIRAI_PROJECT_MODEL_KEY)!!
 
         val standardAssetsProvider = StandardAssetsProvider()
+        assets.add(GeneratorTemplateFile(
+            standardAssetsProvider.gradleWrapperPropertiesLocation,
+            ftManager.getCodeTemplate(FT.GradleWrapperProperties)
+        ))
         assets.addAll(standardAssetsProvider.getGradlewAssets())
 
         model.buildSystemType.createBuildSystem(model)

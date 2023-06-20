@@ -82,6 +82,10 @@ internal open class QQAndroidClient(
     override var outgoingPacketSessionId: ByteArray = 0x02B05B8B.toByteArray()
     override var loginState = 0
 
+    val useAndroid by lazy {
+        bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE ||
+                bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PAD
+    }
     var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
 
     var fileStoragePushFSSvcList: FileStoragePushFSSvcList? = null
@@ -102,7 +106,7 @@ internal open class QQAndroidClient(
 
 
     val apkVersionName: ByteArray get() = protocol.ver.toByteArray() //"8.4.18".toByteArray()
-    val buildVer: String get() = "8.4.18.4810" // 8.2.0.1296 // 8.4.8.4810 // 8.2.7.4410
+    val buildVer: String get() = protocol.buildVer // 8.2.0.1296 // 8.4.8.4810 // 8.2.7.4410
 
 
     private val sequenceId: AtomicInt = atomic(getRandomUnsignedInt())
@@ -166,7 +170,15 @@ internal open class QQAndroidClient(
     var reserveUinInfo: ReserveUinInfo? = null
     var t402: ByteArray? = null
     lateinit var t104: ByteArray
+    internal val t104Initialized get() = ::t104.isInitialized
+    var t543: ByteArray? = null
     var t547: ByteArray? = null
+
+    /**
+     * t545
+     */
+    var qimei16: String? = null
+    var qimei36: String? = null
 }
 
 internal val QQAndroidClient.apkId: ByteArray get() = protocol.apkId.toByteArray()

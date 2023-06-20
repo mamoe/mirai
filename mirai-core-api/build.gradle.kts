@@ -9,12 +9,13 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 import BinaryCompatibilityConfigurator.configureBinaryValidators
+import shadow.relocateCompileOnly
 
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
 
-    //id("kotlinx-atomicfu")
+    id("kotlinx-atomicfu")
     id("signing")
     id("me.him188.kotlin-jvm-blocking-bridge")
     id("me.him188.kotlin-dynamic-delegation")
@@ -27,10 +28,9 @@ description = "Mirai API module"
 
 kotlin {
     explicitApi()
-    configureJvmTargetsHierarchical()
+    apply(plugin = "explicit-api")
 
-    configureNativeTargetsHierarchical(project)
-
+    configureJvmTargetsHierarchical("net.mamoe.mirai")
 
     sourceSets {
         val commonMain by getting {
@@ -44,7 +44,10 @@ kotlin {
                 implementation(project(":mirai-console-compiler-annotations"))
                 implementation(`kotlinx-serialization-protobuf`)
                 implementation(`kotlinx-atomicfu`)
-                relocateCompileOnly(`ktor-io_relocated`) // runtime from mirai-core-utils
+
+                // runtime from mirai-core-utils
+                relocateCompileOnly(`ktor-io_relocated`)
+
                 implementation(`kotlin-jvm-blocking-bridge`)
                 implementation(`kotlin-dynamic-delegation`)
             }
@@ -65,9 +68,11 @@ kotlin {
             }
         }
 
-        findByName("androidMain")?.apply {
-            dependencies {
-                compileOnly(`android-runtime`)
+        afterEvaluate {
+            findByName("androidUnitTest")?.apply {
+                dependencies {
+                    runtimeOnly(`slf4j-api`)
+                }
             }
         }
 
@@ -80,12 +85,11 @@ kotlin {
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
         }
-
-        findByName("nativeMain")?.apply {
-            dependencies {
-            }
-        }
     }
+}
+
+atomicfu {
+    transformJvm = false
 }
 
 if (tasks.findByName("androidMainClasses") != null) {
@@ -100,7 +104,7 @@ if (tasks.findByName("androidMainClasses") != null) {
         group = "verification"
         this.mustRunAfter("androidMainClasses")
     }
-    tasks.getByName("androidTest").dependsOn("checkAndroidApiLevel")
+    tasks.findByName("androidTest")?.dependsOn("checkAndroidApiLevel")
 }
 
 configureMppPublishing()

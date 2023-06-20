@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -17,6 +17,7 @@ package net.mamoe.mirai.console.command
 
 import me.him188.kotlin.dynamic.delegation.dynamicDelegation
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
+import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
@@ -173,8 +174,12 @@ public interface CommandManager {
     /**
      * [CommandManager] 实例. 转发所有调用到 [MiraiConsoleImplementation.commandManager].
      */
+
     public companion object INSTANCE :
-        CommandManager by (dynamicDelegation { MiraiConsoleImplementation.getInstance().commandManager }) {
+        CommandManager by (dynamicDelegation {
+            @OptIn(ConsoleFrontEndImplementation::class)
+            MiraiConsoleImplementation.getInstance().commandManager
+        }) {
 
         /**
          * @see CommandManager.getRegisteredCommands
@@ -247,7 +252,9 @@ public suspend inline fun Command.execute(
     sender: CommandSender,
     vararg arguments: Message = emptyArray(),
     checkPermission: Boolean = true,
-): CommandExecuteResult = CommandManager.executeCommand(sender, this, arguments.toMessageChain(), checkPermission)
+): CommandExecuteResult =
+    @OptIn(ConsoleExperimentalApi::class)
+    CommandManager.executeCommand(sender, this, arguments.toMessageChain(), checkPermission)
 
 /**
  * 执行一个确切的指令

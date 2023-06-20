@@ -131,6 +131,9 @@ public abstract interface class net/mamoe/mirai/IMirai : net/mamoe/mirai/LowLeve
 	public abstract fun setFileCacheStrategy (Lnet/mamoe/mirai/utils/FileCacheStrategy;)V
 }
 
+public abstract interface annotation class net/mamoe/mirai/LowLevelApi : java/lang/annotation/Annotation {
+}
+
 public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {
 	public fun getGroupVoiceDownloadUrl (Lnet/mamoe/mirai/Bot;[BJJ)Ljava/lang/String;
 	public abstract fun getGroupVoiceDownloadUrl (Lnet/mamoe/mirai/Bot;[BJJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -169,10 +172,48 @@ public final class net/mamoe/mirai/_MiraiInstance {
 	public static final fun set (Lnet/mamoe/mirai/IMirai;)V
 }
 
+public abstract class net/mamoe/mirai/auth/AuthReason {
+	public abstract fun getBot ()Lnet/mamoe/mirai/Bot;
+	public abstract fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/AuthReason$FastLoginError : net/mamoe/mirai/auth/AuthReason {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/AuthReason$ForceOffline : net/mamoe/mirai/auth/AuthReason {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/AuthReason$FreshLogin : net/mamoe/mirai/auth/AuthReason {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/AuthReason$MsfOffline : net/mamoe/mirai/auth/AuthReason {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/AuthReason$NetworkError : net/mamoe/mirai/auth/AuthReason {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/AuthReason$Unknown : net/mamoe/mirai/auth/AuthReason {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public final fun getCause ()Ljava/lang/Throwable;
+	public fun getMessage ()Ljava/lang/String;
+}
+
 public abstract interface class net/mamoe/mirai/auth/BotAuthInfo {
 	public abstract fun getConfiguration ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public abstract fun getDeviceInfo ()Lnet/mamoe/mirai/utils/DeviceInfo;
 	public abstract fun getId ()J
+	public abstract fun getReason ()Lnet/mamoe/mirai/auth/AuthReason;
+	public abstract fun isFirstLogin ()Z
 }
 
 public abstract interface class net/mamoe/mirai/auth/BotAuthResult {
@@ -205,6 +246,7 @@ public abstract interface class net/mamoe/mirai/auth/QRCodeLoginListener {
 	public fun getQrCodeMargin ()I
 	public fun getQrCodeSize ()I
 	public fun getQrCodeStateUpdateInterval ()J
+	public fun onCompleted ()V
 	public abstract fun onFetchQRCode (Lnet/mamoe/mirai/Bot;[B)V
 	public fun onIntervalLoop ()V
 	public abstract fun onStateChanged (Lnet/mamoe/mirai/Bot;Lnet/mamoe/mirai/auth/QRCodeLoginListener$State;)V
@@ -435,6 +477,7 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public abstract fun getBotAsMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun getBotMuteRemaining ()I
 	public fun getBotPermission ()Lnet/mamoe/mirai/contact/MemberPermission;
+	public abstract fun getEssences ()Lnet/mamoe/mirai/contact/essence/Essences;
 	public abstract fun getId ()J
 	public abstract fun getMembers ()Lnet/mamoe/mirai/contact/ContactList;
 	public abstract fun getName ()Ljava/lang/String;
@@ -801,6 +844,7 @@ public final class net/mamoe/mirai/contact/announcement/AnnouncementImage {
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getHeight ()I
 	public final fun getId ()Ljava/lang/String;
+	public final fun getUrl ()Ljava/lang/String;
 	public final fun getWidth ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -898,9 +942,11 @@ public abstract interface class net/mamoe/mirai/contact/announcement/Announcemen
 	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun get (Ljava/lang/String;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public abstract fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun members (Ljava/lang/String;Z)Ljava/util/List;
 	public abstract fun members (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;)Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;
 	public abstract fun publish (Lnet/mamoe/mirai/contact/announcement/Announcement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun remind (Ljava/lang/String;)V
 	public abstract fun remind (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/announcement/AnnouncementImage;
 	public abstract fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -952,6 +998,32 @@ public abstract interface class net/mamoe/mirai/contact/announcement/OnlineAnnou
 
 public final class net/mamoe/mirai/contact/announcement/OnlineAnnouncementKt {
 	public static final fun getBot (Lnet/mamoe/mirai/contact/announcement/OnlineAnnouncement;)Lnet/mamoe/mirai/Bot;
+}
+
+public final class net/mamoe/mirai/contact/essence/EssenceMessageRecord {
+	public final fun getFullSource ()Lnet/mamoe/mirai/message/data/MessageSource;
+	public final fun getFullSource (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
+	public final fun getOperator ()Lnet/mamoe/mirai/contact/NormalMember;
+	public final fun getOperatorId ()J
+	public final fun getOperatorNick ()Ljava/lang/String;
+	public final fun getOperatorTime ()I
+	public final fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
+	public final fun getSenderId ()J
+	public final fun getSenderNick ()Ljava/lang/String;
+	public final fun getSenderTime ()I
+	public final fun getSource ()Lnet/mamoe/mirai/message/data/MessageSource;
+	public final fun getSource (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class net/mamoe/mirai/contact/essence/Essences : net/mamoe/mirai/utils/Streamable {
+	public fun getPage (II)Ljava/util/List;
+	public abstract fun getPage (IILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun remove (Lnet/mamoe/mirai/message/data/MessageSource;)V
+	public abstract fun remove (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun share (Lnet/mamoe/mirai/message/data/MessageSource;)Ljava/lang/String;
+	public abstract fun share (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/contact/file/AbsoluteFile : net/mamoe/mirai/contact/file/AbsoluteFileFolder {
@@ -3890,7 +3962,6 @@ public final class net/mamoe/mirai/message/data/Face$Companion {
 public abstract interface class net/mamoe/mirai/message/data/FileMessage : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
 	public static final field Key Lnet/mamoe/mirai/message/data/FileMessage$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
-	public fun appendMiraiCodeTo (Ljava/lang/StringBuilder;)V
 	public fun contentToString ()Ljava/lang/String;
 	public static fun create (Ljava/lang/String;ILjava/lang/String;J)Lnet/mamoe/mirai/message/data/FileMessage;
 	public abstract fun getId ()Ljava/lang/String;
@@ -4512,6 +4583,7 @@ public abstract class net/mamoe/mirai/message/data/MessageSource : net/mamoe/mir
 	public abstract fun getIds ()[I
 	public abstract fun getInternalIds ()[I
 	public final fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
+	public abstract fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public abstract fun getOriginalMessage ()Lnet/mamoe/mirai/message/data/MessageChain;
 	public abstract fun getTargetId ()J
 	public abstract fun getTime ()I
@@ -4638,8 +4710,8 @@ public final class net/mamoe/mirai/message/data/MessageUtils {
 	public static final synthetic fun getContent (Lnet/mamoe/mirai/message/data/Message;)Ljava/lang/String;
 	public static final synthetic fun getIds (Lnet/mamoe/mirai/message/data/MessageChain;)[I
 	public static final synthetic fun getInternalId (Lnet/mamoe/mirai/message/data/MessageChain;)[I
-	public static final fun getKind (Lnet/mamoe/mirai/message/data/MessageSource;)Lnet/mamoe/mirai/message/data/MessageSourceKind;
-	public static final fun getKind (Lnet/mamoe/mirai/message/data/OnlineMessageSource;)Lnet/mamoe/mirai/message/data/MessageSourceKind;
+	public static final synthetic fun getKind (Lnet/mamoe/mirai/message/data/MessageSource;)Lnet/mamoe/mirai/message/data/MessageSourceKind;
+	public static final synthetic fun getKind (Lnet/mamoe/mirai/message/data/OnlineMessageSource;)Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public static final synthetic fun getLengthDuration (Lnet/mamoe/mirai/message/data/OnlineAudio;)J
 	public static final synthetic fun getOrFail (Lnet/mamoe/mirai/message/data/MessageChain;Lnet/mamoe/mirai/message/data/MessageKey;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/message/data/SingleMessage;
 	public static synthetic fun getOrFail$default (Lnet/mamoe/mirai/message/data/MessageChain;Lnet/mamoe/mirai/message/data/MessageKey;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/SingleMessage;
@@ -4689,7 +4761,6 @@ public final class net/mamoe/mirai/message/data/MusicShare : net/mamoe/mirai/mes
 	public synthetic fun <init> (ILnet/mamoe/mirai/message/data/MusicKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public fun <init> (Lnet/mamoe/mirai/message/data/MusicKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public fun <init> (Lnet/mamoe/mirai/message/data/MusicKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public fun appendMiraiCodeTo (Ljava/lang/StringBuilder;)V
 	public final fun component1 ()Lnet/mamoe/mirai/message/data/MusicKind;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
@@ -4781,18 +4852,18 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource : net/mam
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming : net/mamoe/mirai/message/data/OnlineMessageSource {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Incoming$Key;
-	public final fun getFromId ()J
+	public fun getFromId ()J
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/User;
-	public final fun getTargetId ()J
+	public fun getTargetId ()J
 }
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromFriend : net/mamoe/mirai/message/data/OnlineMessageSource$Incoming {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromFriend$Key;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/Friend;
-	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
-	public final fun getSubject ()Lnet/mamoe/mirai/contact/Friend;
-	public final fun getTarget ()Lnet/mamoe/mirai/Bot;
-	public synthetic fun getTarget ()Lnet/mamoe/mirai/contact/ContactOrBot;
+	public abstract fun getSubject ()Lnet/mamoe/mirai/contact/Friend;
+	public final synthetic fun getTarget ()Lnet/mamoe/mirai/Bot;
+	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/ContactOrBot;
 	public final fun toString ()Ljava/lang/String;
 }
 
@@ -4802,6 +4873,7 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$Fro
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromGroup : net/mamoe/mirai/message/data/OnlineMessageSource$Incoming {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromGroup$Key;
 	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/Member;
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public fun getSubject ()Lnet/mamoe/mirai/contact/Group;
@@ -4815,11 +4887,11 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$Fro
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromStranger : net/mamoe/mirai/message/data/OnlineMessageSource$Incoming {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromStranger$Key;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/Stranger;
-	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
-	public final fun getSubject ()Lnet/mamoe/mirai/contact/Stranger;
-	public final fun getTarget ()Lnet/mamoe/mirai/Bot;
-	public synthetic fun getTarget ()Lnet/mamoe/mirai/contact/ContactOrBot;
+	public abstract fun getSubject ()Lnet/mamoe/mirai/contact/Stranger;
+	public final synthetic fun getTarget ()Lnet/mamoe/mirai/Bot;
+	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/ContactOrBot;
 	public final fun toString ()Ljava/lang/String;
 }
 
@@ -4829,11 +4901,11 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$Fro
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromTemp : net/mamoe/mirai/message/data/OnlineMessageSource$Incoming {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Incoming$FromTemp$Key;
 	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public abstract fun getSender ()Lnet/mamoe/mirai/contact/Member;
-	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
-	public final fun getSubject ()Lnet/mamoe/mirai/contact/Member;
-	public final fun getTarget ()Lnet/mamoe/mirai/Bot;
-	public synthetic fun getTarget ()Lnet/mamoe/mirai/contact/ContactOrBot;
+	public abstract fun getSubject ()Lnet/mamoe/mirai/contact/Member;
+	public final synthetic fun getTarget ()Lnet/mamoe/mirai/Bot;
+	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/ContactOrBot;
 	public final fun toString ()Ljava/lang/String;
 }
 
@@ -4859,6 +4931,7 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$Key
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToFriend : net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToFriend$Key;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Friend;
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/Friend;
@@ -4870,6 +4943,7 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToF
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToGroup : net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToGroup$Key;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Group;
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/Group;
@@ -4881,6 +4955,7 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToG
 
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToStranger : net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToStranger$Key;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Stranger;
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/Stranger;
@@ -4893,6 +4968,7 @@ public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToS
 public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToTemp : net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing {
 	public static final field Key Lnet/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToTemp$Key;
 	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
+	public final fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public synthetic fun getSubject ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getSubject ()Lnet/mamoe/mirai/contact/Member;
 	public abstract fun getTarget ()Lnet/mamoe/mirai/contact/Member;
@@ -5288,14 +5364,12 @@ public class net/mamoe/mirai/message/data/Voice : net/mamoe/mirai/message/data/P
 	public synthetic fun <init> (ILjava/lang/String;[BJILjava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public synthetic fun <init> (Ljava/lang/String;[BJILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun contentToString ()Ljava/lang/String;
-	public fun equals (Ljava/lang/Object;)Z
 	public static final fun fromAudio (Lnet/mamoe/mirai/message/data/Audio;)Lnet/mamoe/mirai/message/data/Voice;
 	public fun getFileName ()Ljava/lang/String;
 	public fun getFileSize ()J
 	public fun getMd5 ()[B
 	public fun getUrl ()Ljava/lang/String;
 	public final fun get_codec ()I
-	public fun hashCode ()I
 	public final fun toAudio ()Lnet/mamoe/mirai/message/data/Audio;
 	public fun toString ()Ljava/lang/String;
 	public static final fun write$Self (Lnet/mamoe/mirai/message/data/Voice;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
@@ -5333,6 +5407,10 @@ public final class net/mamoe/mirai/message/data/XmlMessageBuilder$ItemBuilder {
 }
 
 public final class net/mamoe/mirai/message/data/visitor/MessageVisitorKt {
+}
+
+public final class net/mamoe/mirai/network/BotAuthorizationException : net/mamoe/mirai/network/LoginFailedException {
+	public final fun getAuthorization ()Lnet/mamoe/mirai/auth/BotAuthorization;
 }
 
 public abstract class net/mamoe/mirai/network/CustomLoginFailedException : net/mamoe/mirai/network/LoginFailedException {
@@ -5398,6 +5476,55 @@ public final class net/mamoe/mirai/network/UnsupportedSmsLoginException : net/ma
 public final class net/mamoe/mirai/network/WrongPasswordException : net/mamoe/mirai/network/LoginFailedException {
 }
 
+public abstract interface class net/mamoe/mirai/spi/AudioToSilkService : net/mamoe/mirai/spi/BaseService {
+	public static final field Companion Lnet/mamoe/mirai/spi/AudioToSilkService$Companion;
+	public abstract fun convert (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun getInstance ()Lnet/mamoe/mirai/spi/AudioToSilkService;
+}
+
+public final class net/mamoe/mirai/spi/AudioToSilkService$Companion {
+	public final fun getInstance ()Lnet/mamoe/mirai/spi/AudioToSilkService;
+}
+
+public abstract interface class net/mamoe/mirai/spi/BaseService {
+	public fun getPriority ()I
+}
+
+public abstract class net/mamoe/mirai/utils/AbstractBotConfiguration {
+	public fun <init> ()V
+	public final fun fileBasedDeviceInfo ()V
+	public final fun fileBasedDeviceInfo (Ljava/lang/String;)V
+	public static synthetic fun fileBasedDeviceInfo$default (Lnet/mamoe/mirai/utils/AbstractBotConfiguration;Ljava/lang/String;ILjava/lang/Object;)V
+	protected abstract fun getBotLoggerSupplier ()Lkotlin/jvm/functions/Function1;
+	public final fun getCacheDir ()Ljava/io/File;
+	protected abstract fun getDeviceInfo ()Lkotlin/jvm/functions/Function1;
+	protected abstract fun getNetworkLoggerSupplier ()Lkotlin/jvm/functions/Function1;
+	public final fun getWorkingDir ()Ljava/io/File;
+	public final fun redirectBotLogToDirectory ()V
+	public final fun redirectBotLogToDirectory (Ljava/io/File;)V
+	public final fun redirectBotLogToDirectory (Ljava/io/File;J)V
+	public final fun redirectBotLogToDirectory (Ljava/io/File;JLkotlin/jvm/functions/Function1;)V
+	public static synthetic fun redirectBotLogToDirectory$default (Lnet/mamoe/mirai/utils/AbstractBotConfiguration;Ljava/io/File;JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun redirectBotLogToFile ()V
+	public final fun redirectBotLogToFile (Ljava/io/File;)V
+	public final fun redirectBotLogToFile (Ljava/io/File;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun redirectBotLogToFile$default (Lnet/mamoe/mirai/utils/AbstractBotConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun redirectNetworkLogToDirectory ()V
+	public final fun redirectNetworkLogToDirectory (Ljava/io/File;)V
+	public final fun redirectNetworkLogToDirectory (Ljava/io/File;J)V
+	public final fun redirectNetworkLogToDirectory (Ljava/io/File;JLkotlin/jvm/functions/Function1;)V
+	public static synthetic fun redirectNetworkLogToDirectory$default (Lnet/mamoe/mirai/utils/AbstractBotConfiguration;Ljava/io/File;JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun redirectNetworkLogToFile ()V
+	public final fun redirectNetworkLogToFile (Ljava/io/File;)V
+	public final fun redirectNetworkLogToFile (Ljava/io/File;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun redirectNetworkLogToFile$default (Lnet/mamoe/mirai/utils/AbstractBotConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	protected abstract fun setBotLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
+	public final fun setCacheDir (Ljava/io/File;)V
+	protected abstract fun setDeviceInfo (Lkotlin/jvm/functions/Function1;)V
+	protected abstract fun setNetworkLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
+	public final fun setWorkingDir (Ljava/io/File;)V
+}
+
 public abstract class net/mamoe/mirai/utils/AbstractExternalResource : net/mamoe/mirai/utils/ExternalResource {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
@@ -5421,7 +5548,7 @@ public abstract interface class net/mamoe/mirai/utils/AbstractExternalResource$R
 	public abstract fun cleanup ()V
 }
 
-public class net/mamoe/mirai/utils/BotConfiguration {
+public class net/mamoe/mirai/utils/BotConfiguration : net/mamoe/mirai/utils/AbstractBotConfiguration {
 	public static final field Companion Lnet/mamoe/mirai/utils/BotConfiguration$Companion;
 	public fun <init> ()V
 	public final fun autoReconnectOnForceOffline ()V
@@ -5430,12 +5557,8 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun disableAccountSecretes ()V
 	public final fun disableContactCache ()V
 	public final fun enableContactCache ()V
-	public final fun fileBasedDeviceInfo ()V
-	public final fun fileBasedDeviceInfo (Ljava/lang/String;)V
-	public static synthetic fun fileBasedDeviceInfo$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/lang/String;ILjava/lang/Object;)V
 	public final fun getAutoReconnectOnForceOffline ()Z
 	public final fun getBotLoggerSupplier ()Lkotlin/jvm/functions/Function1;
-	public final fun getCacheDir ()Ljava/io/File;
 	public final fun getContactListCache ()Lnet/mamoe/mirai/utils/BotConfiguration$ContactListCache;
 	public static final fun getDefault ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public final fun getDeviceInfo ()Lkotlin/jvm/functions/Function1;
@@ -5452,7 +5575,6 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final synthetic fun getReconnectPeriodMillis ()J
 	public final fun getReconnectionRetryTimes ()I
 	public final fun getStatHeartbeatPeriodMillis ()J
-	public final fun getWorkingDir ()Ljava/io/File;
 	public final synthetic fun inheritCoroutineContext (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun isConvertLineSeparator ()Z
 	public final fun isShowingVerboseEventLog ()Z
@@ -5460,27 +5582,8 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun noBotLog ()V
 	public final fun noNetworkLog ()V
 	public final fun randomDeviceInfo ()V
-	public final fun redirectBotLogToDirectory ()V
-	public final fun redirectBotLogToDirectory (Ljava/io/File;)V
-	public final fun redirectBotLogToDirectory (Ljava/io/File;J)V
-	public final fun redirectBotLogToDirectory (Ljava/io/File;JLkotlin/jvm/functions/Function1;)V
-	public static synthetic fun redirectBotLogToDirectory$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/io/File;JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public final fun redirectBotLogToFile ()V
-	public final fun redirectBotLogToFile (Ljava/io/File;)V
-	public final fun redirectBotLogToFile (Ljava/io/File;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun redirectBotLogToFile$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public final fun redirectNetworkLogToDirectory ()V
-	public final fun redirectNetworkLogToDirectory (Ljava/io/File;)V
-	public final fun redirectNetworkLogToDirectory (Ljava/io/File;J)V
-	public final fun redirectNetworkLogToDirectory (Ljava/io/File;JLkotlin/jvm/functions/Function1;)V
-	public static synthetic fun redirectNetworkLogToDirectory$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/io/File;JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public final fun redirectNetworkLogToFile ()V
-	public final fun redirectNetworkLogToFile (Ljava/io/File;)V
-	public final fun redirectNetworkLogToFile (Ljava/io/File;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun redirectNetworkLogToFile$default (Lnet/mamoe/mirai/utils/BotConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun setAutoReconnectOnForceOffline (Z)V
 	public final fun setBotLoggerSupplier (Lkotlin/jvm/functions/Function1;)V
-	public final fun setCacheDir (Ljava/io/File;)V
 	public final fun setContactListCache (Lnet/mamoe/mirai/utils/BotConfiguration$ContactListCache;)V
 	public final fun setConvertLineSeparator (Z)V
 	public final fun setDeviceInfo (Lkotlin/jvm/functions/Function1;)V
@@ -5498,7 +5601,6 @@ public class net/mamoe/mirai/utils/BotConfiguration {
 	public final fun setReconnectionRetryTimes (I)V
 	public final fun setShowingVerboseEventLog (Z)V
 	public final fun setStatHeartbeatPeriodMillis (J)V
-	public final fun setWorkingDir (Ljava/io/File;)V
 }
 
 public final class net/mamoe/mirai/utils/BotConfiguration$Companion {
@@ -5540,8 +5642,9 @@ public final class net/mamoe/mirai/utils/BotConfiguration$MiraiProtocol : java/l
 
 public final class net/mamoe/mirai/utils/DeviceInfo {
 	public static final field Companion Lnet/mamoe/mirai/utils/DeviceInfo$Companion;
-	public synthetic fun <init> (I[B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[BLkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public fun <init> ([B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[B)V
+	public fun <init> ([B[B[B[B[B[B[B[B[B[B[BLnet/mamoe/mirai/utils/DeviceInfo$Version;[B[B[B[B[B[BLjava/lang/String;[B[B)V
+	public static final fun deserializeFromString (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public fun equals (Ljava/lang/Object;)Z
 	public static final fun from (Ljava/io/File;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static final fun from (Ljava/io/File;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/utils/DeviceInfo;
@@ -5571,26 +5674,26 @@ public final class net/mamoe/mirai/utils/DeviceInfo {
 	public fun hashCode ()I
 	public static final fun random ()Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static final fun random (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfo;
-	public static final fun write$Self (Lnet/mamoe/mirai/utils/DeviceInfo;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+	public static final fun serializeToString (Lnet/mamoe/mirai/utils/DeviceInfo;)Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/utils/DeviceInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final class net/mamoe/mirai/utils/DeviceInfo$$serializer : kotlinx/serialization/KSerializer {
 	public static final field INSTANCE Lnet/mamoe/mirai/utils/DeviceInfo$$serializer;
-	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
 	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/utils/DeviceInfo;)V
-	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public final class net/mamoe/mirai/utils/DeviceInfo$Companion {
+	public final fun deserializeFromString (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun from (Ljava/io/File;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun from (Ljava/io/File;Lkotlinx/serialization/json/Json;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public static synthetic fun from$default (Lnet/mamoe/mirai/utils/DeviceInfo$Companion;Ljava/io/File;Lkotlinx/serialization/json/Json;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun random ()Lnet/mamoe/mirai/utils/DeviceInfo;
 	public final fun random (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfo;
+	public final fun serializeToString (Lnet/mamoe/mirai/utils/DeviceInfo;)Ljava/lang/String;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -5624,8 +5727,65 @@ public final class net/mamoe/mirai/utils/DeviceInfo$Version$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class net/mamoe/mirai/utils/DeviceInfoBuilder {
+	public static final field Companion Lnet/mamoe/mirai/utils/DeviceInfoBuilder$Companion;
+	public fun <init> ()V
+	public final fun androidId (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun androidId ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun apn (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun apn ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun baseBand (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun baseBand ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun board (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun board ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun bootId (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun bootId ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun bootloader (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun bootloader ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun brand (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun brand ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun build ()Lnet/mamoe/mirai/utils/DeviceInfo;
+	public final fun device (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun device ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun display (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun display ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun fingerprint (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun fingerprint ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public static final fun fromPrototype (Lnet/mamoe/mirai/utils/DeviceInfo;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public static final fun fromRandom ()Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public static final fun fromRandom (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun imei (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun imsiMd5 (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun imsiMd5 ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun macAddress (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun macAddress ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun model (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun model ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun osType (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun osType ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun procVersion (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun procVersion ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun product (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun product ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun simInfo (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun simInfo ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun version (Lnet/mamoe/mirai/utils/DeviceInfo$Version;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun wifiBSSID (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun wifiBSSID ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun wifiSSID (Ljava/lang/String;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun wifiSSID ([B)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+}
+
+public final class net/mamoe/mirai/utils/DeviceInfoBuilder$Companion {
+	public final fun fromPrototype (Lnet/mamoe/mirai/utils/DeviceInfo;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun fromRandom ()Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public final fun fromRandom (Lkotlin/random/Random;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+	public static synthetic fun fromRandom$default (Lnet/mamoe/mirai/utils/DeviceInfoBuilder$Companion;Lkotlin/random/Random;ILjava/lang/Object;)Lnet/mamoe/mirai/utils/DeviceInfoBuilder;
+}
+
 public final class net/mamoe/mirai/utils/DeviceInfoKt {
 	public static final fun generateDeviceInfoData (Lnet/mamoe/mirai/utils/DeviceInfo;)[B
+	public static final synthetic fun serializeToString (Lnet/mamoe/mirai/utils/DeviceInfo;)Ljava/lang/String;
 }
 
 public abstract interface class net/mamoe/mirai/utils/DeviceVerificationRequests {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -121,6 +121,21 @@ public interface PluginData {
      */
     @ConsoleExperimentalApi
     public val saveName: String
+
+    /**
+     * [PluginData] 序列化时使用的格式的枚举.
+     */
+    @ConsoleExperimentalApi
+    public enum class SaveType(@ConsoleExperimentalApi public val extension: String) {
+        YAML("yml"), JSON("json")
+    }
+
+    /**
+     * 决定这个 [PluginData] 序列化时使用的格式, 默认为 YAML.
+     * 具体实现格式由 [PluginDataStorage] 决定.
+     */
+    @ConsoleExperimentalApi
+    public val saveType: SaveType get() = SaveType.YAML
 
     @ConsoleExperimentalApi
     public val updaterSerializer: KSerializer<Unit>
@@ -262,7 +277,7 @@ public fun PluginData.value(default: String): SerializerAwareValue<String> = val
  * - [MessageSerializers] 支持的所有类型, 如 [MessageChain].
  * - 在 [PluginData.serializersModule] 自定义支持的类型
  */
-@Suppress("UNCHECKED_CAST")
+@OptIn(ConsoleExperimentalApi::class)
 @LowPriorityInOverloadResolution
 public inline fun <reified T> PluginData.value(
     default: T,
@@ -309,6 +324,7 @@ public inline fun <@ResolveContext(RESTRICTED_NO_ARG_CONSTRUCTOR) reified T>
         PluginData.value(apply: T.() -> Unit = {}): SerializerAwareValue<@kotlin.internal.Exact T> =
     valueImpl<T>(typeOf<T>(), T::class).also { it.value.apply() }
 
+@OptIn(ConsoleExperimentalApi::class)
 @Suppress("UNCHECKED_CAST")
 @PublishedApi
 internal fun <T> PluginData.valueImpl(type: KType, classifier: KClass<*>): SerializerAwareValue<T> =

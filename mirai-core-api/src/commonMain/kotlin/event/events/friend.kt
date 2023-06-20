@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -10,11 +10,10 @@
 @file:JvmMultifileClass
 @file:JvmName("BotEventsKt")
 @file:Suppress("FunctionName", "unused", "DEPRECATION_ERROR")
+@file:OptIn(MiraiInternalApi::class)
 
 package net.mamoe.mirai.event.events
 
-import kotlinx.atomicfu.AtomicBoolean
-import kotlinx.atomicfu.atomic
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
@@ -62,7 +61,6 @@ public data class FriendDeleteEvent @MiraiInternalApi public constructor(
 /**
  * 一个账号请求添加机器人为好友的事件
  */
-@Suppress("DEPRECATION")
 public data class NewFriendRequestEvent @MiraiInternalApi public constructor(
     public override val bot: Bot,
     /**

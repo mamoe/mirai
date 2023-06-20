@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -16,7 +16,6 @@ repositories {
     google()
     mavenCentral()
     gradlePluginPortal()
-    maven("https://repo.mirai.mamoe.net/keep") // for modified shadow plugin
 }
 
 kotlin {
@@ -54,14 +53,26 @@ dependencies {
     // api("com.github.jengelman.gradle.plugins", "shadow", version("shadow"))
     api("com.github.johnrengelman", "shadow", version("shadow"))
 
-    api("org.jetbrains.kotlin", "kotlin-gradle-plugin", version("kotlinCompiler"))
+    api("org.jetbrains.kotlin", "kotlin-gradle-plugin", version("kotlinCompiler")) {
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
+        exclude("org.jetbrains.kotlin", "kotlin-reflect")
+    }
 //    api("org.jetbrains.kotlin", "kotlin-compiler-embeddable", version("kotlinCompiler"))
 //    api(ktor("client-okhttp", "1.4.3"))
     api("com.android.tools.build", "gradle", version("androidGradlePlugin"))
     api(asm("tree"))
     api(asm("util"))
     api(asm("commons"))
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") {
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+        exclude("org.jetbrains.kotlin", "kotlin-reflect")
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
+    }
+
+    // https://mvnrepository.com/artifact/com.android.library/com.android.library.gradle.plugin
+    api("com.android.library:com.android.library.gradle.plugin:${version("androidGradlePlugin")}")
+    api("com.google.code.gson:gson:2.10.1")
 
     api("gradle.plugin.com.google.gradle:osdetector-gradle-plugin:1.7.0")
 
