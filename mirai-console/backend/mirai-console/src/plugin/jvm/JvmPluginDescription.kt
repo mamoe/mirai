@@ -184,6 +184,11 @@ public class JvmPluginDescriptionBuilder(
         @ResolveContext(VERSION_REQUIREMENT) versionRequirement: String,
         isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply {
+        // XXX: 兼容性
+        if (pluginId == "net.mamoe.mirai.console" || pluginId == "net.mamoe.mirai") {
+            consoleRequirement = versionRequirement
+            return@apply
+        }
         this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
     }
 
