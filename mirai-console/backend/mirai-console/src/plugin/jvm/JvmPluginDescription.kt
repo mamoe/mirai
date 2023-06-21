@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.plugin.jvm
 import io.github.karlatemp.caller.CallerFinder
 import io.github.karlatemp.caller.StackFrame
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
 import net.mamoe.mirai.console.internal.util.findLoader
@@ -134,6 +135,7 @@ public class JvmPluginDescriptionBuilder(
     private var author: String = ""
     private var info: String = ""
     private var dependencies: MutableSet<PluginDependency> = mutableSetOf()
+    private var consoleRequirement: String? = null
 
     @ILoveKuriyamaMiraiForever
     public fun name(@ResolveContext(PLUGIN_NAME) value: String): JvmPluginDescriptionBuilder =
@@ -200,10 +202,20 @@ public class JvmPluginDescriptionBuilder(
         this.dependencies.add(PluginDependency(pluginId, null, isOptional))
     }
 
+    /**
+     * @see MiraiConsole.version
+     */
+    @ILoveKuriyamaMiraiForever
+    public fun consoleRequirement(
+        @ResolveContext(VERSION_REQUIREMENT) versionRequirement: String
+    ): JvmPluginDescriptionBuilder = apply {
+        consoleRequirement = versionRequirement
+    }
+
 
     public fun build(): JvmPluginDescription =
         @Suppress("DEPRECATION_ERROR")
-        SimpleJvmPluginDescription(id, name, version, author, info, dependencies)
+        SimpleJvmPluginDescription(id, name, version, author, info, dependencies, consoleRequirement)
 
     /**
      * 标注一个 [JvmPluginDescription] DSL
@@ -228,6 +240,7 @@ internal data class SimpleJvmPluginDescription
     override val author: String = "",
     override val info: String = "",
     override val dependencies: Set<PluginDependency> = setOf(),
+    override val consoleRequirement: String? = null
 ) : JvmPluginDescription {
 
     @Suppress("DEPRECATION_ERROR")
@@ -254,12 +267,14 @@ internal data class SimpleJvmPluginDescription
         val author: String = "",
         val info: String = "",
         val dependencies: Set<PluginDependency> = setOf(),
+        val consoleRequirement: String? = null
     ) {
         fun toJvmPluginDescription(): JvmPluginDescription {
             return SimpleJvmPluginDescription(
                 id,
                 name ?: id,
-                version, author, info, dependencies
+                version, author, info, dependencies,
+                consoleRequirement
             )
         }
     }
