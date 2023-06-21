@@ -287,7 +287,7 @@ internal class BuiltInJvmPluginLoaderImpl(
         return filePlugins.toSet().map { it.second }
     }
 
-    private val loadedPlugins = ConcurrentHashMap<JvmPlugin, Unit>()
+    private val loadedPlugins = ConcurrentHashMap<String, JvmPlugin>()
 
     private fun Path.moveNameFolder(plugin: JvmPlugin) {
         val nameFolder = this.resolve(plugin.description.name).toFile()
@@ -324,8 +324,8 @@ internal class BuiltInJvmPluginLoaderImpl(
     override fun load(plugin: JvmPlugin) {
         ensureActive()
 
-        if (loadedPlugins.put(plugin, Unit) != null) {
-            error("Plugin '${plugin.name}' is already loaded and cannot be reloaded.")
+        if (loadedPlugins.put(plugin.id, plugin) != null) {
+            error("Plugin '${plugin.id}' is already loaded and cannot be reloaded.")
         }
         logger.verbose { "Loading plugin ${plugin.description.smartToString()}" }
         runCatching {
