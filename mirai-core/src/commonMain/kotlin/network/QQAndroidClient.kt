@@ -86,6 +86,9 @@ internal open class QQAndroidClient(
         bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE ||
                 bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PAD
     }
+    val usePC by lazy {
+        bot.configuration.protocol == BotConfiguration.MiraiProtocol.MACOS
+    }
     var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
 
     var fileStoragePushFSSvcList: FileStoragePushFSSvcList? = null

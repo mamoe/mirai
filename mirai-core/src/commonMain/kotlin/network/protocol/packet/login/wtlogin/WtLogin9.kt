@@ -143,6 +143,16 @@ internal object WtLogin9 : WtLoginExt {
                             commandStr = "810_9"
                         )
                     }
+
+                    if (client.usePC) {
+                        t544ForToken(
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 9,
+                            commandStr = "810_9"
+                        )
+                    }
                 }
             }
         }
@@ -197,6 +207,16 @@ internal object WtLogin9 : WtLoginExt {
                     t516()
                     t521(8)
                     t318(data.tgtQR)
+
+                    if (client.usePC) {
+                        t544ForToken(
+                            uin = client.uin,
+                            guid = client.device.guid,
+                            sdkVersion = client.sdkVersion,
+                            subCommandId = 9,
+                            commandStr = "810_9"
+                        )
+                    }
                 }
             }
         }
