@@ -34,6 +34,7 @@ internal object WtLogin2 : WtLoginExt {
                     if (client.useAndroid) {
                         t544ForVerify(
                             uin = client.uin,
+                            protocol = client.bot.configuration.protocol,
                             guid = client.device.guid,
                             sdkVersion = client.sdkVersion,
                             subCommandId = 2,
@@ -63,6 +64,7 @@ internal object WtLogin2 : WtLoginExt {
                     if (client.useAndroid) {
                         t544ForVerify(
                             uin = client.uin,
+                            protocol = client.bot.configuration.protocol,
                             guid = client.device.guid,
                             sdkVersion = client.sdkVersion,
                             subCommandId = 2,

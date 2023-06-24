@@ -966,6 +966,7 @@ internal fun TlvMapWriter.t548(
 
 internal fun TlvMapWriter.t544ForToken( // 1348
     uin: Long,
+    protocol: BotConfiguration.MiraiProtocol,
     guid: ByteArray,
     sdkVersion: String,
     subCommandId: Int,
@@ -984,6 +985,7 @@ internal fun TlvMapWriter.t544ForToken( // 1348
         }.use { dataIn ->
             service.encryptTlv(EncryptServiceContext(uin, buildTypeSafeMap {
                 set(EncryptServiceContext.KEY_COMMAND_STR, commandStr)
+                set(EncryptServiceContext.KEY_BOT_PROTOCOL, protocol)
             }), 0x544, dataIn.readBytes())
         }.let { result ->
             writeFully(result ?: "".toByteArray()) // Empty str means native throws exception
@@ -993,6 +995,7 @@ internal fun TlvMapWriter.t544ForToken( // 1348
 
 internal fun TlvMapWriter.t544ForVerify( // 1348
     uin: Long,
+    protocol: BotConfiguration.MiraiProtocol,
     guid: ByteArray,
     sdkVersion: String,
     subCommandId: Int,
@@ -1008,6 +1011,7 @@ internal fun TlvMapWriter.t544ForVerify( // 1348
         }.use { dataIn ->
             service.encryptTlv(EncryptServiceContext(uin, buildTypeSafeMap {
                 set(EncryptServiceContext.KEY_COMMAND_STR, commandStr)
+                set(EncryptServiceContext.KEY_BOT_PROTOCOL, protocol)
             }), 0x544, dataIn.readBytes())
         }.let { result ->
             writeFully(result ?: "".toByteArray()) // Empty str means native throws exception

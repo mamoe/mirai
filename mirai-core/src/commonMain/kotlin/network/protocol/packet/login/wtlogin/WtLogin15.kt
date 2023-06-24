@@ -138,6 +138,7 @@ internal object WtLogin15 : WtLoginExt {
                 if (client.useAndroid) {
                     t544ForToken(
                         uin = client.uin,
+                        protocol = client.bot.configuration.protocol,
                         guid = client.device.guid,
                         sdkVersion = client.sdkVersion,
                         subCommandId = 15,

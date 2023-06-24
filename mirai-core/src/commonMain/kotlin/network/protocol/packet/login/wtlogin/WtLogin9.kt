@@ -137,6 +137,7 @@ internal object WtLogin9 : WtLoginExt {
                     if (client.useAndroid) {
                         t544ForToken(
                             uin = client.uin,
+                            protocol = client.bot.configuration.protocol,
                             guid = client.device.guid,
                             sdkVersion = client.sdkVersion,
                             subCommandId = 9,
@@ -147,6 +148,7 @@ internal object WtLogin9 : WtLoginExt {
                     if (client.usePC) {
                         t544ForToken(
                             uin = client.uin,
+                            protocol = client.bot.configuration.protocol,
                             guid = client.device.guid,
                             sdkVersion = client.sdkVersion,
                             subCommandId = 9,
@@ -211,6 +213,7 @@ internal object WtLogin9 : WtLoginExt {
                     if (client.usePC) {
                         t544ForToken(
                             uin = client.uin,
+                            protocol = client.bot.configuration.protocol,
                             guid = client.device.guid,
                             sdkVersion = client.sdkVersion,
                             subCommandId = 9,
