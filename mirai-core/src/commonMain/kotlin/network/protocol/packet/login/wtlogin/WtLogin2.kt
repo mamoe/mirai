@@ -31,7 +31,7 @@ internal object WtLogin2 : WtLoginExt {
                     t104(client.t104)
                     t116(client.miscBitMap, client.subSigMap)
                     client.t547?.let { t547(it) }
-                    if (client.useAndroid) {
+                    if (client.supportedEncrypt) {
                         t544ForVerify(
                             uin = client.uin,
                             protocol = client.bot.configuration.protocol,
@@ -61,7 +61,7 @@ internal object WtLogin2 : WtLoginExt {
                     t104(client.t104)
                     t116(client.miscBitMap, client.subSigMap)
                     client.t547?.let { t547(it) }
-                    if (client.useAndroid) {
+                    if (client.supportedEncrypt) {
                         t544ForVerify(
                             uin = client.uin,
                             protocol = client.bot.configuration.protocol,

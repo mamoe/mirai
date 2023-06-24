@@ -39,6 +39,14 @@ public class EncryptServiceContext @MiraiInternalApi constructor(
  * @since 2.15.0
  */
 public interface EncryptService : BaseService {
+
+    /**
+     * @since 2.15
+     */
+    public fun supported(protocol: BotConfiguration.MiraiProtocol) : Boolean {
+        return protocol != BotConfiguration.MiraiProtocol.ANDROID_WATCH
+    }
+
     /**
      * Returns `null` if not supported.
      */
