@@ -84,7 +84,7 @@ internal open class QQAndroidClient(
     override var loginState = 0
 
     val supportedEncrypt by lazy {
-        EncryptService.instance?.supported(bot.configuration.protocol) ?: false
+        EncryptService.instance?.supports(bot.configuration.protocol) ?: false
     }
     var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
 
