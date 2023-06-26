@@ -41,9 +41,10 @@ internal object WtLogin7 : WtLoginExt {
                     t17c(code.encodeToByteArray())
                     t401(client.G)
                     t198()
-                    if (client.useAndroid) {
+                    if (client.supportedEncrypt) {
                         t544ForVerify(
                             uin = client.uin,
+                            protocol = client.bot.configuration.protocol,
                             guid = client.device.guid,
                             sdkVersion = client.sdkVersion,
                             subCommandId = 7,

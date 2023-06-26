@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.network.components.AccountSecrets
 import net.mamoe.mirai.internal.network.components.SsoSession
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
+import net.mamoe.mirai.internal.spi.EncryptService
 import net.mamoe.mirai.internal.utils.AtomicIntSeq
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.NetworkType
@@ -82,9 +83,8 @@ internal open class QQAndroidClient(
     override var outgoingPacketSessionId: ByteArray = 0x02B05B8B.toByteArray()
     override var loginState = 0
 
-    val useAndroid by lazy {
-        bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE ||
-                bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PAD
+    val supportedEncrypt by lazy {
+        EncryptService.instance?.supports(bot.configuration.protocol) ?: false
     }
     var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
 

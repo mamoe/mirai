@@ -92,8 +92,8 @@ public class StandardCharImageLoginSolver
                     }
 
                     tempFile.writeBytes(data)
-                    logger.info { "[QRCodeLogin] 将会显示二维码图片，若看不清图片，请查看文件 file://${tempFile.absolutePath}" }
-                    logger.info { "[QRCodeLogin] Displaying qrcode image. If not clear, view file file://${tempFile.absolutePath}." }
+                    logger.info { "[QRCodeLogin] 将会显示二维码图片，若看不清图片，请查看文件 ${tempFile.toPath().toUri()}" }
+                    logger.info { "[QRCodeLogin] Displaying qrcode image. If not clear, view file ${tempFile.toPath().toUri()}." }
                 } catch (e: Exception) {
                     logger.warning("[QRCodeLogin] 无法写出二维码图片. 请尽量关闭终端个性化样式后扫描二维码字符图片", e)
                     logger.warning(
