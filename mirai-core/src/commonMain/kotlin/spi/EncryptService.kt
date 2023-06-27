@@ -13,7 +13,10 @@ package net.mamoe.mirai.internal.spi
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.spi.BaseService
 import net.mamoe.mirai.spi.SpiServiceLoader
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.TypeKey
+import net.mamoe.mirai.utils.TypeSafeMap
 
 
 /**
@@ -43,7 +46,14 @@ public interface EncryptService : BaseService {
     public fun initialize(context: EncryptServiceContext)
 
     /**
-     * Returns `null` if not supported.
+     * Returns `false` if not supported.
+     */
+    public fun supports(protocol: BotConfiguration.MiraiProtocol) : Boolean {
+        return protocol != BotConfiguration.MiraiProtocol.ANDROID_WATCH
+    }
+
+    /**
+     * Returns `null` if encrypt fail.
      */
     public fun encryptTlv(
         context: EncryptServiceContext,
@@ -78,5 +88,4 @@ public interface EncryptService : BaseService {
 
         internal val instance: EncryptService? get() = loader.service
     }
-
 }

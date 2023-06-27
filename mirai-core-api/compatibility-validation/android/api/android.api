@@ -172,10 +172,48 @@ public final class net/mamoe/mirai/_MiraiInstance {
 	public static final fun set (Lnet/mamoe/mirai/IMirai;)V
 }
 
+public abstract class net/mamoe/mirai/auth/AuthReason {
+	public abstract fun getBot ()Lnet/mamoe/mirai/Bot;
+	public abstract fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/AuthReason$FastLoginError : net/mamoe/mirai/auth/AuthReason {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/AuthReason$ForceOffline : net/mamoe/mirai/auth/AuthReason {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/AuthReason$FreshLogin : net/mamoe/mirai/auth/AuthReason {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/AuthReason$MsfOffline : net/mamoe/mirai/auth/AuthReason {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/AuthReason$NetworkError : net/mamoe/mirai/auth/AuthReason {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun getMessage ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/auth/AuthReason$Unknown : net/mamoe/mirai/auth/AuthReason {
+	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public final fun getCause ()Ljava/lang/Throwable;
+	public fun getMessage ()Ljava/lang/String;
+}
+
 public abstract interface class net/mamoe/mirai/auth/BotAuthInfo {
 	public abstract fun getConfiguration ()Lnet/mamoe/mirai/utils/BotConfiguration;
 	public abstract fun getDeviceInfo ()Lnet/mamoe/mirai/utils/DeviceInfo;
 	public abstract fun getId ()J
+	public abstract fun getReason ()Lnet/mamoe/mirai/auth/AuthReason;
+	public abstract fun isFirstLogin ()Z
 }
 
 public abstract interface class net/mamoe/mirai/auth/BotAuthResult {

@@ -11,10 +11,7 @@ package net.mamoe.mirai.internal.network.component
 
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
-import net.mamoe.mirai.auth.BotAuthInfo
-import net.mamoe.mirai.auth.BotAuthResult
-import net.mamoe.mirai.auth.BotAuthSession
-import net.mamoe.mirai.auth.BotAuthorization
+import net.mamoe.mirai.auth.*
 import net.mamoe.mirai.internal.network.auth.AuthControl
 import net.mamoe.mirai.internal.network.components.SsoProcessorContext
 import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
@@ -23,6 +20,7 @@ import net.mamoe.mirai.network.CustomLoginFailedException
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DeviceInfo
 import net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
+import kotlin.properties.Delegates
 import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -36,6 +34,11 @@ internal class BotAuthControlTest : AbstractCommonNHTest() {
             get() = bot.components[SsoProcessorContext].device
         override val configuration: BotConfiguration
             get() = bot.configuration
+
+        override val isFirstLogin: Boolean
+            get() = false
+
+        override val reason: AuthReason by Delegates.notNull()
     }
 
     private suspend fun AuthControl.assertRequire(exceptedType: KClass<*>) {

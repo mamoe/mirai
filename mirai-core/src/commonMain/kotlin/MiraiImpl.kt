@@ -59,6 +59,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.summarycard.SummaryCard
+import net.mamoe.mirai.internal.network.psKey
 import net.mamoe.mirai.internal.network.sKey
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.crypto.TEA
@@ -609,7 +610,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 // ktor bug
                 append(
                     "cookie",
-                    "uin=o${bot.id}; skey=${bot.sKey};"
+                    "uin=o${bot.id}; skey=${bot.sKey}; p_uin=o${bot.id}; p_skey=${bot.psKey(host)};"
                 )
             }
         }.bodyAsText()

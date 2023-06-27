@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.components
 
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
+import net.mamoe.mirai.auth.AuthReason
 import net.mamoe.mirai.auth.BotAuthInfo
 import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.internal.network.Packet
@@ -56,6 +57,9 @@ internal interface SsoProcessor {
 
     val firstLoginSucceed: Boolean get() = firstLoginResult?.success ?: false
     val registerResp: StatSvc.Register.Response?
+
+    var isFirstLogin: Boolean
+    var authReason: AuthReason
 
     /**
      * Do login. Throws [LoginFailedException] if failed
@@ -146,6 +150,11 @@ internal open class SsoProcessorImpl(
     override val ssoSession: SsoSession get() = client
     private val components get() = ssoContext.bot.components
 
+    override var isFirstLogin: Boolean = true
+    override var authReason: AuthReason by lateinitMutableProperty {
+        AuthReason.FreshLogin(ssoContext.bot, null)
+    }
+
     private val botAuthInfo = object : BotAuthInfo {
         override val id: Long
             get() = ssoContext.bot.id
@@ -153,6 +162,10 @@ internal open class SsoProcessorImpl(
             get() = ssoContext.device
         override val configuration: BotConfiguration
             get() = ssoContext.bot.configuration
+        override val isFirstLogin: Boolean
+            get() = this@SsoProcessorImpl.isFirstLogin
+        override val reason: AuthReason
+            get() = this@SsoProcessorImpl.authReason
     }
 
     protected open suspend fun doSlowLogin(
@@ -216,6 +229,11 @@ internal open class SsoProcessorImpl(
                 kotlin.runCatching {
                     doFastLogin(handler)
                 }.onFailure { e ->
+                    // first fast-login exception should also be considered as re-auth cause.
+                    if (isFirstLogin) {
+                        authReason = AuthReason.FastLoginError(ssoContext.bot, e.message)
+                    }
+
                     initAndStartAuthControl()
                     authControl!!.exceptionCollector.collect(e)
 
@@ -225,6 +243,8 @@ internal open class SsoProcessorImpl(
                 loginSuccess()
 
                 return
+            } else if (isFirstLogin) {
+                authReason = AuthReason.FreshLogin(ssoContext.bot, null)
             }
         }
 
