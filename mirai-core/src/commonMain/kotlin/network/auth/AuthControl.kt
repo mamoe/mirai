@@ -14,13 +14,10 @@ import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.internal.network.components.SsoProcessorImpl
 import net.mamoe.mirai.internal.utils.asUtilsLogger
 import net.mamoe.mirai.internal.utils.subLogger
-import net.mamoe.mirai.utils.ExceptionCollector
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.channels.OnDemandChannel
 import net.mamoe.mirai.utils.channels.OnDemandReceiveChannel
 import net.mamoe.mirai.utils.channels.ProducerFailureException
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.verbose
 import kotlin.coroutines.CoroutineContext
 
 
@@ -41,7 +38,7 @@ internal class AuthControl(
     private val userDecisions: OnDemandReceiveChannel<Throwable?, SsoProcessorImpl.AuthMethod> =
         OnDemandChannel(
             parentCoroutineContext,
-            logger.subLogger("AuthControl/UserDecisions").asUtilsLogger()
+            logger.subLogger("AuthControl/UserDecisions").withSwitch(DEBUG_LOGGING).asUtilsLogger()
         ) { _ ->
             val sessionImpl = SafeBotAuthSession(this)
             authorization.authorize(sessionImpl, botAuthInfo) // OnDemandChannel handles exceptions for us
@@ -73,5 +70,9 @@ internal class AuthControl(
     fun actComplete() {
         logger.verbose { "[AuthControl/resume] Fire auth completed" }
         userDecisions.close()
+    }
+
+    private companion object {
+        private val DEBUG_LOGGING = systemProp("mirai.network.auth.logging", false)
     }
 }

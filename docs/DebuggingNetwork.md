@@ -17,6 +17,7 @@
 | `mirai.network.handler.selector.logging`            | `true`/`false`                   | 启用执行重连时的详细日志                                                                           |
 | `mirai.network.handler.cancellation.trace`          | `true`/`false`                   | 让网络层的异常时包含详细原因                                                                         |
 | `mirai.network.state.observer.logging`              | `true`/`on`/`false`/`off`/`full` | 启用网络层状态变更的日志                                                                           |
+| `mirai.network.auth.logging`                        | `true`/`false`                   | 启用进行登录验证时的内部日志                                                                         |
 | `mirai.event.launch.undispatched`                   | `true`/`false`                   | 详见 [源码内注释][launch-undispatched]                                                        |
 | `mirai.resource.creation.stack.enabled`             | `true`/`false`                   | 启用 `ExternalResource` 创建时的 stacktrace 记录 (影响性能), 在资源泄露时展示                              |
 | `mirai.unknown.image.type.logging`                  | `true`/`false`                   | 启用遇到未知图片格式时的日志                                                                         |
