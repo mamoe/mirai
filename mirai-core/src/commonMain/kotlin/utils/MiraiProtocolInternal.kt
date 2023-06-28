@@ -26,6 +26,7 @@ internal class MiraiProtocolInternal(
     var buildTime: Long,
     var ssoVersion: Int,
     var appKey: String,
+    var qua: String,
     var supportsQRLogin: Boolean,
 
     // don't change property signatures, used externally.
@@ -53,6 +54,7 @@ internal class MiraiProtocolInternal(
                 buildTime = 1684467300L,
                 ssoVersion = 20,
                 appKey = "0S200MNJT807V3GE",
+                qua = "V1_AND_SQ_8.9.58_4106_YYB_D",
                 supportsQRLogin = false,
             )
             //Updated from MiraiGo (2023/6/18)
@@ -69,6 +71,7 @@ internal class MiraiProtocolInternal(
                 buildTime = 1684467300L,
                 ssoVersion = 20,
                 appKey = "0S200MNJT807V3GE",
+                qua = "V1_AND_SQ_8.9.58_4106_YYB_D",
                 supportsQRLogin = false,
             )
             //Updated from MiraiGo (2023/3/24)
@@ -85,6 +88,7 @@ internal class MiraiProtocolInternal(
                 buildTime = 1559564731L,
                 ssoVersion = 5,
                 appKey = "",
+                qua = "",
                 supportsQRLogin = true,
             )
             protocols[MiraiProtocol.IPAD] = MiraiProtocolInternal(
@@ -100,6 +104,7 @@ internal class MiraiProtocolInternal(
                 buildTime = 1640921786L,
                 ssoVersion = 12,
                 appKey = "",
+                qua = "",
                 supportsQRLogin = false,
             )
             protocols[MiraiProtocol.MACOS] = MiraiProtocolInternal(
@@ -115,6 +120,7 @@ internal class MiraiProtocolInternal(
                 buildTime = 1647227495L,
                 ssoVersion = 7,
                 appKey = "",
+                qua = "",
                 supportsQRLogin = true,
             )
         }

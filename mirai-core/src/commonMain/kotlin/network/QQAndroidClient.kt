@@ -195,3 +195,4 @@ internal val QQAndroidClient.buildTime: Long get() = protocol.buildTime
 internal val QQAndroidClient.subAppId: Long get() = protocol.id
 internal val QQAndroidClient.apkSignatureMd5: ByteArray get() = protocol.sign.hexToBytes() // "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D".hexToBytes()
 internal val QQAndroidClient.subSigMap: Int get() = protocol.subSigMap // 0x10400 //=66,560
+internal val QQAndroidClient.qua: String get() = protocol.qua
