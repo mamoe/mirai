@@ -112,7 +112,7 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
     }
 
     override suspend fun initializeSsoSecureEcdh() {
-        val encryptWorker = EncryptService.instance
+        val encryptWorker = bot.encryptServiceOrNull
 
         if (encryptWorker == null) {
             logger.info("EncryptService SPI is not provided, sso secure ecdh will not be initialized.")

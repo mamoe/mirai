@@ -16,6 +16,7 @@ import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.components.EcdhInitialPublicKeyUpdater
+import net.mamoe.mirai.internal.network.components.encryptServiceOrNull
 import net.mamoe.mirai.internal.network.protocol.data.proto.SSOReserveField
 import net.mamoe.mirai.internal.network.protocol.packet.sso.TRpcRawPacket
 import net.mamoe.mirai.internal.spi.EncryptService
@@ -131,7 +132,7 @@ internal fun <R : Packet?> buildRawUniPacket(
                 writeInt(it.length + 4)
                 writeText(it)
             }
-            val encryptWorker = EncryptService.instance
+            val encryptWorker = client.bot.encryptServiceOrNull
             val bodyBytes = buildPacket { body(sequenceId) }.readBytes()
             val signDataPacket = if (encryptWorker != null) {
 
@@ -199,7 +200,7 @@ internal fun <R : Packet?> buildRawUniPacket(
     })
 }
 
-@Suppress("DuplicatedCode")
+@Suppress("DuplicatedCode", "NOTHING_TO_INLINE")
 internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildOutgoingUniPacket(
     client: QQAndroidClient,
     encryptMethod: PacketEncryptType = PacketEncryptType.D2,
@@ -213,6 +214,7 @@ internal inline fun <R : Packet?> OutgoingPacketFactory<R>.buildOutgoingUniPacke
 ): OutgoingPacketWithRespType<R> =
     buildRawUniPacket(client, encryptMethod, remark, commandName, key, extraData, uin, sequenceId, body)
 
+@Suppress("NOTHING_TO_INLINE")
 internal inline fun <R : Packet?> IncomingPacketFactory<R>.buildResponseUniPacket(
     client: QQAndroidClient,
     encryptMethod: PacketEncryptType = PacketEncryptType.D2, // 1: PB?
@@ -344,14 +346,14 @@ internal fun createChannelProxy(bot: QQAndroidBot): EncryptService.ChannelProxy 
     }
 }
 
-internal inline fun BytePacketBuilder.writeSsoPacket(
+internal fun BytePacketBuilder.writeSsoPacket(
     client: QQAndroidClient,
     subAppId: Long,
     commandName: String,
     extraData: ByteReadPacket = BRP_STUB,
     unknownHex: String = "01 00 00 00 00 00 00 00 00 00 01 00",
     sequenceId: Int,
-    crossinline body: BytePacketBuilder.() -> Unit
+    body: BytePacketBuilder.() -> Unit
 ) {
 
     /* send
@@ -370,7 +372,7 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
      *
      * 00 00 00 04
      */
-    val encryptWorker = EncryptService.instance
+    val encryptWorker = client.bot.encryptServiceOrNull
     val bodyBytes = buildPacket(body).readBytes()
     val reserveField = if (encryptWorker != null) {
 

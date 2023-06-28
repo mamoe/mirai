@@ -13,8 +13,8 @@ package net.mamoe.mirai.internal.network.protocol.packet
 
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.internal.network.*
+import net.mamoe.mirai.internal.network.components.encryptServiceOrNull
 import net.mamoe.mirai.internal.network.protocol.LoginType
-import net.mamoe.mirai.internal.spi.EncryptService
 import net.mamoe.mirai.internal.spi.EncryptServiceContext
 import net.mamoe.mirai.internal.utils.GuidSource
 import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
@@ -25,7 +25,6 @@ import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArrayLimitedLength
 import net.mamoe.mirai.internal.utils.io.writeShortLVString
 import net.mamoe.mirai.utils.*
-import kotlin.jvm.JvmInline
 import kotlin.random.Random
 
 private val Char.isHumanReadable get() = this in '0'..'9' || this in 'a'..'z' || this in 'A'..'Z' || this in """ <>?,.";':/\][{}~!@#$%^&*()_+-=`""" || this in "\n\r"
@@ -969,7 +968,7 @@ internal fun TlvMapWriter.t544ForToken( // 1348
     subCommandId: Int,
     commandStr: String
 ) {
-    val service = EncryptService.instance ?: return
+    val service = client.bot.encryptServiceOrNull ?: return
     tlv(0x544) {
         buildPacket {
             writeFully(buildPacket {
@@ -996,7 +995,7 @@ internal fun TlvMapWriter.t544ForVerify( // 1348
     subCommandId: Int,
     commandStr: String
 ) {
-    val service = EncryptService.instance ?: return
+    val service = client.bot.encryptServiceOrNull ?: return
     tlv(0x544) {
         buildPacket {
             writeLong(client.uin)
