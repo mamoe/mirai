@@ -43,6 +43,7 @@ internal object WtLogin7 : WtLoginExt {
                     t198()
                     if (client.useAndroid) {
                         t544ForVerify(
+                            client = client,
                             uin = client.uin,
                             guid = client.device.guid,
                             sdkVersion = client.sdkVersion,

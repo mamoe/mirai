@@ -267,6 +267,10 @@ internal open class QQAndroidBot constructor(
 
         cacheValidator.register(get(AccountSecretsManager))
         cacheValidator.register(get(BdhSessionSyncer))
+
+        set(
+            EncryptServiceHolder, EncryptServiceHolderImpl(this@QQAndroidBot)
+        )
     }
 
     /**

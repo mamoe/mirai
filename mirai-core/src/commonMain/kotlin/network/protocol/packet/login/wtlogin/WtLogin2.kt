@@ -33,6 +33,7 @@ internal object WtLogin2 : WtLoginExt {
                     client.t547?.let { t547(it) }
                     if (client.useAndroid) {
                         t544ForVerify(
+                            client = client,
                             uin = client.uin,
                             guid = client.device.guid,
                             sdkVersion = client.sdkVersion,
@@ -62,6 +63,7 @@ internal object WtLogin2 : WtLoginExt {
                     client.t547?.let { t547(it) }
                     if (client.useAndroid) {
                         t544ForVerify(
+                            client = client,
                             uin = client.uin,
                             guid = client.device.guid,
                             sdkVersion = client.sdkVersion,

@@ -137,6 +137,7 @@ internal object WtLogin15 : WtLoginExt {
                 t525(client.loginExtraData) // new
                 if (client.useAndroid) {
                     t544ForToken(
+                        client = client,
                         uin = client.uin,
                         guid = client.device.guid,
                         sdkVersion = client.sdkVersion,
