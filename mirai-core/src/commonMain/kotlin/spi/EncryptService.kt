@@ -86,8 +86,31 @@ public interface EncryptService : BaseService {
     public companion object {
         private val loader = SpiServiceLoader(EncryptService::class)
 
+        private val warningAlert: Unit by lazy {
+            val log = MiraiLogger.Factory.create(EncryptService::class, "EncryptService.alert")
+
+            val serviceUsed = loader.service
+
+            if (serviceUsed != null) {
+                val serviceClass = serviceUsed.javaClass
+                log.warning { "Encrypt service was loaded: $serviceUsed" }
+                log.warning { "All outgoing message may be leaked by this service." }
+                log.warning { "Use this service if and only if you trusted this service and the service provider." }
+                log.warning { "Service details:" }
+                log.warning { "  `- Jvm Class: $serviceClass" }
+                log.warning { "  `- ClassLoader: " + serviceClass.classLoader }
+                log.warning { "  `- Source: " + serviceClass.protectionDomain?.codeSource?.location }
+                log.warning { "  `- Protected Domain: " + serviceClass.protectionDomain }
+            }
+
+        }
+
         @GlobalEncryptServiceUsage
-        internal val instance: EncryptService? get() = loader.service
+        internal val instance: EncryptService?
+            get() {
+                warningAlert
+                return loader.service
+            }
     }
 
 }
