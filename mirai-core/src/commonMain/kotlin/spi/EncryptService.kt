@@ -40,6 +40,9 @@ public class EncryptServiceContext @MiraiInternalApi constructor(
  * @since 2.15.0
  */
 public interface EncryptService : BaseService {
+    /** service per bot */
+    public fun attachToBot(context: EncryptServiceContext): EncryptService = this
+
     public fun initialize(context: EncryptServiceContext)
 
     /**
@@ -83,7 +86,11 @@ public interface EncryptService : BaseService {
     public companion object {
         private val loader = SpiServiceLoader(EncryptService::class)
 
+        @GlobalEncryptServiceUsage
         internal val instance: EncryptService? get() = loader.service
     }
 
 }
+
+@RequiresOptIn(message = "Global encrypt service used", level = RequiresOptIn.Level.ERROR)
+internal annotation class GlobalEncryptServiceUsage

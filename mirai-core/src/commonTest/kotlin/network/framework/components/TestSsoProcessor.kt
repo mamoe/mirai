@@ -35,7 +35,7 @@ internal open class TestSsoProcessor(private val bot: QQAndroidBot) : SsoProcess
                 bot.account,
                 DeviceInfo.random(Random(1))
             )
-        )
+        ).also { it._bot = bot }
     }
     override val ssoSession: SsoSession get() = bot.client
     private val _firstLoginResult: AtomicRef<FirstLoginResult?> = atomic(null)

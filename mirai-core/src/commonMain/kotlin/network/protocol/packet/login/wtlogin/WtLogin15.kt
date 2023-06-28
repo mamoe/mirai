@@ -137,6 +137,7 @@ internal object WtLogin15 : WtLoginExt {
                 t525(client.loginExtraData) // new
                 if (client.supportedEncrypt) {
                     t544ForToken(
+                        client = client,
                         uin = client.uin,
                         protocol = client.bot.configuration.protocol,
                         guid = client.device.guid,

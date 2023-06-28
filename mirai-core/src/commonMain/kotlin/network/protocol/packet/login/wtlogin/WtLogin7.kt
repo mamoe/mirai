@@ -43,6 +43,7 @@ internal object WtLogin7 : WtLoginExt {
                     t198()
                     if (client.supportedEncrypt) {
                         t544ForVerify(
+                            client = client,
                             uin = client.uin,
                             protocol = client.bot.configuration.protocol,
                             guid = client.device.guid,

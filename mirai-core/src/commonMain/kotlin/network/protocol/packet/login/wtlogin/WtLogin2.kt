@@ -33,6 +33,7 @@ internal object WtLogin2 : WtLoginExt {
                     client.t547?.let { t547(it) }
                     if (client.supportedEncrypt) {
                         t544ForVerify(
+                            client = client,
                             uin = client.uin,
                             protocol = client.bot.configuration.protocol,
                             guid = client.device.guid,
@@ -63,6 +64,7 @@ internal object WtLogin2 : WtLoginExt {
                     client.t547?.let { t547(it) }
                     if (client.supportedEncrypt) {
                         t544ForVerify(
+                            client = client,
                             uin = client.uin,
                             protocol = client.bot.configuration.protocol,
                             guid = client.device.guid,
