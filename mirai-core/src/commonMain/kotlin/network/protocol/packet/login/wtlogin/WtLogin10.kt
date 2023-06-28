@@ -87,10 +87,7 @@ internal object WtLogin10 : WtLoginExt {
                     t202(client.device.wifiBSSID, client.device.wifiSSID)
                     if (client.supportedEncrypt) {
                         t544ForToken(
-                            uin = client.uin,
-                            protocol = client.bot.configuration.protocol,
-                            guid = client.device.guid,
-                            sdkVersion = client.sdkVersion,
+                            client = client,
                             subCommandId = 10,
                             commandStr = "810_a"
                         )

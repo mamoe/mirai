@@ -136,10 +136,7 @@ internal object WtLogin9 : WtLoginExt {
                     // ignored t318 because not logging in by QR
                     if (client.supportedEncrypt) {
                         t544ForToken(
-                            uin = client.uin,
-                            protocol = client.bot.configuration.protocol,
-                            guid = client.device.guid,
-                            sdkVersion = client.sdkVersion,
+                            client = client,
                             subCommandId = 9,
                             commandStr = "810_9"
                         )
@@ -201,10 +198,7 @@ internal object WtLogin9 : WtLoginExt {
 
                     if (client.supportedEncrypt) {
                         t544ForToken(
-                            uin = client.uin,
-                            protocol = client.bot.configuration.protocol,
-                            guid = client.device.guid,
-                            sdkVersion = client.sdkVersion,
+                            client = client,
                             subCommandId = 9,
                             commandStr = "810_9"
                         )

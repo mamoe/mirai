@@ -965,10 +965,7 @@ internal fun TlvMapWriter.t548(
 
 
 internal fun TlvMapWriter.t544ForToken( // 1348
-    uin: Long,
-    protocol: BotConfiguration.MiraiProtocol,
-    guid: ByteArray,
-    sdkVersion: String,
+    client: QQAndroidClient,
     subCommandId: Int,
     commandStr: String
 ) {
@@ -976,16 +973,17 @@ internal fun TlvMapWriter.t544ForToken( // 1348
     tlv(0x544) {
         buildPacket {
             writeFully(buildPacket {
-                writeLong(uin)
+                writeLong(client.uin)
             }.readBytes(4))
-            writeShortLVByteArray(guid)
-            writeShortLVString(sdkVersion)
+            writeShortLVByteArray(client.device.guid)
+            writeShortLVString(client.sdkVersion)
             writeInt(subCommandId)
             writeInt(0)
         }.use { dataIn ->
-            service.encryptTlv(EncryptServiceContext(uin, buildTypeSafeMap {
+            service.encryptTlv(EncryptServiceContext(client.uin, buildTypeSafeMap {
                 set(EncryptServiceContext.KEY_COMMAND_STR, commandStr)
-                set(EncryptServiceContext.KEY_BOT_PROTOCOL, protocol)
+                set(EncryptServiceContext.KEY_BOT_PROTOCOL, client.bot.configuration.protocol)
+                set(EncryptServiceContext.KEY_DEVICE_INFO, client.device)
             }), 0x544, dataIn.readBytes())
         }.let { result ->
             writeFully(result ?: "".toByteArray()) // Empty str means native throws exception
@@ -994,24 +992,22 @@ internal fun TlvMapWriter.t544ForToken( // 1348
 }
 
 internal fun TlvMapWriter.t544ForVerify( // 1348
-    uin: Long,
-    protocol: BotConfiguration.MiraiProtocol,
-    guid: ByteArray,
-    sdkVersion: String,
+    client: QQAndroidClient,
     subCommandId: Int,
     commandStr: String
 ) {
     val service = EncryptService.instance ?: return
     tlv(0x544) {
         buildPacket {
-            writeLong(uin)
-            writeShortLVByteArray(guid)
-            writeShortLVString(sdkVersion)
+            writeLong(client.uin)
+            writeShortLVByteArray(client.device.guid)
+            writeShortLVString(client.sdkVersion)
             writeInt(subCommandId)
         }.use { dataIn ->
-            service.encryptTlv(EncryptServiceContext(uin, buildTypeSafeMap {
+            service.encryptTlv(EncryptServiceContext(client.uin, buildTypeSafeMap {
                 set(EncryptServiceContext.KEY_COMMAND_STR, commandStr)
-                set(EncryptServiceContext.KEY_BOT_PROTOCOL, protocol)
+                set(EncryptServiceContext.KEY_BOT_PROTOCOL, client.bot.configuration.protocol)
+                set(EncryptServiceContext.KEY_DEVICE_INFO, client.device)
             }), 0x544, dataIn.readBytes())
         }.let { result ->
             writeFully(result ?: "".toByteArray()) // Empty str means native throws exception
