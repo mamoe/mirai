@@ -202,6 +202,7 @@ internal object WtLogin9 : WtLoginExt {
 
                     if (client.supportedEncrypt) {
                         t544ForToken(
+                            client = client,
                             uin = client.uin,
                             protocol = client.bot.configuration.protocol,
                             guid = client.device.guid,

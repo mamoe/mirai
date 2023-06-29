@@ -50,7 +50,7 @@ public interface EncryptService : BaseService {
     /**
      * Returns `false` if not supported.
      */
-    public fun supports(protocol: BotConfiguration.MiraiProtocol) : Boolean {
+    public fun supports(protocol: BotConfiguration.MiraiProtocol): Boolean {
         return protocol != BotConfiguration.MiraiProtocol.ANDROID_WATCH
     }
 

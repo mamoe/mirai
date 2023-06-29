@@ -20,15 +20,13 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.components.AccountSecrets
 import net.mamoe.mirai.internal.network.components.SsoProcessorContext
 import net.mamoe.mirai.internal.network.components.SsoSession
+import net.mamoe.mirai.internal.network.components.encryptServiceOrNull
 import net.mamoe.mirai.internal.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
-import net.mamoe.mirai.internal.spi.EncryptService
 import net.mamoe.mirai.internal.utils.AtomicIntSeq
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.utils.*
-import kotlin.jvm.Synchronized
-import kotlin.jvm.Volatile
 import kotlin.random.Random
 
 
@@ -85,7 +83,7 @@ internal open class QQAndroidClient(
     override var loginState = 0
 
     val supportedEncrypt by lazy {
-        EncryptService.instance?.supports(bot.configuration.protocol) ?: false
+        bot.encryptServiceOrNull?.supports(bot.configuration.protocol) ?: false
     }
     var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
 
