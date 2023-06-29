@@ -137,12 +137,7 @@ internal fun <R : Packet?> buildRawUniPacket(
             val signDataPacket = if (encryptWorker != null) {
 
                 val signResult = encryptWorker.qSecurityGetSign(
-                    EncryptServiceContext(client.uin, buildTypeSafeMap {
-                        set(EncryptServiceContext.KEY_APP_QUA, "V1_AND_SQ_8.9.58_4106_YYB_D") // 8.9.58
-                        set(EncryptServiceContext.KEY_CHANNEL_PROXY, createChannelProxy(client.bot))
-                        set(EncryptServiceContext.KEY_DEVICE_INFO, client.device)
-                        set(EncryptServiceContext.KEY_QIMEI36, client.qimei36 ?: "")
-                    }),
+                    EncryptServiceContext(client.uin),
                     sequenceId,
                     commandName,
                     bodyBytes
@@ -376,12 +371,7 @@ internal fun BytePacketBuilder.writeSsoPacket(
     val reserveField = if (encryptWorker != null) {
 
         val signResult = encryptWorker.qSecurityGetSign(
-            EncryptServiceContext(client.uin, buildTypeSafeMap {
-                set(EncryptServiceContext.KEY_APP_QUA, "V1_AND_SQ_8.9.58_4106_YYB_D") // 8.9.58
-                set(EncryptServiceContext.KEY_CHANNEL_PROXY, createChannelProxy(client.bot))
-                set(EncryptServiceContext.KEY_DEVICE_INFO, client.device)
-                set(EncryptServiceContext.KEY_QIMEI36, client.qimei36 ?: "")
-            }),
+            EncryptServiceContext(client.uin),
             sequenceId,
             commandName,
             bodyBytes

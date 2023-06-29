@@ -125,6 +125,7 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
             set(EncryptServiceContext.KEY_DEVICE_INFO, bot.client.device)
             set(EncryptServiceContext.KEY_BOT_PROTOCOL, bot.configuration.protocol)
             set(EncryptServiceContext.KEY_QIMEI36, bot.client.qimei36 ?: "")
+            set(EncryptServiceContext.KEY_APP_QUA, "V1_AND_SQ_8.9.58_4106_YYB_D") // 8.9.58
             set(EncryptServiceContext.KEY_BOT_WORKING_DIR, bot.configuration.workingDirPath)
             set(EncryptServiceContext.KEY_BOT_CACHING_DIR, bot.configuration.actualCacheDir().absolutePath)
         }))
