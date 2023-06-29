@@ -169,11 +169,16 @@ internal fun <R : Packet?> buildRawUniPacket(
             if (signDataPacket != BRP_STUB && (extraData != BRP_STUB && extraData.remaining != 0L)) {
                 throw IllegalStateException("$commandName cmd needs sign but has extraData!")
             }
+
             if (encryptMethod === PacketEncryptType.NoEncrypt) {
                 writeUniPacket(
                     commandName,
                     client.outgoingPacketSessionId,
-                    signDataPacket,
+                    if (signDataPacket == BRP_STUB) {
+                        extraData
+                    } else {
+                        signDataPacket
+                    },
                     (client.qimei16?.encodeToByteArray() ?: EMPTY_BYTE_ARRAY)
                 ) {
                     writeFully(bodyBytes)
@@ -183,7 +188,11 @@ internal fun <R : Packet?> buildRawUniPacket(
                     writeUniPacket(
                         commandName,
                         client.outgoingPacketSessionId,
-                        signDataPacket,
+                        if (signDataPacket == BRP_STUB) {
+                            extraData
+                        } else {
+                            signDataPacket
+                        },
                         (client.qimei16?.encodeToByteArray() ?: EMPTY_BYTE_ARRAY)
                     ) {
                         writeFully(bodyBytes)
