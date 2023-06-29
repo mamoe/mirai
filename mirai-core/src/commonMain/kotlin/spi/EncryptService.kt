@@ -10,6 +10,7 @@
 
 package net.mamoe.mirai.internal.spi
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.spi.BaseService
 import net.mamoe.mirai.spi.SpiServiceLoader
@@ -43,7 +44,12 @@ public class EncryptServiceContext @MiraiInternalApi constructor(
  */
 public interface EncryptService : BaseService {
     /** service per bot */
-    public fun attachToBot(context: EncryptServiceContext): EncryptService = this
+    public fun attachToBot(context: EncryptServiceContext, serviceSubScope: CoroutineScope): EncryptService {
+        /* cleanup:
+        serviceSubScope.coroutineContext.job.invokeOnCompletion { }
+         */
+        return this
+    }
 
     public fun initialize(context: EncryptServiceContext)
 
