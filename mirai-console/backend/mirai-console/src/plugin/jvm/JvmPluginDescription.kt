@@ -14,7 +14,6 @@ package net.mamoe.mirai.console.plugin.jvm
 import io.github.karlatemp.caller.CallerFinder
 import io.github.karlatemp.caller.StackFrame
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
 import net.mamoe.mirai.console.internal.util.findLoader
@@ -120,6 +119,11 @@ public inline fun JvmPluginDescription(
  *    .build();
  * ```
  *
+ * #### Mirai Version Requirement (Since 2.16)
+ * ```
+ * dependsOn("net.mamoe.mirai.console", "[2.16.0, 3.0.0)")
+ * ```
+ *
  * @see [JvmPluginDescription]
  */
 public class JvmPluginDescriptionBuilder(
@@ -171,6 +175,10 @@ public class JvmPluginDescriptionBuilder(
         vararg dependencies: PluginDependency,
     ): JvmPluginDescriptionBuilder = apply {
         for (dependency in dependencies) {
+            if (dependency.id == "net.mamoe.mirai.console" || dependency.id == "net.mamoe.mirai") {
+                consoleRequirement = dependency.versionRequirement
+                continue
+            }
             this.dependencies.add(dependency)
         }
     }
@@ -184,7 +192,6 @@ public class JvmPluginDescriptionBuilder(
         @ResolveContext(VERSION_REQUIREMENT) versionRequirement: String,
         isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply {
-        // XXX: 兼容性
         if (pluginId == "net.mamoe.mirai.console" || pluginId == "net.mamoe.mirai") {
             consoleRequirement = versionRequirement
             return@apply
@@ -205,16 +212,6 @@ public class JvmPluginDescriptionBuilder(
         isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply {
         this.dependencies.add(PluginDependency(pluginId, null, isOptional))
-    }
-
-    /**
-     * @see MiraiConsole.version
-     */
-    @ILoveKuriyamaMiraiForever
-    public fun consoleRequirement(
-        @ResolveContext(VERSION_REQUIREMENT) versionRequirement: String
-    ): JvmPluginDescriptionBuilder = apply {
-        consoleRequirement = versionRequirement
     }
 
 
