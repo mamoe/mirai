@@ -18,11 +18,12 @@ import kotlinx.serialization.json.Json
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.protocol.packet.createChannelProxy
-import net.mamoe.mirai.internal.spi.EncryptService
 import net.mamoe.mirai.internal.spi.EncryptServiceContext
+import net.mamoe.mirai.internal.utils.actualCacheDir
 import net.mamoe.mirai.internal.utils.crypto.QQEcdh
 import net.mamoe.mirai.internal.utils.crypto.QQEcdhInitialPublicKey
 import net.mamoe.mirai.internal.utils.crypto.verify
+import net.mamoe.mirai.internal.utils.workingDirPath
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.buildTypeSafeMap
 import net.mamoe.mirai.utils.currentTimeSeconds
@@ -124,6 +125,8 @@ internal class EcdhInitialPublicKeyUpdaterImpl(
             set(EncryptServiceContext.KEY_DEVICE_INFO, bot.client.device)
             set(EncryptServiceContext.KEY_BOT_PROTOCOL, bot.configuration.protocol)
             set(EncryptServiceContext.KEY_QIMEI36, bot.client.qimei36 ?: "")
+            set(EncryptServiceContext.KEY_BOT_WORKING_DIR, bot.configuration.workingDirPath)
+            set(EncryptServiceContext.KEY_BOT_CACHING_DIR, bot.configuration.actualCacheDir().absolutePath)
         }))
     }
 

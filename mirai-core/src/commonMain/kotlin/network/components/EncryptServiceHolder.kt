@@ -14,6 +14,8 @@ import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.spi.EncryptService
 import net.mamoe.mirai.internal.spi.EncryptServiceContext
 import net.mamoe.mirai.internal.spi.GlobalEncryptServiceUsage
+import net.mamoe.mirai.internal.utils.actualCacheDir
+import net.mamoe.mirai.internal.utils.workingDirPath
 import net.mamoe.mirai.utils.buildTypeSafeMap
 
 internal interface EncryptServiceHolder {
@@ -48,6 +50,8 @@ internal class EncryptServiceHolderImpl(
                 EncryptServiceContext(bot.id, buildTypeSafeMap {
                     set(EncryptServiceContext.KEY_BOT_PROTOCOL, bot.configuration.protocol)
                     set(EncryptServiceContext.KEY_DEVICE_INFO, ssoProcessorContext.device)
+                    set(EncryptServiceContext.KEY_BOT_WORKING_DIR, bot.configuration.workingDirPath)
+                    set(EncryptServiceContext.KEY_BOT_CACHING_DIR, bot.configuration.actualCacheDir().absolutePath)
                 })
             )
             isAvailable = true

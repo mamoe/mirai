@@ -33,6 +33,8 @@ public class EncryptServiceContext @MiraiInternalApi constructor(
         public val KEY_CHANNEL_PROXY: TypeKey<EncryptService.ChannelProxy> = TypeKey("KEY_CHANNEL_PROXY")
         public val KEY_DEVICE_INFO: TypeKey<DeviceInfo> = TypeKey("KEY_DEVICE_INFO")
         public val KEY_QIMEI36: TypeKey<String> = TypeKey("KEY_QIMEI36")
+        public val KEY_BOT_WORKING_DIR: TypeKey<String> = TypeKey("KEY_BOT_WORKING_DIR")
+        public val KEY_BOT_CACHING_DIR: TypeKey<String> = TypeKey("KEY_BOT_CACHING_DIR")
     }
 }
 
