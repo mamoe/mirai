@@ -42,15 +42,7 @@ public class EncryptServiceContext @MiraiInternalApi constructor(
 /**
  * @since 2.15.0
  */
-public interface EncryptService : BaseService {
-    /** service per bot */
-    public fun attachToBot(context: EncryptServiceContext, serviceSubScope: CoroutineScope): EncryptService {
-        /* cleanup:
-        serviceSubScope.coroutineContext.job.invokeOnCompletion { }
-         */
-        return this
-    }
-
+public interface EncryptService {
     public fun initialize(context: EncryptServiceContext)
 
     /**
@@ -91,8 +83,20 @@ public interface EncryptService : BaseService {
         public suspend fun sendMessage(remark: String, commandName: String, uin: Long, data: ByteArray): ChannelResult?
     }
 
+    // net.mamoe.mirai.internal.spi.EncryptService$Factory
+    public interface Factory : BaseService {
+
+        /*
+         * cleanup:
+         *         serviceSubScope.coroutineContext.job.invokeOnCompletion { }
+         */
+        public fun createForBot(context: EncryptServiceContext, serviceSubScope: CoroutineScope): EncryptService
+    }
+
+
     public companion object {
-        private val loader = SpiServiceLoader(EncryptService::class)
+
+        private val loader = SpiServiceLoader(Factory::class)
 
         private val warningAlert: Unit by lazy {
             val log = MiraiLogger.Factory.create(EncryptService::class, "EncryptService.alert")
@@ -113,15 +117,10 @@ public interface EncryptService : BaseService {
 
         }
 
-        @GlobalEncryptServiceUsage
-        internal val instance: EncryptService?
+        internal val factory: Factory?
             get() {
                 warningAlert
                 return loader.service
             }
     }
-
 }
-
-@RequiresOptIn(message = "Global encrypt service used", level = RequiresOptIn.Level.ERROR)
-internal annotation class GlobalEncryptServiceUsage

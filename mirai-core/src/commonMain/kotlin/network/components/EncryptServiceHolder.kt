@@ -13,7 +13,6 @@ import net.mamoe.mirai.internal.AbstractBot
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.spi.EncryptService
 import net.mamoe.mirai.internal.spi.EncryptServiceContext
-import net.mamoe.mirai.internal.spi.GlobalEncryptServiceUsage
 import net.mamoe.mirai.internal.utils.actualCacheDir
 import net.mamoe.mirai.internal.utils.workingDirPath
 import net.mamoe.mirai.utils.buildTypeSafeMap
@@ -45,9 +44,8 @@ internal class EncryptServiceHolderImpl(
         get() = service0 ?: error("Encrypt Service not available")
 
     init {
-        @OptIn(GlobalEncryptServiceUsage::class)
-        EncryptService.instance?.let { globalService ->
-            service0 = globalService.attachToBot(
+        EncryptService.factory?.let { globalService ->
+            service0 = globalService.createForBot(
                 EncryptServiceContext(bot.id, buildTypeSafeMap {
                     set(EncryptServiceContext.KEY_BOT_PROTOCOL, bot.configuration.protocol)
                     set(EncryptServiceContext.KEY_DEVICE_INFO, ssoProcessorContext.device)
