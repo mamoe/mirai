@@ -30,7 +30,6 @@ public class EncryptServiceContext @MiraiInternalApi constructor(
     public companion object {
         public val KEY_COMMAND_STR: TypeKey<String> = TypeKey("KEY_COMMAND_STR")
         public val KEY_BOT_PROTOCOL: TypeKey<BotConfiguration.MiraiProtocol> = TypeKey("BOT_PROTOCOL")
-        public val KEY_APP_QUA: TypeKey<String> = TypeKey("KEY_APP_QUA")
         public val KEY_CHANNEL_PROXY: TypeKey<EncryptService.ChannelProxy> = TypeKey("KEY_CHANNEL_PROXY")
         public val KEY_DEVICE_INFO: TypeKey<DeviceInfo> = TypeKey("KEY_DEVICE_INFO")
         public val KEY_QIMEI36: TypeKey<String> = TypeKey("KEY_QIMEI36")
