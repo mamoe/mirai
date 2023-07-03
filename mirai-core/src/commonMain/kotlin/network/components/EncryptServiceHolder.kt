@@ -45,17 +45,27 @@ internal class EncryptServiceHolderImpl(
 
     init {
         EncryptService.factory?.let { globalService ->
-            service0 = globalService.createForBot(
-                EncryptServiceContext(bot.id, buildTypeSafeMap {
-                    set(EncryptServiceContext.KEY_BOT_PROTOCOL, bot.configuration.protocol)
-                    set(EncryptServiceContext.KEY_DEVICE_INFO, ssoProcessorContext.device)
-                    set(EncryptServiceContext.KEY_BOT_WORKING_DIR, bot.configuration.workingDirPath)
-                    set(EncryptServiceContext.KEY_BOT_CACHING_DIR, bot.configuration.actualCacheDir().absolutePath)
-                }),
+            try {
+                service0 = globalService.createForBot(
+                    EncryptServiceContext(bot.id, buildTypeSafeMap {
+                        set(EncryptServiceContext.KEY_BOT_PROTOCOL, bot.configuration.protocol)
+                        set(EncryptServiceContext.KEY_DEVICE_INFO, ssoProcessorContext.device)
+                        set(EncryptServiceContext.KEY_BOT_WORKING_DIR, bot.configuration.workingDirPath)
+                        set(EncryptServiceContext.KEY_BOT_CACHING_DIR, bot.configuration.actualCacheDir().absolutePath)
+                    }),
 
-                bot.childScope(name = "Encrypt Service"),
-            )
-            isAvailable = true
+                    bot.childScope(name = "Encrypt Service"),
+                )
+
+                isAvailable = true
+            } catch (error: UnsupportedOperationException) {
+                bot.logger.warning("$globalService is not yet supported EncryptService with bot $bot", error)
+                isAvailable = false
+                service0 = null
+            } catch (_: EncryptService.SignalServiceNotAvailable) {
+                isAvailable = false
+                service0 = null
+            } /* catch (error: Throwable) { throw error } */ // crash bot initialize
         }
     }
 }

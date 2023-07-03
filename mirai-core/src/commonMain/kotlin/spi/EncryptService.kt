@@ -122,4 +122,7 @@ public interface EncryptService {
                 return loader.service
             }
     }
+
+    // special error: no service used
+    public object SignalServiceNotAvailable : RuntimeException()
 }
