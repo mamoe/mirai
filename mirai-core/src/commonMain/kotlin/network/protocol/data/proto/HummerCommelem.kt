@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Mamoe Technologies and contributors.
+ * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -240,6 +240,19 @@ internal class HummerCommelem : ProtoBuf {
         @ProtoNumber(2) @JvmField val name: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val compat: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(4) @JvmField val buf: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    internal class MsgElemInfoServtype37(
+        @ProtoNumber(1) @JvmField val packId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(2) @JvmField val stickerId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(3) @JvmField val qsId: Int = 0,
+        @ProtoNumber(4) @JvmField val sourceType: Int = 0,
+        @ProtoNumber(5) @JvmField val stickerType: Int = 0,
+        @ProtoNumber(6) @JvmField val resultId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(6) @JvmField val text: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(7) @JvmField val surpriseId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(8) @JvmField val randomType: Int = 0
     ) : ProtoBuf
 
     @Serializable

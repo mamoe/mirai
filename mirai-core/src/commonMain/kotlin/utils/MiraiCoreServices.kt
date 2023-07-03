@@ -62,6 +62,10 @@ internal object MiraiCoreServices {
         ) { net.mamoe.mirai.internal.message.protocol.impl.MarketFaceProtocol() }
         Services.register(
             msgProtocol,
+            "net.mamoe.mirai.internal.message.protocol.impl.AnimatedStickerProtocol"
+        ) { net.mamoe.mirai.internal.message.protocol.impl.AnimatedStickerProtocol() }
+        Services.register(
+            msgProtocol,
             "net.mamoe.mirai.internal.message.protocol.impl.MusicShareProtocol"
         ) { net.mamoe.mirai.internal.message.protocol.impl.MusicShareProtocol() }
         Services.register(
