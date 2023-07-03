@@ -250,9 +250,9 @@ internal class HummerCommelem : ProtoBuf {
         @ProtoNumber(4) @JvmField val sourceType: Int = 0,
         @ProtoNumber(5) @JvmField val stickerType: Int = 0,
         @ProtoNumber(6) @JvmField val resultId: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(6) @JvmField val text: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(7) @JvmField val surpriseId: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(8) @JvmField val randomType: Int = 0
+        @ProtoNumber(7) @JvmField val text: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(8) @JvmField val surpriseId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(9) @JvmField val randomType: Int = 0
     ) : ProtoBuf
 
     @Serializable
