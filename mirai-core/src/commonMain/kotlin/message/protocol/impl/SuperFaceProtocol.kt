@@ -15,6 +15,7 @@ import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
 import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoder
 import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext
+import net.mamoe.mirai.internal.message.protocol.encode.MessageEncoderContext.Companion.collectGeneralFlags
 import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -49,29 +50,77 @@ internal class SuperFaceProtocol : MessageProtocol() {
         override suspend fun MessageEncoderContext.process(data: SuperFace) {
             markAsConsumed()
 
-            val businessType = when (data.id) {
-                114 -> 2
+            collect(ImMsgBody.Elem(commonElem = data.toCommData()))
+            processAlso(PlainText("/${data.name}"))
+            collectGeneralFlags {
+                ImMsgBody.Elem(
+                    generalFlags = ImMsgBody.GeneralFlags(
+                        pbReserve = ImMsgBody.Text(str = "[${data.name}]请使用最新版手机QQ体验新功能")
+                            .toByteArray(ImMsgBody.Text.serializer())
+                    )
+                )
+            }
+        }
+    }
+
+    companion object {
+
+        fun SuperFace.stickerId(): String {
+            return when (id) {
+                Face.DA_CALL -> "1"
+                Face.BIAN_XING -> "2"
+                Face.KE_DAO_LE -> "3"
+                Face.ZI_XI_FEN_XI -> "4"
+                Face.JIA_YOU -> "5"
+                Face.WO_MEI_SHI -> "6"
+                Face.CAI_GOU -> "7"
+                Face.CHONG_BAI -> "8"
+                Face.BI_XIN -> "9"
+                Face.QING_ZHU -> "10"
+                Face.LAO_SE_PI -> "11"
+                Face.CHI_TANG -> "12"
+                Face.LAN_QIU -> "13"
+                Face.JING_XIA -> "14"
+                Face.SHENG_QI -> "15"
+                Face.LIU_LEI -> "16"
+                Face.DAN_GAO -> "17"
+                Face.BIAN_PAO -> "18"
+                Face.YAN_HUA -> "19"
+                Face.WO_XIANG_KAI_LE -> "20"
+                Face.TIAN_PING -> "21"
+                Face.HUA_DUO_LIAN -> "22"
+                Face.RE_HUA_LE -> "23"
+                Face.DA_ZHAO_HU -> "24"
+                Face.BAO_FU -> "25"
+                Face.SUAN_Q -> "26"
+                Face.WO_FANG_LE -> "27"
+                Face.DA_YUAN_ZHONG -> "28"
+                Face.HONG_BAO_DUO_DUO -> "29"
+                else -> throw UnsupportedOperationException("stickerId with QSid: $id")
+            }
+        }
+
+        fun SuperFace.stickerType(): Int {
+            return when (id) {
+                Face.LAN_QIU -> 2
                 else -> 1
             }
+        }
 
-            val pbElem = HummerCommelem.MsgElemInfoServtype37(
-                packId = "1".encodeToByteArray(),
-                stickerId = byteArrayOf(), // TODO
-                qsId = data.id,
-                sourceType = 1,
-                stickerType = businessType,
-                text = "/${data.name}".toByteArray(),
-                randomType = 1
-            ).toByteArray(HummerCommelem.MsgElemInfoServtype37.serializer())
-
-            val commonElem = ImMsgBody.CommonElem(
+        fun SuperFace.toCommData(): ImMsgBody.CommonElem {
+            return ImMsgBody.CommonElem(
                 serviceType = 37,
-                pbElem = pbElem,
-                businessType = businessType
+                pbElem = HummerCommelem.MsgElemInfoServtype37(
+                    packId = "1".encodeToByteArray(),
+                    stickerId = stickerId().encodeToByteArray(),
+                    qsId = id,
+                    sourceType = 1,
+                    stickerType = stickerType(),
+                    text = "/${name}".toByteArray(),
+                    randomType = 1
+                ).toByteArray(HummerCommelem.MsgElemInfoServtype37.serializer()),
+                businessType = stickerType()
             )
-
-            collect(ImMsgBody.Elem(commonElem = commonElem))
-            processAlso(data.contentToString().toPlainText())
         }
     }
 }
