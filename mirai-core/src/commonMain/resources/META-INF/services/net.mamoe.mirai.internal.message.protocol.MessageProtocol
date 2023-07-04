@@ -15,7 +15,7 @@ net.mamoe.mirai.internal.message.protocol.impl.FlashImageProtocol
 net.mamoe.mirai.internal.message.protocol.impl.IgnoredMessagesProtocol
 net.mamoe.mirai.internal.message.protocol.impl.ImageProtocol
 net.mamoe.mirai.internal.message.protocol.impl.MarketFaceProtocol
-net.mamoe.mirai.internal.message.protocol.impl.AnimatedStickerProtocol
+net.mamoe.mirai.internal.message.protocol.impl.SuperFaceProtocol
 net.mamoe.mirai.internal.message.protocol.impl.MusicShareProtocol
 net.mamoe.mirai.internal.message.protocol.impl.PokeMessageProtocol
 net.mamoe.mirai.internal.message.protocol.impl.PttMessageProtocol

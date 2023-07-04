@@ -16,45 +16,45 @@ import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
 
 /**
- * 动画表情
+ * 超级表情
  *
  * @see Face
  */
 @OptIn(MiraiExperimentalApi::class)
 @Serializable
-@SerialName(AnimatedSticker.SERIAL_NAME)
+@SerialName(SuperFace.SERIAL_NAME)
 @NotStableForInheritance
-public data class AnimatedSticker(
+public data class SuperFace(
     public val id: Int
 ) : HummerMessage {
 
     public companion object Key :
-        AbstractPolymorphicMessageKey<MessageContent, AnimatedSticker>(
+        AbstractPolymorphicMessageKey<MessageContent, SuperFace>(
             MessageContent,
             { it.safeCast() }) {
 
-        public const val SERIAL_NAME: String = "AnimatedSticker"
+        public const val SERIAL_NAME: String = "SuperFace"
 
         /**
          * 将普通表情转换为动画.
          *
-         * @see Image.flash
+         * @see Face.animated
          */
         @JvmStatic
-        public fun from(face: Face): AnimatedSticker = AnimatedSticker(face.id)
+        public fun from(face: Face): SuperFace = SuperFace(face.id)
     }
 
-    override val key: MessageKey<AnimatedSticker> get() = Key
+    override val key: MessageKey<SuperFace> get() = Key
 
     public val name: String get() = contentToString().let { it.substring(1, it.length - 1) }
 
     override fun toString(): String = contentToString()
 
-    override fun contentToString(): String = Face.names.getOrElse(id) { "[动画表情]" }
+    override fun contentToString(): String = Face.names.getOrElse(id) { "[超级表情]" }
 }
 
 /**
- * 将普通表情转换为动画.
+ * 将普通表情转换为超级表情.
  */
 @JvmSynthetic
-public inline fun Face.animated(): AnimatedSticker = AnimatedSticker.from(this)
+public inline fun Face.animated(): SuperFace = SuperFace.from(this)

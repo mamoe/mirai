@@ -23,13 +23,13 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.*
 import kotlin.text.toByteArray
 
-internal class AnimatedStickerProtocol : MessageProtocol() {
+internal class SuperFaceProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
         add(Decoder())
         add(Encoder())
 
         MessageSerializer.superclassesScope(MessageContent::class, SingleMessage::class) {
-            add(MessageSerializer(AnimatedSticker::class, AnimatedSticker.serializer()))
+            add(MessageSerializer(SuperFace::class, SuperFace.serializer()))
         }
     }
 
@@ -41,12 +41,12 @@ internal class AnimatedStickerProtocol : MessageProtocol() {
             markAsConsumed()
 
             val proto = data.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype37.serializer())
-            collect(AnimatedSticker(proto.qsId))
+            collect(SuperFace(proto.qsId))
         }
     }
 
-    private class Encoder : MessageEncoder<AnimatedSticker> {
-        override suspend fun MessageEncoderContext.process(data: AnimatedSticker) {
+    private class Encoder : MessageEncoder<SuperFace> {
+        override suspend fun MessageEncoderContext.process(data: SuperFace) {
             markAsConsumed()
 
             val businessType = when (data.id) {
