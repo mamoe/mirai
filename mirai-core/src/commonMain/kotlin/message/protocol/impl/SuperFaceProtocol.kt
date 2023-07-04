@@ -91,7 +91,7 @@ internal class SuperFaceProtocol : MessageProtocol() {
                 Face.HUA_DUO_LIAN -> "22"
                 Face.RE_HUA_LE -> "23"
                 Face.DA_ZHAO_HU -> "24"
-                Face.BAO_FU -> "25"
+                Face.NI_ZHEN_BANG_BANG -> "25"
                 Face.SUAN_Q -> "26"
                 Face.WO_FANG_LE -> "27"
                 Face.DA_YUAN_ZHONG -> "28"
