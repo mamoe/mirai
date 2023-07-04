@@ -71,6 +71,7 @@ internal class AnimatedStickerProtocol : MessageProtocol() {
             )
 
             collect(ImMsgBody.Elem(commonElem = commonElem))
+            processAlso(data.contentToString().toPlainText())
         }
     }
 }
