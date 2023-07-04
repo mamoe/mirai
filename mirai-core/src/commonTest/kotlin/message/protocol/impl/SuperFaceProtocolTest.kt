@@ -35,18 +35,22 @@ internal class SuperFaceProtocolTest : AbstractMessageProtocolTest() {
     fun `group AnimatedSticker receive from Android client`() {
         buildCodingChecks {
             elem(
-                "AA03200825121A0A01311202313618052001280132003A072FE6B581E6B3AA48011801".hexToBytes()
+                "AA 03 20 08 25 12 1A 0A 01 31 12 02 31 36 18 05 20 01 28 01 32 00 3A 07 2F E6 B5 81 E6 B3 AA 48 01 18 01".hexToBytes()
+                    .loadAs(net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem.serializer())
+            )
+            elem(
+                "AA 03 23 08 25 12 1D 0A 01 31 12 02 31 33 18 72 20 01 28 02 32 01 35 3A 07 2F E7 AF AE E7 90 83 42 00 48 01 18 02".hexToBytes()
                     .loadAs(net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem.serializer())
             )
             message(
-                SuperFace(id = Face.LIU_LEI)
+                SuperFace(face = Face.LAN_QIU)
             )
         }.doDecoderChecks()
     }
 
     @TestFactory
     fun `test serialization`(): DynamicTestsResult {
-        val data = SuperFace(0)
+        val data = SuperFace(face = Face.LAN_QIU)
         val serialName = SuperFace.SERIAL_NAME
         return runDynamicTests(
             testPolymorphicInMessageContent(data, serialName),

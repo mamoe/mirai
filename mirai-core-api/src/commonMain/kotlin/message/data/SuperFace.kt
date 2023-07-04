@@ -12,8 +12,10 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
+import kotlin.jvm.Throws
 
 /**
  * 超级表情
@@ -24,8 +26,10 @@ import net.mamoe.mirai.utils.safeCast
 @Serializable
 @SerialName(SuperFace.SERIAL_NAME)
 @NotStableForInheritance
-public data class SuperFace(
-    public val id: Int
+public data class SuperFace @MiraiInternalApi constructor(
+    public val face: Int,
+    public val id: String,
+    @MiraiInternalApi public val type: Int
 ) : HummerMessage {
 
     public companion object Key :
@@ -36,12 +40,51 @@ public data class SuperFace(
         public const val SERIAL_NAME: String = "SuperFace"
 
         /**
-         * 将普通表情转换为动画.
-         *
-         * @see Face.animated
-         */
+         * 将普通表情转换为超级表情.
+         **/
         @JvmStatic
-        public fun from(face: Face): SuperFace = SuperFace(face.id)
+        @OptIn(MiraiInternalApi::class)
+        @Throws(UnsupportedOperationException::class)
+        public fun from(face: Face): SuperFace {
+            val stickerId = when (face.id) {
+                Face.DA_CALL -> "1"
+                Face.BIAN_XING -> "2"
+                Face.KE_DAO_LE -> "3"
+                Face.ZI_XI_FEN_XI -> "4"
+                Face.JIA_YOU -> "5"
+                Face.WO_MEI_SHI -> "6"
+                Face.CAI_GOU -> "7"
+                Face.CHONG_BAI -> "8"
+                Face.BI_XIN -> "9"
+                Face.QING_ZHU -> "10"
+                Face.LAO_SE_PI -> "11"
+                Face.CHI_TANG -> "12"
+                Face.LAN_QIU -> "13"
+                Face.JING_XIA -> "14"
+                Face.SHENG_QI -> "15"
+                Face.LIU_LEI -> "16"
+                Face.DAN_GAO -> "17"
+                Face.BIAN_PAO -> "18"
+                Face.YAN_HUA -> "19"
+                Face.WO_XIANG_KAI_LE -> "20"
+                Face.TIAN_PING -> "21"
+                Face.HUA_DUO_LIAN -> "22"
+                Face.RE_HUA_LE -> "23"
+                Face.DA_ZHAO_HU -> "24"
+                Face.NI_ZHEN_BANG_BANG -> "25"
+                Face.SUAN_Q -> "26"
+                Face.WO_FANG_LE -> "27"
+                Face.DA_YUAN_ZHONG -> "28"
+                Face.HONG_BAO_DUO_DUO -> "29"
+                else -> throw UnsupportedOperationException(face.name)
+            }
+            val stickerType = when (face.id) {
+                Face.LAN_QIU -> 2
+                else -> 1
+            }
+
+            return SuperFace(face = face.id, id = stickerId, type = stickerType)
+        }
     }
 
     override val key: MessageKey<SuperFace> get() = Key
@@ -50,11 +93,14 @@ public data class SuperFace(
 
     override fun toString(): String = contentToString()
 
-    override fun contentToString(): String = Face.names.getOrElse(id) { "[超级表情]" }
+    override fun contentToString(): String = Face.names.getOrElse(face) { "[超级表情]" }
 }
 
-/**
- * 将普通表情转换为超级表情.
- */
 @JvmSynthetic
-public inline fun Face.animated(): SuperFace = SuperFace.from(this)
+public fun SuperFace.toFace(): Face = Face(id = face)
+
+@JvmSynthetic
+public fun SuperFace(face: Face): SuperFace = SuperFace.from(face)
+
+@JvmSynthetic
+public fun SuperFace(face: Int): SuperFace = SuperFace.from(face = Face(id = face))

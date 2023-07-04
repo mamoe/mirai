@@ -42,7 +42,7 @@ internal class SuperFaceProtocol : MessageProtocol() {
             markAsConsumed()
 
             val proto = data.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype37.serializer())
-            collect(SuperFace(proto.qsId))
+            collect(SuperFace(face = proto.qsId, id = proto.stickerId.decodeToString(), type = proto.stickerType))
         }
     }
 
@@ -64,62 +64,19 @@ internal class SuperFaceProtocol : MessageProtocol() {
     }
 
     companion object {
-
-        fun SuperFace.stickerId(): String {
-            return when (id) {
-                Face.DA_CALL -> "1"
-                Face.BIAN_XING -> "2"
-                Face.KE_DAO_LE -> "3"
-                Face.ZI_XI_FEN_XI -> "4"
-                Face.JIA_YOU -> "5"
-                Face.WO_MEI_SHI -> "6"
-                Face.CAI_GOU -> "7"
-                Face.CHONG_BAI -> "8"
-                Face.BI_XIN -> "9"
-                Face.QING_ZHU -> "10"
-                Face.LAO_SE_PI -> "11"
-                Face.CHI_TANG -> "12"
-                Face.LAN_QIU -> "13"
-                Face.JING_XIA -> "14"
-                Face.SHENG_QI -> "15"
-                Face.LIU_LEI -> "16"
-                Face.DAN_GAO -> "17"
-                Face.BIAN_PAO -> "18"
-                Face.YAN_HUA -> "19"
-                Face.WO_XIANG_KAI_LE -> "20"
-                Face.TIAN_PING -> "21"
-                Face.HUA_DUO_LIAN -> "22"
-                Face.RE_HUA_LE -> "23"
-                Face.DA_ZHAO_HU -> "24"
-                Face.NI_ZHEN_BANG_BANG -> "25"
-                Face.SUAN_Q -> "26"
-                Face.WO_FANG_LE -> "27"
-                Face.DA_YUAN_ZHONG -> "28"
-                Face.HONG_BAO_DUO_DUO -> "29"
-                else -> throw UnsupportedOperationException("stickerId with QSid: $id")
-            }
-        }
-
-        fun SuperFace.stickerType(): Int {
-            return when (id) {
-                Face.LAN_QIU -> 2
-                else -> 1
-            }
-        }
-
         fun SuperFace.toCommData(): ImMsgBody.CommonElem {
             return ImMsgBody.CommonElem(
                 serviceType = 37,
                 pbElem = HummerCommelem.MsgElemInfoServtype37(
                     packId = "1".encodeToByteArray(),
-                    stickerId = stickerId().encodeToByteArray(),
-                    qsId = id,
+                    stickerId = id.encodeToByteArray(),
+                    qsId = face,
                     sourceType = 1,
-                    stickerType = stickerType(),
+                    stickerType = type,
                     text = "/${name}".toByteArray(),
                     randomType = 1
                 ).toByteArray(HummerCommelem.MsgElemInfoServtype37.serializer()),
-                businessType = stickerType()
+                businessType = type
             )
         }
     }
