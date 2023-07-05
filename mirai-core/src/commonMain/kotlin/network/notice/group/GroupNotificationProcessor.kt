@@ -376,14 +376,14 @@ internal class GroupNotificationProcessor(
                 }
             }
             // 群聊之火
-            1052L, 1129L -> {
+            1052L, 1129L, 10095L -> {
                 val now = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
 
                 now.info.honors += GroupHonorType.PERFORMER
                 collect(MemberHonorChangeEvent.Achieve(now, GroupHonorType.PERFORMER))
             }
             // 群聊炽焰
-            1055L -> {
+            1055L, 10096L -> {
                 val now = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
 
                 now.info.honors -= GroupHonorType.PERFORMER
