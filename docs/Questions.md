@@ -100,7 +100,8 @@ IDEA 版本过于老旧，无法分析新版本的 Kotlin 依赖，请尝试升�
    参照 [打包依赖](../mirai-console/tools/gradle-plugin/README.md#打包依赖)
 
 2. 使用 数据库框架/反射框架 但找不到 驱动类/实体类  
-   你需要将**上下文**切换到插件中，或者指定 `ClassLoader`  
+   你需要将**上下文**切换到插件中，或者指定 `ClassLoader`，  
+   相关内容请参考 [JVM Plugins - Debug](../mirai-console/docs/plugin/JVMPlugin-Debug.md)  
    下面只列出部分例子，请根据你所使用的框架的文档进行修整。  
    切换上下文：  
    ```java
@@ -138,11 +139,11 @@ IDEA 版本过于老旧，无法分析新版本的 Kotlin 依赖，请尝试升�
            ClassLoader plugin = this.getClass().getClassLoader();
            ConfigurationBuilder builder = new ConfigurationBuilder()
                    .forPackage("org.example", plugin)
-                   .addClassLoaders(plugin);
+                   .addClassLoaders(plugin); // 指定从插件的类加载器中检索类
            Reflections reflections = new Reflections(builder);
            Set<Class<?>> query = org.reflections.scanners.Scanners.TypesAnnotated
                    .of(Entity.class, Embeddable.class, MappedSuperclass.class)
-                   .asClass(plugin)
+                   .asClass(plugin) // 指定从插件的类加载器中提取类
                    .apply(reflections.getStore());
            return query;
        }
