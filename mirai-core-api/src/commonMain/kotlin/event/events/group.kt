@@ -570,7 +570,7 @@ public data class MemberUnmuteEvent @MiraiInternalApi constructor(
 
 // region 群荣誉
 /**
- * [Member] 荣誉改变时的事件, 目前只支持龙王
+ * [Member] 荣誉改变时的事件
  */
 @MiraiExperimentalApi
 public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent() {
