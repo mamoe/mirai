@@ -3432,6 +3432,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field BANG_BANG_TANG I
 	public static final field BAN_ZHUAN_ZHONG I
 	public static final field BAO_BAO I
+	public static final field BAO_FU I
 	public static final field BAO_JI I
 	public static final field BAO_JIN I
 	public static final field BAO_QUAN I
@@ -3461,6 +3462,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field CHI_GUA I
 	public static final field CHI_TANG I
 	public static final field CHONG_BAI I
+	public static final field CUO_HAO I
 	public static final field Companion Lnet/mamoe/mirai/message/data/Face$Companion;
 	public static final field DAN I
 	public static final field DAN_GAO I
@@ -3469,11 +3471,15 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field DA_KU I
 	public static final field DA_LIAN I
 	public static final field DA_XIAO I
+	public static final field DA_YUAN_ZHONG I
+	public static final field DA_ZHAN_HONG_TU I
+	public static final field DA_ZHAO_HU I
 	public static final field DENG_LONG I
 	public static final field DE_YI I
 	public static final field DIAN_ZAN I
 	public static final field DIAO_XIE I
 	public static final field DING_GUA_GUA I
+	public static final field DUI_HAO I
 	public static final field E I
 	public static final field FAN I
 	public static final field FA_DAI I
@@ -3483,6 +3489,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field FEI_WEN I
 	public static final field FEN_DOU I
 	public static final field FO_XI I
+	public static final field FU_LUO_BO I
 	public static final field GAN_BEI I
 	public static final field GAN_GA I
 	public static final field GONG_XI I
@@ -3503,11 +3510,15 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field HE_XIE I
 	public static final field HONG_BAO I
 	public static final field HONG_BAO_BAO I
+	public static final field HONG_BAO_DUO_DUO I
 	public static final field HUAI_XIAO I
 	public static final field HUA_CHI I
+	public static final field HUA_DUO_LIAN I
 	public static final field HUI_SHOU I
 	public static final field HUI_TOU I
+	public static final field HU_HU_SHENG_WEI I
 	public static final field HU_LIAN I
+	public static final field JIA_YI I
 	public static final field JIA_YOU I
 	public static final field JIA_YOU_BAO_BAO I
 	public static final field JIA_YOU_BI_SHENG I
@@ -3516,12 +3527,14 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field JING_KONG I
 	public static final field JING_LI I
 	public static final field JING_XI I
+	public static final field JING_XIA I
 	public static final field JING_YA I
 	public static final field JI_DONG I
 	public static final field JI_E I
 	public static final field JI_ZHANG I
 	public static final field JU_HUA I
 	public static final field JU_JUE I
+	public static final field JU_PAI_PAI I
 	public static final field KAI_QIANG I
 	public static final field KA_FEI I
 	public static final field KEN_TOU I
@@ -3554,6 +3567,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field MEI_GUI I
 	public static final field MIAN_WU_BIAO_QING I
 	public static final field MIAO_MIAO I
+	public static final field MING_BAI I
 	public static final field MO_GUI_XIAO I
 	public static final field MO_JIN_LI I
 	public static final field MO_YU I
@@ -3562,6 +3576,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field NA_DAO_HONG_BAO I
 	public static final field NIU_A I
 	public static final field NIU_QI_CHONG_TIAN I
+	public static final field NI_ZHEN_BANG_BANG I
 	public static final field NO I
 	public static final field O I
 	public static final field OK I
@@ -3590,12 +3605,14 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field QUAN_TOU I
 	public static final field RANG_WO_KANG_KANG I
 	public static final field RENG_GOU I
+	public static final field RE_HUA_LE I
 	public static final field SAO_RAO I
 	public static final field SE I
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public static final field SHAN_DIAN I
 	public static final field SHAN_LIAN I
 	public static final field SHENG_LI I
+	public static final field SHENG_QI I
 	public static final field SHENG_RI_KUAI_LE I
 	public static final field SHI_AI I
 	public static final field SHOU_QIANG I
@@ -3604,8 +3621,10 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field SHUANG_XI I
 	public static final field SHUI I
 	public static final field SONG_HUA I
+	public static final field SUAN_Q I
 	public static final field TAI_NAN_LE I
 	public static final field TAI_YANG I
+	public static final field TIAN_PING I
 	public static final field TIAN_YI_TIAN I
 	public static final field TIAO_PI I
 	public static final field TIAO_SHENG I
@@ -3618,13 +3637,16 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field TUO_LIAN I
 	public static final field TUO_SAI I
 	public static final field WANG_WANG I
+	public static final field WAN_CHENG I
 	public static final field WEI_QU I
 	public static final field WEI_XIAO I
 	public static final field WEN_HAO_LIAN I
 	public static final field WO_BU_KAN I
+	public static final field WO_FANG_LE I
 	public static final field WO_MEI_SHI I
 	public static final field WO_SHOU I
 	public static final field WO_SUAN_LE I
+	public static final field WO_XIANG_KAI_LE I
 	public static final field WO_ZUI_MEI I
 	public static final field WU_LIAN I
 	public static final field WU_LIAO I
@@ -3643,6 +3665,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field XI_GUA I
 	public static final field XU I
 	public static final field YANG_TUO I
+	public static final field YAN_HUA I
 	public static final field YAO I
 	public static final field YIN_XIAN I
 	public static final field YI_WEN I
@@ -3682,10 +3705,12 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field names [Ljava/lang/String;
 	public static final field 不 I
 	public static final field 不开心 I
+	public static final field 举牌牌 I
 	public static final field 乒乓 I
 	public static final field 亲亲 I
 	public static final field 仔细分析 I
 	public static final field 佛系 I
+	public static final field 你真棒棒 I
 	public static final field 便便 I
 	public static final field 偷看 I
 	public static final field 偷笑 I
@@ -3697,6 +3722,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 凋谢 I
 	public static final field 击掌 I
 	public static final field 刀 I
+	public static final field 加一 I
 	public static final field 加油 I
 	public static final field 加油必胜 I
 	public static final field 加油抱抱 I
@@ -3744,6 +3770,8 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 困 I
 	public static final field 坏笑 I
 	public static final field 大哭 I
+	public static final field 大展宏兔 I
+	public static final field 大怨种 I
 	public static final field 大笑 I
 	public static final field 太南了 I
 	public static final field 太阳 I
@@ -3755,8 +3783,10 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 好闪 I
 	public static final field 委屈 I
 	public static final field 嫌弃 I
+	public static final field 完成 I
 	public static final field 害怕 I
 	public static final field 害羞 I
+	public static final field 对号 I
 	public static final field 小样儿 I
 	public static final field 小纠结 I
 	public static final field 尴尬 I
@@ -3778,18 +3808,22 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 怄火 I
 	public static final field 恭喜 I
 	public static final field 悠闲 I
+	public static final field 惊吓 I
 	public static final field 惊呆 I
 	public static final field 惊喜 I
 	public static final field 惊恐 I
 	public static final field 惊讶 I
 	public static final field 憨笑 I
 	public static final field 我不看 I
+	public static final field 我想开了 I
+	public static final field 我方了 I
 	public static final field 我最美 I
 	public static final field 我没事 I
 	public static final field 我酸了 I
 	public static final field 扇脸 I
 	public static final field 手枪 I
 	public static final field 打call I
+	public static final field 打招呼 I
 	public static final field 打脸 I
 	public static final field 扔狗 I
 	public static final field 托脸 I
@@ -3828,6 +3862,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 无奈 I
 	public static final field 无眼笑 I
 	public static final field 无聊 I
+	public static final field 明白 I
 	public static final field 晕 I
 	public static final field 暗中观察 I
 	public static final field 暴击 I
@@ -3847,6 +3882,8 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 灯笼 I
 	public static final field 炸弹 I
 	public static final field 点赞 I
+	public static final field 烟花 I
+	public static final field 热化了 I
 	public static final field 爆筋 I
 	public static final field 爱你 I
 	public static final field 爱心 I
@@ -3859,6 +3896,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 玫瑰 I
 	public static final field 瓢虫 I
 	public static final field 生日快乐 I
+	public static final field 生气 I
 	public static final field 甩头 I
 	public static final field 疑问 I
 	public static final field 白眼 I
@@ -3870,25 +3908,30 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 示爱 I
 	public static final field 礼物 I
 	public static final field 祈祷 I
+	public static final field 福萝卜 I
 	public static final field 笑哭 I
 	public static final field 篮球 I
 	public static final field 糊脸 I
 	public static final field 糗大了 I
 	public static final field 红包 I
 	public static final field 红包包 I
+	public static final field 红包多多 I
 	public static final field 羊驼 I
 	public static final field 老色痞 I
 	public static final field 胖三斤 I
 	public static final field 胜利 I
 	public static final field 脑阔疼 I
 	public static final field 舔一舔 I
+	public static final field 舔屏 I
 	public static final field 色 I
+	public static final field 花朵脸 I
 	public static final field 花痴 I
 	public static final field 茶 I
 	public static final field 药 I
 	public static final field 菊花 I
 	public static final field 菜刀 I
 	public static final field 菜狗 I
+	public static final field 虎虎生威 I
 	public static final field 蛋 I
 	public static final field 蛋糕 I
 	public static final field 街舞 I
@@ -3898,6 +3941,7 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 请 I
 	public static final field 调皮 I
 	public static final field 谢红包 I
+	public static final field 豹富 I
 	public static final field 赞 I
 	public static final field 足球 I
 	public static final field 跳绳 I
@@ -3910,7 +3954,9 @@ public final class net/mamoe/mirai/message/data/Face : net/mamoe/mirai/message/c
 	public static final field 送花 I
 	public static final field 鄙视 I
 	public static final field 酷 I
+	public static final field 酸Q I
 	public static final field 钞票 I
+	public static final field 错号 I
 	public static final field 闪电 I
 	public static final field 闭嘴 I
 	public static final field 问号脸 I
@@ -5257,6 +5303,50 @@ public final class net/mamoe/mirai/message/data/SingleMessage$Serializer : kotli
 	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/SingleMessage;)V
+}
+
+public final class net/mamoe/mirai/message/data/SuperFace : net/mamoe/mirai/message/data/HummerMessage {
+	public static final field Key Lnet/mamoe/mirai/message/data/SuperFace$Key;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public synthetic fun <init> (IILjava/lang/String;ILkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public final fun component1 ()I
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()I
+	public fun contentToString ()Ljava/lang/String;
+	public final fun copy (ILjava/lang/String;I)Lnet/mamoe/mirai/message/data/SuperFace;
+	public static synthetic fun copy$default (Lnet/mamoe/mirai/message/data/SuperFace;ILjava/lang/String;IILjava/lang/Object;)Lnet/mamoe/mirai/message/data/SuperFace;
+	public fun equals (Ljava/lang/Object;)Z
+	public static final fun from (Lnet/mamoe/mirai/message/data/Face;)Lnet/mamoe/mirai/message/data/SuperFace;
+	public final fun getFace ()I
+	public final fun getId ()Ljava/lang/String;
+	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getType ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/data/SuperFace;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class net/mamoe/mirai/message/data/SuperFace$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/data/SuperFace$$serializer;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/data/SuperFace;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/SuperFace;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/message/data/SuperFace$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+	public final fun from (Lnet/mamoe/mirai/message/data/Face;)Lnet/mamoe/mirai/message/data/SuperFace;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/message/data/SuperFaceKt {
+	public static final synthetic fun SuperFace (I)Lnet/mamoe/mirai/message/data/SuperFace;
+	public static final synthetic fun SuperFace (Lnet/mamoe/mirai/message/data/Face;)Lnet/mamoe/mirai/message/data/SuperFace;
+	public static final synthetic fun toFace (Lnet/mamoe/mirai/message/data/SuperFace;)Lnet/mamoe/mirai/message/data/Face;
 }
 
 public abstract interface class net/mamoe/mirai/message/data/UnsupportedMessage : net/mamoe/mirai/message/data/MessageContent {
