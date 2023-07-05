@@ -631,6 +631,28 @@ public data class GroupTalkativeChangeEvent(
     public val previous: NormalMember
 ) : Packet, GroupEvent, BotPassiveEvent, AbstractEvent()
 
+/**
+ * [Member] 活跃度头衔改变时的事件，目前只有 Bot 自身会触发
+ */
+public class MemberTemperatureTitleChangeEvent(
+    /**
+     * 改变活跃度头衔的群成员
+     */
+    public override val member: NormalMember,
+    /**
+     * 活跃度
+     */
+    public val temperature: Int,
+    /**
+     * 当前头衔
+     */
+    public val title: String
+) : Packet, GroupMemberEvent, BotPassiveEvent, AbstractEvent() {
+    override fun toString(): String {
+        return "MemberTemperatureTitleChangeEvent(group=${group.id}, member=${member.id}, temperature=${temperature}, title=${title})"
+    }
+}
+
 // endregion
 
 // endregion

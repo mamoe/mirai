@@ -411,7 +411,19 @@ internal class GroupNotificationProcessor(
                     collect(MemberHonorChangeEvent.Achieve(now, GroupHonorType.RED_PACKET))
                 }
             }
-            //
+            // 等级头衔
+            10097L -> {
+                // XXX: 目前只有机器人本身会触发
+                val user = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
+                val level = grayTip.msgTemplParam["level"]?.removePrefix("LV")?.toInt() ?: 1
+                val title = grayTip.msgTemplParam["title"] ?: grayTip.msgTemplParam["level"] ?: ""
+
+                collected += MemberTemperatureTitleChangeEvent(
+                    member = user,
+                    temperature = level,
+                    title = title
+                )
+            }
             else -> {
                 markNotConsumed()
                 logger.debug {
