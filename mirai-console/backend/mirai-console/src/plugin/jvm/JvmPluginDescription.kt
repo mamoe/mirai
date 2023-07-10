@@ -121,7 +121,7 @@ public inline fun JvmPluginDescription(
  *
  * #### Mirai Version Requirement (Since 2.16)
  * ```
- * dependsOn("net.mamoe.mirai.console", "[2.16.0, 3.0.0)")
+ * dependsOn("net.mamoe.mirai-console", "[2.16.0, 3.0.0)")
  * ```
  *
  * @see [JvmPluginDescription]

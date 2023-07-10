@@ -111,10 +111,11 @@ public interface PluginDescription {
 
     /**
      * 此插件依赖的 Mirai Console 版本号. 为 null 时则为不限制版本. 通常建议至少限制使用同一个主版本号.
-     * 如开发时依赖该插件版本 2.15.0, 则将版本限制设置为 `[2.15.0, 2.16.0)`, 表示大于等于 `2.15.0`, 小于 `2.16.0`.
+     * 如开发时依赖该插件版本 2.15.0, 则将版本限制设置为 `[2.15.0, 3.0.0)`, 表示大于等于 `2.15.0`, 小于 `3.0.0`.
      *
      * 版本遵循 [语义化版本 2.0 规范](https://semver.org/lang/zh-CN/),
      *
+     * @since 2.16
      * @see MiraiConsole.version
      */
     @ResolveContext(VERSION_REQUIREMENT) public val consoleRequirement: String?
