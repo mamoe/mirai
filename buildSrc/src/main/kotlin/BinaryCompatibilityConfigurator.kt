@@ -70,7 +70,7 @@ object BinaryCompatibilityConfigurator {
                 project.path,
                 listOfNotNull(
                     if (targetName == null) "classes/kotlin/main" else "classes/kotlin/$targetName/main",
-                    if (targetName?.contains("android") == true) "tmp/kotlin-classes/debug" else ""
+                    if (targetName?.contains("android") == true && project.usingAndroidInstrumentedTests) "tmp/kotlin-classes/debug" else ""
                 )
             )
         )
