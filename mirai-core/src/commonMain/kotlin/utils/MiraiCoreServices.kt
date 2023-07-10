@@ -14,6 +14,7 @@ import net.mamoe.mirai.utils.Services
 
 internal object MiraiCoreServices {
 
+    @Suppress("RemoveRedundantQualifierName")
     @OptIn(InternalEventMechanism::class)
     fun registerAll() {
         Services.register(
@@ -120,5 +121,10 @@ internal object MiraiCoreServices {
             "net.mamoe.mirai.auth.DefaultBotAuthorizationFactory",
             "net.mamoe.mirai.internal.network.auth.DefaultBotAuthorizationFactoryImpl"
         ) { net.mamoe.mirai.internal.network.auth.DefaultBotAuthorizationFactoryImpl() }
+
+        Services.register(
+            "net.mamoe.mirai.utils.InternalProtocolDataExchange",
+            "net.mamoe.mirai.internal.utils.MiraiProtocolInternal\$Exchange"
+        ) { net.mamoe.mirai.internal.utils.MiraiProtocolInternal.Exchange() }
     }
 }

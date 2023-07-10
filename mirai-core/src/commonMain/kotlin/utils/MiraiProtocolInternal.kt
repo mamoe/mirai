@@ -11,6 +11,8 @@ package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import net.mamoe.mirai.utils.EnumMap
+import net.mamoe.mirai.utils.InternalProtocolDataExchange
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.toUHexString
 
 internal class MiraiProtocolInternal(
@@ -29,7 +31,7 @@ internal class MiraiProtocolInternal(
     var supportsQRLogin: Boolean,
 
     // don't change property signatures, used externally.
-) {
+) : InternalProtocolDataExchange.InternalProtocolData {
     internal companion object {
         // don't change signature
         internal val protocols = EnumMap<MiraiProtocol, MiraiProtocolInternal>(MiraiProtocol::class)
@@ -121,4 +123,18 @@ internal class MiraiProtocolInternal(
 
         inline val MiraiProtocol.asInternal: MiraiProtocolInternal get() = get(this)
     }
+
+    @PublishedApi
+    internal class Exchange : InternalProtocolDataExchange {
+        @MiraiInternalApi
+        override fun of(protocol: MiraiProtocol): InternalProtocolDataExchange.InternalProtocolData {
+            return get(protocol)
+        }
+    }
+
+
+    override val isQRLoginSupported: Boolean get() = supportsQRLogin
+    override val mainVersion: String get() = ver
+    override val buildVersion: String get() = buildVer
+    override val sdkVersion: String get() = sdkVer
 }

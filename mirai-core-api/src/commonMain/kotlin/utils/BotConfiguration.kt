@@ -20,6 +20,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
+import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -249,7 +251,19 @@ public open class BotConfiguration : AbstractBotConfiguration() { // open for Ja
          * @since 2.8
          */
         MACOS,
+        ;
 
+        /**
+         * 当前协议是否支持[二维码登录][BotAuthorization.byQRCode]
+         *
+         * @since 2.15.0
+         */
+        public val isQRLoginSupported: Boolean get() = data.isQRLoginSupported
+
+        private inline val data: InternalProtocolDataExchange.InternalProtocolData
+            get() = InternalProtocolDataExchange.instance.of(
+                this
+            )
     }
 
     /**
@@ -561,4 +575,31 @@ internal val deviceInfoStub: (Bot) -> DeviceInfo = {
 
 private val logger by lazy {
     MiraiLogger.Factory.create(BotConfiguration::class)
+}
+
+/** @since 2.15.0 */
+@MiraiInternalApi
+public interface InternalProtocolDataExchange {
+    @MiraiInternalApi
+    public interface InternalProtocolData {
+        public val isQRLoginSupported: Boolean
+        public val mainVersion: String
+        public val buildVersion: String
+        public val sdkVersion: String
+    }
+
+    @MiraiInternalApi
+    public fun of(protocol: BotConfiguration.MiraiProtocol): InternalProtocolData
+
+    @MiraiInternalApi
+    public companion object {
+        internal val instance by lazy {
+            Mirai // ensure service loaded
+
+            loadService(
+                InternalProtocolDataExchange::class,
+                "net.mamoe.mirai.internal.utils.MiraiProtocolInternal\$Exchange"
+            )
+        }
+    }
 }
