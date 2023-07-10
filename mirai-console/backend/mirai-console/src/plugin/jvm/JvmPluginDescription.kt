@@ -167,7 +167,12 @@ public class JvmPluginDescriptionBuilder(
     public fun setDependencies(
         value: Set<PluginDependency>,
     ): JvmPluginDescriptionBuilder = apply {
-        this.dependencies = value.toMutableSet()
+        this.dependencies = value.toMutableSet().apply {
+            find { dependency -> dependency.id == "net.mamoe.mirai-console" }?.let { dependency ->
+                remove(dependency)
+                consoleRequirement = dependency.versionRequirement
+            }
+        }
     }
 
     @ILoveKuriyamaMiraiForever
@@ -175,7 +180,7 @@ public class JvmPluginDescriptionBuilder(
         vararg dependencies: PluginDependency,
     ): JvmPluginDescriptionBuilder = apply {
         for (dependency in dependencies) {
-            if (dependency.id == "net.mamoe.mirai.console" || dependency.id == "net.mamoe.mirai") {
+            if (dependency.id == "net.mamoe.mirai-console") {
                 consoleRequirement = dependency.versionRequirement
                 continue
             }
@@ -192,7 +197,7 @@ public class JvmPluginDescriptionBuilder(
         @ResolveContext(VERSION_REQUIREMENT) versionRequirement: String,
         isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply {
-        if (pluginId == "net.mamoe.mirai.console" || pluginId == "net.mamoe.mirai") {
+        if (pluginId == "net.mamoe.mirai-console") {
             consoleRequirement = versionRequirement
             return@apply
         }
@@ -268,15 +273,15 @@ internal data class SimpleJvmPluginDescription
         val version: SemVersion,
         val author: String = "",
         val info: String = "",
-        val dependencies: Set<PluginDependency> = setOf(),
-        val consoleRequirement: String? = null
+        val dependencies: Set<PluginDependency> = setOf()
     ) {
         fun toJvmPluginDescription(): JvmPluginDescription {
             return SimpleJvmPluginDescription(
                 id,
                 name ?: id,
-                version, author, info, dependencies,
-                consoleRequirement
+                version, author, info,
+                dependencies.filterTo(HashSet()) { it.id != "net.mamoe.mirai-console" },
+                dependencies.find { it.id == "net.mamoe.mirai-console" }?.versionRequirement
             )
         }
     }
