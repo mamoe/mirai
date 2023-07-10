@@ -60,13 +60,18 @@ private fun Project.configureAndroidTargetWithJvm() {
             }
         }
 
+        val jvmBaseMain by sourceSets.getting
+        val jvmBaseTest by sourceSets.getting
+
         sourceSets.getByName("androidTest").configureJvmTest("configureAndroidTargetWithJvm")
         sourceSets.getByName("androidTest").kotlin.srcDir(projectDir.resolve("src/androidUnitTest/kotlin"))
+        sourceSets.getByName("androidTest").dependsOn(jvmBaseTest)
 
         sourceSets.getByName("androidMain").apply {
             dependencies {
                 compileOnly(`android-runtime`)
             }
+            dependsOn(jvmBaseMain)
         }
 
         tasks.all {
