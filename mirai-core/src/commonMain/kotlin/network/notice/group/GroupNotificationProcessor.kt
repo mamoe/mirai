@@ -362,7 +362,7 @@ internal class GroupNotificationProcessor(
             10134L, 10135L -> {
                 // 阅读群公告可能会触发
                 val user = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
-                collected += MemberReceivedEvent(member = user)
+                collected += MemberCompleteTodoEvent(member = user)
             }
             // 龙王
             10093L, 10094L, 1053L, 1054L, 1103L -> {
@@ -421,7 +421,7 @@ internal class GroupNotificationProcessor(
             10097L -> {
                 // XXX: 目前只有机器人本身会触发
                 val user = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
-                val level = grayTip.msgTemplParam["level"]?.removePrefix("LV")?.toInt() ?: 1
+                val level = grayTip.msgTemplParam["level"]?.removePrefix("LV")?.toIntOrNull() ?: 1
                 val title = grayTip.msgTemplParam["title"] ?: grayTip.msgTemplParam["level"] ?: ""
 
                 collected += MemberTemperatureTitleChangeEvent(

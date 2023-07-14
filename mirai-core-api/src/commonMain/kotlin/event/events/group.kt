@@ -523,7 +523,6 @@ public data class MemberSpecialTitleChangeEvent @MiraiInternalApi constructor(
 /**
  * [Member] 活跃度头衔改变时的事件，目前只有 Bot 自身会触发
  */
-@MiraiExperimentalApi
 public class MemberTemperatureTitleChangeEvent(
     /**
      * 改变活跃度头衔的群成员
@@ -534,7 +533,7 @@ public class MemberTemperatureTitleChangeEvent(
      */
     public val temperature: Int,
     /**
-     * 当前头衔
+     * 获得头衔
      */
     public val title: String
 ) : Packet, GroupMemberEvent, BotPassiveEvent, AbstractEvent() {
@@ -544,7 +543,6 @@ public class MemberTemperatureTitleChangeEvent(
 }
 
 // endregion
-
 
 // region 成员权限
 
@@ -558,7 +556,6 @@ public data class MemberPermissionChangeEvent @MiraiInternalApi constructor(
 ) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent(), GroupMemberInfoChangeEvent
 
 // endregion
-
 
 // region 禁言
 
@@ -595,7 +592,6 @@ public data class MemberUnmuteEvent @MiraiInternalApi constructor(
 /**
  * [Member] 荣誉改变时的事件
  */
-@MiraiExperimentalApi
 public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent() {
     /**
      * 改变荣誉的群成员
@@ -661,15 +657,14 @@ public data class GroupTalkativeChangeEvent(
 /**
  * [Member] 完成群待办事件，可能会在成员阅读完群公告(待办)时触发
  */
-@MiraiExperimentalApi
-public class MemberReceivedEvent(
+public class MemberCompleteTodoEvent(
     /**
      * 完成群待办的群成员
      */
     public override val member: NormalMember,
 ) : Packet, GroupMemberEvent, BotPassiveEvent, AbstractEvent() {
     override fun toString(): String {
-        return "MemberReceivedEvent(group=${group.id}, member=${member.id})"
+        return "MemberCompleteTodoEvent(group=${group.id}, member=${member.id})"
     }
 }
 
