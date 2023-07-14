@@ -2570,6 +2570,18 @@ public final class net/mamoe/mirai/event/events/MemberCardChangeEvent : net/mamo
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class net/mamoe/mirai/event/events/MemberCompleteTodoEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/internal/network/Packet {
+	public fun <init> (Lnet/mamoe/mirai/contact/NormalMember;)V
+	public synthetic fun getMember ()Lnet/mamoe/mirai/contact/Member;
+	public fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class net/mamoe/mirai/event/events/MemberHonorChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/internal/network/Packet {
+	public abstract fun getHonorType ()I
+	public abstract fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
+}
+
 public final class net/mamoe/mirai/event/events/MemberHonorChangeEvent$Achieve : net/mamoe/mirai/event/events/MemberHonorChangeEvent {
 	public synthetic fun <init> (Lnet/mamoe/mirai/contact/NormalMember;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lnet/mamoe/mirai/contact/NormalMember;
@@ -2758,6 +2770,15 @@ public final class net/mamoe/mirai/event/events/MemberSpecialTitleChangeEvent : 
 	public fun getOperator ()Lnet/mamoe/mirai/contact/NormalMember;
 	public final fun getOrigin ()Ljava/lang/String;
 	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/event/events/MemberTemperatureTitleChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/internal/network/Packet {
+	public fun <init> (Lnet/mamoe/mirai/contact/NormalMember;ILjava/lang/String;)V
+	public synthetic fun getMember ()Lnet/mamoe/mirai/contact/Member;
+	public fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
+	public final fun getTemperature ()I
+	public final fun getTitle ()Ljava/lang/String;
 	public fun toString ()Ljava/lang/String;
 }
 
