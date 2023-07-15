@@ -67,8 +67,8 @@ object Versions {
     const val log4j = "2.19.0"
     const val asm = "9.4"
     const val difflib = "1.3.0"
-    const val netty = "4.1.63.Final"
-    const val bouncycastle = "1.64"
+    const val netty = "4.1.94.Final"
+    const val bouncycastle = "1.70"
     const val mavenArtifactResolver = "1.7.3"
     const val mavenResolverProvider = "3.8.4"
 
