@@ -1,0 +1,5 @@
+id: net.mamoe.console.itest.plugin-with-yml-can-use-library-while-clinit
+version: 0.0.0
+
+dependencies:
+  - net.mamoe.console.itest.plugin-with-yml

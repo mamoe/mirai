@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.extensions.PluginLoaderProvider
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
+import net.mamoe.mirai.console.plugin.NotYetLoadedPlugin
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
@@ -94,7 +95,15 @@ internal class PluginManagerImpl(
     private fun <P : Plugin, D : PluginDescription> PluginLoader<P, D>.loadPluginNoEnable(plugin: P) {
         kotlin.runCatching {
             this.load(plugin)
-            resolvedPlugins.add(plugin)
+
+            resolvedPlugins.add(
+                when (plugin) {
+                    is NotYetLoadedPlugin<*> -> plugin.resolve()
+
+                    else -> plugin
+                }
+            )
+
         }.fold(
             onSuccess = {
                 logger.info { "Successfully loaded plugin ${getPluginDescription(plugin).smartToString()}" }

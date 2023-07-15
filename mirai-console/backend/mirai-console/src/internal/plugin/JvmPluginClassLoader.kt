@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.internal.plugin
 
 import net.mamoe.mirai.console.plugin.jvm.ExportManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginClasspath
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.*
 import org.eclipse.aether.artifact.Artifact
@@ -245,6 +246,8 @@ internal class DynLibClassLoader : DynamicClasspathClassLoader {
 }
 
 internal class JvmPluginClassLoaderN : URLClassLoader {
+    var pluginDescriptionFromPluginResource: JvmPluginDescription? = null
+
     val openaccess: JvmPluginClasspath = OpenAccess()
     val file: File
     val ctx: JvmPluginsLoadingCtx

@@ -17,10 +17,20 @@ import kotlin.coroutines.EmptyCoroutineContext
 /**
  * Java 插件的父类
  */
-public abstract class JavaPlugin @JvmOverloads constructor(
-    public final override val description: JvmPluginDescription,
-    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
-) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext) {
+public abstract class JavaPlugin : JvmPlugin, AbstractJvmPlugin {
+
+    @JvmOverloads
+    public constructor(
+        description: JvmPluginDescription,
+        parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+    ) : super(description, parentCoroutineContext)
+
+    @JvmOverloads
+    public constructor(
+        parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+    ) : super(parentCoroutineContext)
+
+
     init {
         __jpi_try_to_init_dependencies()
     }

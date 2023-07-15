@@ -29,6 +29,7 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.*
+import net.mamoe.yamlkt.Yaml
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -177,7 +178,7 @@ internal class BuiltInJvmPluginLoaderImpl(
     override fun Sequence<File>.extractPlugins(): List<JvmPlugin> {
         ensureActive()
 
-        fun Sequence<Map.Entry<File, JvmPluginClassLoaderN>>.findAllInstances(): Sequence<Map.Entry<File, JvmPlugin>> {
+        fun Sequence<Map.Entry<File, JvmPluginClassLoaderN>>.initialize(): Sequence<Map.Entry<File, JvmPluginClassLoaderN>> {
             return onEach { (_, pluginClassLoader) ->
                 val exportManagers = pluginClassLoader.findServices(
                     ExportManager::class
@@ -192,7 +193,11 @@ internal class BuiltInJvmPluginLoaderImpl(
                 } else {
                     pluginClassLoader.declaredFilter = exportManagers[0]
                 }
-            }.map { (f, pluginClassLoader) ->
+            }
+        }
+
+        fun Sequence<Map.Entry<File, JvmPluginClassLoaderN>>.findAllInstances(): Sequence<Map.Entry<File, JvmPlugin>> {
+            return map { (f, pluginClassLoader) ->
                 f to pluginClassLoader.findServices(
                     JvmPlugin::class,
                     KotlinPlugin::class,
@@ -206,19 +211,80 @@ internal class BuiltInJvmPluginLoaderImpl(
             }
         }
 
+        fun Map.Entry<File, JvmPluginClassLoaderN>.loadWithoutPluginDescription(): Sequence<Pair<File, JvmPlugin>> {
+            return sequenceOf(this).initialize().findAllInstances().map { (k, v) -> k to v }
+        }
+
+        fun Map.Entry<File, JvmPluginClassLoaderN>.loadWithPluginDescription(description: JvmPluginDescription): Sequence<Pair<File, JvmPlugin>> {
+            val pluginClassLoader = this.value
+            val pluginFile = this.key
+            pluginClassLoader.pluginDescriptionFromPluginResource = description
+
+            val pendingPlugin = object : NotYetLoadedJvmPlugin(
+                description = description,
+                classLoaderN = pluginClassLoader,
+            ) {
+                private val plugin by lazy {
+                    val services = pluginClassLoader.findServices(
+                        JvmPlugin::class,
+                        KotlinPlugin::class,
+                        JavaPlugin::class
+                    ).loadAllServices()
+                    if (services.isEmpty()) {
+                        error("No plugin instance found in $pluginFile")
+                    }
+                    if (services.size > 1) {
+                        error(
+                            "Only one plugin can exist at the same time when using plugin.yml:\n\nPlugins found:\n" + services.joinToString(
+                                separator = "\n"
+                            ) { it.javaClass.name + " (from " + it.javaClass.classLoader + ")" }
+                        )
+                    }
+
+                    return@lazy services[0]
+                }
+
+                override fun resolve(): JvmPlugin = plugin
+            }
+            pluginClassLoader.linkedLogger = pendingPlugin.logger
+
+
+            return sequenceOf(pluginFile to pendingPlugin)
+        }
+
         val filePlugins = this.filterNot {
             pluginFileToInstanceMap.containsKey(it)
         }.associateWith {
             JvmPluginClassLoaderN.newLoader(it, jvmPluginLoadingCtx)
         }.onEach { (_, classLoader) ->
             classLoaders.add(classLoader)
-        }.asSequence().findAllInstances().onEach {
-            //logger.verbose { "Successfully initialized JvmPlugin ${loaded}." }
+        }.asSequence().flatMap { entry ->
+            val (file, pluginClassLoader) = entry
+
+            val pluginDescriptionDefine = pluginClassLoader.getResourceAsStream("plugin.yml")
+            if (pluginDescriptionDefine == null) {
+                entry.loadWithoutPluginDescription()
+            } else {
+                val desc = kotlin.runCatching {
+                    pluginDescriptionDefine.bufferedReader().use { resource ->
+                        Yaml.decodeFromString(
+                            SimpleJvmPluginDescription.SerialData.serializer(),
+                            resource.readText()
+                        ).toJvmPluginDescription()
+                    }
+                }.onFailure { err ->
+                    throw PluginLoadException("Invalid plugin.yml in " + file.absolutePath, err)
+                }.getOrThrow()
+
+                entry.loadWithPluginDescription(desc)
+            }
+        }.onEach {
+            logger.verbose { "Successfully initialized JvmPlugin ${it.second}." }
         }.onEach { (file, plugin) ->
             pluginFileToInstanceMap[file] = plugin
-        } + pluginFileToInstanceMap.asSequence()
+        }
 
-        return filePlugins.toSet().map { it.value }
+        return filePlugins.toSet().map { it.second }
     }
 
     private val loadedPlugins = ConcurrentHashMap<JvmPlugin, Unit>()
@@ -266,9 +332,17 @@ internal class BuiltInJvmPluginLoaderImpl(
             // move nameFolder in config and data to idFolder
             PluginManager.pluginsDataPath.moveNameFolder(plugin)
             PluginManager.pluginsConfigPath.moveNameFolder(plugin)
-            check(plugin is JvmPluginInternal) { "A JvmPlugin must extend AbstractJvmPlugin to be loaded by JvmPluginLoader.BuiltIn" }
+
+            check(plugin is JvmPluginInternal || plugin is NotYetLoadedJvmPlugin) {
+                "A JvmPlugin must extend AbstractJvmPlugin to be loaded by JvmPluginLoader.BuiltIn"
+            }
+
+
             // region Link dependencies
-            plugin.javaClass.classLoader.safeCast<JvmPluginClassLoaderN>()?.let { jvmPluginClassLoaderN ->
+            when (plugin) {
+                is NotYetLoadedJvmPlugin -> plugin.classLoaderN
+                else -> plugin.javaClass.classLoader
+            }.safeCast<JvmPluginClassLoaderN>()?.let { jvmPluginClassLoaderN ->
                 // Link plugin dependencies
                 plugin.description.dependencies.asSequence().mapNotNull { dependency ->
                     plugin.logger.verbose { "Linking dependency: ${dependency.id}" }
@@ -282,8 +356,19 @@ internal class BuiltInJvmPluginLoaderImpl(
                 }
                 jvmPluginClassLoaderN.linkPluginLibraries(plugin.logger)
             }
+
+            val realPlugin = when (plugin) {
+                is NotYetLoadedJvmPlugin -> plugin.resolve().also { realPlugin ->
+                    check(plugin.description === realPlugin.description) {
+                        "A JvmPlugin loaded by plugin.yml must has same description reference"
+                    }
+                }
+                else -> plugin
+            }
+
+            check(realPlugin is JvmPluginInternal) { "A JvmPlugin must extend AbstractJvmPlugin to be loaded by JvmPluginLoader.BuiltIn" }
             // endregion
-            plugin.internalOnLoad()
+            realPlugin.internalOnLoad()
         }.getOrElse {
             throw PluginLoadException("Exception while loading ${plugin.description.smartToString()}", it)
         }
