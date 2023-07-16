@@ -1287,6 +1287,29 @@ public final class net/mamoe/mirai/console/data/java/JavaAutoSavePluginData$Comp
 	public final fun createKType (Ljava/lang/Class;[Lkotlin/reflect/KType;)Lkotlin/reflect/KType;
 }
 
+public final class net/mamoe/mirai/console/enduserreadme/EndUserReadme {
+	public static final field Companion Lnet/mamoe/mirai/console/enduserreadme/EndUserReadme$Companion;
+	public static final field DELAY Ljava/lang/String;
+	public static final field PAUSE Ljava/lang/String;
+	public fun <init> ()V
+	public final fun put (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public final fun putAll (Ljava/lang/String;)V
+}
+
+public final class net/mamoe/mirai/console/enduserreadme/EndUserReadme$Companion {
+}
+
+public final class net/mamoe/mirai/console/enduserreadme/EndUserReadme$Render {
+	public fun <init> ()V
+	public final fun delay ()V
+	public final fun delay (I)V
+	public final fun msg (Ljava/lang/String;)V
+	public final fun pause ()V
+	public final fun plusAssign (Ljava/lang/String;)V
+	public final fun render ()Ljava/lang/String;
+	public final fun unaryPlus (Ljava/lang/String;)V
+}
+
 public abstract class net/mamoe/mirai/console/events/AutoLoginEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/console/events/ConsoleEvent, net/mamoe/mirai/event/events/BotEvent {
 }
 
@@ -1300,6 +1323,10 @@ public final class net/mamoe/mirai/console/events/AutoLoginEvent$Success : net/m
 }
 
 public abstract interface class net/mamoe/mirai/console/events/ConsoleEvent : net/mamoe/mirai/event/Event {
+}
+
+public final class net/mamoe/mirai/console/events/EndUserReadmeInitializeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/console/events/ConsoleEvent {
+	public final fun getReadme ()Lnet/mamoe/mirai/console/enduserreadme/EndUserReadme;
 }
 
 public final class net/mamoe/mirai/console/events/StartupEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/console/events/ConsoleEvent {

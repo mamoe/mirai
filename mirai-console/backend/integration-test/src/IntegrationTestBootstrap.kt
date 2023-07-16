@@ -54,6 +54,7 @@ internal fun main() {
             error("Don't launch IntegrationTestBootstrap directly. See /test/MiraiConsoleIntegrationTestBootstrap.kt")
         }
     }
+    System.setProperty("mirai.console.skip-end-user-readme", "")
     // @context: env.testunit = true
     // @context: env.inJUnitProcess = false
     // @context: env.exitProcessSafety = true

@@ -46,6 +46,7 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.Pa
 import net.mamoe.mirai.console.internal.data.builtins.DataScope
 import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
 import net.mamoe.mirai.console.internal.data.builtins.PluginDependenciesConfig
+import net.mamoe.mirai.console.internal.enduserreadme.EndUserReadmeProcessor
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorageImpl
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
@@ -363,6 +364,10 @@ ___  ____           _   _____                       _
             }
 
             mainLogger.info { "${pluginManager.plugins.count { it.isEnabled }} plugin(s) enabled." }
+        }
+
+        phase("end-user-readme") {
+            EndUserReadmeProcessor.process(this)
         }
 
         phase("auto-login bots") {

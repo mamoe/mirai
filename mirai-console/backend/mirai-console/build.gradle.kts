@@ -103,6 +103,10 @@ tasks {
     }
 }
 
+tasks.withType<Test> {
+    this.jvmArgs("-Dmirai.console.skip-end-user-readme")
+}
+
 tasks.getByName("compileKotlin").dependsOn(
     DependencyDumper.registerDumpTaskKtSrc(
         project,
