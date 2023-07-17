@@ -4978,6 +4978,16 @@ public abstract class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$
 public final class net/mamoe/mirai/message/data/OnlineMessageSource$Outgoing$ToTemp$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
 }
 
+public abstract interface class net/mamoe/mirai/message/data/OnlineShortVideo : net/mamoe/mirai/message/data/ShortVideo {
+	public static final field Key Lnet/mamoe/mirai/message/data/OnlineShortVideo$Key;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public abstract fun getUrlForDownload ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/message/data/OnlineShortVideo$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+	public static final field SERIAL_NAME Ljava/lang/String;
+}
+
 public final class net/mamoe/mirai/message/data/OrNullDelegate {
 	public static final synthetic fun box-impl (Ljava/lang/Object;)Lnet/mamoe/mirai/message/data/OrNullDelegate;
 	public static fun constructor-impl (Ljava/lang/Object;)Ljava/lang/Object;
@@ -5221,6 +5231,16 @@ public abstract interface class net/mamoe/mirai/message/data/ServiceMessage : ne
 }
 
 public final class net/mamoe/mirai/message/data/ServiceMessage$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+}
+
+public abstract interface class net/mamoe/mirai/message/data/ShortVideo : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
+	public static final field Key Lnet/mamoe/mirai/message/data/ShortVideo$Key;
+	public abstract fun getFileId ()Ljava/lang/String;
+	public abstract fun getFileMd5 ()[B
+	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
+}
+
+public final class net/mamoe/mirai/message/data/ShortVideo$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
 }
 
 public final class net/mamoe/mirai/message/data/ShowImageFlag : net/mamoe/mirai/message/data/AbstractMessageKey, net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageMetadata {
