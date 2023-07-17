@@ -5305,7 +5305,7 @@ public final class net/mamoe/mirai/message/data/SingleMessage$Serializer : kotli
 	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/data/SingleMessage;)V
 }
 
-public final class net/mamoe/mirai/message/data/SuperFace : net/mamoe/mirai/message/data/HummerMessage {
+public final class net/mamoe/mirai/message/data/SuperFace : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/HummerMessage {
 	public static final field Key Lnet/mamoe/mirai/message/data/SuperFace$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public synthetic fun <init> (IILjava/lang/String;ILkotlinx/serialization/internal/SerializationConstructorMarker;)V

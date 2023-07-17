@@ -31,7 +31,7 @@ import kotlin.jvm.Throws
 public data class SuperFace @MiraiInternalApi constructor(
     public val face: Int,
     public val id: String,
-    @MiraiInternalApi public val type: Int
+    public val type: Int
 ) : HummerMessage, CodableMessage {
 
     public companion object Key :
@@ -93,12 +93,11 @@ public data class SuperFace @MiraiInternalApi constructor(
 
     public val name: String get() = contentToString().let { it.substring(1, it.length - 1) }
 
-    override fun toString(): String = contentToString()
+    override fun toString(): String = "[mirai:superface:$face,$id,$type]"
 
     override fun contentToString(): String = Face.names.getOrElse(face) { "[超级表情]" }
 
     @MiraiExperimentalApi
-    @OptIn(MiraiInternalApi::class)
     override fun appendMiraiCodeTo(builder: StringBuilder) {
         builder.append("[mirai:superface:").append(face).append(',').append(id).append(',').append(type).append(']')
     }
