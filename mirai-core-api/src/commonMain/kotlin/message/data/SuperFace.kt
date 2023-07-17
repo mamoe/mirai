@@ -11,6 +11,8 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
@@ -30,7 +32,7 @@ public data class SuperFace @MiraiInternalApi constructor(
     public val face: Int,
     public val id: String,
     @MiraiInternalApi public val type: Int
-) : HummerMessage {
+) : HummerMessage, CodableMessage {
 
     public companion object Key :
         AbstractPolymorphicMessageKey<MessageContent, SuperFace>(
@@ -94,6 +96,17 @@ public data class SuperFace @MiraiInternalApi constructor(
     override fun toString(): String = contentToString()
 
     override fun contentToString(): String = Face.names.getOrElse(face) { "[超级表情]" }
+
+    @MiraiExperimentalApi
+    @OptIn(MiraiInternalApi::class)
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+        builder.append("[mirai:superface:").append(face).append(',').append(id).append(',').append(type).append(']')
+    }
+
+    @MiraiInternalApi
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitSuperFace(this, data)
+    }
 }
 
 @JvmSynthetic

@@ -46,6 +46,7 @@ public interface MessageVisitor<in D, out R> {
     public fun visitFlashImage(message: FlashImage, data: D): R
     public fun visitPokeMessage(message: PokeMessage, data: D): R
     public fun visitVipFace(message: VipFace, data: D): R
+    public fun visitSuperFace(message: SuperFace, data: D): R
 
     // region MarketFace
     public fun visitMarketFace(message: MarketFace, data: D): R
@@ -177,6 +178,10 @@ public abstract class AbstractMessageVisitor<in D, out R> : MessageVisitor<D, R>
     }
 
     public override fun visitVipFace(message: VipFace, data: D): R {
+        return visitHummerMessage(message, data)
+    }
+
+    override fun visitSuperFace(message: SuperFace, data: D): R {
         return visitHummerMessage(message, data)
     }
 
