@@ -77,6 +77,7 @@ internal interface MessageProtocolFacade {
         elements: List<ImMsgBody.Elem>,
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
+        fromId: Long,
         bot: Bot,
         builder: MessageChainBuilder,
         containingMsg: MsgComm.Msg? = null,
@@ -134,8 +135,11 @@ internal interface MessageProtocolFacade {
         elements: List<ImMsgBody.Elem>,
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
+        fromId: Long,
         bot: Bot,
-    ): MessageChain = buildMessageChain { decode(elements, groupIdOrZero, messageSourceKind, bot, this, null) }
+    ): MessageChain = buildMessageChain {
+        decode(elements, groupIdOrZero, messageSourceKind, fromId, bot, this, null)
+    }
 
 
     fun createSerializersModule(): SerializersModule = SerializersModule {
@@ -171,17 +175,19 @@ internal fun MessageProtocolFacade.decodeAndRefineLight(
     elements: List<ImMsgBody.Elem>,
     groupIdOrZero: Long,
     messageSourceKind: MessageSourceKind,
+    fromId: Long,
     bot: Bot,
     refineContext: RefineContext = EmptyRefineContext
-): MessageChain = decode(elements, groupIdOrZero, messageSourceKind, bot).refineLight(bot, refineContext)
+): MessageChain = decode(elements, groupIdOrZero, messageSourceKind, fromId, bot).refineLight(bot, refineContext)
 
 internal suspend fun MessageProtocolFacade.decodeAndRefineDeep(
     elements: List<ImMsgBody.Elem>,
     groupIdOrZero: Long,
     messageSourceKind: MessageSourceKind,
+    fromId: Long,
     bot: Bot,
     refineContext: RefineContext = EmptyRefineContext
-): MessageChain = decode(elements, groupIdOrZero, messageSourceKind, bot).refineDeep(bot, refineContext)
+): MessageChain = decode(elements, groupIdOrZero, messageSourceKind, fromId, bot).refineDeep(bot, refineContext)
 
 
 private const val errorTips =
@@ -288,6 +294,7 @@ internal class MessageProtocolFacadeImpl(
         elements: List<ImMsgBody.Elem>,
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
+        fromId: Long,
         bot: Bot,
         builder: MessageChainBuilder,
         containingMsg: MsgComm.Msg?
@@ -336,6 +343,7 @@ internal class MessageProtocolFacadeImpl(
 
         return getSingleReceipt(result, message)
     }
+
     override suspend fun <C : AbstractContact> preprocessAndSendOutgoing(
         target: C,
         message: Message,
@@ -378,6 +386,7 @@ internal class MessageProtocolFacadeImpl(
                 "Internal error: no MessageReceipt was returned from OutgoingMessagePipeline for message",
                 forDebug = message.structureToString()
             )
+
             1 -> return result.single().castUp()
             else -> throw contextualBugReportException(
                 "Internal error: multiple MessageReceipts were returned from OutgoingMessagePipeline: $result",

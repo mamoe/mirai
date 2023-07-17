@@ -20,6 +20,8 @@ import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
+import net.mamoe.mirai.internal.message.SimpleRefineContext
+import net.mamoe.mirai.internal.message.data.OnlineShortVideoMsgInternal
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
@@ -159,7 +161,18 @@ internal class GroupMessageProcessor(
                 GroupMessageSyncEvent(
                     client = bot.otherClients.find { it.appId == msgHead.fromInstid }
                         ?: return, // don't compare with dstAppId. diff.
-                    message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, MessageSourceKind.GROUP),
+                    message = msgs.map { it.msg }.toMessageChainOnline(
+                        bot,
+                        group.id,
+                        MessageSourceKind.GROUP,
+                        SimpleRefineContext(
+                            mutableMapOf(
+                                OnlineShortVideoMsgInternal.MessageSourceKind to MessageSourceKind.GROUP,
+                                OnlineShortVideoMsgInternal.FromId to sender.uin,
+                                OnlineShortVideoMsgInternal.GroupIdOrZero to group.uin,
+                            )
+                        )
+                    ),
                     time = msgHead.msgTime,
                     group = group,
                     sender = sender,
@@ -174,7 +187,18 @@ internal class GroupMessageProcessor(
                 GroupMessageEvent(
                     senderName = nameCard.nick,
                     sender = sender,
-                    message = msgs.map { it.msg }.toMessageChainOnline(bot, group.id, MessageSourceKind.GROUP),
+                    message = msgs.map { it.msg }.toMessageChainOnline(
+                        bot,
+                        group.id,
+                        MessageSourceKind.GROUP,
+                        SimpleRefineContext(
+                            mutableMapOf(
+                                OnlineShortVideoMsgInternal.MessageSourceKind to MessageSourceKind.GROUP,
+                                OnlineShortVideoMsgInternal.FromId to sender.uin,
+                                OnlineShortVideoMsgInternal.GroupIdOrZero to group.uin,
+                            )
+                        )
+                    ),
                     permission = sender.permission,
                     time = msgHead.msgTime,
                 ),

@@ -183,7 +183,9 @@ internal fun OfflineMessageSourceImplData(
         internalIds = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer())
             .origUids?.mapToIntArray { it.toInt() } ?: intArrayOf(),
         time = delegate.time,
-        originalMessageLazy = lazy { delegate.toMessageChainNoSource(bot, messageSourceKind, groupIdOrZero) },
+        originalMessageLazy = lazy {
+            delegate.toMessageChainNoSource(bot, messageSourceKind, groupIdOrZero, delegate.senderUin)
+        },
         fromId = delegate.senderUin,
         targetId = when {
             groupIdOrZero != 0L -> groupIdOrZero
@@ -191,6 +193,7 @@ internal fun OfflineMessageSourceImplData(
             delegate.srcMsg != null -> runCatching {
                 delegate.srcMsg.loadAs(MsgComm.Msg.serializer()).msgHead.toUin
             }.getOrElse { 0L }
+
             else -> 0/*error("cannot find targetId. delegate=${delegate._miraiContentToString()}, delegate.srcMsg=${
             kotlin.runCatching { delegate.srcMsg?.loadAs(MsgComm.Msg.serializer())?._miraiContentToString() }
                 .fold(

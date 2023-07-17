@@ -41,6 +41,8 @@ public interface MessageVisitor<in D, out R> {
     public fun visitVoice(message: net.mamoe.mirai.message.data.Voice, data: D): R
     public fun visitAudio(message: Audio, data: D): R
 
+    public fun visitShortVideo(message: ShortVideo, data: D): R
+
     // region HummerMessage
     public fun visitHummerMessage(message: HummerMessage, data: D): R
     public fun visitFlashImage(message: FlashImage, data: D): R
@@ -161,6 +163,10 @@ public abstract class AbstractMessageVisitor<in D, out R> : MessageVisitor<D, R>
     }
 
     public override fun visitAudio(message: Audio, data: D): R {
+        return visitMessageContent(message, data)
+    }
+
+    override fun visitShortVideo(message: ShortVideo, data: D): R {
         return visitMessageContent(message, data)
     }
 

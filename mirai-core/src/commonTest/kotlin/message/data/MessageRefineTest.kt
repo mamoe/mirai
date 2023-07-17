@@ -293,7 +293,10 @@ internal class MessageRefineTest : AbstractTestWithMiraiImpl() {
                     1234567890, 1617378549, "群垃圾，时不时来被gc", PlainText("5")
                 ),
                 ForwardMessage.Node(
-                    1234567890, 1617382639, "群垃圾，时不时来被gc", redefined[2].messageChain[QuoteReply]!! + PlainText("aseff")
+                    1234567890,
+                    1617382639,
+                    "群垃圾，时不时来被gc",
+                    redefined[2].messageChain[QuoteReply]!! + PlainText("aseff")
                 ),
             ),
             redefined,
@@ -313,7 +316,7 @@ private fun sourceStub(
 
 private suspend fun testRecursiveRefine(list: List<ImMsgBody.Elem>, expected: MessageChain, isLight: Boolean) {
     val actual = buildMessageChain {
-        MessageProtocolFacade.decode(list, 0, MessageSourceKind.GROUP, bot, this, null)
+        MessageProtocolFacade.decode(list, 0, MessageSourceKind.GROUP, 0L, bot, this, null)
     }.let { c ->
         if (isLight) {
             c.refineLight(bot)
@@ -370,10 +373,12 @@ private fun assertMessageChainEquals(expected: MessageChain, actual: MessageChai
                     if (a !is QuoteReply) return false
                     if (!compare(e.source.originalMessage, a.source.originalMessage)) return false
                 }
+
                 is MessageSource -> {
                     if (a !is MessageSource) return false
                     if (!compare(e.originalMessage, a.originalMessage)) return false
                 }
+
                 is ForwardMessage -> {
                     if (a !is ForwardMessage) return false
                     if (e.brief != a.brief) return false
@@ -383,10 +388,12 @@ private fun assertMessageChainEquals(expected: MessageChain, actual: MessageChai
                     if (e.preview != a.preview) return false
                     assertNodesEquals(e.nodeList, a.nodeList)
                 }
+
                 is Image -> {
                     if (a !is Image) return false
                     if (e.imageId != a.imageId) return false
                 }
+
                 else -> {
                     if (e != a) return false
                 }

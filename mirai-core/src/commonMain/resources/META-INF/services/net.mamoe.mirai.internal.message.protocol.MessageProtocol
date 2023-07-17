@@ -20,6 +20,7 @@ net.mamoe.mirai.internal.message.protocol.impl.PokeMessageProtocol
 net.mamoe.mirai.internal.message.protocol.impl.PttMessageProtocol
 net.mamoe.mirai.internal.message.protocol.impl.QuoteReplyProtocol
 net.mamoe.mirai.internal.message.protocol.impl.RichMessageProtocol
+net.mamoe.mirai.internal.message.protocol.impl.ShortVideoProtocol
 net.mamoe.mirai.internal.message.protocol.impl.TextProtocol
 net.mamoe.mirai.internal.message.protocol.impl.VipFaceProtocol
 net.mamoe.mirai.internal.message.protocol.impl.ForwardMessageProtocol

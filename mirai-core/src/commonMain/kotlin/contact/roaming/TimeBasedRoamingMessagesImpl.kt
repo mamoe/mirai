@@ -16,9 +16,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
+import net.mamoe.mirai.internal.message.SimpleRefineContext
+import net.mamoe.mirai.internal.message.data.OnlineShortVideoMsgInternal
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetRoamMsgReq
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.utils.cast
 
 internal sealed class TimeBasedRoamingMessagesImpl : AbstractRoamingMessages() {
     override suspend fun getMessagesIn(
@@ -32,13 +35,34 @@ internal sealed class TimeBasedRoamingMessagesImpl : AbstractRoamingMessages() {
             while (currentCoroutineContext().isActive) {
                 val resp = requestRoamMsg(timeStart, lastMessageTime, random)
                 val messages = resp.messages ?: break
+
                 if (filter == null || filter === RoamingMessageFilter.ANY) {
                     // fast path
-                    messages.forEach { emit(it.toMessageChainOnline(contact.bot)) }
+                    messages.forEach {
+                        emit(
+                            it.toMessageChainOnline(
+                                contact.bot,
+                                refineContext = SimpleRefineContext(
+                                    mutableListOf(
+                                        OnlineShortVideoMsgInternal.FromId to it.msgHead.fromUin
+                                    ).cast()
+                                )
+                            )
+                        )
+                    }
                 } else {
                     for (message in messages) {
                         if (filter.invoke(createRoamingMessage(message, messages))) {
-                            emit(message.toMessageChainOnline(contact.bot))
+                            emit(
+                                message.toMessageChainOnline(
+                                    contact.bot,
+                                    refineContext = SimpleRefineContext(
+                                        mutableListOf(
+                                            OnlineShortVideoMsgInternal.FromId to message.msgHead.fromUin
+                                        ).cast()
+                                    )
+                                )
+                            )
                         }
                     }
                 }

@@ -57,6 +57,7 @@ internal class FaceProtocolTest : AbstractMessageProtocolTest() {
                 ),
                 groupIdOrZero = 0,
                 MessageSourceKind.GROUP,
+                fromId = 0L,
                 bot,
             )
         }
