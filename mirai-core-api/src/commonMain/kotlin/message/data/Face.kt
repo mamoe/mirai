@@ -614,7 +614,7 @@ public data class Face(public val id: Int) : // used in delegation
         public const val 福萝卜: Int = 348
 
         @JvmField
-        public val names: Array<String> = Array(348) { "[表情]" }
+        public val names: Array<String> = Array(349) { "[表情]" }
 
         init {
             names[JING_YA] = "[惊讶]"
