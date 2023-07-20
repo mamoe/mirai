@@ -43,6 +43,7 @@ public abstract class AbstractJvmPlugin : JvmPluginInternal, JvmPlugin, AutoSave
         this.description = description
     }
 
+    @JvmOverloads
     public constructor(parentCoroutineContext: CoroutineContext = EmptyCoroutineContext) : super(parentCoroutineContext) {
         this.description = javaClass.loadPluginDescriptionFromClassLoader()
     }

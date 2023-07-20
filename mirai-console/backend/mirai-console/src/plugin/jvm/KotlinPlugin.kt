@@ -18,12 +18,23 @@ import kotlin.coroutines.EmptyCoroutineContext
  * Kotlin 插件的父类.
  */
 public abstract class KotlinPlugin : JvmPlugin, AbstractJvmPlugin {
+    /**
+     * 通过一个指定的 [JvmPluginDescription] 构造插件示例
+     *
+     * 当使用 `plugin.yml` 加载插件示例时不能使用此构造器
+     */
     @JvmOverloads
     public constructor(
         description: JvmPluginDescription,
         parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
     ) : super(description, parentCoroutineContext)
 
+
+    /**
+     * 通过插件内置的 `plugin.yml` 构造插件实例
+     *
+     * @since 2.16.0
+     */
     @JvmOverloads
     public constructor(
         parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,

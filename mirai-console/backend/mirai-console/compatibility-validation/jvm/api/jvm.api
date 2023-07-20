@@ -1958,6 +1958,7 @@ public final class net/mamoe/mirai/console/plugin/description/PluginDescription$
 }
 
 public abstract class net/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin : net/mamoe/mirai/console/internal/plugin/JvmPluginInternal, net/mamoe/mirai/console/data/AutoSavePluginDataHolder, net/mamoe/mirai/console/plugin/jvm/JvmPlugin {
+	public fun <init> ()V
 	public fun <init> (Lkotlin/coroutines/CoroutineContext;)V
 	public synthetic fun <init> (Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;)V
