@@ -31,6 +31,7 @@ import kotlin.jvm.Throws
 public data class SuperFace @MiraiInternalApi constructor(
     public val face: Int,
     public val id: String,
+    @SerialName("sticker_type")
     public val type: Int
 ) : HummerMessage, CodableMessage {
 
