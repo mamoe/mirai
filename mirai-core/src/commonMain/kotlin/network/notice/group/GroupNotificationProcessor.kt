@@ -360,7 +360,6 @@ internal class GroupNotificationProcessor(
             }
             // 群待办
             10134L, 10135L -> {
-                // 阅读群公告可能会触发
                 val user = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
                 collected += MemberCompleteTodoEvent(member = user)
             }

@@ -655,7 +655,7 @@ public data class GroupTalkativeChangeEvent(
 // region 群待办
 
 /**
- * [Member] 完成群待办事件，可能会在成员阅读完群公告(待办)时触发
+ * [Member] 完成群待办事件，可能会在成员阅读完群待办(公告)时触发
  */
 public class MemberCompleteTodoEvent(
     /**
