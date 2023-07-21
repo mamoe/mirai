@@ -327,6 +327,20 @@ internal class GroupNotificationProcessor(
         val grayTip = buf.loadAs(TroopTips0x857.NotifyMsgBody.serializer(), 1).optGeneralGrayTip
         markAsConsumed()
         when (grayTip?.templId) {
+            // 群幸运词
+            10047L, 10048L -> {
+                val user = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
+                val images = listOfNotNull(
+                    grayTip.msgTemplParam["img_url"],
+                    grayTip.msgTemplParam["img_url_1"],
+                    grayTip.msgTemplParam["img_url_2"]
+                )
+
+                collected += MemberLuckyWordEvent(
+                    member = user,
+                    images = images
+                )
+            }
             // 群戳一戳
             10043L, 1133L, 1132L, 1134L, 1135L, 1136L -> {
                 // group nudge

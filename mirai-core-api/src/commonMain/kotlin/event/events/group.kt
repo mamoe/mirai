@@ -652,6 +652,28 @@ public data class GroupTalkativeChangeEvent(
 
 // endregion
 
+// region 群幸运词
+
+/**
+ * [Member] 触发群幸运词事件
+ */
+public class MemberLuckyWordEvent(
+    /**
+     * 触发群幸运词的群成员
+     */
+    public override val member: NormalMember,
+    /**
+     * 群幸运词的图片链接
+     */
+    public val images: List<String>
+) : Packet, GroupMemberEvent, BotPassiveEvent, AbstractEvent() {
+    override fun toString(): String {
+        return "MemberLuckyWordEvent(group=${group.id}, member=${member.id})"
+    }
+}
+
+// endregion
+
 // region 群待办
 
 /**
