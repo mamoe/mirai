@@ -325,8 +325,9 @@ internal class GroupNotificationProcessor(
         data: MsgType0x2DC,
     ) = data.context {
         val grayTip = buf.loadAs(TroopTips0x857.NotifyMsgBody.serializer(), 1).optGeneralGrayTip
+            ?: return@context
         markAsConsumed()
-        when (grayTip?.templId) {
+        when (grayTip.templId) {
             // 群幸运词
             10047L, 10048L -> {
                 val user = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
@@ -446,7 +447,7 @@ internal class GroupNotificationProcessor(
             else -> {
                 markNotConsumed()
                 logger.debug {
-                    "Unknown Transformers528 0x14 template\ntemplId=${grayTip?.templId}\nPermList=${grayTip?.msgTemplParam?.structureToString()}"
+                    "Unknown Transformers528 0x14 template\ntemplId=${grayTip.templId}\nPermList=${grayTip.msgTemplParam.structureToString()}"
                 }
             }
         }
