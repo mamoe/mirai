@@ -325,7 +325,7 @@ internal class GroupNotificationProcessor(
         data: MsgType0x2DC,
     ) = data.context {
         val grayTip = buf.loadAs(TroopTips0x857.NotifyMsgBody.serializer(), 1).optGeneralGrayTip
-            ?: return@context
+            ?: return@context markNotConsumed()
         markAsConsumed()
         when (grayTip.templId) {
             // 群幸运词
