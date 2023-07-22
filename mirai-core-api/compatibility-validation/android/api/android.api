@@ -2763,6 +2763,13 @@ public final class net/mamoe/mirai/event/events/MemberPermissionChangeEvent : ne
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class net/mamoe/mirai/event/events/MemberSetTodoEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/internal/network/Packet {
+	public fun <init> (Lnet/mamoe/mirai/contact/NormalMember;)V
+	public synthetic fun getMember ()Lnet/mamoe/mirai/contact/Member;
+	public fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class net/mamoe/mirai/event/events/MemberSpecialTitleChangeEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/event/events/GroupMemberInfoChangeEvent, net/mamoe/mirai/event/events/GroupOperableEvent, net/mamoe/mirai/internal/network/Packet {
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;

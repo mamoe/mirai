@@ -677,6 +677,20 @@ public class MemberLuckyWordEvent(
 // region 群待办
 
 /**
+ * [Member] 设置群待办事件
+ */
+public class MemberSetTodoEvent(
+    /**
+     * 设置群待办的群成员
+     */
+    public override val member: NormalMember,
+) : Packet, GroupMemberEvent, BotPassiveEvent, AbstractEvent() {
+    override fun toString(): String {
+        return "MemberSetTodoEvent(group=${group.id}, member=${member.id})"
+    }
+}
+
+/**
  * [Member] 完成群待办事件，可能会在成员阅读完群待办(公告)时触发
  */
 public class MemberCompleteTodoEvent(
