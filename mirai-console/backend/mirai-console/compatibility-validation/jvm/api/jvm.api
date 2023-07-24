@@ -1288,6 +1288,7 @@ public final class net/mamoe/mirai/console/data/java/JavaAutoSavePluginData$Comp
 }
 
 public abstract class net/mamoe/mirai/console/events/AutoLoginEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/console/events/ConsoleEvent, net/mamoe/mirai/event/events/BotEvent {
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/console/events/AutoLoginEvent$Failure : net/mamoe/mirai/console/events/AutoLoginEvent {
