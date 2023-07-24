@@ -36,4 +36,11 @@ public sealed class AutoLoginEvent : BotEvent, ConsoleEvent, AbstractEvent() {
         override val bot: Bot,
         public val cause: Throwable
     ) : AutoLoginEvent()
+
+    override fun toString(): String {
+        return when (this) {
+            is Success -> "AutoLoginEvent.Success(bot=${bot.id}, protocol=${bot.configuration.protocol}, heartbeatStrategy=${bot.configuration.heartbeatStrategy})"
+            is Failure -> "AutoLoginEvent.Failure(bot=${bot.id}, protocol=${bot.configuration.protocol}, message=${cause.message})"
+        }
+    }
 }
