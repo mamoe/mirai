@@ -122,7 +122,7 @@ internal suspend fun QQAndroidBot.requestQimei(logger: MiraiLogger) {
             oaid = "",
             osVersion = buildString {
                 append("Android ")
-                append(deviceInfo.version.release.toString())
+                append(deviceInfo.version.release.decodeToString())
                 append(", level ")
                 append(deviceInfo.version.sdk.toString())
             },
