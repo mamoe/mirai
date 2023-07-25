@@ -119,11 +119,6 @@ public inline fun JvmPluginDescription(
  *    .build();
  * ```
  *
- * #### Mirai Version Requirement (Since 2.16)
- * ```
- * dependsOn("net.mamoe.mirai-console", "[2.16.0, 3.0.0)")
- * ```
- *
  * @see [JvmPluginDescription]
  */
 public class JvmPluginDescriptionBuilder(
@@ -139,7 +134,6 @@ public class JvmPluginDescriptionBuilder(
     private var author: String = ""
     private var info: String = ""
     private var dependencies: MutableSet<PluginDependency> = mutableSetOf()
-    private var consoleRequirement: String? = null
 
     @ILoveKuriyamaMiraiForever
     public fun name(@ResolveContext(PLUGIN_NAME) value: String): JvmPluginDescriptionBuilder =
@@ -167,12 +161,7 @@ public class JvmPluginDescriptionBuilder(
     public fun setDependencies(
         value: Set<PluginDependency>,
     ): JvmPluginDescriptionBuilder = apply {
-        this.dependencies = value.toMutableSet().apply {
-            find { dependency -> dependency.id == "net.mamoe.mirai-console" }?.let { dependency ->
-                remove(dependency)
-                consoleRequirement = dependency.versionRequirement
-            }
-        }
+        this.dependencies = value.toMutableSet()
     }
 
     @ILoveKuriyamaMiraiForever
@@ -180,10 +169,6 @@ public class JvmPluginDescriptionBuilder(
         vararg dependencies: PluginDependency,
     ): JvmPluginDescriptionBuilder = apply {
         for (dependency in dependencies) {
-            if (dependency.id == "net.mamoe.mirai-console") {
-                consoleRequirement = dependency.versionRequirement
-                continue
-            }
             this.dependencies.add(dependency)
         }
     }
@@ -197,10 +182,6 @@ public class JvmPluginDescriptionBuilder(
         @ResolveContext(VERSION_REQUIREMENT) versionRequirement: String,
         isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply {
-        if (pluginId == "net.mamoe.mirai-console") {
-            consoleRequirement = versionRequirement
-            return@apply
-        }
         this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
     }
 
@@ -222,7 +203,7 @@ public class JvmPluginDescriptionBuilder(
 
     public fun build(): JvmPluginDescription =
         @Suppress("DEPRECATION_ERROR")
-        SimpleJvmPluginDescription(id, name, version, author, info, dependencies, consoleRequirement)
+        SimpleJvmPluginDescription(id, name, version, author, info, dependencies)
 
     /**
      * 标注一个 [JvmPluginDescription] DSL
@@ -247,7 +228,6 @@ internal data class SimpleJvmPluginDescription
     override val author: String = "",
     override val info: String = "",
     override val dependencies: Set<PluginDependency> = setOf(),
-    override val consoleRequirement: String? = null
 ) : JvmPluginDescription {
 
     @Suppress("DEPRECATION_ERROR")
@@ -273,15 +253,13 @@ internal data class SimpleJvmPluginDescription
         val version: SemVersion,
         val author: String = "",
         val info: String = "",
-        val dependencies: Set<PluginDependency> = setOf()
+        val dependencies: Set<PluginDependency> = setOf(),
     ) {
         fun toJvmPluginDescription(): JvmPluginDescription {
             return SimpleJvmPluginDescription(
                 id,
                 name ?: id,
-                version, author, info,
-                dependencies.filterTo(HashSet()) { it.id != "net.mamoe.mirai-console" },
-                dependencies.find { it.id == "net.mamoe.mirai-console" }?.versionRequirement
+                version, author, info, dependencies
             )
         }
     }

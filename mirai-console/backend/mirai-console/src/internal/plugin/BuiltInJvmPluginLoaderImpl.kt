@@ -28,7 +28,6 @@ import net.mamoe.mirai.console.plugin.loader.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.*
 import net.mamoe.yamlkt.Yaml
 import java.io.File
@@ -337,11 +336,7 @@ internal class BuiltInJvmPluginLoaderImpl(
             check(plugin is JvmPluginInternal || plugin is NotYetLoadedJvmPlugin) {
                 "A JvmPlugin must extend AbstractJvmPlugin to be loaded by JvmPluginLoader.BuiltIn"
             }
-            plugin.description.consoleRequirement?.let { requirement ->
-                if (!SemVersion.parseRangeRequirement(requirement).test(MiraiConsole.version)) {
-                    throw PluginLoadException("Plugin '${plugin.id}' ('${plugin.id}') requires mirai-console with version $requirement while the resolved is ${MiraiConsole.version}")
-                }
-            }
+
 
             // region Link dependencies
             when (plugin) {
