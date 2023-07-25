@@ -88,6 +88,8 @@ internal class PluginManagerImpl(
                 }
             }
         }
+
+        resolvedPlugins.add(MiraiConsoleAsPlugin)
     }
 
     // region LOADING

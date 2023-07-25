@@ -104,6 +104,8 @@ public interface PluginDescription {
     /**
      * 此插件依赖的其他插件, 将会在这些插件加载之后加载此插件
      *
+     * 特别的, 可以使用 `net.mamoe.mirai-console` 作为插件 id 限制 mirai-console 版本 (自 2.16.0 后)
+     *
      * @see PluginDependency
      */
     public val dependencies: Set<PluginDependency>
