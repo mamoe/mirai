@@ -41,7 +41,7 @@ public sealed class AutoLoginEvent : BotEvent, ConsoleEvent, AbstractEvent() {
         public val cause: Throwable
     ) : AutoLoginEvent() {
         override fun toString(): String {
-            return "AutoLoginEvent.Failure(bot=${bot.id}, protocol=${bot.configuration.protocol}, message=${cause.message})"
+            return "AutoLoginEvent.Failure(bot=${bot.id}, protocol=${bot.configuration.protocol}, cause=${cause})"
         }
     }
 }
