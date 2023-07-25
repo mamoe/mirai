@@ -135,8 +135,10 @@ internal abstract class AbstractBot(
     @Volatile
     var networkInitialized = false
     val network: NetworkHandler by lazy {
-        networkInitialized = true
-        createNetworkHandler()
+        createNetworkHandler().also {
+            it.context // ensure components available
+            networkInitialized = true
+        }
     } // the selector handles renewal of [NetworkHandler]
 
     final override suspend fun login() {
