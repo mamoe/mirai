@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.network.auth
 
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
 import net.mamoe.mirai.auth.AuthReason
 import net.mamoe.mirai.auth.BotAuthResult
 import net.mamoe.mirai.internal.MockAccount
@@ -22,6 +23,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPushForceOffline
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
+import org.junit.jupiter.api.RepeatedTest
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
@@ -106,14 +109,17 @@ internal class AuthorizationReasonTest : AbstractBotAuthTest() {
         assertIs<AuthReason.FastLoginError>(authReason)
     }
 
-    @Test
+    // @Test
+    @RepeatedTest(20)
     fun `force offline`() = runTest {
         var isFirstLogin: Boolean = true
-        var authReason: AuthReason? = null
+
+        // volatile
+        val authReason = AtomicReference<AuthReason?>(null)
 
         setAuthorization { auth, info ->
             isFirstLogin = info.isFirstLogin
-            authReason = info.reason
+            authReason.set(info.reason)
 
             auth.authByPassword("")
             return@setAuthorization object : BotAuthResult {}
@@ -142,8 +148,9 @@ internal class AuthorizationReasonTest : AbstractBotAuthTest() {
         )
 
         eventDispatcher.joinBroadcast() // why test finished before code reaches end??
+        yield()
 
         assertFalse(isFirstLogin)
-        assertIs<AuthReason.ForceOffline>(authReason)
+        assertIs<AuthReason.ForceOffline>(authReason.get(), message = authReason.toString())
     }
 }
