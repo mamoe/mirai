@@ -33,6 +33,7 @@ import net.mamoe.mirai.console.plugin.id
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin.Companion.onLoad
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
@@ -106,7 +107,13 @@ internal abstract class JvmPluginInternal(
             }
             error("Failed to switch plugin '$id' status from $nowStatus to $update, current status = ${pluginStatus.value}")
         }
-        error("Failed to switch plugin '$id' status to $update because current status $nowStatus doesn't contain flag ${Integer.toBinaryString(expectFlag)}")
+        error(
+            "Failed to switch plugin '$id' status to $update because current status $nowStatus doesn't contain flag ${
+                Integer.toBinaryString(
+                    expectFlag
+                )
+            }"
+        )
     }
 
     @JvmSynthetic
@@ -364,3 +371,11 @@ internal inline fun AtomicLong.updateWhen(condition: (Long) -> Boolean, update: 
 }
 
 internal val Throwable.rootCauseOrSelf: Throwable get() = generateSequence(this) { it.cause }.lastOrNull() ?: this
+
+internal fun Class<out JvmPluginInternal>.loadPluginDescriptionFromClassLoader(): JvmPluginDescription {
+    val classLoader =
+        this.classLoader as? JvmPluginClassLoaderN ?: error("Plugin $this is not loaded by JvmPluginClassLoader")
+
+    return classLoader.pluginDescriptionFromPluginResource ?: error("Missing `plugin.yml`")
+}
+

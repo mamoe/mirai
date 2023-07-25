@@ -1,0 +1,5 @@
+id: net.mamoe.console.itest.plugin-with-yml
+version: 0.0.0
+
+dependencies:
+  - net.mamoe.console.itest.serviceloader

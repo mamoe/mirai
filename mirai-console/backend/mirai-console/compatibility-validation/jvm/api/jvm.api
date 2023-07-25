@@ -1796,6 +1796,10 @@ public final class net/mamoe/mirai/console/permission/PermitteeId$Companion {
 	public final fun hasChild (Lnet/mamoe/mirai/console/permission/PermitteeId;Lnet/mamoe/mirai/console/permission/PermitteeId;)Z
 }
 
+public abstract interface class net/mamoe/mirai/console/plugin/NotYetLoadedPlugin : net/mamoe/mirai/console/plugin/Plugin {
+	public abstract fun resolve ()Lnet/mamoe/mirai/console/plugin/Plugin;
+}
+
 public abstract interface class net/mamoe/mirai/console/plugin/Plugin : net/mamoe/mirai/console/command/CommandOwner {
 	public abstract fun getLoader ()Lnet/mamoe/mirai/console/plugin/loader/PluginLoader;
 	public abstract fun isEnabled ()Z
@@ -1984,8 +1988,12 @@ public abstract class net/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin : net
 	public fun <init> ()V
 	public fun <init> (Lkotlin/coroutines/CoroutineContext;)V
 	public synthetic fun <init> (Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;)V
+	public fun <init> (Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;Lkotlin/coroutines/CoroutineContext;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun getAutoSaveIntervalMillis ()Lkotlin/ranges/LongRange;
 	public final fun getDataHolderName ()Ljava/lang/String;
+	public final fun getDescription ()Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;
 	protected final fun getJvmPluginClasspath ()Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginClasspath;
 	public final fun getLoader ()Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginLoader;
 	public synthetic fun getLoader ()Lnet/mamoe/mirai/console/plugin/loader/PluginLoader;
@@ -2006,10 +2014,12 @@ public final class net/mamoe/mirai/console/plugin/jvm/AbstractJvmPluginKt {
 }
 
 public abstract class net/mamoe/mirai/console/plugin/jvm/JavaPlugin : net/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin, net/mamoe/mirai/console/plugin/jvm/JvmPlugin {
+	public fun <init> ()V
+	public fun <init> (Lkotlin/coroutines/CoroutineContext;)V
+	public synthetic fun <init> (Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;)V
 	public fun <init> (Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;Lkotlin/coroutines/CoroutineContext;)V
 	public synthetic fun <init> (Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getDescription ()Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;
 	public final fun getScheduler ()Lnet/mamoe/mirai/console/plugin/jvm/JavaPluginScheduler;
 }
 
@@ -2125,10 +2135,12 @@ public final class net/mamoe/mirai/console/plugin/jvm/JvmPluginLoader$BuiltIn : 
 }
 
 public abstract class net/mamoe/mirai/console/plugin/jvm/KotlinPlugin : net/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin, net/mamoe/mirai/console/plugin/jvm/JvmPlugin {
+	public fun <init> ()V
+	public fun <init> (Lkotlin/coroutines/CoroutineContext;)V
+	public synthetic fun <init> (Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;)V
 	public fun <init> (Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;Lkotlin/coroutines/CoroutineContext;)V
 	public synthetic fun <init> (Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getDescription ()Lnet/mamoe/mirai/console/plugin/jvm/JvmPluginDescription;
 }
 
 public abstract class net/mamoe/mirai/console/plugin/loader/AbstractFilePluginLoader : net/mamoe/mirai/console/plugin/loader/FilePluginLoader {
