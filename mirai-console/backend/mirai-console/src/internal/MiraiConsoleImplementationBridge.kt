@@ -435,7 +435,13 @@ ___  ____           _   _____                       _
                         }
                     }.onFailure {
                         mainLogger.error(it)
-                        bot.close()
+
+                        runCatching {
+                            bot.close()
+                        }.onFailure { err ->
+                            mainLogger.error("Error in closing bot", err)
+                        }
+
                         launch {
                             AutoLoginEvent.Failure(bot = bot, cause = it).broadcast()
                         }
