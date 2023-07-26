@@ -11,6 +11,7 @@ package net.mamoe.mirai.mock.internal.contact.roaming
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.emptyFlow
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Stranger
@@ -22,6 +23,7 @@ import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.mock.internal.MockBotImpl
 import net.mamoe.mirai.mock.utils.mock
 import net.mamoe.mirai.utils.JavaFriendlyAPI
+import net.mamoe.mirai.utils.Streamable
 import net.mamoe.mirai.utils.cast
 import java.util.stream.Stream
 import kotlin.streams.asStream
@@ -35,6 +37,22 @@ internal class MockRoamingMessages(
         filter: RoamingMessageFilter?
     ): Flow<MessageChain> {
         return getMsg(timeStart, timeEnd, filter).asFlow()
+    }
+
+    override suspend fun getMessagesBefore(
+        messageId: Int?,
+        filter: RoamingMessageFilter?
+    ): Streamable<MessageChain> {
+        return object : Streamable<MessageChain> {
+            override fun asFlow(): Flow<MessageChain> {
+                messageId ?: return emptyFlow()
+                return getMsg(messageId.toLong(), filter).asFlow()
+            }
+        }
+    }
+
+    override suspend fun getAllMessages(filter: RoamingMessageFilter?): Flow<MessageChain> {
+        return getMsg(0, Long.MAX_VALUE, filter).asFlow()
     }
 
     private fun getMsg(
@@ -54,6 +72,25 @@ internal class MockRoamingMessages(
             contact,
             timeStart,
             timeEnd,
+            filter ?: RoamingMessageFilter.ANY
+        ).map { it.buildSource(contact.bot.mock()) + it.message }
+    }
+
+    private fun getMsg(
+        sequence: Long,
+        filter: RoamingMessageFilter?
+    ): Sequence<MessageChain> {
+        val msgDb = contact.bot.cast<MockBotImpl>().msgDatabase
+        return msgDb.queryMessageInfosBy(
+            contact.id,
+            when (contact) {
+                is Friend -> MessageSourceKind.FRIEND
+                is Group -> MessageSourceKind.GROUP
+                is Stranger -> MessageSourceKind.STRANGER
+                else -> error(contact.javaClass.toString())
+            },
+            contact,
+            sequence,
             filter ?: RoamingMessageFilter.ANY
         ).map { it.buildSource(contact.bot.mock()) + it.message }
     }

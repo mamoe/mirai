@@ -19,6 +19,7 @@ import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetRoamMsgReq
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.utils.Streamable
 
 internal sealed class TimeBasedRoamingMessagesImpl : AbstractRoamingMessages() {
     override suspend fun getMessagesIn(
@@ -47,6 +48,17 @@ internal sealed class TimeBasedRoamingMessagesImpl : AbstractRoamingMessages() {
                 random = resp.random
             }
         }
+    }
+
+    override suspend fun getAllMessages(
+        filter: RoamingMessageFilter?
+    ): Flow<MessageChain> = getMessagesIn(0, Long.MAX_VALUE, filter)
+
+    override suspend fun getMessagesBefore(
+        messageId: Int?,
+        filter: RoamingMessageFilter?
+    ): Streamable<MessageChain> {
+        error("not implemented in TimeBasedRoamingMessage.")
     }
 
     abstract suspend fun requestRoamMsg(

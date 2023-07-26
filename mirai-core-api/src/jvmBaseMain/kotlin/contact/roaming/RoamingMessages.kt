@@ -15,8 +15,10 @@ import kotlinx.coroutines.flow.Flow
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.utils.JavaFriendlyAPI
 import net.mamoe.mirai.utils.JdkStreamSupport.toStream
+import net.mamoe.mirai.utils.Streamable
 import java.util.stream.Stream
 
 
@@ -57,6 +59,31 @@ public actual interface RoamingMessages {
     ): Flow<MessageChain>
 
     /**
+     * 查询指定消息之前的消息记录
+     *
+     * 返回查询到的漫游消息记录, 顺序为由新到旧. 这些 [MessageChain] 与从事件中收到的消息链相似, 属于在线消息.
+     * 可从 [MessageChain] 获取 [MessageSource] 来确定发送人等相关信息, 也可以进行引用回复或撤回.
+     *
+     * 注意, 返回的消息记录既包含机器人发送给目标用户的消息, 也包含目标用户发送给机器人的消息.
+     * 可通过 [MessageChain] 获取 [MessageSource] (用法为 `messageChain.source`), 判断 [MessageSource.fromId] (发送人).
+     * 消息的其他*元数据*信息也要通过 [MessageSource] 获取 (如 [MessageSource.time] 获取时间).
+     *
+     * 若只需要获取单向消息 (机器人发送给目标用户的消息或反之), 可使用 [RoamingMessageFilter.SENT] 或 [RoamingMessageFilter.RECEIVED] 作为 [filter] 参数传递.
+     *
+     * 性能提示: 请在 [filter] 执行筛选, 若 [filter] 返回 `false` 则不会解析消息链, 这对本函数的处理速度有决定性影响.
+     *
+     * @param messageId 消息序列号，请查看 [MessageSource.ids], 一般为 [OnlineMessageSource] 的序列号。
+     * 为 `null` 时从最近一条消息开始获取且包含该消息.
+     * @param filter 过滤器.
+     * @since 2.15
+     * @see MessageSource
+     */
+    public actual suspend fun getMessagesBefore(
+        messageId: Int?,
+        filter: RoamingMessageFilter?
+    ): Streamable<MessageChain>
+
+    /**
      * 查询所有漫游消息记录. Java Stream 方法查看 [getAllMessagesStream].
      *
      * 返回查询到的漫游消息记录, 顺序为由新到旧. 这些 [MessageChain] 与从事件中收到的消息链相似, 属于在线消息.
@@ -75,7 +102,7 @@ public actual interface RoamingMessages {
     @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS") // Keep JVM ABI
     public actual suspend fun getAllMessages(
         filter: RoamingMessageFilter? = null
-    ): Flow<MessageChain> = getMessagesIn(0, Long.MAX_VALUE, filter)
+    ): Flow<MessageChain>
 
     /**
      * 查询指定时间段内的漫游消息记录. Kotlin Flow 版本查看 [getMessagesIn].
@@ -125,5 +152,5 @@ public actual interface RoamingMessages {
     @JavaFriendlyAPI
     public suspend fun getAllMessagesStream(
         filter: RoamingMessageFilter? = null
-    ): Stream<MessageChain> = getMessagesStream(0, Long.MAX_VALUE, filter)
+    ): Stream<MessageChain> = getAllMessages().toStream()
 }
