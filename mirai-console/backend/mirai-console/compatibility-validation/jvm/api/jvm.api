@@ -1316,10 +1316,12 @@ public abstract class net/mamoe/mirai/console/events/AutoLoginEvent : net/mamoe/
 public final class net/mamoe/mirai/console/events/AutoLoginEvent$Failure : net/mamoe/mirai/console/events/AutoLoginEvent {
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
 	public final fun getCause ()Ljava/lang/Throwable;
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/console/events/AutoLoginEvent$Success : net/mamoe/mirai/console/events/AutoLoginEvent {
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
+	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class net/mamoe/mirai/console/events/ConsoleEvent : net/mamoe/mirai/event/Event {
