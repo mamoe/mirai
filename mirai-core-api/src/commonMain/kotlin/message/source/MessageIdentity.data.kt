@@ -15,7 +15,7 @@ import net.mamoe.mirai.message.data.MessageSourceKind
 
 @Serializable
 @SerialName("MessageIdentity")
-public data class RawMessageIdentity(
+public class RawMessageIdentity(
     override val ids: IntArray,
     override val internalIds: IntArray,
     override val time: Int,
@@ -39,11 +39,15 @@ public data class RawMessageIdentity(
     override fun convertToRawMessageIdentity(): RawMessageIdentity {
         return this
     }
+
+    override fun toString(): String {
+        return "[mirai:message-identity:ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, time=$time]"
+    }
 }
 
 @Serializable
 @SerialName("FullyMessageIdentity")
-public data class RawFullyMessageIdentity(
+public class RawFullyMessageIdentity(
     override val ids: IntArray,
     override val internalIds: IntArray,
     override val time: Int,
@@ -75,6 +79,10 @@ public data class RawFullyMessageIdentity(
 
     override fun convertToRawFullyMessageIdentity(): RawFullyMessageIdentity {
         return this
+    }
+
+    override fun toString(): String {
+        return "[mirai:message-identity:$kind, ids=${ids.contentToString()}, internalIds=${internalIds.contentToString()}, time=$time, from $fromId to $targetId]"
     }
 }
 

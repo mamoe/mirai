@@ -5447,15 +5447,7 @@ public final class net/mamoe/mirai/message/source/RawFullyMessageIdentity : net/
 	public static final field Companion Lnet/mamoe/mirai/message/source/RawFullyMessageIdentity$Companion;
 	public synthetic fun <init> (I[I[IIJJLnet/mamoe/mirai/message/data/MessageSourceKind;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public fun <init> ([I[IIJJLnet/mamoe/mirai/message/data/MessageSourceKind;)V
-	public final fun component1 ()[I
-	public final fun component2 ()[I
-	public final fun component3 ()I
-	public final fun component4 ()J
-	public final fun component5 ()J
-	public final fun component6 ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
 	public fun convertToRawFullyMessageIdentity ()Lnet/mamoe/mirai/message/source/RawFullyMessageIdentity;
-	public final fun copy ([I[IIJJLnet/mamoe/mirai/message/data/MessageSourceKind;)Lnet/mamoe/mirai/message/source/RawFullyMessageIdentity;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/message/source/RawFullyMessageIdentity;[I[IIJJLnet/mamoe/mirai/message/data/MessageSourceKind;ILjava/lang/Object;)Lnet/mamoe/mirai/message/source/RawFullyMessageIdentity;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getFromId ()J
 	public fun getIds ()[I
@@ -5487,12 +5479,7 @@ public final class net/mamoe/mirai/message/source/RawMessageIdentity : net/mamoe
 	public static final field Companion Lnet/mamoe/mirai/message/source/RawMessageIdentity$Companion;
 	public synthetic fun <init> (I[I[IILkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public fun <init> ([I[II)V
-	public final fun component1 ()[I
-	public final fun component2 ()[I
-	public final fun component3 ()I
 	public fun convertToRawMessageIdentity ()Lnet/mamoe/mirai/message/source/RawMessageIdentity;
-	public final fun copy ([I[II)Lnet/mamoe/mirai/message/source/RawMessageIdentity;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/message/source/RawMessageIdentity;[I[IIILjava/lang/Object;)Lnet/mamoe/mirai/message/source/RawMessageIdentity;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getIds ()[I
 	public fun getInternalIds ()[I
