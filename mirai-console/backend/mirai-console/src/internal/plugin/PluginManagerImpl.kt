@@ -20,6 +20,7 @@ import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.plugin.NotYetLoadedPlugin
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.description
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
@@ -88,6 +89,8 @@ internal class PluginManagerImpl(
                 }
             }
         }
+
+        resolvedPlugins.add(MiraiConsoleAsPlugin)
     }
 
     // region LOADING
@@ -207,6 +210,8 @@ internal class PluginManagerImpl(
 
     @Throws(PluginResolutionException::class)
     private fun <D : PluginDescription> List<D>.sortByDependencies(): List<D> {
+        val alreadyLoadedPlugins = resolvedPlugins.asSequence().map { it.description }.toList() // snapshot
+
         val originPluginDescriptions = this@sortByDependencies
         val pending2BeResolved = originPluginDescriptions.toMutableList()
         val resolved = ArrayList<D>(pending2BeResolved.size)
@@ -252,6 +257,8 @@ internal class PluginManagerImpl(
             pending2BeResolved.forEach { pluginDesc ->
                 val missed = pluginDesc.dependencies.filter { dependency ->
                     val resolvedDep = originPluginDescriptions.findDependency(dependency)
+                        ?: alreadyLoadedPlugins.findDependency(dependency)
+
                     if (resolvedDep != null) {
                         resolvedDep.checkSatisfies(dependency, pluginDesc)
                         false
