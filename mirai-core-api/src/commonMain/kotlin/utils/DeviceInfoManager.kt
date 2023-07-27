@@ -23,6 +23,12 @@ import kotlin.jvm.JvmInline
 import kotlin.jvm.JvmName
 
 internal object DeviceInfoManager {
+    
+    /**
+    * @since 2.16
+    */
+    const val DEVICE_INFO_LATEST_VERSION = 3
+    
     sealed interface Info {
         fun toDeviceInfo(): DeviceInfo
     }
@@ -306,14 +312,14 @@ internal object DeviceInfoManager {
     fun serialize(info: DeviceInfo, format: Json = this.format): String {
         return format.encodeToString(
             Wrapper.serializer(V3.serializer()),
-            Wrapper(3, info.toCurrentInfo())
+            Wrapper(DEVICE_INFO_LATEST_VERSION, info.toCurrentInfo())
         )
     }
 
     fun toJsonElement(info: DeviceInfo, format: Json = this.format): JsonElement {
         return format.encodeToJsonElement(
             Wrapper.serializer(V3.serializer()),
-            Wrapper(3, info.toCurrentInfo())
+            Wrapper(DEVICE_INFO_LATEST_VERSION, info.toCurrentInfo())
         )
     }
 }
