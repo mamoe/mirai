@@ -678,6 +678,8 @@ public class MemberLuckyWordEvent(
 
 /**
  * [Member] 设置群待办事件
+ *
+ * 因 QQ 自身限制，无法获取到待办内容
  */
 public class MemberSetTodoEvent(
     /**
@@ -691,7 +693,9 @@ public class MemberSetTodoEvent(
 }
 
 /**
- * [Member] 完成群待办事件，可能会在成员阅读完群待办(公告)时触发
+ * [Member] 完成群待办事件，可能会在成员完成群待办时触发
+ *
+ * 因 QQ 自身限制，无法获取到待办内容
  */
 public class MemberCompleteTodoEvent(
     /**
