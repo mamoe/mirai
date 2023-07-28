@@ -147,8 +147,16 @@ public actual constructor(
                     this.writeText(DeviceInfoManager.serialize(it, json))
                 }
             }
-            return DeviceInfoManager.deserialize(this.readText(), json) { upg ->
-                this.writeText(DeviceInfoManager.serialize(upg, json))
+            return DeviceInfoManager.deserialize(this.readText(), json) upg@{ upg ->
+                if (!this.canWrite()) {
+                    logger.warning("Device info file $this is not writable, failed to upgrade legacy device info.")
+                    return@upg
+                }
+                try {
+                    this.writeText(DeviceInfoManager.serialize(upg, json))
+                } catch (ex: SecurityException) {
+                    logger.warning("Device info file $this is not writable, failed to upgrade legacy device info.", ex)
+                }
             }
         }
 
