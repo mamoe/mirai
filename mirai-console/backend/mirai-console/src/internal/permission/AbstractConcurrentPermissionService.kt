@@ -13,7 +13,7 @@ import net.mamoe.mirai.console.data.PluginDataExtensions
 import net.mamoe.mirai.console.permission.*
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.allParentsWithSelf
-import net.mamoe.mirai.console.permission.PermitteeId.Companion.hasChild
+import net.mamoe.mirai.console.permission.PermitteeId.Companion.isChild
 
 internal abstract class AbstractConcurrentPermissionService<P : Permission> : PermissionService<P> {
     protected abstract val permissions: MutableMap<PermissionId, P>
@@ -75,7 +75,7 @@ internal abstract class AbstractConcurrentPermissionService<P : Permission> : Pe
     override fun getPermittedPermissions(permitteeId: PermitteeId): Sequence<P> = sequence {
         for ((permissionIdentifier, permissibleIdentifiers) in grantedPermissionsMap) {
 
-            val granted = permissibleIdentifiers.any { permitteeId.hasChild(it) }
+            val granted = permissibleIdentifiers.any { permitteeId.isChild(it) }
 
             if (granted) get(permissionIdentifier)?.let { yield(it) }
         }
@@ -84,7 +84,7 @@ internal abstract class AbstractConcurrentPermissionService<P : Permission> : Pe
     internal fun getPermittedPermissionsAndSource(permitteeId: PermitteeId): Sequence<Pair<PermitteeId, P>> = sequence {
         for ((permissionIdentifier, permissibleIdentifiers) in grantedPermissionsMap) {
             permissibleIdentifiers.forEach { pid ->
-                if (permitteeId.hasChild(pid)) {
+                if (permitteeId.isChild(pid)) {
                     get(permissionIdentifier)?.let { yield(pid to it) }
                 }
             }

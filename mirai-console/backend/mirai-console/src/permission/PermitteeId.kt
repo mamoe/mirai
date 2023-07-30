@@ -51,9 +51,13 @@ public interface PermitteeId {
          * 当 [this] 或 [this] 的任意一个直接或间接父 [PermitteeId.asString] 与 `this.asString` 相同时返回 `true`
          */
         @JvmStatic
-        public fun PermitteeId.hasChild(child: PermitteeId): Boolean {
-            return allParentsWithSelf.any { it.asString() == child.asString() } // asString is for compatibility issue with external implementations
+        public fun PermitteeId.isChild(parent: PermitteeId): Boolean {
+            return allParentsWithSelf.any { it.asString() == parent.asString() } // asString is for compatibility issue with external implementations
         }
+
+        @JvmStatic
+        @DeprecatedSinceMirai(warningSince = "2.16", hiddenSince = "2.17")
+        public fun PermitteeId.hasChild(child: PermitteeId): Boolean = isChild(child)
 
         /**
          * 获取所有直接或间接父类的 [PermitteeId].
