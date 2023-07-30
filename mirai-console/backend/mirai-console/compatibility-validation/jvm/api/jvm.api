@@ -1780,10 +1780,12 @@ public abstract interface class net/mamoe/mirai/console/permission/Permittee {
 public abstract interface class net/mamoe/mirai/console/permission/PermitteeId {
 	public static final field Companion Lnet/mamoe/mirai/console/permission/PermitteeId$Companion;
 	public abstract fun asString ()Ljava/lang/String;
+	public fun contains (Lnet/mamoe/mirai/console/permission/PermitteeId;)Z
 	public static fun getAllParents (Lnet/mamoe/mirai/console/permission/PermitteeId;)Lkotlin/sequences/Sequence;
 	public static fun getAllParentsWithSelf (Lnet/mamoe/mirai/console/permission/PermitteeId;)Lkotlin/sequences/Sequence;
 	public abstract fun getDirectParents ()[Lnet/mamoe/mirai/console/permission/PermitteeId;
 	public static fun hasChild (Lnet/mamoe/mirai/console/permission/PermitteeId;Lnet/mamoe/mirai/console/permission/PermitteeId;)Z
+	public static fun isChild (Lnet/mamoe/mirai/console/permission/PermitteeId;Lnet/mamoe/mirai/console/permission/PermitteeId;)Z
 }
 
 public final class net/mamoe/mirai/console/permission/PermitteeId$Companion {
@@ -1796,6 +1798,7 @@ public final class net/mamoe/mirai/console/permission/PermitteeId$Companion {
 	public final synthetic fun getPermitteeId (Lnet/mamoe/mirai/contact/User;)Lnet/mamoe/mirai/console/permission/AbstractPermitteeId$ExactUser;
 	public final synthetic fun getPermitteeIdOnTemp (Lnet/mamoe/mirai/contact/Member;)Lnet/mamoe/mirai/console/permission/AbstractPermitteeId$ExactGroupTemp;
 	public final fun hasChild (Lnet/mamoe/mirai/console/permission/PermitteeId;Lnet/mamoe/mirai/console/permission/PermitteeId;)Z
+	public final fun isChild (Lnet/mamoe/mirai/console/permission/PermitteeId;Lnet/mamoe/mirai/console/permission/PermitteeId;)Z
 }
 
 public abstract interface class net/mamoe/mirai/console/plugin/NotYetLoadedPlugin : net/mamoe/mirai/console/plugin/Plugin {
