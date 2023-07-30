@@ -48,7 +48,7 @@ public interface PermitteeId {
 
     public companion object {
         /**
-         * 当 [this] 或 [this] 的任意一个直接或间接父 [PermitteeId.asString] 与 `this.asString` 相同时返回 `true`
+         * 当 [this] 或 [this] 的任意一个直接或间接父 [PermitteeId.asString] 与 `parent.asString` 相同时返回 `true`
          */
         @JvmStatic
         public fun PermitteeId.isChild(parent: PermitteeId): Boolean {
