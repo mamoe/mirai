@@ -34,7 +34,7 @@ internal class ImageBuilderTest : AbstractTest() {
             assertEquals(0, width)
             assertEquals(0, height)
             assertEquals(0, size)
-            assertEquals(ImageType.JPG, type)
+            assertEquals(ImageType.UNKNOWN, type)
             assertEquals(false, isEmoji)
         }
 
@@ -43,7 +43,7 @@ internal class ImageBuilderTest : AbstractTest() {
             assertEquals(0, width)
             assertEquals(0, height)
             assertEquals(0, size)
-            assertEquals(ImageType.JPG, type)
+            assertEquals(ImageType.UNKNOWN, type)
             assertEquals(false, isEmoji)
         }
 
@@ -52,7 +52,7 @@ internal class ImageBuilderTest : AbstractTest() {
             assertEquals(0, width)
             assertEquals(0, height)
             assertEquals(0, size)
-            assertEquals(ImageType.JPG, type)
+            assertEquals(ImageType.UNKNOWN, type)
             assertEquals(false, isEmoji)
         }
 
@@ -67,25 +67,7 @@ internal class ImageBuilderTest : AbstractTest() {
     }
 
     @Test
-    fun legacyMethods() {
-        // just make sure they work
-
-        Mirai.createImage(IMAGE_ID).run {
-            assertEquals(IMAGE_ID, imageId)
-            assertEquals(0, width)
-            assertEquals(0, height)
-            assertEquals(0, size)
-            assertEquals(ImageType.JPG, imageType)
-            assertEquals(false, isEmoji)
-        }
-        Image.fromId(IMAGE_ID).run {
-            assertEquals(IMAGE_ID, imageId)
-            assertEquals(0, width)
-            assertEquals(0, height)
-            assertEquals(0, size)
-            assertEquals(ImageType.JPG, imageType)
-            assertEquals(false, isEmoji)
-        }
+    fun imageType() {
         Image(IMAGE_ID).run {
             assertEquals(IMAGE_ID, imageId)
             assertEquals(0, width)
@@ -124,6 +106,36 @@ internal class ImageBuilderTest : AbstractTest() {
             assertEquals(0, height)
             assertEquals(0, size)
             assertEquals(ImageType.UNKNOWN, imageType)
+            assertEquals(false, isEmoji)
+        }
+    }
+
+    @Test
+    fun legacyMethods() {
+        // just make sure they work
+
+        Mirai.createImage(IMAGE_ID).run {
+            assertEquals(IMAGE_ID, imageId)
+            assertEquals(0, width)
+            assertEquals(0, height)
+            assertEquals(0, size)
+            assertEquals(ImageType.JPG, imageType)
+            assertEquals(false, isEmoji)
+        }
+        Image.fromId(IMAGE_ID).run {
+            assertEquals(IMAGE_ID, imageId)
+            assertEquals(0, width)
+            assertEquals(0, height)
+            assertEquals(0, size)
+            assertEquals(ImageType.JPG, imageType)
+            assertEquals(false, isEmoji)
+        }
+        Image(IMAGE_ID).run {
+            assertEquals(IMAGE_ID, imageId)
+            assertEquals(0, width)
+            assertEquals(0, height)
+            assertEquals(0, size)
+            assertEquals(ImageType.JPG, imageType)
             assertEquals(false, isEmoji)
         }
         Image(IMAGE_ID) {
