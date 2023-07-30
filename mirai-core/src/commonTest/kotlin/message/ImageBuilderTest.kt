@@ -19,6 +19,10 @@ import kotlin.test.assertEquals
 internal class ImageBuilderTest : AbstractTest() {
     companion object {
         private const val IMAGE_ID = "{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.jpg"
+        private const val IMAGE_ID_PNG = "{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png"
+        private const val IMAGE_ID_BMP = "{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.bmp"
+        private const val IMAGE_ID_GIF = "{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.gif"
+        private const val IMAGE_ID_UNKNOW = "/01E9451B-70ED-EAE3-B37C-101F1EEBF5B5"
     }
 
     @Test
@@ -30,7 +34,7 @@ internal class ImageBuilderTest : AbstractTest() {
             assertEquals(0, width)
             assertEquals(0, height)
             assertEquals(0, size)
-            assertEquals(ImageType.UNKNOWN, type)
+            assertEquals(ImageType.JPG, type)
             assertEquals(false, isEmoji)
         }
 
@@ -39,7 +43,7 @@ internal class ImageBuilderTest : AbstractTest() {
             assertEquals(0, width)
             assertEquals(0, height)
             assertEquals(0, size)
-            assertEquals(ImageType.UNKNOWN, type)
+            assertEquals(ImageType.JPG, type)
             assertEquals(false, isEmoji)
         }
 
@@ -48,7 +52,7 @@ internal class ImageBuilderTest : AbstractTest() {
             assertEquals(0, width)
             assertEquals(0, height)
             assertEquals(0, size)
-            assertEquals(ImageType.UNKNOWN, type)
+            assertEquals(ImageType.JPG, type)
             assertEquals(false, isEmoji)
         }
 
@@ -57,7 +61,7 @@ internal class ImageBuilderTest : AbstractTest() {
             assertEquals(0, width)
             assertEquals(0, height)
             assertEquals(0, size)
-            assertEquals(ImageType.UNKNOWN, imageType)
+            assertEquals(ImageType.JPG, imageType)
             assertEquals(false, isEmoji)
         }
     }
@@ -71,7 +75,7 @@ internal class ImageBuilderTest : AbstractTest() {
             assertEquals(0, width)
             assertEquals(0, height)
             assertEquals(0, size)
-            assertEquals(ImageType.UNKNOWN, imageType)
+            assertEquals(ImageType.JPG, imageType)
             assertEquals(false, isEmoji)
         }
         Image.fromId(IMAGE_ID).run {
@@ -79,11 +83,43 @@ internal class ImageBuilderTest : AbstractTest() {
             assertEquals(0, width)
             assertEquals(0, height)
             assertEquals(0, size)
-            assertEquals(ImageType.UNKNOWN, imageType)
+            assertEquals(ImageType.JPG, imageType)
             assertEquals(false, isEmoji)
         }
         Image(IMAGE_ID).run {
             assertEquals(IMAGE_ID, imageId)
+            assertEquals(0, width)
+            assertEquals(0, height)
+            assertEquals(0, size)
+            assertEquals(ImageType.JPG, imageType)
+            assertEquals(false, isEmoji)
+        }
+        Image(IMAGE_ID_PNG).run {
+            assertEquals(IMAGE_ID_PNG, imageId)
+            assertEquals(0, width)
+            assertEquals(0, height)
+            assertEquals(0, size)
+            assertEquals(ImageType.PNG, imageType)
+            assertEquals(false, isEmoji)
+        }
+        Image(IMAGE_ID_BMP).run {
+            assertEquals(IMAGE_ID_BMP, imageId)
+            assertEquals(0, width)
+            assertEquals(0, height)
+            assertEquals(0, size)
+            assertEquals(ImageType.BMP, imageType)
+            assertEquals(false, isEmoji)
+        }
+        Image(IMAGE_ID_GIF).run {
+            assertEquals(IMAGE_ID_GIF, imageId)
+            assertEquals(0, width)
+            assertEquals(0, height)
+            assertEquals(0, size)
+            assertEquals(ImageType.GIF, imageType)
+            assertEquals(false, isEmoji)
+        }
+        Image(IMAGE_ID_UNKNOW).run {
+            assertEquals(IMAGE_ID_UNKNOW, imageId)
             assertEquals(0, width)
             assertEquals(0, height)
             assertEquals(0, size)

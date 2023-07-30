@@ -76,7 +76,7 @@ internal class LongMessageProtocolTest : AbstractMessageProtocolTest() {
                             <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
                             <msg serviceID="35" templateID="1" action="viewMultiMsg"
                                  brief="testqGnJ1R..."
-                                 m_resid="(size=1)DBD2AB20196EEB631C95DEF40E20C709"
+                                 m_resid="(size=1)6C6FD4AEC362AA8E54058A27B422FA42"
                                  m_fileName="160023" sourceMsgId="0" url=""
                                  flag="3" adverSign="0" multiMsgFlag="1">
                                 <item layout="1">
@@ -86,7 +86,7 @@ internal class LongMessageProtocolTest : AbstractMessageProtocolTest() {
                                 </item>
                                 <source name="聊天记录" icon="" action="" appid="-1"/>
                             </msg>
-                """.trimIndent(), "(size=1)DBD2AB20196EEB631C95DEF40E20C709"
+                """.trimIndent(), "(size=1)6C6FD4AEC362AA8E54058A27B422FA42"
                     ) + IgnoreLengthCheck + ForceAsLongMessage, context.currentMessageChain
                 )
             }

@@ -306,7 +306,7 @@ public interface Image : Message, MessageContent, CodableMessage {
          * @see Image.imageType
          */
         public var type: ImageType = ImageType.UNKNOWN
-
+            get() = if(field == ImageType.UNKNOWN) ImageType.match(imageId.split(".").last()) else field
         /**
          * @see Image.width
          */
@@ -324,9 +324,6 @@ public interface Image : Message, MessageContent, CodableMessage {
 
 
         public fun build(): Image {
-            // 创建之前确定类型
-            type = ImageType.match(imageId.split(".").last())
-            // isEmoji字段能确定吗
             @OptIn(MiraiInternalApi::class)
             return InternalImageProtocol.instance.createImage(
                 imageId = imageId,
@@ -511,8 +508,7 @@ public enum class ImageType(
 
     //WEBP, //Unsupported by pc client
     APNG("png"),
-    // 这里既然是未知格式，空串会不会好点，返回gif会可能造成歧义
-    UNKNOWN(""); // bad design, should use `null` to represent unknown, but we cannot change it anymore.
+    UNKNOWN("gif"); // bad design, should use `null` to represent unknown, but we cannot change it anymore.
 
     public companion object {
         private val IMAGE_TYPE_ENUM_LIST = values()
