@@ -20,16 +20,12 @@ import net.mamoe.mirai.internal.message.RefineContext
 import net.mamoe.mirai.internal.message.RefineContextKey
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.packet.chat.video.PttCenterSvr
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSourceKind
-import net.mamoe.mirai.message.data.OnlineShortVideo
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.isSameType
 import net.mamoe.mirai.utils.toUHexString
 
 /**
- * refine to [OnlineShortVideoImpl]
+ * receive from pipeline and refine to [OnlineShortVideoImpl]
  */
 internal class OnlineShortVideoMsgInternal(
     private val videoFile: ImMsgBody.VideoFile
@@ -49,7 +45,7 @@ internal class OnlineShortVideoMsgInternal(
         val contact = when (sourceKind) {
             net.mamoe.mirai.message.data.MessageSourceKind.FRIEND -> bot.getFriend(fromId)
             net.mamoe.mirai.message.data.MessageSourceKind.GROUP -> bot.getGroup(groupId)
-            else -> return null // don't process stranger's video message
+            else -> return null // TODO: ignore processing stranger's video message
         }.cast<Contact>()
         val sender = when (sourceKind) {
             net.mamoe.mirai.message.data.MessageSourceKind.FRIEND -> bot.getFriend(fromId)
@@ -58,7 +54,7 @@ internal class OnlineShortVideoMsgInternal(
                 checkNotNull(group).members[fromId]
             }
 
-            else -> return null // don't process stranger's video message
+            else -> return null // TODO: ignore processing stranger's video message
         }.cast<User>()
 
         val shortVideoDownloadReq = bot.network.sendAndExpect(
@@ -84,7 +80,14 @@ internal class OnlineShortVideoMsgInternal(
         return OnlineShortVideoImpl(
             videoFile.fileUuid.decodeToString(),
             shortVideoDownloadReq.fileMd5,
-            shortVideoDownloadReq.urlV4
+            videoFile.fileName.decodeToString(),
+            videoFile.fileSize.toLong(),
+            videoFile.fileFormat.toVideoFormat(),
+            shortVideoDownloadReq.urlV4,
+            videoFile.thumbFileMd5,
+            videoFile.thumbFileSize.toLong(),
+            videoFile.thumbWidth,
+            videoFile.thumbHeight
         )
     }
 
@@ -102,7 +105,13 @@ internal class OnlineShortVideoMsgInternal(
         val FromId = RefineContextKey<Long>("FromId")
         val GroupIdOrZero = RefineContextKey<Long>("GroupIdOrZero")
     }
+}
 
+internal abstract class AbstractShortVideoWithThumbnail : ShortVideo {
+    abstract val thumbMd5: ByteArray
+    abstract val thumbSize: Long
+    abstract val thumbWidth: Int
+    abstract val thumbHeight: Int
 }
 
 @Suppress("DuplicatedCode")
@@ -111,19 +120,70 @@ internal class OnlineShortVideoMsgInternal(
 internal class OnlineShortVideoImpl(
     override val fileId: String,
     override val fileMd5: ByteArray,
-    override val urlForDownload: String
-) : OnlineShortVideo {
+    override val fileName: String,
+    override val fileSize: Long,
+    override val fileFormat: String,
+    override val urlForDownload: String,
+    override val thumbMd5: ByteArray,
+    override val thumbSize: Long,
+    override val thumbWidth: Int,
+    override val thumbHeight: Int
+) : OnlineShortVideo, AbstractShortVideoWithThumbnail() {
+
+    override fun toString(): String {
+        return "[mirai:svideo:$fileId, name=$fileName, md5=${fileMd5.toUHexString("")}]"
+    }
+
+    override fun contentToString(): String {
+        return "[视频]"
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (!isSameType(this, other)) return false
+        if (javaClass != other?.javaClass) return false
+
+        other as OnlineShortVideoImpl
 
         if (fileId != other.fileId) return false
-        if (urlForDownload != other.urlForDownload) return false
         if (!fileMd5.contentEquals(other.fileMd5)) return false
+        if (fileName != other.fileName) return false
+        if (fileSize != other.fileSize) return false
+        if (fileFormat != other.fileFormat) return false
+        if (urlForDownload != other.urlForDownload) return false
+        if (!thumbMd5.contentEquals(other.thumbMd5)) return false
+        if (thumbSize != other.thumbSize) return false
+        if (thumbWidth != other.thumbWidth) return false
+        if (thumbHeight != other.thumbHeight) return false
 
         return true
     }
+
+    override fun hashCode(): Int {
+        var result = fileId.hashCode()
+        result = 31 * result + fileMd5.contentHashCode()
+        result = 31 * result + fileName.hashCode()
+        result = 31 * result + fileSize.hashCode()
+        result = 31 * result + fileFormat.hashCode()
+        result = 31 * result + urlForDownload.hashCode()
+        result = 31 * result + thumbMd5.contentHashCode()
+        result = 31 * result + thumbSize.hashCode()
+        result = 31 * result + thumbWidth
+        result = 31 * result + thumbHeight
+        return result
+    }
+}
+
+@Serializable
+internal class OfflineShortVideoImpl(
+    override val fileId: String,
+    override val fileMd5: ByteArray,
+    override val fileSize: Long,
+    override val fileFormat: String,
+    override val thumbMd5: ByteArray,
+    override val thumbSize: Long,
+    override val thumbWidth: Int,
+    override val thumbHeight: Int
+) : OfflineShortVideo, AbstractShortVideoWithThumbnail() {
 
     override fun toString(): String {
         return "[mirai:svideo:$fileId, md5=${fileMd5.toUHexString("")}]"
@@ -133,10 +193,48 @@ internal class OnlineShortVideoImpl(
         return "[视频]"
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as OfflineShortVideoImpl
+
+        if (fileId != other.fileId) return false
+        if (!fileMd5.contentEquals(other.fileMd5)) return false
+        if (fileSize != other.fileSize) return false
+        if (fileFormat != other.fileFormat) return false
+        if (!thumbMd5.contentEquals(other.thumbMd5)) return false
+        if (thumbSize != other.thumbSize) return false
+        if (thumbWidth != other.thumbWidth) return false
+        if (thumbHeight != other.thumbHeight) return false
+
+        return true
+    }
+
     override fun hashCode(): Int {
         var result = fileId.hashCode()
         result = 31 * result + fileMd5.contentHashCode()
-        result = 31 * result + urlForDownload.hashCode()
+        result = 31 * result + fileSize.hashCode()
+        result = 31 * result + fileFormat.hashCode()
+        result = 31 * result + thumbMd5.contentHashCode()
+        result = 31 * result + thumbSize.hashCode()
+        result = 31 * result + thumbWidth
+        result = 31 * result + thumbHeight
         return result
     }
+}
+
+private fun Int.toVideoFormat() = when (this) {
+    1 -> "ts"
+    2 -> "avi"
+    3 -> "mp4"
+    4 -> "wmv"
+    5 -> "mkv"
+    6 -> "rmvb"
+    7 -> "rm"
+    8 -> "afs"
+    9 -> "mov"
+    10 -> "mod"
+    11 -> "mts"
+    else -> "mirai" // unknown to default
 }

@@ -25,8 +25,6 @@ import net.mamoe.mirai.recallMessage
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 联系对象, 即可以与 [Bot] 互动的对象. 包含 [用户][User], 和 [群][Group].
@@ -87,6 +85,15 @@ public expect interface Contact : ContactOrBot, CoroutineScope {
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时抛出. (最大大小约为 20 MB, 但 mirai 限制的大小为 30 MB)
      */
     public suspend fun uploadImage(resource: ExternalResource): Image
+
+    /**
+     * TODO: doc
+     *
+     * @param thumbnail 短视频封面图，为图片资源
+     * @param video 视频文件
+     */
+
+    public suspend fun uploadShortVideo(thumbnail: ExternalResource, video: ExternalResource): ShortVideo
 
     @JvmBlockingBridge
     public companion object {

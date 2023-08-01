@@ -16,10 +16,7 @@ import net.mamoe.mirai.event.events.MessagePreSendEvent
 import net.mamoe.mirai.internal.contact.broadcastMessagePreSendEvent
 import net.mamoe.mirai.internal.contact.replaceMagicCodes
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.OnlineMessageSource
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.contact.MockContact
 import net.mamoe.mirai.utils.*
@@ -59,6 +56,10 @@ internal abstract class AbstractMockContact(
 
     override suspend fun uploadImage(resource: ExternalResource): Image {
         return bot.uploadMockImage(resource)
+    }
+
+    override suspend fun uploadShortVideo(thumbnail: ExternalResource, video: ExternalResource): ShortVideo {
+        TODO("mock upload short video")
     }
 
     override fun toString(): String {

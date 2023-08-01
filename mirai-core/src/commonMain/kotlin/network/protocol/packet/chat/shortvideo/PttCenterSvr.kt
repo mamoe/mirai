@@ -23,8 +23,97 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.utils.toUHexString
 
 internal class PttCenterSvr {
+    object GroupShortVideoUpReq :
+        OutgoingPacketFactory<GroupShortVideoUpReq.Response>("PttCenterSvr.GroupShortVideoUpReq") {
+        sealed class Response : Packet {
+            class FileExists(val fileId: String) : Response() {
+                override fun toString(): String {
+                    return "PttCenterSvr.GroupShortVideoUpReq.Response.FileExists(fileId=${fileId})"
+                }
+            }
+
+            object RequireUpload : Response() {
+                override fun toString(): String {
+                    return "PttCenterSvr.GroupShortVideoUpReq.Response.RequireUpload"
+                }
+            }
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val resp = readProtoBuf(PttShortVideo.RspBody.serializer())
+            val upResp = resp.msgPttShortVideoUploadResp ?: return Response.RequireUpload
+
+            return if (upResp.fileExist == 1) {
+                Response.FileExists(upResp.fileid)
+            } else {
+                Response.RequireUpload
+            }
+        }
+
+        // TODO: only support mp4 video now.
+        operator fun invoke(
+            client: QQAndroidClient,
+            contact: Contact,
+            thumbnailFileMd5: ByteArray,
+            thumbnailFileSize: Long,
+            videoFileMd5: ByteArray,
+            videoFileSize: Long
+        ) = buildOutgoingUniPacket(client) { sequenceId ->
+            writeProtoBuf(
+                PttShortVideo.ReqBody.serializer(),
+                PttShortVideo.ReqBody(
+                    cmd = 300,
+                    seq = sequenceId,
+                    msgPttShortVideoUploadReq = buildShortVideoFileInfo(
+                        client,
+                        contact,
+                        thumbnailFileMd5,
+                        thumbnailFileSize,
+                        videoFileMd5,
+                        videoFileSize
+                    ),
+                    msgExtensionReq = listOf(
+                        PttShortVideo.ExtensionReq(
+                            subBusiType = 0,
+                            userCnt = 1
+                        )
+                    )
+                )
+            )
+        }
+
+        internal fun buildShortVideoFileInfo(
+            client: QQAndroidClient,
+            contact: Contact,
+            thumbnailFileMd5: ByteArray,
+            thumbnailFileSize: Long,
+            videoFileMd5: ByteArray,
+            videoFileSize: Long
+        ) = PttShortVideo.PttShortVideoUploadReq(
+            fromuin = client.uin,
+            touin = contact.uin,
+            chatType = 1, // guild channel = 4, others = 1
+            clientType = 2,
+            msgPttShortVideoFileInfo = PttShortVideo.PttShortVideoFileInfo(
+                fileName = videoFileMd5.toUHexString("") + ".mp4",
+                fileMd5 = videoFileMd5,
+                fileSize = videoFileSize,
+                fileResLength = 1280,
+                fileResWidth = 720,
+                // Lcom/tencent/mobileqq/transfile/ShortVideoUploadProcessor;getFormat(Ljava/lang/String;)I
+                fileFormat = 3,
+                fileTime = 120,
+                thumbFileMd5 = thumbnailFileMd5,
+                thumbFileSize = thumbnailFileSize
+            ),
+            groupCode = if (contact is Group) contact.uin else 0,
+            flagSupportLargeSize = 1
+        )
+    }
+
     object ShortVideoDownReq : OutgoingPacketFactory<ShortVideoDownReq.Response>("PttCenterSvr.ShortVideoDownReq") {
         sealed class Response : Packet {
             class Success(val fileMd5: ByteArray, val urlV4: String, val urlV6: String?) : Response() {

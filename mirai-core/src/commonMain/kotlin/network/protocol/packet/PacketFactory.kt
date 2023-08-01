@@ -152,6 +152,7 @@ internal object KnownPacketFactories {
         PttStore.GroupPttUp,
         PttStore.GroupPttDown,
         PttStore.C2CPttDown,
+        PttCenterSvr.GroupShortVideoUpReq,
         PttCenterSvr.ShortVideoDownReq,
         LongConn.OffPicUp,
 //        LongConn.OffPicDown,

@@ -32,7 +32,6 @@ import net.mamoe.mirai.internal.utils.sizeToString
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.jvm.Volatile
 import kotlin.math.roundToInt
 
 internal object Highway {
@@ -126,6 +125,8 @@ internal enum class ResourceKind(
     FORWARD_MESSAGE("forward message"),
 
     ANNOUNCEMENT_IMAGE("announcement image"),
+
+    SHORT_VIDEO("short video")
     ;
 
     override fun toString(): String = display
