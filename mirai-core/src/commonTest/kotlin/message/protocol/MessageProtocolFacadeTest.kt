@@ -32,7 +32,7 @@ internal class MessageProtocolFacadeTest : AbstractTest() {
                 PokeMessageProtocol
                 PttMessageProtocol
                 RichMessageProtocol
-                ShortVideoMessageProtocol
+                ShortVideoProtocol
                 TextProtocol
                 VipFaceProtocol
                 ForwardMessageProtocol
