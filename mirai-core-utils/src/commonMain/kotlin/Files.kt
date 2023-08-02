@@ -30,8 +30,7 @@ private val FILE_TYPES: List<FileType> = listOf(
     FileType("^424D", 3, "bmp"),
     FileType("^2321414D52", 5, "amr"),
     FileType("^02232153494C4B5F5633", 10, "silk"),
-    FileType("^FFD8FF", 3, "jpg"),
-    FileType("^([a-zA-Z]{8})66747970", 8, "jpg"),
+    FileType("^([a-zA-Z0-9]{8})66747970", 8, "mp4"),
 
     //"49492A00" to "tif", // client doesn't support
     //"52494646" to "webp", // pc client doesn't support
