@@ -14,7 +14,6 @@ package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.event.events.ShortVideoUploadEvent.Failed
@@ -49,7 +48,7 @@ public data class BeforeShortVideoUploadEvent @MiraiInternalApi constructor(
  * 此事件总是在 [BeforeImageUploadEvent] 之后广播.
  * 若 [BeforeImageUploadEvent] 被取消, 此事件不会广播.
  *
- * @see Contact.uploadImage 上传图片. 为广播这个事件的唯一途径
+ * @see Contact.uploadShortVideo 上传短视频. 为广播这个事件的唯一途径
  *
  * @see Succeed
  * @see Failed

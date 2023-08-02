@@ -118,7 +118,7 @@ internal abstract class AbstractShortVideoWithThumbnail : ShortVideo {
 @SerialName(OnlineShortVideo.SERIAL_NAME)
 @Serializable
 internal class OnlineShortVideoImpl(
-    override val fileId: String,
+    override val videoId: String,
     override val fileMd5: ByteArray,
     override val fileName: String,
     override val fileSize: Long,
@@ -139,13 +139,17 @@ internal class OnlineShortVideoImpl(
         return "[视频]"
     }
 
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+        TODO()
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
         other as OnlineShortVideoImpl
 
-        if (fileId != other.fileId) return false
+        if (videoId != other.videoId) return false
         if (!fileMd5.contentEquals(other.fileMd5)) return false
         if (fileName != other.fileName) return false
         if (fileSize != other.fileSize) return false
@@ -160,7 +164,7 @@ internal class OnlineShortVideoImpl(
     }
 
     override fun hashCode(): Int {
-        var result = fileId.hashCode()
+        var result = videoId.hashCode()
         result = 31 * result + fileMd5.contentHashCode()
         result = 31 * result + fileName.hashCode()
         result = 31 * result + fileSize.hashCode()
@@ -176,7 +180,7 @@ internal class OnlineShortVideoImpl(
 
 @Serializable
 internal class OfflineShortVideoImpl(
-    override val fileId: String,
+    override val videoId: String,
     override val fileName: String,
     override val fileMd5: ByteArray,
     override val fileSize: Long,
@@ -199,13 +203,18 @@ internal class OfflineShortVideoImpl(
         return "[视频]"
     }
 
+    @Suppress("DuplicatedCode")
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+        TODO()
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
         other as OfflineShortVideoImpl
 
-        if (fileId != other.fileId) return false
+        if (videoId != other.videoId) return false
         if (fileName != other.fileName) return false
         if (!fileMd5.contentEquals(other.fileMd5)) return false
         if (fileSize != other.fileSize) return false
@@ -219,7 +228,7 @@ internal class OfflineShortVideoImpl(
     }
 
     override fun hashCode(): Int {
-        var result = fileId.hashCode()
+        var result = videoId.hashCode()
         result = 31 * result + fileName.hashCode()
         result = 31 * result + fileMd5.contentHashCode()
         result = 31 * result + fileSize.hashCode()

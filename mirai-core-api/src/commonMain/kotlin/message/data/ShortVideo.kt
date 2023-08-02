@@ -9,16 +9,48 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.data.ShortVideo.Builder
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.NotStableForInheritance
-import net.mamoe.mirai.utils.safeCast
+import net.mamoe.mirai.utils.*
 
-public interface ShortVideo : MessageContent, ConstrainSingle {
+/**
+ * 短视频消息，指的是可在聊天界面在线播放的视频消息，而非在群文件上传的视频文件.
+ *
+ * 短视频消息分为 [OnlineShortVideo] 与 [OfflineShortVideo]. 在本地上传的短视频为 [OfflineShortVideo]. 从服务器接收的短视频为 [OnlineShortVideo].
+ *
+ * 最推荐存储的方式是下载视频文件，每次都通过上传该文件获取视频消息.
+ * 在上传视频时服务器会根据缓存情况选择回复已有视频 ID 或要求客户端上传.
+ *
+ * # 获取短视频消息示例
+ *
+ * ## 上传短视频
+ * 使用 [Contact.uploadShortVideo]，将视频缩略图和视频[资源][ExternalResource] 上传以得到 [OfflineShortVideo].
+ *
+ * ## 使用 [Builder] 构建短视频
+ * [ShortVideo] 提供 [Builder] 构建方式，必须指定 [videoId], [fileName], [fileMd5], [fileSize] 和 [fileFormat] 参数.
+ * 可选指定 [Builder.thumbnailMd5] 和 [Builder.thumbnailSize].
+ *
+ * ## 从服务器接收
+ * 通过监听消息接收的短视频消息可直接转换为 [OnlineShortVideo].
+ *
+ * # 下载视频
+ * 通过 [OnlineShortVideo.urlForDownload] 获取下载链接.
+ * 该下载链接不包含短视频的文件信息，可以使用 [videoId] 或 [fileName] 作为文件名，[fileFormat] 作为文件拓展名.
+ *
+ * # 其他信息
+ *
+ * ## mirai 码支持
+ * 格式: &#91;mirai:svideo:[videoId],[fileName].[fileFormat],[fileMd5],[fileSize],`thumbnailMd5`,`thumbnailSize`&#93;
+ *
+ * `thumbnailMd5` 和 `thumbnailSize` 是可选项. 若不提供，可能会影响服务器判断缓存.
+ */
+public interface ShortVideo : MessageContent, ConstrainSingle, CodableMessage {
     /**
      * 视频 ID.
      */
-    public val fileId: String
+    public val videoId: String
 
     /**
      * 视频文件 MD5. 16 bytes.
@@ -54,6 +86,73 @@ public interface ShortVideo : MessageContent, ConstrainSingle {
         AbstractPolymorphicMessageKey<MessageContent, ShortVideo>(MessageContent, { it.safeCast() }) {
 
     }
+
+    public class Builder internal constructor(
+        public var videoId: String
+    ) {
+        public constructor() : this("")
+
+        /**
+         * @see ShortVideo.fileMd5
+         */
+        public var fileMd5: ByteArray = EMPTY_BYTE_ARRAY
+
+        /**
+         * @see ShortVideo.fileSize
+         */
+        public var fileSize: Long = 0
+
+        /**
+         * @see ShortVideo.fileFormat
+         */
+        public var fileFormat: String = ""
+
+        /**
+         * @see ShortVideo.fileName
+         */
+        public var fileName: String = ""
+
+        /**
+         * 缩略图文件 MD5，仅通过 [Contact.uploadShortVideo] 获取的 [OfflineShortVideo] 或 [OnlineShortVideo] 的 mirai 码获取.
+         */
+        public var thumbnailMd5: ByteArray = EMPTY_BYTE_ARRAY
+
+        /**
+         * 缩略图文件大小，仅通过 [Contact.uploadShortVideo] 获取的 [OfflineShortVideo] 或 [OnlineShortVideo] 的 mirai 码获取.
+         */
+        public var thumbnailSize: Long = 0
+
+        public fun build(): ShortVideo {
+            if (videoId.isEmpty()) {
+                throw IllegalArgumentException("videoId is empty.")
+            }
+            if (fileMd5.contentEquals(EMPTY_BYTE_ARRAY)) {
+                throw IllegalArgumentException("fileMd5 is empty.")
+            }
+            if (fileSize == 0L) {
+                throw IllegalArgumentException("fileSize is zero.")
+            }
+            if (fileFormat.isEmpty()) {
+                throw IllegalArgumentException("fileFormat is empty.")
+            }
+            if (fileName.isEmpty()) {
+                throw IllegalArgumentException("fileName is empty.")
+            }
+
+            @OptIn(MiraiInternalApi::class)
+            return InternalShortVideoProtocol.instance.createOfflineShortVideo(
+                videoId, fileMd5, fileSize, fileFormat, fileName, thumbnailMd5, thumbnailSize
+            )
+        }
+
+        public companion object {
+            /**
+             * 创建一个 [Builder]
+             */
+            @JvmStatic
+            public fun newBuilder(videoId: String): Builder = Builder(videoId)
+        }
+    }
 }
 
 @NotStableForInheritance
@@ -75,5 +174,32 @@ public interface OfflineShortVideo : ShortVideo {
     public companion object Key :
         AbstractPolymorphicMessageKey<ShortVideo, OfflineShortVideo>(ShortVideo, { it.safeCast() }) {
         public const val SERIAL_NAME: String = "OfflineShortVideo"
+    }
+}
+
+/**
+ * 内部短视频协议实现
+ * @since 2.16.0
+ */
+@MiraiInternalApi
+public interface InternalShortVideoProtocol {
+    public fun createOfflineShortVideo(
+        videoId: String,
+        fileMd5: ByteArray,
+        fileSize: Long,
+        fileFormat: String,
+        fileName: String,
+        thumbnailMd5: ByteArray,
+        thumbnailSize: Long
+    ): OfflineShortVideo
+
+    @MiraiInternalApi
+    public companion object {
+        public val instance: InternalShortVideoProtocol by lazy {
+            loadService(
+                InternalShortVideoProtocol::class,
+                "net.mamoe.mirai.internal.message.InternalShortVideoProtocolImpl"
+            )
+        }
     }
 }

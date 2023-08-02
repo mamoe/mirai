@@ -97,6 +97,7 @@ public expect interface Contact : ContactOrBot, CoroutineScope {
      *
      * @param thumbnail 短视频封面图，为图片资源
      * @param video 视频资源，目前仅支持上传 mp4 格式的视频。
+     * @param fileName 期望上传的文件名，若为 `null` 则默认为视频资源的 [ExternalResource.md5].
      */
 
     public suspend fun uploadShortVideo(
