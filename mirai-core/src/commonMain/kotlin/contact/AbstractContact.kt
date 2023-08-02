@@ -12,6 +12,10 @@ package net.mamoe.mirai.internal.contact
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.BeforeShortVideoUploadEvent
+import net.mamoe.mirai.event.events.EventCancelledException
+import net.mamoe.mirai.event.events.ShortVideoUploadEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.data.OfflineShortVideoImpl
 import net.mamoe.mirai.internal.network.highway.Highway
@@ -34,7 +38,9 @@ internal abstract class AbstractContact(
     final override val coroutineContext: CoroutineContext = parentCoroutineContext.childScopeContext()
 
     override suspend fun uploadShortVideo(thumbnail: ExternalResource, video: ExternalResource): ShortVideo {
-        // TODO: add interrupt uploading video event, just like upload image
+        if (BeforeShortVideoUploadEvent(this, thumbnail, video).broadcast().isCancelled) {
+            throw EventCancelledException("cancelled by BeforeShortVideoUploadEvent")
+        }
         // TODO: check mp4 file
         // TODO: check contact is group or friend
 
@@ -49,6 +55,7 @@ internal abstract class AbstractContact(
             )
         )
 
+        // fast path
         if (uploadResp is PttCenterSvr.GroupShortVideoUpReq.Response.FileExists) {
             return OfflineShortVideoImpl(
                 uploadResp.fileId,
@@ -59,7 +66,9 @@ internal abstract class AbstractContact(
                 thumbnail.size,
                 1280, // TODO: read thumbnail image width
                 720 // TODO: read thumbnail image height
-            )
+            ).also {
+                ShortVideoUploadEvent.Succeed(this, thumbnail, video, it).broadcast()
+            }
         }
 
         val resource = buildPacket {
@@ -67,7 +76,7 @@ internal abstract class AbstractContact(
             video.input().use { it.copyTo(this) }
         }.readBytes().toExternalResource("mp4")
 
-        val highwayResp = Highway.uploadResourceBdh(
+        val highwayRespExt = Highway.uploadResourceBdh(
             bot = bot,
             resource = resource,
             kind = ResourceKind.SHORT_VIDEO,
@@ -86,15 +95,22 @@ internal abstract class AbstractContact(
                 )
             }.readBytes(),
             encrypt = true
-        )
+        ).extendInfo
 
         resource.close()
 
-        if (highwayResp.extendInfo == null) {
+        if (highwayRespExt == null) {
+            ShortVideoUploadEvent.Failed(
+                this,
+                thumbnail,
+                video,
+                -1,
+                "highway upload short video failed, extendInfo is null."
+            )
             error("highway upload short video failed, extendInfo is null.")
         }
 
-        val highwayUploadResp = highwayResp.extendInfo!!.loadAs(PttShortVideo.PttShortVideoUploadResp.serializer())
+        val highwayUploadResp = highwayRespExt.loadAs(PttShortVideo.PttShortVideoUploadResp.serializer())
 
         return OfflineShortVideoImpl(
             highwayUploadResp.fileid,
@@ -105,7 +121,9 @@ internal abstract class AbstractContact(
             thumbnail.size,
             1280, // TODO: read thumbnail image width
             720 // TODO: read thumbnail image height
-        )
+        ).also {
+            ShortVideoUploadEvent.Succeed(this, thumbnail, video, it).broadcast()
+        }
     }
 }
 
