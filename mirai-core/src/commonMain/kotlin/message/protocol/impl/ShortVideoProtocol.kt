@@ -50,7 +50,7 @@ internal class ShortVideoProtocol : MessageProtocol() {
         override suspend fun MessageEncoderContext.process(data: AbstractShortVideoWithThumbnail) {
             markAsConsumed()
 
-            collect(ImMsgBody.Elem(text = ImMsgBody.Text("你的QQ暂不支持查看视频短片，请期待后续版本。")))
+            collect(ImMsgBody.Elem(text = ImMsgBody.Text("你的 QQ 暂不支持查看视频短片，请期待后续版本。")))
             collect(
                 ImMsgBody.Elem(
                     videoFile = ImMsgBody.VideoFile(
@@ -60,16 +60,16 @@ internal class ShortVideoProtocol : MessageProtocol() {
                         fileFormat = 3, // mp4,
                         fileTime = 10,
                         fileSize = data.fileSize.toInt(),
-                        thumbWidth = data.thumbWidth,
-                        thumbHeight = data.thumbHeight,
+                        thumbWidth = data.thumbWidth ?: 0,
+                        thumbHeight = data.thumbHeight ?: 0,
                         thumbFileMd5 = data.thumbMd5,
                         thumbFileSize = data.thumbSize.toInt(),
                         busiType = 0,
                         fromChatType = -1,
                         toChatType = -1,
                         boolSupportProgressive = true,
-                        fileWidth = data.thumbWidth,
-                        fileHeight = data.thumbHeight
+                        fileWidth = data.thumbWidth ?: 1280,
+                        fileHeight = data.thumbHeight ?: 720
                     )
                 )
             )

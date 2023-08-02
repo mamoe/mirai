@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.contact
 
 import io.ktor.utils.io.core.*
+import io.ktor.utils.io.core.use
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.broadcast
@@ -18,6 +19,7 @@ import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ShortVideoUploadEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.data.OfflineShortVideoImpl
+import net.mamoe.mirai.internal.message.image.calculateImageInfo
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
 import net.mamoe.mirai.internal.network.protocol.data.proto.PttShortVideo
@@ -25,9 +27,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.video.PttCenterSvr
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.ShortVideo
-import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
-import net.mamoe.mirai.utils.childScopeContext
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
@@ -38,11 +39,20 @@ internal abstract class AbstractContact(
     final override val coroutineContext: CoroutineContext = parentCoroutineContext.childScopeContext()
 
     override suspend fun uploadShortVideo(thumbnail: ExternalResource, video: ExternalResource): ShortVideo {
+        if (this !is Group && this !is Friend) {
+            throw UnsupportedOperationException("short video can only upload to friend or group.")
+        }
+
+        if (video.formatName != "mp4") {
+            throw UnsupportedOperationException("video format ${video.formatName} is not supported.")
+        }
+
         if (BeforeShortVideoUploadEvent(this, thumbnail, video).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeShortVideoUploadEvent")
         }
-        // TODO: check mp4 file
-        // TODO: check contact is group or friend
+
+        // local uploaded offline short video uses video file md5 as its file name
+        val videoName = video.md5.toUHexString("")
 
         val uploadResp = bot.network.sendAndExpect(
             PttCenterSvr.GroupShortVideoUpReq(
@@ -50,10 +60,15 @@ internal abstract class AbstractContact(
                 contact = this,
                 thumbnailFileMd5 = thumbnail.md5,
                 thumbnailFileSize = thumbnail.size,
+                videoFileName = videoName,
                 videoFileMd5 = video.md5,
-                videoFileSize = video.size
+                videoFileSize = video.size,
+                videoFileFormat = video.formatName
             )
         )
+
+        // get thumbnail image width and height
+        val thumbnailInfo = thumbnail.calculateImageInfo()
 
         // fast path
         if (uploadResp is PttCenterSvr.GroupShortVideoUpReq.Response.FileExists) {
@@ -61,43 +76,47 @@ internal abstract class AbstractContact(
                 uploadResp.fileId,
                 video.md5,
                 video.size,
-                "mp4", // TODO: support more formats to upload
+                video.formatName,
                 thumbnail.md5,
                 thumbnail.size,
-                1280, // TODO: read thumbnail image width
-                720 // TODO: read thumbnail image height
+                thumbnailInfo.width,
+                thumbnailInfo.height
             ).also {
                 ShortVideoUploadEvent.Succeed(this, thumbnail, video, it).broadcast()
             }
         }
 
-        val resource = buildPacket {
-            thumbnail.input().use { it.copyTo(this) }
-            video.input().use { it.copyTo(this) }
-        }.readBytes().toExternalResource("mp4")
-
-        val highwayRespExt = Highway.uploadResourceBdh(
-            bot = bot,
-            resource = resource,
-            kind = ResourceKind.SHORT_VIDEO,
-            commandId = 25,
-            extendInfo = buildPacket {
-                writeProtoBuf(
-                    PttShortVideo.PttShortVideoUploadReq.serializer(),
-                    PttCenterSvr.GroupShortVideoUpReq.buildShortVideoFileInfo(
-                        client = bot.client,
-                        contact = this@AbstractContact,
-                        thumbnailFileMd5 = thumbnail.md5,
-                        thumbnailFileSize = thumbnail.size,
-                        videoFileMd5 = video.md5,
-                        videoFileSize = video.size
+        val highwayRespExt = buildPacket {
+            thumbnail.input().use {
+                it.copyTo(this)
+            }
+            video.input().use {
+                it.copyTo(this)
+            }
+        }.readBytes().toExternalResource().use { resource ->
+            Highway.uploadResourceBdh(
+                bot = bot,
+                resource = resource,
+                kind = ResourceKind.SHORT_VIDEO,
+                commandId = 25,
+                extendInfo = buildPacket {
+                    writeProtoBuf(
+                        PttShortVideo.PttShortVideoUploadReq.serializer(),
+                        PttCenterSvr.GroupShortVideoUpReq.buildShortVideoFileInfo(
+                            client = bot.client,
+                            contact = this@AbstractContact,
+                            thumbnailFileMd5 = thumbnail.md5,
+                            thumbnailFileSize = thumbnail.size,
+                            videoFileName = videoName,
+                            videoFileMd5 = video.md5,
+                            videoFileSize = video.size,
+                            videoFileFormat = video.formatName
+                        )
                     )
-                )
-            }.readBytes(),
-            encrypt = true
-        ).extendInfo
-
-        resource.close()
+                }.readBytes(),
+                encrypt = true
+            ).extendInfo
+        }
 
         if (highwayRespExt == null) {
             ShortVideoUploadEvent.Failed(
@@ -116,11 +135,11 @@ internal abstract class AbstractContact(
             highwayUploadResp.fileid,
             video.md5,
             video.size,
-            "mp4", // TODO: support more formats to upload
+            video.formatName,
             thumbnail.md5,
             thumbnail.size,
-            1280, // TODO: read thumbnail image width
-            720 // TODO: read thumbnail image height
+            thumbnailInfo.width,
+            thumbnailInfo.height
         ).also {
             ShortVideoUploadEvent.Succeed(this, thumbnail, video, it).broadcast()
         }

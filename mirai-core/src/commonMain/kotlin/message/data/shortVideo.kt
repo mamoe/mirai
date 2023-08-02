@@ -110,8 +110,8 @@ internal class OnlineShortVideoMsgInternal(
 internal abstract class AbstractShortVideoWithThumbnail : ShortVideo {
     abstract val thumbMd5: ByteArray
     abstract val thumbSize: Long
-    abstract val thumbWidth: Int
-    abstract val thumbHeight: Int
+    abstract val thumbWidth: Int?
+    abstract val thumbHeight: Int?
 }
 
 @Suppress("DuplicatedCode")
@@ -131,7 +131,8 @@ internal class OnlineShortVideoImpl(
 ) : OnlineShortVideo, AbstractShortVideoWithThumbnail() {
 
     override fun toString(): String {
-        return "[mirai:svideo:$fileId, name=$fileName, md5=${fileMd5.toUHexString("")}]"
+        return "[mirai:svideo:$fileName.$fileFormat, video=${fileMd5.toUHexString("")}, videoSize=${fileSize}, " +
+                "thumbnail=${thumbMd5.toUHexString("")}, thumbnailSize=${thumbSize}]"
     }
 
     override fun contentToString(): String {
@@ -185,8 +186,12 @@ internal class OfflineShortVideoImpl(
     override val thumbHeight: Int
 ) : OfflineShortVideo, AbstractShortVideoWithThumbnail() {
 
+    /**
+     * offline short video uses
+     */
     override fun toString(): String {
-        return "[mirai:svideo:$fileId, md5=${fileMd5.toUHexString("")}]"
+        return "[mirai:svideo:${fileMd5.toUHexString("")}.$fileFormat, video=${fileMd5.toUHexString("")}, " +
+                "videoSize=${fileSize}, thumbnail=${thumbMd5.toUHexString("")}, thumbnailSize=${thumbSize}]"
     }
 
     override fun contentToString(): String {

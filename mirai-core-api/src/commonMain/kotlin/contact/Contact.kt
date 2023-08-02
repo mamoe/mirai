@@ -96,7 +96,7 @@ public expect interface Contact : ContactOrBot, CoroutineScope {
      * 也可以使用其他扩展: [ExternalResource.uploadAsImage] 使用 [File], [InputStream] 等上传.
      *
      * @param thumbnail 短视频封面图，为图片资源
-     * @param video 视频资源，目前仅支持上传 mp4 和 mkv 格式的视频。
+     * @param video 视频资源，目前仅支持上传 mp4 格式的视频。
      */
 
     public suspend fun uploadShortVideo(thumbnail: ExternalResource, video: ExternalResource): ShortVideo

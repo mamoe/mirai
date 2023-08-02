@@ -46,7 +46,9 @@ public interface ShortVideo : MessageContent, ConstrainSingle {
 
 
     public companion object Key :
-        AbstractPolymorphicMessageKey<MessageContent, ShortVideo>(MessageContent, { it.safeCast() })
+        AbstractPolymorphicMessageKey<MessageContent, ShortVideo>(MessageContent, { it.safeCast() }) {
+
+    }
 }
 
 @NotStableForInheritance

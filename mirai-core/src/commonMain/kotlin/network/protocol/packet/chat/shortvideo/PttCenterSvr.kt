@@ -23,7 +23,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
-import net.mamoe.mirai.utils.toUHexString
 
 internal class PttCenterSvr {
     object GroupShortVideoUpReq :
@@ -53,14 +52,15 @@ internal class PttCenterSvr {
             }
         }
 
-        // TODO: only support mp4 video now.
         operator fun invoke(
             client: QQAndroidClient,
             contact: Contact,
             thumbnailFileMd5: ByteArray,
             thumbnailFileSize: Long,
+            videoFileName: String,
             videoFileMd5: ByteArray,
-            videoFileSize: Long
+            videoFileSize: Long,
+            videoFileFormat: String
         ) = buildOutgoingUniPacket(client) { sequenceId ->
             writeProtoBuf(
                 PttShortVideo.ReqBody.serializer(),
@@ -72,8 +72,10 @@ internal class PttCenterSvr {
                         contact,
                         thumbnailFileMd5,
                         thumbnailFileSize,
+                        videoFileName,
                         videoFileMd5,
-                        videoFileSize
+                        videoFileSize,
+                        videoFileFormat
                     ),
                     msgExtensionReq = listOf(
                         PttShortVideo.ExtensionReq(
@@ -90,15 +92,17 @@ internal class PttCenterSvr {
             contact: Contact,
             thumbnailFileMd5: ByteArray,
             thumbnailFileSize: Long,
+            videoFileName: String,
             videoFileMd5: ByteArray,
-            videoFileSize: Long
+            videoFileSize: Long,
+            videoFileFormat: String
         ) = PttShortVideo.PttShortVideoUploadReq(
             fromuin = client.uin,
             touin = contact.uin,
             chatType = 1, // guild channel = 4, others = 1
             clientType = 2,
             msgPttShortVideoFileInfo = PttShortVideo.PttShortVideoFileInfo(
-                fileName = videoFileMd5.toUHexString("") + ".mp4",
+                fileName = videoFileName + videoFileFormat,
                 fileMd5 = videoFileMd5,
                 fileSize = videoFileSize,
                 fileResLength = 1280,
