@@ -140,7 +140,21 @@ internal class OnlineShortVideoImpl(
     }
 
     override fun appendMiraiCodeTo(builder: StringBuilder) {
-        TODO()
+        builder.append("[mirai:svideo:")
+        builder.append(videoId)
+        builder.append(",")
+        builder.append(fileName)
+        builder.append(".")
+        builder.append(fileFormat)
+        builder.append(",")
+        builder.append(fileMd5.toUHexString(""))
+        builder.append(",")
+        builder.append(fileSize)
+        builder.append(",")
+        builder.append(thumbMd5.toUHexString(""))
+        builder.append(",")
+        builder.append(thumbSize)
+        builder.append("]")
     }
 
     override fun equals(other: Any?): Boolean {
@@ -205,7 +219,21 @@ internal class OfflineShortVideoImpl(
 
     @Suppress("DuplicatedCode")
     override fun appendMiraiCodeTo(builder: StringBuilder) {
-        TODO()
+        builder.append("[mirai:svideo:")
+        builder.append(videoId)
+        builder.append(",")
+        builder.append(fileName)
+        builder.append(".")
+        builder.append(fileFormat)
+        builder.append(",")
+        builder.append(fileMd5.toUHexString(""))
+        builder.append(",")
+        builder.append(fileSize)
+        builder.append(",")
+        builder.append(thumbMd5.toUHexString(""))
+        builder.append(",")
+        builder.append(thumbSize)
+        builder.append("]")
     }
 
     override fun equals(other: Any?): Boolean {
