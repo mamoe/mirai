@@ -26,9 +26,6 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
-import kotlin.jvm.JvmStatic
 
 
 /**
@@ -150,7 +147,9 @@ public expect interface ExternalResource : net.mamoe.mirai.utils.Closeable {
      * 文件格式，如 "png", "amr". 当无法自动识别格式时为 [DEFAULT_FORMAT_NAME].
      *
      * 默认会从文件头识别, 支持的文件类型:
-     * png, jpg, gif, tif, bmp, amr, silk
+     * * 图片类型: png, jpg, gif, tif, bmp
+     * * 语音类型: amr, silk
+     * * 视频类类型: mp4, mkv
      *
      * @see net.mamoe.mirai.utils.getFileType
      * @see net.mamoe.mirai.utils.FILE_TYPES

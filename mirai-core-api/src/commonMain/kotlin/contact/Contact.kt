@@ -87,10 +87,16 @@ public expect interface Contact : ContactOrBot, CoroutineScope {
     public suspend fun uploadImage(resource: ExternalResource): Image
 
     /**
-     * TODO: doc
+     * 上传 [资源][ExternalResource] 作为短视频发送。
+     *
+     * 同时需要上传缩略图作为视频消息显示的封面。
+     *
+     * **无论上传是否成功都不会关闭 [resource]. 需要调用方手动关闭资源**
+     *
+     * 也可以使用其他扩展: [ExternalResource.uploadAsImage] 使用 [File], [InputStream] 等上传.
      *
      * @param thumbnail 短视频封面图，为图片资源
-     * @param video 视频文件
+     * @param video 视频资源，目前仅支持上传 mp4 和 mkv 格式的视频。
      */
 
     public suspend fun uploadShortVideo(thumbnail: ExternalResource, video: ExternalResource): ShortVideo

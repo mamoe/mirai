@@ -159,7 +159,9 @@ public actual interface ExternalResource : Closeable {
      * 文件格式，如 "png", "amr". 当无法自动识别格式时为 [DEFAULT_FORMAT_NAME].
      *
      * 默认会从文件头识别, 支持的文件类型:
-     * png, jpg, gif, tif, bmp, amr, silk
+     * * 图片类型: png, jpg, gif, tif, bmp
+     * * 语音类型: amr, silk
+     * * 视频类类型: mp4, mkv
      *
      * @see net.mamoe.mirai.utils.getFileType
      * @see net.mamoe.mirai.utils.FILE_TYPES
