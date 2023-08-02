@@ -9,8 +9,12 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.KSerializer
+import net.mamoe.mirai.contact.AudioSupported
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.message.data.ShortVideo.Builder
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
 import net.mamoe.mirai.utils.*
@@ -45,6 +49,8 @@ import net.mamoe.mirai.utils.*
  * 格式: &#91;mirai:svideo:[videoId],[fileName].[fileFormat],[fileMd5],[fileSize],`thumbnailMd5`,`thumbnailSize`&#93;
  *
  * `thumbnailMd5` 和 `thumbnailSize` 是可选项. 若不提供，可能会影响服务器判断缓存.
+ *
+ * @since 2.16
  */
 public interface ShortVideo : MessageContent, ConstrainSingle, CodableMessage {
     /**
@@ -155,6 +161,20 @@ public interface ShortVideo : MessageContent, ConstrainSingle, CodableMessage {
     }
 }
 
+/**
+ * 在线短视频消息，即从消息事件中接收到的视频消息.
+ *
+ * [OnlineShortVideo] 仅可以从事件中的[消息链][MessageChain]接收, 不可手动构造. 若需要手动构造, 请使用 [ShortVideo.Builder] 构造 [离线短视频][OfflineShortVideo].
+ *
+ * ### 序列化支持
+ *
+ * [OnlineShortVideo] 支持序列化. 可使用 [MessageChain.serializeToJsonString] 以及 [MessageChain.deserializeFromJsonString].
+ * 也可以在 [MessageSerializers.serializersModule] 获取到 [OnlineShortVideo] 的 [KSerializer].
+ *
+ * 要获取更多有关序列化的信息, 参阅 [MessageSerializers].
+ *
+ * @since 2.16
+ */
 @NotStableForInheritance
 public interface OnlineShortVideo : ShortVideo {
     /**
@@ -168,6 +188,32 @@ public interface OnlineShortVideo : ShortVideo {
     }
 }
 
+/**
+ * 离线短视频消息.
+ *
+ * [OfflineShortVideo] 拥有协议上必要的五个属性:
+ * - 视频 ID [videoId]
+ * - 视频文件名 [fileName]
+ * - 视频 MD5 [fileMd5]
+ * - 视频大小 [fileSize]
+ * - 视频格式 [fileFormat]
+ *
+ * 和非必要属性：
+ * - 缩略图 MD5 `thumbnailMd5`
+ * - 缩略图大小 `thumbnailSize`
+ *
+ * [OfflineShortVideo] 可由本地 [ExternalResource] 经过 [AudioSupported.uploadShortVideo] 上传到服务器得到, 故无[下载链接][OnlineShortVideo.urlForDownload].
+ *
+ * [OfflineShortVideo] 支持使用 [ShortVideo.Builder] 可通过上述七个参数获得 [OfflineShortVideo] 实例.
+ *
+ * ### 序列化支持
+ *
+ * [OfflineShortVideo] 支持序列化. 可使用 [MessageChain.serializeToJsonString] 以及 [MessageChain.deserializeFromJsonString].
+ * 也可以在 [MessageSerializers.serializersModule] 获取到 [OfflineShortVideo] 的 [KSerializer].
+ *
+ * 要获取更多有关序列化的信息, 参阅 [MessageSerializers].
+ * @since 2.16
+ */
 @NotStableForInheritance
 public interface OfflineShortVideo : ShortVideo {
 

@@ -32,6 +32,7 @@ import net.mamoe.mirai.internal.utils.sizeToString
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.Volatile
 import kotlin.math.roundToInt
 
 internal object Highway {

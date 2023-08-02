@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.message.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.User
@@ -126,8 +127,8 @@ internal class OnlineShortVideoImpl(
     override val urlForDownload: String,
     override val thumbMd5: ByteArray,
     override val thumbSize: Long,
-    override val thumbWidth: Int,
-    override val thumbHeight: Int
+    @Transient override val thumbWidth: Int = 0,
+    @Transient override val thumbHeight: Int = 0
 ) : OnlineShortVideo, AbstractShortVideoWithThumbnail() {
 
     override fun toString(): String {
@@ -201,8 +202,8 @@ internal class OfflineShortVideoImpl(
     override val fileFormat: String,
     override val thumbMd5: ByteArray,
     override val thumbSize: Long,
-    override val thumbWidth: Int,
-    override val thumbHeight: Int
+    @Transient override val thumbWidth: Int = 0,
+    @Transient override val thumbHeight: Int = 0
 ) : OfflineShortVideo, AbstractShortVideoWithThumbnail() {
 
     /**
