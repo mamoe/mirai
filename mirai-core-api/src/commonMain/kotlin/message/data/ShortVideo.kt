@@ -16,24 +16,29 @@ import net.mamoe.mirai.utils.safeCast
 
 public interface ShortVideo : MessageContent, ConstrainSingle {
     /**
-     * 文件 ID.
+     * 视频 ID.
      */
     public val fileId: String
 
     /**
-     * 文件 MD5. 16 bytes.
+     * 视频文件 MD5. 16 bytes.
      */
     public val fileMd5: ByteArray
 
     /*
-     * 文件大小
+     * 视频大小
      */
     public val fileSize: Long
 
     /**
-     * 文件类型
+     * 视频文件类型（拓展名）
      */
     public val fileFormat: String
+
+    /*
+     * 视频文件名，不包括拓展名
+     */
+    public val fileName: String
 
 
     @MiraiInternalApi
@@ -53,11 +58,6 @@ public interface ShortVideo : MessageContent, ConstrainSingle {
 
 @NotStableForInheritance
 public interface OnlineShortVideo : ShortVideo {
-    /*
-     * 文件名
-     */
-    public val fileName: String
-
     /**
      * 下载链接
      */

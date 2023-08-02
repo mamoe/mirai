@@ -38,7 +38,11 @@ internal abstract class AbstractContact(
 ) : Contact {
     final override val coroutineContext: CoroutineContext = parentCoroutineContext.childScopeContext()
 
-    override suspend fun uploadShortVideo(thumbnail: ExternalResource, video: ExternalResource): ShortVideo {
+    override suspend fun uploadShortVideo(
+        thumbnail: ExternalResource,
+        video: ExternalResource,
+        fileName: String?
+    ): ShortVideo {
         if (this !is Group && this !is Friend) {
             throw UnsupportedOperationException("short video can only upload to friend or group.")
         }
@@ -51,8 +55,8 @@ internal abstract class AbstractContact(
             throw EventCancelledException("cancelled by BeforeShortVideoUploadEvent")
         }
 
-        // local uploaded offline short video uses video file md5 as its file name
-        val videoName = video.md5.toUHexString("")
+        // local uploaded offline short video uses video file md5 as its file name by default
+        val videoName = fileName ?: video.md5.toUHexString("")
 
         val uploadResp = bot.network.sendAndExpect(
             PttCenterSvr.GroupShortVideoUpReq(
@@ -74,6 +78,7 @@ internal abstract class AbstractContact(
         if (uploadResp is PttCenterSvr.GroupShortVideoUpReq.Response.FileExists) {
             return OfflineShortVideoImpl(
                 uploadResp.fileId,
+                videoName,
                 video.md5,
                 video.size,
                 video.formatName,
@@ -133,6 +138,7 @@ internal abstract class AbstractContact(
 
         return OfflineShortVideoImpl(
             highwayUploadResp.fileid,
+            videoName,
             video.md5,
             video.size,
             video.formatName,

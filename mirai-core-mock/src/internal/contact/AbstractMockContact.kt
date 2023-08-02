@@ -58,7 +58,11 @@ internal abstract class AbstractMockContact(
         return bot.uploadMockImage(resource)
     }
 
-    override suspend fun uploadShortVideo(thumbnail: ExternalResource, video: ExternalResource): ShortVideo {
+    override suspend fun uploadShortVideo(
+        thumbnail: ExternalResource,
+        video: ExternalResource,
+        fileName: String?
+    ): ShortVideo {
         TODO("mock upload short video")
     }
 

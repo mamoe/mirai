@@ -99,7 +99,11 @@ public expect interface Contact : ContactOrBot, CoroutineScope {
      * @param video 视频资源，目前仅支持上传 mp4 格式的视频。
      */
 
-    public suspend fun uploadShortVideo(thumbnail: ExternalResource, video: ExternalResource): ShortVideo
+    public suspend fun uploadShortVideo(
+        thumbnail: ExternalResource,
+        video: ExternalResource,
+        fileName: String? = null
+    ): ShortVideo
 
     @JvmBlockingBridge
     public companion object {

@@ -24,7 +24,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.ShortVideo
 import net.mamoe.mirai.message.data.SingleMessage
-import net.mamoe.mirai.utils.toUHexString
 
 internal class ShortVideoProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
@@ -56,7 +55,7 @@ internal class ShortVideoProtocol : MessageProtocol() {
                     videoFile = ImMsgBody.VideoFile(
                         fileUuid = data.fileId.encodeToByteArray(),
                         fileMd5 = data.fileMd5,
-                        fileName = (data.fileMd5.toUHexString("") + ".mp4").encodeToByteArray(),
+                        fileName = data.fileName.encodeToByteArray(),
                         fileFormat = 3, // mp4,
                         fileTime = 10,
                         fileSize = data.fileSize.toInt(),
