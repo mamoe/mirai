@@ -10,6 +10,7 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.KSerializer
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.AudioSupported
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.MessageSerializers
@@ -240,6 +241,7 @@ public interface InternalShortVideoProtocol {
     @MiraiInternalApi
     public companion object {
         public val instance: InternalShortVideoProtocol by lazy {
+            Mirai // initialize MiraiImpl first
             loadService(
                 InternalShortVideoProtocol::class,
                 "net.mamoe.mirai.internal.message.InternalShortVideoProtocolImpl"
