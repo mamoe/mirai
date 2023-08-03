@@ -140,24 +140,6 @@ internal class OnlineShortVideoImpl(
         return "[视频]"
     }
 
-    override fun appendMiraiCodeTo(builder: StringBuilder) {
-        builder.append("[mirai:svideo:")
-        builder.append(videoId)
-        builder.append(",")
-        builder.append(fileName)
-        builder.append(".")
-        builder.append(fileFormat)
-        builder.append(",")
-        builder.append(fileMd5.toUHexString(""))
-        builder.append(",")
-        builder.append(fileSize)
-        builder.append(",")
-        builder.append(thumbMd5.toUHexString(""))
-        builder.append(",")
-        builder.append(thumbSize)
-        builder.append("]")
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -216,25 +198,6 @@ internal class OfflineShortVideoImpl(
 
     override fun contentToString(): String {
         return "[视频]"
-    }
-
-    @Suppress("DuplicatedCode")
-    override fun appendMiraiCodeTo(builder: StringBuilder) {
-        builder.append("[mirai:svideo:")
-        builder.append(videoId)
-        builder.append(",")
-        builder.append(fileName)
-        builder.append(".")
-        builder.append(fileFormat)
-        builder.append(",")
-        builder.append(fileMd5.toUHexString(""))
-        builder.append(",")
-        builder.append(fileSize)
-        builder.append(",")
-        builder.append(thumbMd5.toUHexString(""))
-        builder.append(",")
-        builder.append(thumbSize)
-        builder.append("]")
     }
 
     override fun equals(other: Any?): Boolean {

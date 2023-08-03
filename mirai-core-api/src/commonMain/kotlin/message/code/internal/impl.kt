@@ -141,21 +141,7 @@ private object MiraiCodeParsers : AbstractMap<String, MiraiCodeParser>(), Map<St
     },
     "file" to MiraiCodeParser(Regex("""(.*?),(.*?),(.*?),(.*?)""")) { (id, internalId, name, size) ->
         FileMessage(id, internalId.toInt(), name, size.toLong())
-    },
-    "svideo" to MiraiCodeParser(
-        Regex("""(.*),(.+\..{2,4}),([a-zA-Z0-9]{32}),(\d+)(,([a-zA-Z0-9]{32}),(\d+))?""")
-    ) { (videoId, fullFileName, fileMd5, fileSize, _, thumbnailMd5, thumbnailSize) ->
-        val fileFormat = fullFileName.substringAfterLast('.')
-        val fileName = fullFileName.substringBeforeLast(".${fileFormat}")
-        ShortVideo.Builder.newBuilder(videoId).apply {
-            this.fileMd5 = fileMd5.hexToBytes()
-            this.fileName = fileName
-            this.fileFormat = fileFormat
-            this.fileSize = fileSize.toLong()
-            if (thumbnailMd5.isNotEmpty()) this.thumbnailMd5 = thumbnailMd5.hexToBytes()
-            if (thumbnailSize.isNotEmpty()) this.thumbnailSize = thumbnailSize.toLong()
-        }.build()
-    },
+    }
 )
 
 

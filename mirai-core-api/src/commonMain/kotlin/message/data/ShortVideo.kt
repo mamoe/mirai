@@ -34,7 +34,7 @@ import net.mamoe.mirai.utils.*
  *
  * ## 使用 [Builder] 构建短视频
  * [ShortVideo] 提供 [Builder] 构建方式，必须指定 [videoId], [fileName], [fileMd5], [fileSize] 和 [fileFormat] 参数.
- * 可选指定 [Builder.thumbnailMd5] 和 [Builder.thumbnailSize].
+ * 可选指定 [Builder.thumbnailMd5] 和 [Builder.thumbnailSize]. 若不提供，可能会影响服务器判断缓存.
  *
  * ## 从服务器接收
  * 通过监听消息接收的短视频消息可直接转换为 [OnlineShortVideo].
@@ -46,13 +46,11 @@ import net.mamoe.mirai.utils.*
  * # 其他信息
  *
  * ## mirai 码支持
- * 格式: &#91;mirai:svideo:[videoId],[fileName].[fileFormat],[fileMd5],[fileSize],`thumbnailMd5`,`thumbnailSize`&#93;
- *
- * `thumbnailMd5` 和 `thumbnailSize` 是可选项. 若不提供，可能会影响服务器判断缓存.
+ * [ShortVideo] 不支持 mirai 码，意味着如果通过 mirai 码持久化消息，短视频消息将不会被存储.
  *
  * @since 2.16
  */
-public interface ShortVideo : MessageContent, ConstrainSingle, CodableMessage {
+public interface ShortVideo : MessageContent, ConstrainSingle {
     /**
      * 视频 ID.
      */
