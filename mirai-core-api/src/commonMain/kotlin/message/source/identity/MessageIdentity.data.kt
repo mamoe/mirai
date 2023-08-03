@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.message.source
+package net.mamoe.mirai.message.source.identity
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -46,18 +46,18 @@ public class RawMessageIdentity(
 }
 
 @Serializable
-@SerialName("FullyMessageIdentity")
-public class RawFullyMessageIdentity(
+@SerialName("FullMessageIdentity")
+public class RawFullMessageIdentity(
     override val ids: IntArray,
     override val internalIds: IntArray,
     override val time: Int,
     override val fromId: Long,
     override val targetId: Long,
     override val kind: MessageSourceKind,
-) : FullyMessageIdentity {
+) : FullMessageIdentity {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is RawFullyMessageIdentity) return false
+        if (other !is RawFullMessageIdentity) return false
 
         if (!ids.contentEquals(other.ids)) return false
         if (!internalIds.contentEquals(other.internalIds)) return false
@@ -77,7 +77,7 @@ public class RawFullyMessageIdentity(
         return result
     }
 
-    override fun convertToRawFullyMessageIdentity(): RawFullyMessageIdentity {
+    override fun convertToRawFullMessageIdentity(): RawFullMessageIdentity {
         return this
     }
 

@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.message.source
+package net.mamoe.mirai.message.source.identity
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.data.MessageSourceKind
@@ -78,7 +78,7 @@ public interface MessageIdentity {
 @NotStableForInheritance
 @ApiStatus.NonExtendable
 @Serializable(FullyMessageIdentitySerializer::class)
-public interface FullyMessageIdentity : MessageIdentity {
+public interface FullMessageIdentity : MessageIdentity {
 
     /**
      * 发送人用户 ID.
@@ -95,8 +95,8 @@ public interface FullyMessageIdentity : MessageIdentity {
      */
     public val kind: MessageSourceKind
 
-    public fun convertToRawFullyMessageIdentity(): RawFullyMessageIdentity {
-        return RawFullyMessageIdentity(
+    public fun convertToRawFullMessageIdentity(): RawFullMessageIdentity {
+        return RawFullMessageIdentity(
             ids = ids,
             internalIds = internalIds,
             time = time,

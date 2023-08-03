@@ -34,7 +34,7 @@ import net.mamoe.mirai.message.action.AsyncRecallResult
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
-import net.mamoe.mirai.message.source.FullyMessageIdentity
+import net.mamoe.mirai.message.source.identity.FullMessageIdentity
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
@@ -125,7 +125,7 @@ import net.mamoe.mirai.utils.safeCast
  */
 @Suppress("DEPRECATION")
 @Serializable(MessageSource.Serializer::class)
-public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle, FullyMessageIdentity {
+public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle, FullMessageIdentity {
     public final override val key: MessageKey<MessageSource>
         get() = Key
 

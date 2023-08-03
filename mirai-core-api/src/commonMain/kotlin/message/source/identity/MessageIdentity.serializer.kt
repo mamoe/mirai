@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-package net.mamoe.mirai.message.source
+package net.mamoe.mirai.message.source.identity
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -29,17 +29,17 @@ public object MessageIdentitySerializer : KSerializer<MessageIdentity> {
     }
 }
 
-public object FullyMessageIdentitySerializer : KSerializer<FullyMessageIdentity> {
-    private val delegate = RawFullyMessageIdentity.serializer()
+public object FullyMessageIdentitySerializer : KSerializer<FullMessageIdentity> {
+    private val delegate = RawFullMessageIdentity.serializer()
 
     override val descriptor: SerialDescriptor
         get() = delegate.descriptor
 
-    override fun deserialize(decoder: Decoder): FullyMessageIdentity {
+    override fun deserialize(decoder: Decoder): FullMessageIdentity {
         return delegate.deserialize(decoder)
     }
 
-    override fun serialize(encoder: Encoder, value: FullyMessageIdentity) {
-        delegate.serialize(encoder, value.convertToRawFullyMessageIdentity())
+    override fun serialize(encoder: Encoder, value: FullMessageIdentity) {
+        delegate.serialize(encoder, value.convertToRawFullMessageIdentity())
     }
 }
