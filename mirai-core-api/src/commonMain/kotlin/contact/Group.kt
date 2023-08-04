@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.essence.Essences
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.contact.roaming.RoamingSupported
+import net.mamoe.mirai.contact.vote.Votes
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -140,6 +141,11 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported,
      */
     public val announcements: Announcements
 
+    /**
+     * 获取群投票相关功能接口
+     * @since 2.14
+     */
+    public val votes: Votes
 
     /**
      * 获取群荣誉相关功能接口

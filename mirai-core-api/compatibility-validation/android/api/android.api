@@ -484,6 +484,7 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public fun getOrFail (J)Lnet/mamoe/mirai/contact/NormalMember;
 	public abstract fun getOwner ()Lnet/mamoe/mirai/contact/NormalMember;
 	public abstract fun getSettings ()Lnet/mamoe/mirai/contact/GroupSettings;
+	public abstract fun getVotes ()Lnet/mamoe/mirai/contact/vote/Votes;
 	public fun quit ()Z
 	public abstract fun quit (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -1208,6 +1209,183 @@ public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessages 
 
 public abstract interface class net/mamoe/mirai/contact/roaming/RoamingSupported : net/mamoe/mirai/contact/Contact {
 	public abstract fun getRoamingMessages ()Lnet/mamoe/mirai/contact/roaming/RoamingMessages;
+}
+
+public abstract interface class net/mamoe/mirai/contact/vote/OfflineVote : net/mamoe/mirai/contact/vote/Vote {
+	public static final field Companion Lnet/mamoe/mirai/contact/vote/OfflineVote$Companion;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public static fun create (Ljava/lang/String;Ljava/util/List;)Lnet/mamoe/mirai/contact/vote/OfflineVote;
+	public static fun create (Ljava/lang/String;Ljava/util/List;Lnet/mamoe/mirai/contact/vote/VoteParameters;)Lnet/mamoe/mirai/contact/vote/OfflineVote;
+	public static fun from (Lnet/mamoe/mirai/contact/vote/Vote;)Lnet/mamoe/mirai/contact/vote/OfflineVote;
+}
+
+public final class net/mamoe/mirai/contact/vote/OfflineVote$Companion {
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public final fun create (Ljava/lang/String;Ljava/util/List;)Lnet/mamoe/mirai/contact/vote/OfflineVote;
+	public final synthetic fun create (Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/vote/OfflineVote;
+	public final fun create (Ljava/lang/String;Ljava/util/List;Lnet/mamoe/mirai/contact/vote/VoteParameters;)Lnet/mamoe/mirai/contact/vote/OfflineVote;
+	public static synthetic fun create$default (Lnet/mamoe/mirai/contact/vote/OfflineVote$Companion;Ljava/lang/String;Ljava/util/List;Lnet/mamoe/mirai/contact/vote/VoteParameters;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/vote/OfflineVote;
+	public final fun from (Lnet/mamoe/mirai/contact/vote/Vote;)Lnet/mamoe/mirai/contact/vote/OfflineVote;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/contact/vote/OfflineVoteKt {
+	public static final fun OfflineVote (Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/vote/OfflineVote;
+	public static final fun OfflineVote (Ljava/lang/String;Ljava/util/List;Lnet/mamoe/mirai/contact/vote/VoteParameters;)Lnet/mamoe/mirai/contact/vote/OfflineVote;
+	public static final fun OfflineVote (Lnet/mamoe/mirai/contact/vote/Vote;)Lnet/mamoe/mirai/contact/vote/OfflineVote;
+	public static synthetic fun OfflineVote$default (Ljava/lang/String;Ljava/util/List;Lnet/mamoe/mirai/contact/vote/VoteParameters;ILjava/lang/Object;)Lnet/mamoe/mirai/contact/vote/OfflineVote;
+}
+
+public abstract interface class net/mamoe/mirai/contact/vote/OnlineVote : net/mamoe/mirai/contact/vote/Vote {
+	public fun delete ()Z
+	public fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun delete$suspendImpl (Lnet/mamoe/mirai/contact/vote/OnlineVote;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getCounts ()Ljava/util/List;
+	public abstract fun getEndTime ()J
+	public abstract fun getFid ()Ljava/lang/String;
+	public abstract fun getGroup ()Lnet/mamoe/mirai/contact/Group;
+	public abstract fun getPublicationTime ()J
+	public abstract fun getRecords ()Ljava/util/List;
+	public abstract fun getSender ()Lnet/mamoe/mirai/contact/NormalMember;
+	public abstract fun getSenderId ()J
+	public fun getUrl ()Ljava/lang/String;
+	public fun update ()V
+	public fun update (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun update$suspendImpl (Lnet/mamoe/mirai/contact/vote/OnlineVote;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/contact/vote/OnlineVoteKt {
+	public static final fun getBot (Lnet/mamoe/mirai/contact/vote/OnlineVote;)Lnet/mamoe/mirai/Bot;
+}
+
+public abstract interface class net/mamoe/mirai/contact/vote/OnlineVoteRecord {
+	public abstract fun getOptions ()Ljava/util/List;
+	public abstract fun getTime ()J
+	public abstract fun getVote ()Lnet/mamoe/mirai/contact/vote/Vote;
+	public abstract fun getVoter ()Lnet/mamoe/mirai/contact/NormalMember;
+	public abstract fun getVoterId ()J
+}
+
+public abstract interface class net/mamoe/mirai/contact/vote/Vote {
+	public abstract fun getOptions ()Ljava/util/List;
+	public abstract fun getParameters ()Lnet/mamoe/mirai/contact/vote/VoteParameters;
+	public abstract fun getTitle ()Ljava/lang/String;
+	public fun publishTo (Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun publishTo$suspendImpl (Lnet/mamoe/mirai/contact/vote/Vote;Lnet/mamoe/mirai/contact/Group;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/contact/vote/VoteImage {
+	public static final field Companion Lnet/mamoe/mirai/contact/vote/VoteImage$Companion;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public synthetic fun <init> (ILjava/lang/String;IILjava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;IILjava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun create (Ljava/lang/String;IILjava/lang/String;)Lnet/mamoe/mirai/contact/vote/VoteImage;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()I
+	public final fun getId ()Ljava/lang/String;
+	public final fun getUrl ()Ljava/lang/String;
+	public final fun getWidth ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/contact/vote/VoteImage;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class net/mamoe/mirai/contact/vote/VoteImage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/contact/vote/VoteImage$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/contact/vote/VoteImage;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/contact/vote/VoteImage;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/contact/vote/VoteImage$Companion {
+	public final fun create (Ljava/lang/String;IILjava/lang/String;)Lnet/mamoe/mirai/contact/vote/VoteImage;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/contact/vote/VoteParameters {
+	public static final field Companion Lnet/mamoe/mirai/contact/vote/VoteParameters$Companion;
+	public static final field SERIAL_NAME Ljava/lang/String;
+	public fun <init> ()V
+	public synthetic fun <init> (ILnet/mamoe/mirai/contact/vote/VoteImage;ZJJILkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public final fun builder ()Lnet/mamoe/mirai/contact/vote/VoteParametersBuilder;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAvailableVotes ()I
+	public static final fun getDefault ()Lnet/mamoe/mirai/contact/vote/VoteParameters;
+	public final fun getDurationSeconds ()J
+	public final fun getImage ()Lnet/mamoe/mirai/contact/vote/VoteImage;
+	public final fun getRemindSeconds ()J
+	public fun hashCode ()I
+	public final fun isAnonymous ()Z
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/contact/vote/VoteParameters;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class net/mamoe/mirai/contact/vote/VoteParameters$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/contact/vote/VoteParameters$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/contact/vote/VoteParameters;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/contact/vote/VoteParameters;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/contact/vote/VoteParameters$Companion {
+	public final fun getDefault ()Lnet/mamoe/mirai/contact/vote/VoteParameters;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/contact/vote/VoteParametersBuilder {
+	public fun <init> ()V
+	public fun <init> (Lnet/mamoe/mirai/contact/vote/VoteParameters;)V
+	public synthetic fun <init> (Lnet/mamoe/mirai/contact/vote/VoteParameters;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun anonymous ()Z
+	public final fun anonymous (Z)Lnet/mamoe/mirai/contact/vote/VoteParametersBuilder;
+	public final fun build ()Lnet/mamoe/mirai/contact/vote/VoteParameters;
+	public final fun capacity ()I
+	public final fun capacity (I)Lnet/mamoe/mirai/contact/vote/VoteParametersBuilder;
+	public final fun end ()J
+	public final fun end (J)Lnet/mamoe/mirai/contact/vote/VoteParametersBuilder;
+	public final fun end-LRDsOJo (J)Lnet/mamoe/mirai/contact/vote/VoteParametersBuilder;
+	public final fun image ()Lnet/mamoe/mirai/contact/vote/VoteImage;
+	public final fun image (Lnet/mamoe/mirai/contact/vote/VoteImage;)Lnet/mamoe/mirai/contact/vote/VoteParametersBuilder;
+	public final fun remind ()J
+	public final fun remind (J)Lnet/mamoe/mirai/contact/vote/VoteParametersBuilder;
+	public final fun remind-LRDsOJo (J)Lnet/mamoe/mirai/contact/vote/VoteParametersBuilder;
+	public final synthetic fun setAnonymous (Z)V
+	public final synthetic fun setCapacity (I)V
+	public final synthetic fun setEnd (J)V
+	public final synthetic fun setImage (Lnet/mamoe/mirai/contact/vote/VoteImage;)V
+	public final synthetic fun setRemind (J)V
+}
+
+public final class net/mamoe/mirai/contact/vote/VoteParametersBuilderKt {
+	public static final fun buildVoteParameters (Lkotlin/jvm/functions/Function1;)Lnet/mamoe/mirai/contact/vote/VoteParameters;
+}
+
+public final class net/mamoe/mirai/contact/vote/VoteParametersKt {
+	public static final fun getDuration (Lnet/mamoe/mirai/contact/vote/VoteParameters;)J
+	public static final fun getRemind (Lnet/mamoe/mirai/contact/vote/VoteParameters;)J
+}
+
+public abstract interface class net/mamoe/mirai/contact/vote/Votes : net/mamoe/mirai/utils/Streamable {
+	public fun delete (Ljava/lang/String;)Z
+	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun get (Ljava/lang/String;)Lnet/mamoe/mirai/contact/vote/OnlineVote;
+	public abstract fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun publish (Lnet/mamoe/mirai/contact/vote/Vote;)Lnet/mamoe/mirai/contact/vote/OnlineVote;
+	public abstract fun publish (Lnet/mamoe/mirai/contact/vote/Vote;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun update (Lnet/mamoe/mirai/contact/vote/OnlineVote;)V
+	public abstract fun update (Lnet/mamoe/mirai/contact/vote/OnlineVote;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/contact/vote/VoteImage;
+	public abstract fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mirai/data/UserInfo {
