@@ -47,7 +47,7 @@ internal class OnlineShortVideoMsgInternal(
             net.mamoe.mirai.message.data.MessageSourceKind.FRIEND -> bot.getFriend(fromId)
             net.mamoe.mirai.message.data.MessageSourceKind.GROUP -> bot.getGroup(groupId)
             else -> return null // TODO: ignore processing stranger's video message
-        }.cast<Contact>()
+        } as Contact
         val sender = when (sourceKind) {
             net.mamoe.mirai.message.data.MessageSourceKind.FRIEND -> bot.getFriend(fromId)
             net.mamoe.mirai.message.data.MessageSourceKind.GROUP -> {
@@ -56,7 +56,7 @@ internal class OnlineShortVideoMsgInternal(
             }
 
             else -> return null // TODO: ignore processing stranger's video message
-        }.cast<User>()
+        } as User
 
         val shortVideoDownloadReq = bot.network.sendAndExpect(
             PttCenterSvr.ShortVideoDownReq(
@@ -94,11 +94,11 @@ internal class OnlineShortVideoMsgInternal(
 
 
     override fun toString(): String {
-        TODO("Not yet implemented")
+        return "OnlineShortVideoMsgInternal(videoElem=$videoFile)"
     }
 
     override fun contentToString(): String {
-        TODO("Not yet implemented")
+        return "[视频元数据]"
     }
 }
 
