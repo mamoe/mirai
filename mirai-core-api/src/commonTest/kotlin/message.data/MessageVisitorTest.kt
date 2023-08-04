@@ -115,6 +115,10 @@ internal class MessageVisitorTest {
             return arrayOf("visitFace") + super.visitFace(message, data)
         }
 
+        override fun visitSuperFace(message: SuperFace, data: Unit): Array<String> {
+            return arrayOf("visitSuperFace") + super.visitSuperFace(message, data)
+        }
+
         override fun visitFileMessage(message: FileMessage, data: Unit): Array<String> {
             return arrayOf("visitFileMessage") + super.visitFileMessage(message, data)
         }
@@ -282,6 +286,17 @@ internal class MessageVisitorTest {
         assertContentEquals(
             arrayOf(
                 "visitFlashImage",
+                "visitHummerMessage",
+                "visitMessageContent",
+                "visitSingleMessage",
+                "visitMessage",
+            ),
+            FlashImage(createImage()).accept(GetCalledMethodNames)
+        )
+
+        assertContentEquals(
+            arrayOf(
+                "visitSuperFace",
                 "visitHummerMessage",
                 "visitMessageContent",
                 "visitSingleMessage",
