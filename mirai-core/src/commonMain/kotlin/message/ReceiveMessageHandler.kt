@@ -27,6 +27,7 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.structureToString
 import net.mamoe.mirai.utils.toLongUnsigned
+import net.mamoe.mirai.utils.warning
 
 /**
  * 只在手动构造 [OfflineMessageSource] 时调用
@@ -150,12 +151,20 @@ private fun List<MsgComm.Msg>.toMessageChainImpl(
     } else null
     if (source != null) builder.add(source)
 
+    val fromId = source?.fromId ?: firstOrNull()?.msgHead?.fromUin
+    if (fromId == null) {
+        bot.logger.warning {
+            "Cannot determine fromId from message source and msg elements, " +
+                    "source: $source, elements: ${this.joinToString(", ")}"
+        }
+    }
+
     messageList.forEach { msg ->
         facade.decode(
             msg.msgBody.richText.elems,
             groupIdOrZero,
             messageSourceKind,
-            source?.fromId ?: first().msgHead.fromUin,
+            fromId ?: 0,
             bot,
             builder,
             msg
