@@ -27,6 +27,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.video.PttCenterSvr
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.ShortVideo
+import net.mamoe.mirai.internal.utils.CombinedExternalResource
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import kotlin.contracts.contract
@@ -91,14 +92,7 @@ internal abstract class AbstractContact(
             }
         }
 
-        val highwayRespExt = buildPacket {
-            thumbnail.input().use {
-                it.copyTo(this)
-            }
-            video.input().use {
-                it.copyTo(this)
-            }
-        }.readBytes().toExternalResource().use { resource ->
+        val highwayRespExt = CombinedExternalResource(thumbnail, video).use { resource ->
             Highway.uploadResourceBdh(
                 bot = bot,
                 resource = resource,
