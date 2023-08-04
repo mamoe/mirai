@@ -16,8 +16,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
+import net.mamoe.mirai.internal.message.RefineContextKey
 import net.mamoe.mirai.internal.message.SimpleRefineContext
-import net.mamoe.mirai.internal.message.data.OnlineShortVideoMsgInternal
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetRoamMsgReq
 import net.mamoe.mirai.message.data.MessageChain
@@ -44,7 +44,7 @@ internal sealed class TimeBasedRoamingMessagesImpl : AbstractRoamingMessages() {
                                 contact.bot,
                                 refineContext = SimpleRefineContext(
                                     mutableListOf(
-                                        OnlineShortVideoMsgInternal.FromId to it.msgHead.fromUin
+                                        RefineContextKey.FromId to it.msgHead.fromUin
                                     ).cast()
                                 )
                             )
@@ -58,7 +58,7 @@ internal sealed class TimeBasedRoamingMessagesImpl : AbstractRoamingMessages() {
                                     contact.bot,
                                     refineContext = SimpleRefineContext(
                                         mutableListOf(
-                                            OnlineShortVideoMsgInternal.FromId to message.msgHead.fromUin
+                                            RefineContextKey.FromId to message.msgHead.fromUin
                                         ).cast()
                                     )
                                 )
