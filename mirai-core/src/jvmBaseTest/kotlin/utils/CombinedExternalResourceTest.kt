@@ -21,7 +21,7 @@ class CombinedExternalResourceTest : AbstractTest() {
     @Test
     fun `work`() {
         val res1 = STRING_1.toByteArray().toExternalResource()
-        val res2 = STRING_1.toByteArray().toExternalResource()
+        val res2 = STRING_2.toByteArray().toExternalResource()
 
         val combined1 = buildPacket {
             res1.input().use { it.copyTo(this) }

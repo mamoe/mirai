@@ -22,7 +22,6 @@ import net.mamoe.mirai.internal.message.RefineContextKey
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.packet.chat.video.PttCenterSvr
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.toUHexString
 
 /**

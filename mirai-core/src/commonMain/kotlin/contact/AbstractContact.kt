@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.contact
 
 import io.ktor.utils.io.core.*
-import io.ktor.utils.io.core.use
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.broadcast
@@ -29,7 +28,6 @@ import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.ShortVideo
 import net.mamoe.mirai.internal.utils.CombinedExternalResource
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 

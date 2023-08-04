@@ -14,7 +14,6 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.AudioSupported
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.MessageSerializers
-import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import net.mamoe.mirai.message.data.ShortVideo.Builder
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
