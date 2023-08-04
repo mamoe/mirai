@@ -33,7 +33,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  * @see Contact.uploadShortVideo 上传短视频. 为广播这个事件的唯一途径
  */
 @OptIn(MiraiInternalApi::class)
-public data class BeforeShortVideoUploadEvent @MiraiInternalApi constructor(
+public class BeforeShortVideoUploadEvent @MiraiInternalApi constructor(
     public val target: Contact,
     public val thumbnailSource: ExternalResource,
     public val videoSource: ExternalResource
@@ -61,11 +61,11 @@ public sealed class ShortVideoUploadEvent : BotEvent, BotActiveEvent, AbstractEv
     public override val bot: Bot
         get() = target.bot
 
-    public data class Succeed @MiraiInternalApi constructor(
+    public class Succeed @MiraiInternalApi constructor(
         override val target: Contact,
         override val thumbnailSource: ExternalResource,
         override val videoSource: ExternalResource,
-        val video: ShortVideo
+        public val video: ShortVideo
     ) : ShortVideoUploadEvent() {
         override fun toString(): String {
             return "ShortVideoUploadEvent.Succeed(target=$target, " +
@@ -75,12 +75,12 @@ public sealed class ShortVideoUploadEvent : BotEvent, BotActiveEvent, AbstractEv
         }
     }
 
-    public data class Failed @MiraiInternalApi constructor(
+    public class Failed @MiraiInternalApi constructor(
         override val target: Contact,
         override val thumbnailSource: ExternalResource,
         override val videoSource: ExternalResource,
-        val errno: Int,
-        val message: String
+        public val errno: Int,
+        public val message: String
     ) : ShortVideoUploadEvent() {
         override fun toString(): String {
             return "ShortVideoUploadEvent.Failed(target=$target, " +
