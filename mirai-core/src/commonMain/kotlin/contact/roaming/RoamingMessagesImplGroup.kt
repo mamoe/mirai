@@ -12,8 +12,8 @@ package net.mamoe.mirai.internal.contact.roaming
 import kotlinx.coroutines.flow.*
 import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
 import net.mamoe.mirai.internal.contact.CommonGroupImpl
+import net.mamoe.mirai.internal.message.RefineContextKey
 import net.mamoe.mirai.internal.message.SimpleRefineContext
-import net.mamoe.mirai.internal.message.data.OnlineShortVideoMsgInternal
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
@@ -74,9 +74,9 @@ internal class RoamingMessagesImplGroup(
                                 MessageSourceKind.GROUP,
                                 SimpleRefineContext(
                                     mutableMapOf(
-                                        OnlineShortVideoMsgInternal.MessageSourceKind to MessageSourceKind.GROUP,
-                                        OnlineShortVideoMsgInternal.FromId to it.msgHead.fromUin,
-                                        OnlineShortVideoMsgInternal.GroupIdOrZero to contact.uin,
+                                        RefineContextKey.MessageSourceKind to MessageSourceKind.GROUP,
+                                        RefineContextKey.FromId to it.msgHead.fromUin,
+                                        RefineContextKey.GroupIdOrZero to contact.uin,
                                     )
                                 )
                             )

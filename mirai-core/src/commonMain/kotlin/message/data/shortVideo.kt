@@ -39,9 +39,9 @@ internal class OnlineShortVideoMsgInternal(
     override suspend fun refine(bot: Bot, context: MessageChain, refineContext: RefineContext): Message? {
         bot.asQQAndroidBot()
 
-        val sourceKind = refineContext[MessageSourceKind] ?: return null
-        val fromId = refineContext[FromId] ?: return null
-        val groupId = refineContext[GroupIdOrZero] ?: return null
+        val sourceKind = refineContext[RefineContextKey.MessageSourceKind] ?: return null
+        val fromId = refineContext[RefineContextKey.FromId] ?: return null
+        val groupId = refineContext[RefineContextKey.GroupIdOrZero] ?: return null
 
         val contact = when (sourceKind) {
             net.mamoe.mirai.message.data.MessageSourceKind.FRIEND -> bot.getFriend(fromId)
@@ -99,12 +99,6 @@ internal class OnlineShortVideoMsgInternal(
 
     override fun contentToString(): String {
         TODO("Not yet implemented")
-    }
-
-    companion object {
-        val MessageSourceKind = RefineContextKey<MessageSourceKind>("MessageSourceKind")
-        val FromId = RefineContextKey<Long>("FromId")
-        val GroupIdOrZero = RefineContextKey<Long>("GroupIdOrZero")
     }
 }
 

@@ -99,6 +99,12 @@ internal class RefineContextKey<T : Any>(
             append(')')
         }
     }
+
+    internal companion object {
+        val MessageSourceKind = RefineContextKey<MessageSourceKind>("MessageSourceKind")
+        val FromId = RefineContextKey<Long>("FromId")
+        val GroupIdOrZero = RefineContextKey<Long>("GroupIdOrZero")
+    }
 }
 
 /**

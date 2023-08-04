@@ -15,8 +15,8 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.getGroupByUinOrCode
+import net.mamoe.mirai.internal.message.RefineContextKey
 import net.mamoe.mirai.internal.message.SimpleRefineContext
-import net.mamoe.mirai.internal.message.data.OnlineShortVideoMsgInternal
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
@@ -139,9 +139,9 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
             user.correspondingMessageSourceKind,
             SimpleRefineContext(
                 mutableMapOf(
-                    OnlineShortVideoMsgInternal.MessageSourceKind to MessageSourceKind.FRIEND,
-                    OnlineShortVideoMsgInternal.FromId to user.uin,
-                    OnlineShortVideoMsgInternal.GroupIdOrZero to 0L,
+                    RefineContextKey.MessageSourceKind to MessageSourceKind.FRIEND,
+                    RefineContextKey.FromId to user.uin,
+                    RefineContextKey.GroupIdOrZero to 0L,
                 )
             )
         )

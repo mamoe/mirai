@@ -17,7 +17,6 @@ import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.cleanupRubbish
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toAudio
 import net.mamoe.mirai.internal.message.data.LongMessageInternal
 import net.mamoe.mirai.internal.message.data.OnlineAudioImpl
-import net.mamoe.mirai.internal.message.data.OnlineShortVideoMsgInternal
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.protocol.impl.PokeMessageProtocol.Companion.UNSUPPORTED_POKE_MESSAGE_PLAIN
 import net.mamoe.mirai.internal.message.protocol.impl.RichMessageProtocol.Companion.UNSUPPORTED_MERGED_MESSAGE_PLAIN
@@ -83,8 +82,8 @@ internal suspend fun MsgComm.Msg.toMessageChainOnline(
     }
 
     val mutableRefineContextApplier: MutableRefineContext.() -> Unit = {
-        set(OnlineShortVideoMsgInternal.MessageSourceKind, kind)
-        set(OnlineShortVideoMsgInternal.GroupIdOrZero, groupId)
+        set(RefineContextKey.MessageSourceKind, kind)
+        set(RefineContextKey.GroupIdOrZero, groupId)
     }
 
     return listOf(this).toMessageChainOnline(

@@ -20,8 +20,8 @@ import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
+import net.mamoe.mirai.internal.message.RefineContextKey
 import net.mamoe.mirai.internal.message.SimpleRefineContext
-import net.mamoe.mirai.internal.message.data.OnlineShortVideoMsgInternal
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
@@ -167,9 +167,9 @@ internal class GroupMessageProcessor(
                         MessageSourceKind.GROUP,
                         SimpleRefineContext(
                             mutableMapOf(
-                                OnlineShortVideoMsgInternal.MessageSourceKind to MessageSourceKind.GROUP,
-                                OnlineShortVideoMsgInternal.FromId to sender.uin,
-                                OnlineShortVideoMsgInternal.GroupIdOrZero to group.uin,
+                                RefineContextKey.MessageSourceKind to MessageSourceKind.GROUP,
+                                RefineContextKey.FromId to sender.uin,
+                                RefineContextKey.GroupIdOrZero to group.uin,
                             )
                         )
                     ),
@@ -193,9 +193,9 @@ internal class GroupMessageProcessor(
                         MessageSourceKind.GROUP,
                         SimpleRefineContext(
                             mutableMapOf(
-                                OnlineShortVideoMsgInternal.MessageSourceKind to MessageSourceKind.GROUP,
-                                OnlineShortVideoMsgInternal.FromId to sender.uin,
-                                OnlineShortVideoMsgInternal.GroupIdOrZero to group.uin,
+                                RefineContextKey.MessageSourceKind to MessageSourceKind.GROUP,
+                                RefineContextKey.FromId to sender.uin,
+                                RefineContextKey.GroupIdOrZero to group.uin,
                             )
                         )
                     ),
