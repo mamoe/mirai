@@ -15,7 +15,6 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.hexToBytes
 
 
 internal fun String.parseMiraiCodeImpl(contact: Contact?): MessageChain = buildMessageChain {
@@ -54,7 +53,6 @@ private fun String.forEachMiraiCode(block: (origin: String, name: String?, args:
             '\\' -> {
                 pos += 2
             }
-
             '[' -> {
                 if (get(pos + 1) == 'm' && get(pos + 2) == 'i' &&
                     get(pos + 3) == 'r' && get(pos + 4) == 'a' &&
@@ -85,7 +83,6 @@ private fun String.forEachMiraiCode(block: (origin: String, name: String?, args:
                     }
                 } else pos++
             }
-
             else -> {
                 pos++
             }
@@ -141,7 +138,7 @@ private object MiraiCodeParsers : AbstractMap<String, MiraiCodeParser>(), Map<St
     },
     "file" to MiraiCodeParser(Regex("""(.*?),(.*?),(.*?),(.*?)""")) { (id, internalId, name, size) ->
         FileMessage(id, internalId.toInt(), name, size.toLong())
-    }
+    },
 )
 
 
@@ -181,7 +178,6 @@ internal sealed class MiraiCodeParser {
                             pos++
                             begin = pos
                         }
-
                         else -> pos++
                     }
                 }
@@ -214,7 +210,6 @@ internal fun StringBuilder.appendStringAsMiraiCode(value: String): StringBuilder
             ':', ',',
             '\\',
             -> append("\\").append(char)
-
             '\n' -> append("\\n")
             '\r' -> append("\\r")
             else -> append(char)
