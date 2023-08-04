@@ -43,11 +43,6 @@ import net.mamoe.mirai.utils.*
  * 通过 [OnlineShortVideo.urlForDownload] 获取下载链接.
  * 该下载链接不包含短视频的文件信息，可以使用 [videoId] 或 [fileName] 作为文件名，[fileFormat] 作为文件拓展名.
  *
- * # 其他信息
- *
- * ## mirai 码支持
- * [ShortVideo] 不支持 mirai 码，意味着如果通过 mirai 码持久化消息，短视频消息将不会被存储.
- *
  * @since 2.16
  */
 @NotStableForInheritance
@@ -163,7 +158,7 @@ public interface ShortVideo : MessageContent, ConstrainSingle {
 /**
  * 在线短视频消息，即从消息事件中接收到的视频消息.
  *
- * [OnlineShortVideo] 仅可以从事件中的[消息链][MessageChain]接收, 不可手动构造. 若需要手动构造, 请使用 [ShortVideo.Builder] 构造 [离线短视频][OfflineShortVideo].
+ * [OnlineShortVideo] 仅可以从事件中的[消息链][MessageChain]接收, 不可手动构造.
  *
  * ### 序列化支持
  *
