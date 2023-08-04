@@ -124,7 +124,7 @@ internal abstract class AbstractContact(
                 video,
                 -1,
                 "highway upload short video failed, extendInfo is null."
-            )
+            ).broadcast()
             error("highway upload short video failed, extendInfo is null.")
         }
 

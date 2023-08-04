@@ -126,7 +126,7 @@ internal class OnlineShortVideoImpl(
 ) : OnlineShortVideo, AbstractShortVideoWithThumbnail() {
 
     override fun toString(): String {
-        return "[mirai:svideo:$fileName.$fileFormat, video=${fileMd5.toUHexString("")}, videoSize=${fileSize}, " +
+        return "[mirai:shortvideo:$fileName.$fileFormat, video=${fileMd5.toUHexString("")}, videoSize=${fileSize}, " +
                 "thumbnail=${thumbMd5.toUHexString("")}, thumbnailSize=${thumbSize}]"
     }
 
@@ -186,7 +186,7 @@ internal class OfflineShortVideoImpl(
      * offline short video uses
      */
     override fun toString(): String {
-        return "[mirai:svideo:$fileName.$fileFormat, video=${fileMd5.toUHexString("")}, " +
+        return "[mirai:shortvideo:$fileName.$fileFormat, video=${fileMd5.toUHexString("")}, " +
                 "videoSize=${fileSize}, thumbnail=${thumbMd5.toUHexString("")}, thumbnailSize=${thumbSize}]"
     }
 

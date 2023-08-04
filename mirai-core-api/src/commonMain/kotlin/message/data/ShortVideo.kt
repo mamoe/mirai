@@ -51,6 +51,7 @@ import net.mamoe.mirai.utils.*
  *
  * @since 2.16
  */
+@NotStableForInheritance
 public interface ShortVideo : MessageContent, ConstrainSingle {
     /**
      * 视频 ID.
