@@ -302,7 +302,7 @@ internal class MessageVisitorTest {
                 "visitSingleMessage",
                 "visitMessage",
             ),
-            FlashImage(createImage()).accept(GetCalledMethodNames)
+            SuperFace(Face.DA_CALL).accept(GetCalledMethodNames)
         )
 
         assertContentEquals(
