@@ -704,7 +704,7 @@ public class MemberRecallTodoEvent(
     public override val member: NormalMember,
 ) : Packet, GroupMemberEvent, BotPassiveEvent, AbstractEvent() {
     override fun toString(): String {
-        return "MemberCompleteTodoEvent(group=${group.id}, member=${member.id})"
+        return "MemberRecallTodoEvent(group=${group.id}, member=${member.id})"
     }
 }
 

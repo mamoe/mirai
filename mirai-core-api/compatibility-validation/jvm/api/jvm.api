@@ -484,6 +484,7 @@ public abstract interface class net/mamoe/mirai/contact/Group : kotlinx/coroutin
 	public fun getOrFail (J)Lnet/mamoe/mirai/contact/NormalMember;
 	public abstract fun getOwner ()Lnet/mamoe/mirai/contact/NormalMember;
 	public abstract fun getSettings ()Lnet/mamoe/mirai/contact/GroupSettings;
+	public abstract fun getTodo ()Lnet/mamoe/mirai/contact/todo/GroupTodo;
 	public fun quit ()Z
 	public abstract fun quit (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sendMessage (Ljava/lang/String;)Lnet/mamoe/mirai/message/MessageReceipt;
@@ -1208,6 +1209,47 @@ public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessages 
 
 public abstract interface class net/mamoe/mirai/contact/roaming/RoamingSupported : net/mamoe/mirai/contact/Contact {
 	public abstract fun getRoamingMessages ()Lnet/mamoe/mirai/contact/roaming/RoamingMessages;
+}
+
+public abstract interface class net/mamoe/mirai/contact/todo/GroupTodo {
+	public fun close (Lnet/mamoe/mirai/contact/todo/GroupTodoRecord;)V
+	public abstract fun close (Lnet/mamoe/mirai/contact/todo/GroupTodoRecord;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun close (Lnet/mamoe/mirai/message/data/MessageSource;)V
+	public abstract fun close (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun complete (Lnet/mamoe/mirai/contact/todo/GroupTodoRecord;)V
+	public abstract fun complete (Lnet/mamoe/mirai/contact/todo/GroupTodoRecord;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun complete (Lnet/mamoe/mirai/message/data/MessageSource;)V
+	public abstract fun complete (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun current ()Lnet/mamoe/mirai/contact/todo/GroupTodoRecord;
+	public abstract fun current (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun recall (Lnet/mamoe/mirai/contact/todo/GroupTodoRecord;)V
+	public abstract fun recall (Lnet/mamoe/mirai/contact/todo/GroupTodoRecord;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun recall (Lnet/mamoe/mirai/message/data/MessageSource;)V
+	public abstract fun recall (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun set (Lnet/mamoe/mirai/message/data/MessageSource;)Lnet/mamoe/mirai/contact/todo/GroupTodoRecord;
+	public abstract fun set (Lnet/mamoe/mirai/message/data/MessageSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun status ()Lnet/mamoe/mirai/contact/todo/GroupTodoStatus;
+	public abstract fun status (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/mamoe/mirai/contact/todo/GroupTodoRecord {
+	public final fun getGroup ()Lnet/mamoe/mirai/contact/Group;
+	public final fun getMsgRandom ()J
+	public final fun getMsgSeq ()J
+	public final fun getOperator ()Lnet/mamoe/mirai/contact/NormalMember;
+	public final fun getOperatorId ()J
+	public final fun getOperatorNick ()Ljava/lang/String;
+	public final fun getOperatorTime ()I
+	public final fun getTitle ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/contact/todo/GroupTodoStatus : java/lang/Enum {
+	public static final field CLOSED Lnet/mamoe/mirai/contact/todo/GroupTodoStatus;
+	public static final field COMPLETED Lnet/mamoe/mirai/contact/todo/GroupTodoStatus;
+	public static final field NONE Lnet/mamoe/mirai/contact/todo/GroupTodoStatus;
+	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/contact/todo/GroupTodoStatus;
+	public static fun values ()[Lnet/mamoe/mirai/contact/todo/GroupTodoStatus;
 }
 
 public abstract interface class net/mamoe/mirai/data/FriendInfo : net/mamoe/mirai/data/UserInfo {
@@ -2760,6 +2802,13 @@ public final class net/mamoe/mirai/event/events/MemberPermissionChangeEvent : ne
 	public final fun getNew ()Lnet/mamoe/mirai/contact/MemberPermission;
 	public final fun getOrigin ()Lnet/mamoe/mirai/contact/MemberPermission;
 	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/mamoe/mirai/event/events/MemberRecallTodoEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/events/BotPassiveEvent, net/mamoe/mirai/event/events/GroupMemberEvent, net/mamoe/mirai/internal/network/Packet {
+	public fun <init> (Lnet/mamoe/mirai/contact/NormalMember;)V
+	public synthetic fun getMember ()Lnet/mamoe/mirai/contact/Member;
+	public fun getMember ()Lnet/mamoe/mirai/contact/NormalMember;
 	public fun toString ()Ljava/lang/String;
 }
 
