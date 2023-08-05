@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.essence.Essences
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.contact.roaming.RoamingSupported
+import net.mamoe.mirai.contact.todo.GroupTodo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
@@ -236,6 +237,13 @@ public interface Group : Contact, CoroutineScope, FileSupported, AudioSupported,
      * @since 2.15
      */
     public val essences: Essences
+
+    /**
+     * 群待办相关功能接口
+     *
+     * @since 2.16
+     */
+    public val todo: GroupTodo
 
     public companion object {
         /**
