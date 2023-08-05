@@ -693,6 +693,22 @@ public class MemberSetTodoEvent(
 }
 
 /**
+ * [Member] 撤回群待办事件
+ *
+ * 因 QQ 自身限制，无法获取到待办内容
+ */
+public class MemberRecallTodoEvent(
+    /**
+     * 完成群待办的群成员
+     */
+    public override val member: NormalMember,
+) : Packet, GroupMemberEvent, BotPassiveEvent, AbstractEvent() {
+    override fun toString(): String {
+        return "MemberCompleteTodoEvent(group=${group.id}, member=${member.id})"
+    }
+}
+
+/**
  * [Member] 完成群待办事件，可能会在成员完成群待办时触发
  *
  * 因 QQ 自身限制，无法获取到待办内容

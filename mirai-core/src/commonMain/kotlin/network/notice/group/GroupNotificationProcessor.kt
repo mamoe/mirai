@@ -374,11 +374,12 @@ internal class GroupNotificationProcessor(
                 )
             }
             // 群待办
-            10134L, 10135L -> {
+            10134L, 10135L, 10136L -> {
                 val user = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
                 when (grayTip.templId) {
                     10134L -> collected += MemberSetTodoEvent(member = user)
                     10135L -> collected += MemberCompleteTodoEvent(member = user)
+                    10136L -> collected += MemberRecallTodoEvent(member = user)
                 }
             }
             // 龙王
