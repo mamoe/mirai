@@ -1892,18 +1892,10 @@ public final class net/mamoe/mirai/event/events/BeforeImageUploadEvent : net/mam
 }
 
 public final class net/mamoe/mirai/event/events/BeforeShortVideoUploadEvent : net/mamoe/mirai/event/AbstractEvent, net/mamoe/mirai/event/CancellableEvent, net/mamoe/mirai/event/events/BotActiveEvent, net/mamoe/mirai/event/events/BotEvent, net/mamoe/mirai/internal/event/VerboseEvent {
-	public final fun component1 ()Lnet/mamoe/mirai/contact/Contact;
-	public final fun component2 ()Lnet/mamoe/mirai/utils/ExternalResource;
-	public final fun component3 ()Lnet/mamoe/mirai/utils/ExternalResource;
-	public final fun copy (Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ExternalResource;)Lnet/mamoe/mirai/event/events/BeforeShortVideoUploadEvent;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/BeforeShortVideoUploadEvent;Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ExternalResource;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/BeforeShortVideoUploadEvent;
-	public fun equals (Ljava/lang/Object;)Z
 	public fun getBot ()Lnet/mamoe/mirai/Bot;
 	public final fun getTarget ()Lnet/mamoe/mirai/contact/Contact;
 	public final fun getThumbnailSource ()Lnet/mamoe/mirai/utils/ExternalResource;
 	public final fun getVideoSource ()Lnet/mamoe/mirai/utils/ExternalResource;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class net/mamoe/mirai/event/events/BotActiveEvent : net/mamoe/mirai/event/events/BotEvent {
@@ -2974,36 +2966,19 @@ public abstract class net/mamoe/mirai/event/events/ShortVideoUploadEvent : net/m
 }
 
 public final class net/mamoe/mirai/event/events/ShortVideoUploadEvent$Failed : net/mamoe/mirai/event/events/ShortVideoUploadEvent {
-	public final fun component1 ()Lnet/mamoe/mirai/contact/Contact;
-	public final fun component2 ()Lnet/mamoe/mirai/utils/ExternalResource;
-	public final fun component3 ()Lnet/mamoe/mirai/utils/ExternalResource;
-	public final fun component4 ()I
-	public final fun component5 ()Ljava/lang/String;
-	public final fun copy (Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ExternalResource;ILjava/lang/String;)Lnet/mamoe/mirai/event/events/ShortVideoUploadEvent$Failed;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/ShortVideoUploadEvent$Failed;Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ExternalResource;ILjava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/ShortVideoUploadEvent$Failed;
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getErrno ()I
 	public final fun getMessage ()Ljava/lang/String;
 	public fun getTarget ()Lnet/mamoe/mirai/contact/Contact;
 	public fun getThumbnailSource ()Lnet/mamoe/mirai/utils/ExternalResource;
 	public fun getVideoSource ()Lnet/mamoe/mirai/utils/ExternalResource;
-	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class net/mamoe/mirai/event/events/ShortVideoUploadEvent$Succeed : net/mamoe/mirai/event/events/ShortVideoUploadEvent {
-	public final fun component1 ()Lnet/mamoe/mirai/contact/Contact;
-	public final fun component2 ()Lnet/mamoe/mirai/utils/ExternalResource;
-	public final fun component3 ()Lnet/mamoe/mirai/utils/ExternalResource;
-	public final fun component4 ()Lnet/mamoe/mirai/message/data/ShortVideo;
-	public final fun copy (Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/message/data/ShortVideo;)Lnet/mamoe/mirai/event/events/ShortVideoUploadEvent$Succeed;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/event/events/ShortVideoUploadEvent$Succeed;Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/message/data/ShortVideo;ILjava/lang/Object;)Lnet/mamoe/mirai/event/events/ShortVideoUploadEvent$Succeed;
-	public fun equals (Ljava/lang/Object;)Z
 	public fun getTarget ()Lnet/mamoe/mirai/contact/Contact;
 	public fun getThumbnailSource ()Lnet/mamoe/mirai/utils/ExternalResource;
 	public final fun getVideo ()Lnet/mamoe/mirai/message/data/ShortVideo;
 	public fun getVideoSource ()Lnet/mamoe/mirai/utils/ExternalResource;
-	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -5301,7 +5276,7 @@ public abstract interface class net/mamoe/mirai/message/data/ServiceMessage : ne
 public final class net/mamoe/mirai/message/data/ServiceMessage$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
 }
 
-public abstract interface class net/mamoe/mirai/message/data/ShortVideo : net/mamoe/mirai/message/code/CodableMessage, net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
+public abstract interface class net/mamoe/mirai/message/data/ShortVideo : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageContent {
 	public static final field Key Lnet/mamoe/mirai/message/data/ShortVideo$Key;
 	public abstract fun getFileFormat ()Ljava/lang/String;
 	public abstract fun getFileMd5 ()[B
