@@ -46,13 +46,6 @@ public interface PermitteeId {
      */
     public fun asString(): String
 
-    /**
-     * @since 2.16
-     */
-    public operator fun contains(child: PermitteeId): Boolean {
-        return child.isChild(this)
-    }
-
     public companion object {
         /**
          * 当 [this] 或 [this] 的任意一个直接或间接父 [PermitteeId.asString] 与 `parent.asString` 相同时返回 `true`
@@ -60,13 +53,13 @@ public interface PermitteeId {
          * @since 2.16
          */
         @JvmStatic
-        public fun PermitteeId.isChild(parent: PermitteeId): Boolean {
+        public fun PermitteeId.isChildOf(parent: PermitteeId): Boolean {
             return allParentsWithSelf.any { it.asString() == parent.asString() } // asString is for compatibility issue with external implementations
         }
 
         @JvmStatic
-        @DeprecatedSinceMirai(warningSince = "2.16", hiddenSince = "2.17")
-        public fun PermitteeId.hasChild(child: PermitteeId): Boolean = isChild(child)
+        @DeprecatedSinceMirai(warningSince = "2.16")
+        public fun PermitteeId.hasChild(child: PermitteeId): Boolean = isChildOf(child)
 
         /**
          * 获取所有直接或间接父类的 [PermitteeId].
