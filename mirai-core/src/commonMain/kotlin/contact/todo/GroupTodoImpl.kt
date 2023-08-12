@@ -59,7 +59,7 @@ internal class GroupTodoImpl(
             TroopTodoManager.Status(
                 group.bot.client,
                 group.uin,
-            ), 30000, 2
+            )
         )
         check(result.pkg.result == 0) { result.pkg.errorMsg }
 
@@ -76,7 +76,7 @@ internal class GroupTodoImpl(
             TroopTodoManager.Current(
                 group.bot.client,
                 group.uin,
-            ), 30000, 2
+            )
         )
 
         return result.body.toGroupTodoRecord()
@@ -90,7 +90,7 @@ internal class GroupTodoImpl(
                 group.uin,
                 source.internalIds.first().toLongUnsigned(),
                 source.ids.first().toLongUnsigned()
-            ), 30000, 2
+            )
         )
         check(result.pkg.result == 0) { result.pkg.errorMsg }
         val info = result.info!!
@@ -106,7 +106,7 @@ internal class GroupTodoImpl(
                 group.uin,
                 source.internalIds.first().toLongUnsigned(),
                 source.ids.first().toLongUnsigned()
-            ), 30000, 2
+            )
         )
         check(result.pkg.result == 0) { result.pkg.errorMsg }
     }
@@ -119,7 +119,7 @@ internal class GroupTodoImpl(
                 group.uin,
                 record.msgRandom,
                 record.msgSeq
-            ), 30000, 2
+            )
         )
         check(result.pkg.result == 0) { result.pkg.errorMsg }
     }
@@ -131,7 +131,7 @@ internal class GroupTodoImpl(
                 group.uin,
                 source.internalIds.first().toLongUnsigned(),
                 source.ids.first().toLongUnsigned()
-            ), 30000, 2
+            )
         )
         check(result.pkg.result == 0) { result.pkg.errorMsg }
     }
@@ -143,7 +143,7 @@ internal class GroupTodoImpl(
                 group.uin,
                 record.msgRandom,
                 record.msgSeq
-            ), 30000, 2
+            )
         )
         check(result.pkg.result == 0) { result.pkg.errorMsg }
     }
@@ -156,7 +156,7 @@ internal class GroupTodoImpl(
                 group.uin,
                 source.internalIds.first().toLongUnsigned(),
                 source.ids.first().toLongUnsigned()
-            ), 30000, 2
+            )
         )
         check(result.pkg.result == 0) { result.pkg.errorMsg }
     }
@@ -169,7 +169,7 @@ internal class GroupTodoImpl(
                 group.uin,
                 record.msgRandom,
                 record.msgSeq
-            ), 30000, 2
+            )
         )
         check(result.pkg.result == 0) { result.pkg.errorMsg }
     }
