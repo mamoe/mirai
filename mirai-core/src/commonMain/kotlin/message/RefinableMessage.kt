@@ -136,6 +136,10 @@ internal object EmptyRefineContext : RefineContext {
     override fun toString(): String {
         return "EmptyRefineContext"
     }
+
+    override fun equals(other: Any?): Boolean {
+        return other === EmptyRefineContext
+    }
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -161,12 +165,20 @@ internal class SimpleRefineContext(
     }
 
     override fun merge(other: RefineContext, override: Boolean): RefineContext {
+        val new = SimpleRefineContext(*entries().toTypedArray())
         other.entries().forEach { (key, value) ->
-            if (get(key) == null || override) {
-                set(key as RefineContextKey<Any>, value)
+            if (new[key] == null || override) {
+                new[key as RefineContextKey<Any>] = value
             }
         }
-        return this
+        return new
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is RefineContext) return false
+        if (other === this) return true
+
+        return other.entries() == entries()
     }
 }
 

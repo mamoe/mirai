@@ -38,12 +38,18 @@ internal class RefineContextTest : AbstractTest() {
         val combinedOverride = context1.merge(context2, override = true)
         val combinedNotOverride = context1.merge(context2, override = false)
 
-        assertEquals(context1.merge(context2, override = true), context2.merge(context1, override = true))
-        assertFalse(context1.merge(context2, override = false) != context2.merge(context1, override = false))
+        val context3 = SimpleRefineContext(
+            Key2 to 1919.811,
+            Key3 to "yarimasune"
+        )
 
-        assertTrue(combinedOverride.entries().size == 5)
-        assertTrue(combinedOverride[Key2] == 1919.811)
-        assertTrue(combinedNotOverride[Key2] == 1919.810)
+        assertEquals(context1, context1.merge(context3, false))
+        assertTrue(combinedOverride != combinedNotOverride)
+
+        assertEquals(4, combinedOverride.entries().size)
+        assertEquals(1919.811, combinedOverride[Key2])
+        assertEquals(1919.810, combinedNotOverride[Key2])
+        assertEquals("sodayo", combinedNotOverride[Key3])
         assertTrue(byteArrayOf(11, 45, 14).contentEquals(combinedNotOverride[Key4]))
     }
 }

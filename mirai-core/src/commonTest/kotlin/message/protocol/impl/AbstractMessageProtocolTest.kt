@@ -240,7 +240,6 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
                 config.elems,
                 config.groupIdOrZero,
                 config.messageSourceKind,
-                config.target?.id ?: 0L,
                 bot
             )
         }
