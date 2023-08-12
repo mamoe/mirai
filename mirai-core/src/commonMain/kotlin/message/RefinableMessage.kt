@@ -148,6 +148,9 @@ internal class SimpleRefineContext(
     }
 }
 
+internal fun SimpleRefineContext(vararg elements: Pair<RefineContextKey<*>, Any>): SimpleRefineContext =
+    SimpleRefineContext(elements.toMap().toMutableMap())
+
 /**
  * 执行不需要 `suspend` 的 refine. 用于 [MessageSource.originalMessage].
  */

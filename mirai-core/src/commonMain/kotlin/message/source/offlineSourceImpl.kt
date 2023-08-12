@@ -16,6 +16,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
+import net.mamoe.mirai.internal.message.RefineContextKey
+import net.mamoe.mirai.internal.message.SimpleRefineContext
 import net.mamoe.mirai.internal.message.toMessageChainNoSource
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -184,7 +186,8 @@ internal fun OfflineMessageSourceImplData(
             .origUids?.mapToIntArray { it.toInt() } ?: intArrayOf(),
         time = delegate.time,
         originalMessageLazy = lazy {
-            delegate.toMessageChainNoSource(bot, messageSourceKind, groupIdOrZero, delegate.senderUin)
+            val context = SimpleRefineContext(RefineContextKey.FromId to delegate.senderUin)
+            delegate.toMessageChainNoSource(bot, messageSourceKind, groupIdOrZero, context)
         },
         fromId = delegate.senderUin,
         targetId = when {

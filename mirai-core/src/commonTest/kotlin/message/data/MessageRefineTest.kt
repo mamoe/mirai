@@ -316,7 +316,7 @@ private fun sourceStub(
 
 private suspend fun testRecursiveRefine(list: List<ImMsgBody.Elem>, expected: MessageChain, isLight: Boolean) {
     val actual = buildMessageChain {
-        MessageProtocolFacade.decode(list, 0, MessageSourceKind.GROUP, 0L, bot, this, null)
+        MessageProtocolFacade.decode(list, 0, MessageSourceKind.GROUP, bot, this, null)
     }.let { c ->
         if (isLight) {
             c.refineLight(bot)

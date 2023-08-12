@@ -138,11 +138,9 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
             0,
             user.correspondingMessageSourceKind,
             SimpleRefineContext(
-                mutableMapOf(
-                    RefineContextKey.MessageSourceKind to MessageSourceKind.FRIEND,
-                    RefineContextKey.FromId to user.uin,
-                    RefineContextKey.GroupIdOrZero to 0L,
-                )
+                RefineContextKey.MessageSourceKind to MessageSourceKind.FRIEND,
+                RefineContextKey.FromId to user.uin,
+                RefineContextKey.GroupIdOrZero to 0L,
             )
         )
         val time = msgHead.msgTime

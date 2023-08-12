@@ -21,7 +21,6 @@ import net.mamoe.mirai.internal.message.SimpleRefineContext
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetRoamMsgReq
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.utils.cast
 
 internal sealed class TimeBasedRoamingMessagesImpl : AbstractRoamingMessages() {
     override suspend fun getMessagesIn(
@@ -38,31 +37,15 @@ internal sealed class TimeBasedRoamingMessagesImpl : AbstractRoamingMessages() {
 
                 if (filter == null || filter === RoamingMessageFilter.ANY) {
                     // fast path
-                    messages.forEach {
-                        emit(
-                            it.toMessageChainOnline(
-                                contact.bot,
-                                refineContext = SimpleRefineContext(
-                                    mutableListOf(
-                                        RefineContextKey.FromId to it.msgHead.fromUin
-                                    ).cast()
-                                )
-                            )
-                        )
+                    messages.forEach { msg ->
+                        val context = SimpleRefineContext(RefineContextKey.FromId to msg.msgHead.fromUin)
+                        emit(msg.toMessageChainOnline(contact.bot, context))
                     }
                 } else {
                     for (message in messages) {
                         if (filter.invoke(createRoamingMessage(message, messages))) {
-                            emit(
-                                message.toMessageChainOnline(
-                                    contact.bot,
-                                    refineContext = SimpleRefineContext(
-                                        mutableListOf(
-                                            RefineContextKey.FromId to message.msgHead.fromUin
-                                        ).cast()
-                                    )
-                                )
-                            )
+                            val context = SimpleRefineContext(RefineContextKey.FromId to message.msgHead.fromUin)
+                            emit(message.toMessageChainOnline(contact.bot, context))
                         }
                     }
                 }

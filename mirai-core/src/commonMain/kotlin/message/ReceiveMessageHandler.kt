@@ -36,13 +36,12 @@ internal fun ImMsgBody.SourceMsg.toMessageChainNoSource(
     bot: Bot,
     messageSourceKind: MessageSourceKind,
     groupIdOrZero: Long,
-    fromId: Long,
     refineContext: RefineContext = EmptyRefineContext,
     facade: MessageProtocolFacade = MessageProtocolFacade
 ): MessageChain {
     val elements = this.elems
     return buildMessageChain(elements.size + 1) {
-        facade.decode(elements, groupIdOrZero, messageSourceKind, fromId, bot, this, null)
+        facade.decode(elements, groupIdOrZero, messageSourceKind, bot, this, null)
     }.cleanupRubbishMessageElements().refineLight(bot, refineContext)
 }
 
@@ -92,7 +91,7 @@ internal suspend fun MsgComm.Msg.toMessageChainOnline(
         groupId,
         kind,
         // TODO: it is better to add `RefineContext.merge(other, override)` to merge with another refine context
-        (refineContext.castOrNull<MutableRefineContext>() ?: SimpleRefineContext(mutableMapOf()))
+        (refineContext.castOrNull<MutableRefineContext>() ?: SimpleRefineContext())
             .apply(mutableRefineContextApplier),
         facade
     )
@@ -164,7 +163,6 @@ private fun List<MsgComm.Msg>.toMessageChainImpl(
             msg.msgBody.richText.elems,
             groupIdOrZero,
             messageSourceKind,
-            fromId ?: 0,
             bot,
             builder,
             msg

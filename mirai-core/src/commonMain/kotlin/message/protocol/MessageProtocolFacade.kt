@@ -77,7 +77,6 @@ internal interface MessageProtocolFacade {
         elements: List<ImMsgBody.Elem>,
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
-        fromId: Long,
         bot: Bot,
         builder: MessageChainBuilder,
         containingMsg: MsgComm.Msg? = null,
@@ -135,10 +134,9 @@ internal interface MessageProtocolFacade {
         elements: List<ImMsgBody.Elem>,
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
-        fromId: Long,
         bot: Bot,
     ): MessageChain = buildMessageChain {
-        decode(elements, groupIdOrZero, messageSourceKind, fromId, bot, this, null)
+        decode(elements, groupIdOrZero, messageSourceKind, bot, this, null)
     }
 
 
@@ -175,19 +173,17 @@ internal fun MessageProtocolFacade.decodeAndRefineLight(
     elements: List<ImMsgBody.Elem>,
     groupIdOrZero: Long,
     messageSourceKind: MessageSourceKind,
-    fromId: Long,
     bot: Bot,
     refineContext: RefineContext = EmptyRefineContext
-): MessageChain = decode(elements, groupIdOrZero, messageSourceKind, fromId, bot).refineLight(bot, refineContext)
+): MessageChain = decode(elements, groupIdOrZero, messageSourceKind, bot).refineLight(bot, refineContext)
 
 internal suspend fun MessageProtocolFacade.decodeAndRefineDeep(
     elements: List<ImMsgBody.Elem>,
     groupIdOrZero: Long,
     messageSourceKind: MessageSourceKind,
-    fromId: Long,
     bot: Bot,
     refineContext: RefineContext = EmptyRefineContext
-): MessageChain = decode(elements, groupIdOrZero, messageSourceKind, fromId, bot).refineDeep(bot, refineContext)
+): MessageChain = decode(elements, groupIdOrZero, messageSourceKind, bot).refineDeep(bot, refineContext)
 
 
 private const val errorTips =
@@ -294,7 +290,6 @@ internal class MessageProtocolFacadeImpl(
         elements: List<ImMsgBody.Elem>,
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
-        fromId: Long,
         bot: Bot,
         builder: MessageChainBuilder,
         containingMsg: MsgComm.Msg?

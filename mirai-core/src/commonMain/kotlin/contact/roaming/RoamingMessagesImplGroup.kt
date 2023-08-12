@@ -73,11 +73,9 @@ internal class RoamingMessagesImplGroup(
                                 contact.id,
                                 MessageSourceKind.GROUP,
                                 SimpleRefineContext(
-                                    mutableMapOf(
-                                        RefineContextKey.MessageSourceKind to MessageSourceKind.GROUP,
-                                        RefineContextKey.FromId to it.msgHead.fromUin,
-                                        RefineContextKey.GroupIdOrZero to contact.uin,
-                                    )
+                                    RefineContextKey.MessageSourceKind to MessageSourceKind.GROUP,
+                                    RefineContextKey.FromId to it.msgHead.fromUin,
+                                    RefineContextKey.GroupIdOrZero to contact.uin,
                                 )
                             )
                         }
