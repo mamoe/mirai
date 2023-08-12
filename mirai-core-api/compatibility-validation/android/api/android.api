@@ -4869,6 +4869,30 @@ public abstract interface class net/mamoe/mirai/message/data/OfflineShortVideo :
 	public static final field SERIAL_NAME Ljava/lang/String;
 }
 
+public final class net/mamoe/mirai/message/data/OfflineShortVideo$Builder {
+	public static final field Companion Lnet/mamoe/mirai/message/data/OfflineShortVideo$Builder$Companion;
+	public final fun build ()Lnet/mamoe/mirai/message/data/OfflineShortVideo;
+	public final fun getFileFormat ()Ljava/lang/String;
+	public final fun getFileMd5 ()[B
+	public final fun getFileName ()Ljava/lang/String;
+	public final fun getFileSize ()J
+	public final fun getThumbnailMd5 ()[B
+	public final fun getThumbnailSize ()J
+	public final fun getVideoId ()Ljava/lang/String;
+	public static final fun newBuilder (Ljava/lang/String;[BJLjava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/OfflineShortVideo$Builder;
+	public final fun setFileFormat (Ljava/lang/String;)V
+	public final fun setFileMd5 ([B)V
+	public final fun setFileName (Ljava/lang/String;)V
+	public final fun setFileSize (J)V
+	public final fun setThumbnailMd5 ([B)V
+	public final fun setThumbnailSize (J)V
+	public final fun setVideoId (Ljava/lang/String;)V
+}
+
+public final class net/mamoe/mirai/message/data/OfflineShortVideo$Builder$Companion {
+	public final fun newBuilder (Ljava/lang/String;[BJLjava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/OfflineShortVideo$Builder;
+}
+
 public final class net/mamoe/mirai/message/data/OfflineShortVideo$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
 	public static final field SERIAL_NAME Ljava/lang/String;
 }
@@ -5280,38 +5304,18 @@ public abstract interface class net/mamoe/mirai/message/data/ShortVideo : net/ma
 	public static final field Key Lnet/mamoe/mirai/message/data/ShortVideo$Key;
 	public abstract fun getFileFormat ()Ljava/lang/String;
 	public abstract fun getFileMd5 ()[B
-	public abstract fun getFileName ()Ljava/lang/String;
 	public abstract fun getFileSize ()J
+	public abstract fun getFilename ()Ljava/lang/String;
 	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
 	public abstract fun getVideoId ()Ljava/lang/String;
 }
 
-public final class net/mamoe/mirai/message/data/ShortVideo$Builder {
-	public static final field Companion Lnet/mamoe/mirai/message/data/ShortVideo$Builder$Companion;
-	public fun <init> ()V
-	public final fun build ()Lnet/mamoe/mirai/message/data/ShortVideo;
-	public final fun getFileFormat ()Ljava/lang/String;
-	public final fun getFileMd5 ()[B
-	public final fun getFileName ()Ljava/lang/String;
-	public final fun getFileSize ()J
-	public final fun getThumbnailMd5 ()[B
-	public final fun getThumbnailSize ()J
-	public final fun getVideoId ()Ljava/lang/String;
-	public static final fun newBuilder (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ShortVideo$Builder;
-	public final fun setFileFormat (Ljava/lang/String;)V
-	public final fun setFileMd5 ([B)V
-	public final fun setFileName (Ljava/lang/String;)V
-	public final fun setFileSize (J)V
-	public final fun setThumbnailMd5 ([B)V
-	public final fun setThumbnailSize (J)V
-	public final fun setVideoId (Ljava/lang/String;)V
-}
-
-public final class net/mamoe/mirai/message/data/ShortVideo$Builder$Companion {
-	public final fun newBuilder (Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ShortVideo$Builder;
-}
-
 public final class net/mamoe/mirai/message/data/ShortVideo$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
+}
+
+public final class net/mamoe/mirai/message/data/ShortVideoKt {
+	public static final synthetic fun OfflineShortVideo (Ljava/lang/String;[BJLjava/lang/String;Ljava/lang/String;[BJ)Lnet/mamoe/mirai/message/data/OfflineShortVideo;
+	public static synthetic fun OfflineShortVideo$default (Ljava/lang/String;[BJLjava/lang/String;Ljava/lang/String;[BJILjava/lang/Object;)Lnet/mamoe/mirai/message/data/OfflineShortVideo;
 }
 
 public final class net/mamoe/mirai/message/data/ShowImageFlag : net/mamoe/mirai/message/data/AbstractMessageKey, net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageMetadata {
