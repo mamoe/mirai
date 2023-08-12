@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.internal.contact.todo
 
+import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.checkBotPermission
 import net.mamoe.mirai.contact.todo.GroupTodo
 import net.mamoe.mirai.contact.todo.GroupTodoRecord
 import net.mamoe.mirai.contact.todo.GroupTodoStatus
@@ -81,6 +83,7 @@ internal class GroupTodoImpl(
     }
 
     override suspend fun set(source: MessageSource): GroupTodoRecord {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
         val result = group.bot.network.sendAndExpect(
             TroopTodoManager.SetTodo(
                 group.bot.client,
@@ -96,6 +99,7 @@ internal class GroupTodoImpl(
     }
 
     override suspend fun recall(source: MessageSource) {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
         val result = group.bot.network.sendAndExpect(
             TroopTodoManager.RecallTodo(
                 group.bot.client,
@@ -108,6 +112,7 @@ internal class GroupTodoImpl(
     }
 
     override suspend fun recall(record: GroupTodoRecord) {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
         val result = group.bot.network.sendAndExpect(
             TroopTodoManager.RecallTodo(
                 group.bot.client,
@@ -144,6 +149,7 @@ internal class GroupTodoImpl(
     }
 
     override suspend fun close(source: MessageSource) {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
         val result = group.bot.network.sendAndExpect(
             TroopTodoManager.CloseTodo(
                 group.bot.client,
@@ -156,6 +162,7 @@ internal class GroupTodoImpl(
     }
 
     override suspend fun close(record: GroupTodoRecord) {
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
         val result = group.bot.network.sendAndExpect(
             TroopTodoManager.CloseTodo(
                 group.bot.client,
