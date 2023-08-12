@@ -18,7 +18,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0xf90
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopTodoManager
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.structureToString
 import net.mamoe.mirai.utils.toLongUnsigned
 
 internal class GroupTodoImpl(
@@ -90,7 +89,6 @@ internal class GroupTodoImpl(
                 source.ids.first().toLongUnsigned()
             ), 30000, 2
         )
-        println(result.info.structureToString())
         check(result.pkg.result == 0) { result.pkg.errorMsg }
         val info = result.info!!
 
