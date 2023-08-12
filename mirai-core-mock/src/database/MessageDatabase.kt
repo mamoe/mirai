@@ -46,6 +46,13 @@ public interface MessageDatabase {
         filter: RoamingMessageFilter
     ): Sequence<MessageInfo>
 
+    public fun queryMessageInfosBy(
+        subject: Long, kind: MessageSourceKind,
+        contact: Contact,
+        sequence: Long,
+        filter: RoamingMessageFilter
+    ): Sequence<MessageInfo>
+
     /**
      * implementation note: 该方法可能同时被多个线程同时调用
      */

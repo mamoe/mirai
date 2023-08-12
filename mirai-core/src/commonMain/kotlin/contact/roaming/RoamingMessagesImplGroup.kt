@@ -9,78 +9,28 @@
 
 package net.mamoe.mirai.internal.contact.roaming
 
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
 import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
 import net.mamoe.mirai.internal.contact.CommonGroupImpl
-import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetGroupMsg
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSourceKind
 
 internal class RoamingMessagesImplGroup(
     override val contact: CommonGroupImpl
-) : AbstractRoamingMessages() {
-    private val bot get() = contact.bot
-
+) : SequenceBasedRoamingMessagesImpl() {
     override suspend fun getMessagesIn(
         timeStart: Long,
         timeEnd: Long,
         filter: RoamingMessageFilter?
-    ): Flow<MessageChain> {
-        var currentSeq: Int = getLastMsgSeq() ?: return emptyFlow()
-        var lastOfferedSeq = -1
+    ): Flow<MessageChain> = getMessagesImpl(
+        preFilter = { maxTime -> maxTime >= timeStart || maxTime == 0 },
+        preSortFilter = { msg -> msg.msgHead.msgTime in timeStart..timeEnd },
+        filter = filter
+    )
 
-        return flow {
-            while (true) {
-                val resp = contact.bot.network.sendAndExpect(
-                    MessageSvcPbGetGroupMsg(
-                        client = contact.bot.client,
-                        groupUin = contact.uin,
-                        messageSequence = currentSeq.toLong(),
-                        count = 20 // maximum 20
-                    )
-                )
-
-                if (resp is MessageSvcPbGetGroupMsg.Failed) break
-                resp as MessageSvcPbGetGroupMsg.Success // stupid smart cast
-                if (resp.msgElem.isEmpty()) break
-
-                // the message may be sorted increasing by message time,
-                // if so, additional sortBy will not take cost.
-                val messageTimeSequence = resp.msgElem.asSequence().map { it.time }
-
-                val maxTime = messageTimeSequence.max()
-
-
-                // we have fetched all messages
-                // note: maxTime = 0 means all fetched messages were recalled
-                if (maxTime < timeStart && maxTime != 0) break
-
-                emitAll(
-                    resp.msgElem.asSequence()
-                        .filter { lastOfferedSeq == -1 || it.msgHead.msgSeq < lastOfferedSeq }
-                        .filter { it.time in timeStart..timeEnd }
-                        .sortedByDescending { it.msgHead.msgSeq } // Ensure caller receives newer messages first
-                        .filter { filter.apply(it) } // Call filter after sort
-                        .asFlow()
-                        .map { listOf(it).toMessageChainOnline(bot, contact.id, MessageSourceKind.GROUP) }
-                )
-
-                currentSeq = resp.msgElem.first().msgHead.msgSeq
-                lastOfferedSeq = currentSeq
-            }
-        }
-    }
-
-    private val MsgComm.Msg.time get() = msgHead.msgTime
-
-    private fun RoamingMessageFilter?.apply(
-        it: MsgComm.Msg
-    ) = this?.invoke(createRoamingMessage(it, listOf())) != false
-
-    private suspend fun getLastMsgSeq(): Int? {
+    override suspend fun getLastMsgSeq(): Int? {
         // Iterate from the newest message to find messages within [timeStart] and [timeEnd]
         val lastMsgSeqResp = bot.network.sendAndExpect(
             TroopManagement.GetGroupLastMsgSeq(
@@ -93,5 +43,20 @@ internal class RoamingMessagesImplGroup(
             TroopManagement.GetGroupLastMsgSeq.Response.Failed -> null
             is TroopManagement.GetGroupLastMsgSeq.Response.Success -> lastMsgSeqResp.seq
         }
+    }
+
+    override suspend fun getMsg(seq: Int): List<MsgComm.Msg> {
+        val resp = contact.bot.network.sendAndExpect(
+            MessageSvcPbGetGroupMsg(
+                client = contact.bot.client,
+                groupUin = contact.uin,
+                messageSequence = seq.toLong(),
+                count = 20 // maximum 20
+            )
+        )
+
+        if (resp is MessageSvcPbGetGroupMsg.Failed) return listOf()
+        resp as MessageSvcPbGetGroupMsg.Success // stupid smart cast
+        return resp.msgElem
     }
 }

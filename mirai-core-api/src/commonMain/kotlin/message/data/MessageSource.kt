@@ -34,13 +34,10 @@ import net.mamoe.mirai.message.action.AsyncRecallResult
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
+import net.mamoe.mirai.message.source.identity.FullMessageIdentity
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.safeCast
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 表示聊天中的一条消息的定位信息, 即消息源.
@@ -128,7 +125,7 @@ import kotlin.jvm.JvmSynthetic
  */
 @Suppress("DEPRECATION")
 @Serializable(MessageSource.Serializer::class)
-public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
+public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle, FullMessageIdentity {
     public final override val key: MessageKey<MessageSource>
         get() = Key
 
@@ -152,7 +149,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      *
      * [internalIds] 与 [ids] 以数组下标对应.
      */
-    public abstract val ids: IntArray
+    public abstract override val ids: IntArray
 
     /**
      * 内部 ids. **仅用于协议模块使用**
@@ -165,15 +162,12 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      *
      * @see ids
      */
-    public abstract val internalIds: IntArray
+    public abstract override val internalIds: IntArray
 
     /**
      * 发送时间时间戳, 单位为秒.
-     *
-     * 自 2.8.0 起, 时间戳为服务器时区 (UTC+8).
-     * 在 2.8.0 以前, 时间戳可能来自服务器 (UTC+8), 也可能来自 mirai (本地), 且无法保证两者时间同步.
      */
-    public abstract val time: Int
+    public abstract override val time: Int
 
     /**
      * 发送人用户 ID.
@@ -182,7 +176,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      * - 当 [OnlineMessageSource.Incoming] 时为发信 [来源用户][User.id] 或 [群][Group.id]
      * - 当 [OfflineMessageSource] 时取决于 [OfflineMessageSource.kind]
      */
-    public abstract val fromId: Long
+    public abstract override val fromId: Long
 
     /**
      * 消息发送目标用户或群号码.
@@ -191,7 +185,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      * - 当 [OnlineMessageSource.Incoming] 时为 [机器人][Bot.id]
      * - 当 [OfflineMessageSource] 时取决于 [OfflineMessageSource.kind]
      */
-    public abstract val targetId: Long // groupCode / friendUin / memberUin
+    public abstract override val targetId: Long // groupCode / friendUin / memberUin
 
     /**
      * 该消息源指向的原消息的内容.
@@ -215,7 +209,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      *
      * @since 2.15
      */
-    public abstract val kind: MessageSourceKind
+    public abstract override val kind: MessageSourceKind
 
     public abstract override fun toString(): String
 

@@ -1182,10 +1182,9 @@ public final class net/mamoe/mirai/contact/roaming/RoamingMessageFilter$Companio
 
 public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessages {
 	public fun getAllMessages (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Lkotlinx/coroutines/flow/Flow;
-	public fun getAllMessages (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getAllMessages (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun getAllMessages$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public static synthetic fun getAllMessages$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public static synthetic fun getAllMessages$suspendImpl (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getAllMessagesStream ()Ljava/util/stream/Stream;
 	public fun getAllMessagesStream (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getAllMessagesStream (Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Ljava/util/stream/Stream;
@@ -1193,6 +1192,9 @@ public abstract interface class net/mamoe/mirai/contact/roaming/RoamingMessages 
 	public static synthetic fun getAllMessagesStream$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;ILjava/lang/Object;)Ljava/util/stream/Stream;
 	public static synthetic fun getAllMessagesStream$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun getAllMessagesStream$suspendImpl (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getMessagesBefore (Ljava/lang/Integer;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Lnet/mamoe/mirai/utils/Streamable;
+	public abstract fun getMessagesBefore (Ljava/lang/Integer;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun getMessagesBefore$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;Ljava/lang/Integer;Lnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun getMessagesIn (JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;)Lkotlinx/coroutines/flow/Flow;
 	public abstract fun getMessagesIn (JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun getMessagesIn$default (Lnet/mamoe/mirai/contact/roaming/RoamingMessages;JJLnet/mamoe/mirai/contact/roaming/RoamingMessageFilter;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
@@ -4575,7 +4577,7 @@ public final class net/mamoe/mirai/message/data/MessageOriginKind$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public abstract class net/mamoe/mirai/message/data/MessageSource : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/Message, net/mamoe/mirai/message/data/MessageMetadata {
+public abstract class net/mamoe/mirai/message/data/MessageSource : net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/Message, net/mamoe/mirai/message/data/MessageMetadata, net/mamoe/mirai/message/source/identity/FullMessageIdentity {
 	public static final field Key Lnet/mamoe/mirai/message/data/MessageSource$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public abstract fun getBotId ()J
@@ -5407,6 +5409,99 @@ public final class net/mamoe/mirai/message/data/XmlMessageBuilder$ItemBuilder {
 }
 
 public final class net/mamoe/mirai/message/data/visitor/MessageVisitorKt {
+}
+
+public abstract interface class net/mamoe/mirai/message/source/identity/FullMessageIdentity : net/mamoe/mirai/message/source/identity/MessageIdentity {
+	public fun convertToRawFullMessageIdentity ()Lnet/mamoe/mirai/message/source/identity/RawFullMessageIdentity;
+	public abstract fun getFromId ()J
+	public abstract fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
+	public abstract fun getTargetId ()J
+}
+
+public final class net/mamoe/mirai/message/source/identity/FullyMessageIdentitySerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/source/identity/FullyMessageIdentitySerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/source/identity/FullMessageIdentity;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/source/identity/FullMessageIdentity;)V
+}
+
+public abstract interface class net/mamoe/mirai/message/source/identity/MessageIdentity {
+	public fun convertToRawMessageIdentity ()Lnet/mamoe/mirai/message/source/identity/RawMessageIdentity;
+	public abstract fun getIds ()[I
+	public abstract fun getInternalIds ()[I
+	public abstract fun getTime ()I
+}
+
+public final class net/mamoe/mirai/message/source/identity/MessageIdentitySerializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/source/identity/MessageIdentitySerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/source/identity/MessageIdentity;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/source/identity/MessageIdentity;)V
+}
+
+public final class net/mamoe/mirai/message/source/identity/RawFullMessageIdentity : net/mamoe/mirai/message/source/identity/FullMessageIdentity {
+	public static final field Companion Lnet/mamoe/mirai/message/source/identity/RawFullMessageIdentity$Companion;
+	public synthetic fun <init> (I[I[IIJJLnet/mamoe/mirai/message/data/MessageSourceKind;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> ([I[IIJJLnet/mamoe/mirai/message/data/MessageSourceKind;)V
+	public fun convertToRawFullMessageIdentity ()Lnet/mamoe/mirai/message/source/identity/RawFullMessageIdentity;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getFromId ()J
+	public fun getIds ()[I
+	public fun getInternalIds ()[I
+	public fun getKind ()Lnet/mamoe/mirai/message/data/MessageSourceKind;
+	public fun getTargetId ()J
+	public fun getTime ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/source/identity/RawFullMessageIdentity;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class net/mamoe/mirai/message/source/identity/RawFullMessageIdentity$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/source/identity/RawFullMessageIdentity$$serializer;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/source/identity/RawFullMessageIdentity;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/source/identity/RawFullMessageIdentity;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/message/source/identity/RawFullMessageIdentity$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/message/source/identity/RawMessageIdentity : net/mamoe/mirai/message/source/identity/MessageIdentity {
+	public static final field Companion Lnet/mamoe/mirai/message/source/identity/RawMessageIdentity$Companion;
+	public synthetic fun <init> (I[I[IILkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> ([I[II)V
+	public fun convertToRawMessageIdentity ()Lnet/mamoe/mirai/message/source/identity/RawMessageIdentity;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getIds ()[I
+	public fun getInternalIds ()[I
+	public fun getTime ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Lnet/mamoe/mirai/message/source/identity/RawMessageIdentity;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class net/mamoe/mirai/message/source/identity/RawMessageIdentity$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lnet/mamoe/mirai/message/source/identity/RawMessageIdentity$$serializer;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lnet/mamoe/mirai/message/source/identity/RawMessageIdentity;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Lnet/mamoe/mirai/message/source/identity/RawMessageIdentity;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class net/mamoe/mirai/message/source/identity/RawMessageIdentity$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class net/mamoe/mirai/network/BotAuthorizationException : net/mamoe/mirai/network/LoginFailedException {

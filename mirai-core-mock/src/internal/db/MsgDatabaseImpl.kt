@@ -65,38 +65,62 @@ internal class MsgDatabaseImpl : MessageDatabase {
     ): Sequence<MessageInfo> {
         if (timeEnd < timeStart) return emptySequence()
         return sequence<MessageInfo> {
-            val rm = object : RoamingMessage {
-                override val contact: Contact get() = contact
-                override var sender: Long = -1
-                override var target: Long = -1
-                override var time: Long = -1
-                override val ids: IntArray = intArrayOf(-1)
-                override val internalIds: IntArray = intArrayOf(-1)
-            }
             for (msgInfo in db) {
                 if (msgInfo.kind != kind) continue
                 if (msgInfo.time < timeStart) continue
                 if (msgInfo.time > timeEnd) continue
                 if (msgInfo.subject != subject) continue
 
-                rm.sender = msgInfo.sender
-                if (kind != MessageSourceKind.GROUP) {
-                    if (msgInfo.sender == contact.id) {
-                        rm.target = contact.bot.id
-                    } else {
-                        rm.target = msgInfo.subject
-                    }
-                } else {
-                    rm.target = msgInfo.subject
-                }
-                rm.time = msgInfo.time
-                rm.ids[0] = msgInfo.id
-                rm.internalIds[0] = msgInfo.internal
+                val rm = msgInfo.toRoamingMessage(contact)
 
                 if (filter.invoke(rm)) {
                     yield(msgInfo)
                 }
             }
+        }
+    }
+
+    override fun queryMessageInfosBy(
+        subject: Long, kind: MessageSourceKind,
+        contact: Contact,
+        sequence: Long,
+        filter: RoamingMessageFilter
+    ): Sequence<MessageInfo> {
+        return sequence<MessageInfo> {
+            var emitted = 0
+            for (msgInfo in db) {
+                if (msgInfo.kind != kind) continue
+                if (msgInfo.subject != subject) continue
+
+                val rm = msgInfo.toRoamingMessage(contact)
+
+                if (filter.invoke(rm)) {
+                    yield(msgInfo)
+                }
+            }
+        }
+    }
+
+    private fun MessageInfo.toRoamingMessage(contact: Contact): RoamingMessage {
+        val info = this
+
+        return object : RoamingMessage {
+            override val contact: Contact = contact
+            override val sender: Long = info.sender
+            override val target: Long =
+                if (info.kind != MessageSourceKind.GROUP) {
+                    if (info.sender == contact.id) {
+                        contact.bot.id
+                    } else {
+                        info.subject
+                    }
+                } else {
+                    info.subject
+                }
+            override val time: Long = info.time
+            override val ids: IntArray = IntArray(1) { info.id }
+            override val internalIds: IntArray = IntArray(1) { info.internal }
+
         }
     }
 }
