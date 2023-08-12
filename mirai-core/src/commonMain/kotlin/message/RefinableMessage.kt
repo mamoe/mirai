@@ -16,6 +16,7 @@ import net.mamoe.mirai.internal.message.LightMessageRefiner.refineMessageSource
 import net.mamoe.mirai.internal.message.flags.InternalFlagOnlyMessage
 import net.mamoe.mirai.internal.message.source.IncomingMessageSourceInternal
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.safeCast
 
 /**
@@ -114,6 +115,8 @@ internal interface RefineContext {
     operator fun contains(key: RefineContextKey<*>): Boolean
     operator fun <T : Any> get(key: RefineContextKey<T>): T?
     fun <T : Any> getNotNull(key: RefineContextKey<T>): T = get(key) ?: error("No such value of `$key`")
+    fun merge(other: RefineContext, override: Boolean): RefineContext
+    fun entries(): Set<Pair<RefineContextKey<*>, Any>>
 }
 
 internal interface MutableRefineContext : RefineContext {
@@ -124,6 +127,12 @@ internal interface MutableRefineContext : RefineContext {
 internal object EmptyRefineContext : RefineContext {
     override fun contains(key: RefineContextKey<*>): Boolean = false
     override fun <T : Any> get(key: RefineContextKey<T>): T? = null
+    override fun merge(other: RefineContext, override: Boolean): RefineContext {
+        return other
+    }
+    override fun entries(): Set<Pair<RefineContextKey<*>, Any>> {
+        return emptySet()
+    }
     override fun toString(): String {
         return "EmptyRefineContext"
     }
@@ -145,6 +154,19 @@ internal class SimpleRefineContext(
 
     override fun remove(key: RefineContextKey<*>) {
         delegate.remove(key)
+    }
+
+    override fun entries(): Set<Pair<RefineContextKey<*>, Any>> {
+        return delegate.entries.map { (k, v) -> k to v }.toSet()
+    }
+
+    override fun merge(other: RefineContext, override: Boolean): RefineContext {
+        other.entries().forEach { (key, value) ->
+            if (get(key) == null || override) {
+                set(key as RefineContextKey<Any>, value)
+            }
+        }
+        return this
     }
 }
 

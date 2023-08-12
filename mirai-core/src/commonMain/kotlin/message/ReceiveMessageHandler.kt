@@ -81,18 +81,14 @@ internal suspend fun MsgComm.Msg.toMessageChainOnline(
         else -> 0
     }
 
-    val mutableRefineContextApplier: MutableRefineContext.() -> Unit = {
-        set(RefineContextKey.MessageSourceKind, kind)
-        set(RefineContextKey.GroupIdOrZero, groupId)
-    }
-
     return listOf(this).toMessageChainOnline(
         bot,
         groupId,
         kind,
-        // TODO: it is better to add `RefineContext.merge(other, override)` to merge with another refine context
-        (refineContext.castOrNull<MutableRefineContext>() ?: SimpleRefineContext())
-            .apply(mutableRefineContextApplier),
+        refineContext.merge(SimpleRefineContext(
+            RefineContextKey.MessageSourceKind to kind,
+            RefineContextKey.GroupIdOrZero to groupId
+        ), false),
         facade
     )
 }
