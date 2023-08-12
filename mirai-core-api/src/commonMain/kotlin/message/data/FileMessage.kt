@@ -21,11 +21,9 @@ import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.code.internal.appendStringAsMiraiCode
 import net.mamoe.mirai.message.data.visitor.MessageVisitor
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.NotStableForInheritance
-import net.mamoe.mirai.utils.map
+import net.mamoe.mirai.utils.*
 
 /**
  * 文件消息.
@@ -43,11 +41,10 @@ import net.mamoe.mirai.utils.map
  * @suppress [FileMessage] 的使用是稳定的, 但自行实现不稳定.
  */
 @Serializable(FileMessage.Serializer::class)
-@Suppress("ANNOTATION_ARGUMENT_MUST_BE_CONST")
 @SerialName(FileMessage.SERIAL_NAME)
 @NotStableForInheritance
 @JvmBlockingBridge
-public expect interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
+public interface FileMessage : MessageContent, ConstrainSingle, CodableMessage {
     /**
      * 服务器需要的某种 ID.
      */
@@ -68,10 +65,30 @@ public expect interface FileMessage : MessageContent, ConstrainSingle, CodableMe
      */
     public val size: Long
 
-    open override fun contentToString(): String
+    override fun contentToString(): String = "[文件]$name" // orthodox
 
     @MiraiExperimentalApi
-    open override fun appendMiraiCodeTo(builder: StringBuilder)
+    override fun appendMiraiCodeTo(builder: StringBuilder) {
+        builder.append("[mirai:file:")
+        builder.appendStringAsMiraiCode(id).append(",")
+        builder.append(internalId).append(",")
+        builder.appendStringAsMiraiCode(name).append(",")
+        builder.append(size).append("]")
+    }
+
+    /**
+     * 获取一个对应的 [RemoteFile]. 当目标群或好友不存在这个文件时返回 `null`.
+     */
+    @Suppress("DEPRECATION_ERROR")
+    @Deprecated(
+        "Please use toAbsoluteFile",
+        ReplaceWith("this.toAbsoluteFile(contact)"),
+        level = DeprecationLevel.ERROR
+    ) // deprecated since 2.8.0-RC
+    @DeprecatedSinceMirai(warningSince = "2.8", errorSince = "2.14")
+    public suspend fun toRemoteFile(contact: FileSupported): RemoteFile? {
+        return contact.filesRoot.resolveById(id)
+    }
 
     /**
      * 获取一个对应的 [AbsoluteFile]. 当目标群或好友不存在这个文件时返回 `null`.
@@ -80,29 +97,34 @@ public expect interface FileMessage : MessageContent, ConstrainSingle, CodableMe
      */
     public suspend fun toAbsoluteFile(contact: FileSupported): AbsoluteFile?
 
-    open override val key: Key
+    override val key: Key get() = Key
 
     @MiraiInternalApi
-    open override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R
+    override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
+        return visitor.visitFileMessage(this, data)
+    }
 
     /**
      * 注意, baseKey [MessageContent] 不稳定. 未来可能会有变更.
      */
     public companion object Key :
-        AbstractPolymorphicMessageKey<MessageContent, FileMessage> {
+        AbstractPolymorphicMessageKey<MessageContent, FileMessage>(
+            MessageContent, { it.safeCast() }) {
 
-        @Suppress("CONST_VAL_WITHOUT_INITIALIZER")
-        public const val SERIAL_NAME: String
+        public const val SERIAL_NAME: String = "FileMessage"
 
         /**
          * 构造 [FileMessage]
          * @since 2.5
          */
         @JvmStatic
-        public fun create(id: String, internalId: Int, name: String, size: Long): FileMessage
+        public fun create(id: String, internalId: Int, name: String, size: Long): FileMessage =
+            Mirai.createFileMessage(id, internalId, name, size)
     }
 
-    public object Serializer : KSerializer<FileMessage> // not polymorphic
+
+    public object Serializer :
+        KSerializer<FileMessage> by @OptIn(MiraiInternalApi::class) FallbackFileMessageSerializer()
 }
 
 @MiraiInternalApi

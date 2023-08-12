@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.overwriteWith
+import kotlinx.serialization.modules.polymorphic
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.message.MessageSerializers
 import net.mamoe.mirai.message.data.MessageChain
@@ -22,8 +23,9 @@ import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.utils.*
-import kotlin.jvm.Synchronized
 import kotlin.reflect.KClass
+import kotlin.reflect.full.allSuperclasses
+import kotlin.reflect.full.isSubclassOf
 
 @MiraiInternalApi
 public open class MessageSourceSerializerImpl(serialName: String) :
@@ -84,10 +86,22 @@ internal object MessageSerializersImpl : MessageSerializers {
     }
 }
 
-internal expect fun <M : Any> SerializersModule.overwritePolymorphicWith(
+internal fun <M : Any> SerializersModule.overwritePolymorphicWith(
     type: KClass<M>,
     serializer: KSerializer<M>
-): SerializersModule
+): SerializersModule {
+    return overwriteWith(SerializersModule {
+        // contextual(type, serializer)
+        for (superclass in type.allSuperclasses) {
+            if (superclass.isFinal) continue
+            if (!superclass.isSubclassOf(SingleMessage::class)) continue
+            @Suppress("UNCHECKED_CAST")
+            polymorphic(superclass as KClass<Any>) {
+                subclass(type, serializer)
+            }
+        }
+    })
+}
 
 //private inline fun <reified M : SingleMessage> SerializersModuleBuilder.hierarchicallyPolymorphic(serializer: KSerializer<M>) =
 //    hierarchicallyPolymorphic(M::class, serializer)
