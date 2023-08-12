@@ -33,7 +33,7 @@ import net.mamoe.mirai.utils.*
  * 使用 [Contact.uploadShortVideo]，将视频缩略图和视频[资源][ExternalResource] 上传以得到 [OfflineShortVideo].
  *
  * ## 使用 [Builder] 构建短视频
- * [ShortVideo] 提供 [Builder] 构建方式，必须指定 [videoId], [fileName], [fileMd5], [fileSize] 和 [fileFormat] 参数.
+ * [ShortVideo] 提供 [Builder] 构建方式，必须指定 [videoId], [filename], [fileMd5], [fileSize] 和 [fileFormat] 参数.
  * 可选指定 [Builder.thumbnailMd5] 和 [Builder.thumbnailSize]. 若不提供，可能会影响服务器判断缓存.
  *
  * ## 从服务器接收
@@ -41,7 +41,7 @@ import net.mamoe.mirai.utils.*
  *
  * # 下载视频
  * 通过 [OnlineShortVideo.urlForDownload] 获取下载链接.
- * 该下载链接不包含短视频的文件信息，可以使用 [videoId] 或 [fileName] 作为文件名，[fileFormat] 作为文件拓展名.
+ * 该下载链接不包含短视频的文件信息，可以使用 [videoId] 或 [filename] 作为文件名，[fileFormat] 作为文件拓展名.
  *
  * @since 2.16
  */
@@ -70,7 +70,7 @@ public interface ShortVideo : MessageContent, ConstrainSingle {
     /*
      * 视频文件名，不包括拓展名
      */
-    public val fileName: String
+    public val filename: String
 
 
     @MiraiInternalApi
@@ -108,7 +108,7 @@ public interface ShortVideo : MessageContent, ConstrainSingle {
         public var fileFormat: String = ""
 
         /**
-         * @see ShortVideo.fileName
+         * @see ShortVideo.filename
          */
         public var fileName: String = ""
 
@@ -187,7 +187,7 @@ public interface OnlineShortVideo : ShortVideo {
  *
  * [OfflineShortVideo] 拥有协议上必要的五个属性:
  * - 视频 ID [videoId]
- * - 视频文件名 [fileName]
+ * - 视频文件名 [filename]
  * - 视频 MD5 [fileMd5]
  * - 视频大小 [fileSize]
  * - 视频格式 [fileFormat]

@@ -114,7 +114,7 @@ internal abstract class AbstractShortVideoWithThumbnail : ShortVideo {
 internal class OnlineShortVideoImpl(
     override val videoId: String,
     override val fileMd5: ByteArray,
-    override val fileName: String,
+    override val filename: String,
     override val fileSize: Long,
     override val fileFormat: String,
     override val urlForDownload: String,
@@ -125,7 +125,7 @@ internal class OnlineShortVideoImpl(
 ) : OnlineShortVideo, AbstractShortVideoWithThumbnail() {
 
     override fun toString(): String {
-        return "[mirai:shortvideo:$fileName.$fileFormat, video=${fileMd5.toUHexString("")}, videoSize=${fileSize}, " +
+        return "[mirai:shortvideo:$filename.$fileFormat, video=${fileMd5.toUHexString("")}, videoSize=${fileSize}, " +
                 "thumbnail=${thumbMd5.toUHexString("")}, thumbnailSize=${thumbSize}]"
     }
 
@@ -141,7 +141,7 @@ internal class OnlineShortVideoImpl(
 
         if (videoId != other.videoId) return false
         if (!fileMd5.contentEquals(other.fileMd5)) return false
-        if (fileName != other.fileName) return false
+        if (filename != other.filename) return false
         if (fileSize != other.fileSize) return false
         if (fileFormat != other.fileFormat) return false
         if (urlForDownload != other.urlForDownload) return false
@@ -156,7 +156,7 @@ internal class OnlineShortVideoImpl(
     override fun hashCode(): Int {
         var result = videoId.hashCode()
         result = 31 * result + fileMd5.contentHashCode()
-        result = 31 * result + fileName.hashCode()
+        result = 31 * result + filename.hashCode()
         result = 31 * result + fileSize.hashCode()
         result = 31 * result + fileFormat.hashCode()
         result = 31 * result + urlForDownload.hashCode()
@@ -171,7 +171,7 @@ internal class OnlineShortVideoImpl(
 @Serializable
 internal class OfflineShortVideoImpl(
     override val videoId: String,
-    override val fileName: String,
+    override val filename: String,
     override val fileMd5: ByteArray,
     override val fileSize: Long,
     override val fileFormat: String,
@@ -185,7 +185,7 @@ internal class OfflineShortVideoImpl(
      * offline short video uses
      */
     override fun toString(): String {
-        return "[mirai:shortvideo:$fileName.$fileFormat, video=${fileMd5.toUHexString("")}, " +
+        return "[mirai:shortvideo:$filename.$fileFormat, video=${fileMd5.toUHexString("")}, " +
                 "videoSize=${fileSize}, thumbnail=${thumbMd5.toUHexString("")}, thumbnailSize=${thumbSize}]"
     }
 
@@ -200,7 +200,7 @@ internal class OfflineShortVideoImpl(
         other as OfflineShortVideoImpl
 
         if (videoId != other.videoId) return false
-        if (fileName != other.fileName) return false
+        if (filename != other.filename) return false
         if (!fileMd5.contentEquals(other.fileMd5)) return false
         if (fileSize != other.fileSize) return false
         if (fileFormat != other.fileFormat) return false
@@ -214,7 +214,7 @@ internal class OfflineShortVideoImpl(
 
     override fun hashCode(): Int {
         var result = videoId.hashCode()
-        result = 31 * result + fileName.hashCode()
+        result = 31 * result + filename.hashCode()
         result = 31 * result + fileMd5.contentHashCode()
         result = 31 * result + fileSize.hashCode()
         result = 31 * result + fileFormat.hashCode()

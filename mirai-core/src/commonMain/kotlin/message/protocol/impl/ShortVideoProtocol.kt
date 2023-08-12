@@ -59,7 +59,7 @@ internal class ShortVideoProtocol : MessageProtocol() {
                     videoFile = ImMsgBody.VideoFile(
                         fileUuid = data.videoId.encodeToByteArray(),
                         fileMd5 = data.fileMd5,
-                        fileName = data.fileName.encodeToByteArray(),
+                        fileName = data.filename.encodeToByteArray(),
                         fileFormat = 3, // TODO: only support mp4 now
                         fileTime = 10,
                         fileSize = data.fileSize.toInt(),
