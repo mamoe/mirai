@@ -31,6 +31,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
  * 若此事件被取消, [ShortVideoUploadEvent] 不会广播.
  *
  * @see Contact.uploadShortVideo 上传短视频. 为广播这个事件的唯一途径
+ * @since 2.16
  */
 @OptIn(MiraiInternalApi::class)
 public class BeforeShortVideoUploadEvent @MiraiInternalApi constructor(
@@ -49,9 +50,9 @@ public class BeforeShortVideoUploadEvent @MiraiInternalApi constructor(
  * 若 [BeforeImageUploadEvent] 被取消, 此事件不会广播.
  *
  * @see Contact.uploadShortVideo 上传短视频. 为广播这个事件的唯一途径
- *
  * @see Succeed
  * @see Failed
+ * @since 2.16
  */
 @OptIn(MiraiInternalApi::class)
 public sealed class ShortVideoUploadEvent : BotEvent, BotActiveEvent, AbstractEvent(), VerboseEvent {

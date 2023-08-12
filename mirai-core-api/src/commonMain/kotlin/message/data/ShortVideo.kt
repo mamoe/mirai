@@ -39,6 +39,11 @@ import net.mamoe.mirai.utils.*
  * ## 从服务器接收
  * 通过监听消息接收的短视频消息可直接转换为 [OnlineShortVideo].
  *
+ * kotlin 示例:
+ * ```kotlin
+ * val video: OnlineShortVideo = event.message[OnlineShortVideo]
+ * ```
+ *
  * # 下载视频
  * 通过 [OnlineShortVideo.urlForDownload] 获取下载链接.
  * 该下载链接不包含短视频的文件信息，可以使用 [videoId] 或 [filename] 作为文件名，[fileFormat] 作为文件拓展名.
@@ -218,7 +223,7 @@ public interface OfflineShortVideo : ShortVideo {
 }
 
 /**
- * 内部短视频协议实现
+ * 内部短视频协议实现, 请不要使用此接口
  * @since 2.16.0
  */
 @MiraiInternalApi
