@@ -4879,7 +4879,7 @@ public final class net/mamoe/mirai/message/data/OfflineShortVideo$Builder {
 	public final fun getThumbnailMd5 ()[B
 	public final fun getThumbnailSize ()J
 	public final fun getVideoId ()Ljava/lang/String;
-	public static final fun newBuilder (Ljava/lang/String;[BJLjava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/OfflineShortVideo$Builder;
+	public static final fun newBuilder (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[BJ)Lnet/mamoe/mirai/message/data/OfflineShortVideo$Builder;
 	public final fun setFileFormat (Ljava/lang/String;)V
 	public final fun setFileMd5 ([B)V
 	public final fun setFileName (Ljava/lang/String;)V
@@ -4890,7 +4890,7 @@ public final class net/mamoe/mirai/message/data/OfflineShortVideo$Builder {
 }
 
 public final class net/mamoe/mirai/message/data/OfflineShortVideo$Builder$Companion {
-	public final fun newBuilder (Ljava/lang/String;[BJLjava/lang/String;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/OfflineShortVideo$Builder;
+	public final fun newBuilder (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[BJ)Lnet/mamoe/mirai/message/data/OfflineShortVideo$Builder;
 }
 
 public final class net/mamoe/mirai/message/data/OfflineShortVideo$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
@@ -5314,8 +5314,8 @@ public final class net/mamoe/mirai/message/data/ShortVideo$Key : net/mamoe/mirai
 }
 
 public final class net/mamoe/mirai/message/data/ShortVideoKt {
-	public static final synthetic fun OfflineShortVideo (Ljava/lang/String;[BJLjava/lang/String;Ljava/lang/String;[BJ)Lnet/mamoe/mirai/message/data/OfflineShortVideo;
-	public static synthetic fun OfflineShortVideo$default (Ljava/lang/String;[BJLjava/lang/String;Ljava/lang/String;[BJILjava/lang/Object;)Lnet/mamoe/mirai/message/data/OfflineShortVideo;
+	public static final synthetic fun OfflineShortVideo (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[BJ[BJ)Lnet/mamoe/mirai/message/data/OfflineShortVideo;
+	public static synthetic fun OfflineShortVideo$default (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[BJ[BJILjava/lang/Object;)Lnet/mamoe/mirai/message/data/OfflineShortVideo;
 }
 
 public final class net/mamoe/mirai/message/data/ShowImageFlag : net/mamoe/mirai/message/data/AbstractMessageKey, net/mamoe/mirai/message/data/ConstrainSingle, net/mamoe/mirai/message/data/MessageMetadata {

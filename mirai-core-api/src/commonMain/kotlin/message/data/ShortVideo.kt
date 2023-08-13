@@ -193,10 +193,10 @@ public interface OfflineShortVideo : ShortVideo {
             @JvmStatic
             public fun newBuilder(
                 videoId: String,
-                fileMd5: ByteArray,
-                fileSize: Long,
+                fileName: String,
                 fileFormat: String,
-                fileName: String
+                fileMd5: ByteArray,
+                fileSize: Long
             ): Builder = Builder(videoId, fileMd5, fileSize, fileFormat, fileName)
         }
     }
@@ -210,13 +210,13 @@ public interface OfflineShortVideo : ShortVideo {
 @JvmSynthetic
 public inline fun OfflineShortVideo(
     videoId: String,
+    fileName: String,
+    fileFormat: String,
     fileMd5: ByteArray,
     fileSize: Long,
-    fileFormat: String,
-    fileName: String,
     thumbnailMd5: ByteArray = byteArrayOf(),
     thumbnailSize: Long = 0,
-): OfflineShortVideo = OfflineShortVideo.Builder.newBuilder(videoId, fileMd5, fileSize, fileFormat, fileName).apply {
+): OfflineShortVideo = OfflineShortVideo.Builder.newBuilder(videoId, fileName, fileFormat, fileMd5, fileSize).apply {
     this@apply.thumbnailMd5 = thumbnailMd5
     this@apply.thumbnailSize = thumbnailSize
 }.build()

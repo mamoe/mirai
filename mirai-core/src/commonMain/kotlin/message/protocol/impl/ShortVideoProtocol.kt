@@ -60,7 +60,7 @@ internal class ShortVideoProtocol : MessageProtocol() {
                         fileUuid = data.videoId.encodeToByteArray(),
                         fileMd5 = data.fileMd5,
                         fileName = data.filename.encodeToByteArray(),
-                        fileFormat = 3, // TODO: only support mp4 now
+                        fileFormat = data.fileFormat.toVideoFormat(),
                         fileTime = 10,
                         fileSize = data.fileSize.toInt(),
                         thumbWidth = thumbWidth,
@@ -79,4 +79,19 @@ internal class ShortVideoProtocol : MessageProtocol() {
         }
 
     }
+}
+
+private fun String.toVideoFormat() = when (this) {
+    "ts" -> 1
+    "avi" -> 2
+    "mp4" -> 3
+    "wmv" -> 4
+    "mkv" -> 5
+    "rmvb" -> 6
+    "rm" -> 7
+    "afs" -> 8
+    "mov" -> 9
+    "mod" -> 10
+    "mts" -> 11
+    else -> -1 // unknown to default
 }
