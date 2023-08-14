@@ -44,12 +44,16 @@ kotlin {
                 implementation(project(":mirai-console-compiler-annotations"))
                 implementation(`kotlinx-serialization-protobuf`)
                 implementation(`kotlinx-atomicfu`)
+                implementation(`jetbrains-annotations`)
 
                 // runtime from mirai-core-utils
                 relocateCompileOnly(`ktor-io_relocated`)
 
                 implementation(`kotlin-jvm-blocking-bridge`)
                 implementation(`kotlin-dynamic-delegation`)
+
+                implementation(`log4j-api`)
+                compileOnly(`slf4j-api`)
             }
         }
 
@@ -58,14 +62,6 @@ kotlin {
                 runtimeOnly(`log4j-core`)
                 implementation(`kotlinx-coroutines-test`)
                 api(`junit-jupiter-api`)
-            }
-        }
-
-        findByName("jvmBaseMain")?.apply {
-            dependencies {
-                implementation(`jetbrains-annotations`)
-                implementation(`log4j-api`)
-                compileOnly(`slf4j-api`)
             }
         }
 

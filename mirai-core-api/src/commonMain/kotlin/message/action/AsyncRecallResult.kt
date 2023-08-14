@@ -7,22 +7,24 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 @file:JvmBlockingBridge
 
 package net.mamoe.mirai.message.action
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.future.asCompletableFuture
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
+import java.util.concurrent.CompletableFuture
 
 /**
  * 异步撤回结果.
  *
  * 可由 [MessageSource.recallIn] 返回得到.
  *
- * ## 用法
+ * ## Kotlin 用法示例
  *
  * ### 获取撤回失败时的异常
  *
@@ -37,32 +39,58 @@ import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
  *
  * 若仅需要了解撤回是否成功而不需要获取详细异常实例, 可使用 [isSuccess]
  *
+ * ## Java 用法示例
+ *
+ * ```java
+ * Throwable exception = result.exceptionFuture.get(); // 阻塞线程并等待撤回的结果.
+ * if (exception == null) {
+ *   // 撤回成功
+ * } else {
+ *   // 撤回失败
+ * }
+ * ```
+ *
  * @see MessageSource.recallIn
  */
-public expect class AsyncRecallResult internal constructor(
+public class AsyncRecallResult internal constructor(
     /**
-     * 撤回时产生的异常, 当撤回成功时为 `null`.
+     * 撤回时产生的异常, 当撤回成功时为 `null`. Kotlin [Deferred] API.
      */
-    exception: Deferred<Throwable?>,
+    public val exception: Deferred<Throwable?>,
 ) {
     /**
-     * 撤回失败时的异常, 当撤回成功时为 `null`.
+     * 撤回时产生的异常, 当撤回成功时为 `null`. Java [CompletableFuture] API.
      */
-    public val exception: Deferred<Throwable?>
+    public val exceptionFuture: CompletableFuture<Throwable?> by lazy { exception.asCompletableFuture() }
 
     /**
-     * 撤回是否成功.
+     * 撤回是否成功. Kotlin [Deferred] API.
      */
-    public val isSuccess: Deferred<Boolean>
+    public val isSuccess: Deferred<Boolean> by lazy {
+        CompletableDeferred<Boolean>().apply {
+            exception.invokeOnCompletion {
+                complete(it == null)
+            }
+        }
+    }
 
     /**
-     * 挂起协程直到撤回完成, 返回撤回时产生的异常. 当撤回成功时返回 `null`.
+     * 撤回是否成功. Java [CompletableFuture] API.
      */
-    public suspend fun awaitException(): Throwable?
+    public val isSuccessFuture: CompletableFuture<Boolean> by lazy { isSuccess.asCompletableFuture() }
 
     /**
-     * 挂起协程直到撤回完成, 返回撤回的结果.
+     * 挂起协程 (在 Java 为阻塞线程) 直到撤回完成, 返回撤回时产生的异常. 当撤回成功时返回 `null`.
      */
-    public suspend fun awaitIsSuccess(): Boolean
+    public suspend fun awaitException(): Throwable? {
+        return exception.await()
+    }
+
+    /**
+     * 挂起协程 (在 Java 为阻塞线程) 直到撤回完成, 返回撤回的结果.
+     */
+    public suspend fun awaitIsSuccess(): Boolean {
+        return isSuccess.await()
+    }
 }
 
