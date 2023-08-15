@@ -44,11 +44,23 @@ public class SuperFace @MiraiInternalApi constructor(
 
         /**
          * 将普通表情转换为超级表情.
+         *
+         * @throws UnsupportedOperationException 无法转换时抛出
+         **/
+        @JvmStatic
+        @Throws(UnsupportedOperationException::class)
+        public fun from(face: Face): SuperFace {
+            return tryFrom(face = face) ?: throw UnsupportedOperationException("${face.id} - ${face.name}")
+        }
+
+        /**
+         * 将普通表情转换为超级表情.
+         *
+         * @return 无法转换时返回 null
          **/
         @JvmStatic
         @OptIn(MiraiInternalApi::class)
-        @Throws(UnsupportedOperationException::class)
-        public fun from(face: Face): SuperFace {
+        public fun tryFrom(face: Face): SuperFace? {
             val stickerId = when (face.id) {
                 Face.DA_CALL -> "1"
                 Face.BIAN_XING -> "2"
@@ -79,7 +91,7 @@ public class SuperFace @MiraiInternalApi constructor(
                 Face.WO_FANG_LE -> "27"
                 Face.DA_YUAN_ZHONG -> "28"
                 Face.HONG_BAO_DUO_DUO -> "29"
-                else -> throw UnsupportedOperationException(face.name)
+                else -> return null
             }
             val stickerType = when (face.id) {
                 Face.LAN_QIU -> 2
