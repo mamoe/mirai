@@ -28,7 +28,7 @@ import kotlin.jvm.Throws
 @Serializable
 @SerialName(SuperFace.SERIAL_NAME)
 @NotStableForInheritance
-public data class SuperFace @MiraiInternalApi constructor(
+public class SuperFace @MiraiInternalApi constructor(
     public val face: Int,
     public val id: String,
     @SerialName("sticker_type")
