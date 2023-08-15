@@ -5309,21 +5309,15 @@ public final class net/mamoe/mirai/message/data/SuperFace : net/mamoe/mirai/mess
 	public static final field Key Lnet/mamoe/mirai/message/data/SuperFace$Key;
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public synthetic fun <init> (IILjava/lang/String;ILkotlinx/serialization/internal/SerializationConstructorMarker;)V
-	public final fun component1 ()I
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()I
 	public fun contentToString ()Ljava/lang/String;
-	public final fun copy (ILjava/lang/String;I)Lnet/mamoe/mirai/message/data/SuperFace;
-	public static synthetic fun copy$default (Lnet/mamoe/mirai/message/data/SuperFace;ILjava/lang/String;IILjava/lang/Object;)Lnet/mamoe/mirai/message/data/SuperFace;
-	public fun equals (Ljava/lang/Object;)Z
 	public static final fun from (Lnet/mamoe/mirai/message/data/Face;)Lnet/mamoe/mirai/message/data/SuperFace;
 	public final fun getFace ()I
 	public final fun getId ()Ljava/lang/String;
 	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getType ()I
-	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public static final fun tryFrom (Lnet/mamoe/mirai/message/data/Face;)Lnet/mamoe/mirai/message/data/SuperFace;
 	public static final fun write$Self (Lnet/mamoe/mirai/message/data/SuperFace;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
 }
 
@@ -5341,6 +5335,7 @@ public final class net/mamoe/mirai/message/data/SuperFace$$serializer : kotlinx/
 public final class net/mamoe/mirai/message/data/SuperFace$Key : net/mamoe/mirai/message/data/AbstractPolymorphicMessageKey {
 	public final fun from (Lnet/mamoe/mirai/message/data/Face;)Lnet/mamoe/mirai/message/data/SuperFace;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+	public final fun tryFrom (Lnet/mamoe/mirai/message/data/Face;)Lnet/mamoe/mirai/message/data/SuperFace;
 }
 
 public final class net/mamoe/mirai/message/data/SuperFaceKt {
