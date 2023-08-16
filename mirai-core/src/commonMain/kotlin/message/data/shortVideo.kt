@@ -101,11 +101,16 @@ internal class OnlineShortVideoMsgInternal(
     }
 }
 
+@Serializable
+internal class ShortVideoThumbnail(
+    val md5: ByteArray,
+    val size: Long,
+    val width: Int?,
+    val height: Int?,
+)
+
 internal abstract class AbstractShortVideoWithThumbnail : ShortVideo {
-    abstract val thumbMd5: ByteArray
-    abstract val thumbSize: Long
-    abstract val thumbWidth: Int?
-    abstract val thumbHeight: Int?
+    abstract val thumbnail: ShortVideoThumbnail
 }
 
 @Suppress("DuplicatedCode")
@@ -118,11 +123,14 @@ internal class OnlineShortVideoImpl(
     override val fileSize: Long,
     override val fileFormat: String,
     override val urlForDownload: String,
-    override val thumbMd5: ByteArray,
-    override val thumbSize: Long,
-    @Transient override val thumbWidth: Int = 0,
-    @Transient override val thumbHeight: Int = 0
+    val thumbMd5: ByteArray,
+    val thumbSize: Long,
+    @Transient val thumbWidth: Int = 0,
+    @Transient val thumbHeight: Int = 0
 ) : OnlineShortVideo, AbstractShortVideoWithThumbnail() {
+    override val thumbnail: ShortVideoThumbnail by lazy {
+        ShortVideoThumbnail(thumbMd5, thumbSize, thumbWidth, thumbHeight)
+    }
 
     override fun toString(): String {
         return "[mirai:shortvideo:$videoId, videoName=$filename.$fileFormat, videoMd5=${fileMd5.toUHexString("")}, " +
@@ -175,11 +183,14 @@ internal class OfflineShortVideoImpl(
     override val fileMd5: ByteArray,
     override val fileSize: Long,
     override val fileFormat: String,
-    override val thumbMd5: ByteArray,
-    override val thumbSize: Long,
-    @Transient override val thumbWidth: Int = 0,
-    @Transient override val thumbHeight: Int = 0
+    val thumbMd5: ByteArray,
+    val thumbSize: Long,
+    @Transient val thumbWidth: Int = 0,
+    @Transient val thumbHeight: Int = 0
 ) : OfflineShortVideo, AbstractShortVideoWithThumbnail() {
+    override val thumbnail: ShortVideoThumbnail by lazy {
+        ShortVideoThumbnail(thumbMd5, thumbSize, thumbWidth, thumbHeight)
+    }
 
     /**
      * offline short video uses

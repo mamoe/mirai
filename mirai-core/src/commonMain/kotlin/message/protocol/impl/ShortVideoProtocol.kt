@@ -51,8 +51,8 @@ internal class ShortVideoProtocol : MessageProtocol() {
 
             collect(ImMsgBody.Elem(text = ImMsgBody.Text("你的 QQ 暂不支持查看视频短片，请期待后续版本。")))
 
-            val thumbWidth = if (data.thumbWidth == null || data.thumbWidth == 0) 1280 else data.thumbWidth!!
-            val thumbHeight = if (data.thumbHeight == null || data.thumbHeight == 0) 720 else data.thumbHeight!!
+            val thumbWidth = if (data.thumbnail.width == null || data.thumbnail.width == 0) 1280 else data.thumbnail.width!!
+            val thumbHeight = if (data.thumbnail.height == null || data.thumbnail.height == 0) 720 else data.thumbnail.height!!
 
             collect(
                 ImMsgBody.Elem(
@@ -65,8 +65,8 @@ internal class ShortVideoProtocol : MessageProtocol() {
                         fileSize = data.fileSize.toInt(),
                         thumbWidth = thumbWidth,
                         thumbHeight = thumbHeight,
-                        thumbFileMd5 = data.thumbMd5,
-                        thumbFileSize = data.thumbSize.toInt(),
+                        thumbFileMd5 = data.thumbnail.md5,
+                        thumbFileSize = data.thumbnail.size.toInt(),
                         busiType = 0,
                         fromChatType = -1,
                         toChatType = -1,
