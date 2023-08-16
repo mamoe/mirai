@@ -178,7 +178,8 @@ class PluginDataValuesChecker : CallChecker, DeclarationChecker {
 }
 
 private fun canBeSerializedInternally(descriptor: ClassDescriptor): Boolean {
-    @Suppress("UNUSED_VARIABLE") val name = when (descriptor.defaultType.getJetTypeFqName(false)) {
+    @Suppress("UNUSED_VARIABLE")
+    val name = when (descriptor.defaultType.getKotlinTypeFqName(false)) {
         // kotlinx.serialization
         "kotlin.Unit" -> "UnitSerializer"
         "Z", "kotlin.Boolean" -> "BooleanSerializer"
@@ -233,4 +234,3 @@ private fun canBeSerializedInternally(descriptor: ClassDescriptor): Boolean {
     }
     return true
 }
-
