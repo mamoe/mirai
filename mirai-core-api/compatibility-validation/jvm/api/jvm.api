@@ -368,6 +368,7 @@ public abstract interface class net/mamoe/mirai/contact/Contact : kotlinx/corout
 	public abstract fun uploadImage (Lnet/mamoe/mirai/utils/ExternalResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun uploadShortVideo (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ExternalResource;Ljava/lang/String;)Lnet/mamoe/mirai/message/data/ShortVideo;
 	public abstract fun uploadShortVideo (Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ExternalResource;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun uploadShortVideo$default (Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ExternalResource;Ljava/lang/String;ILjava/lang/Object;)Lnet/mamoe/mirai/message/data/ShortVideo;
 	public static synthetic fun uploadShortVideo$default (Lnet/mamoe/mirai/contact/Contact;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ExternalResource;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
