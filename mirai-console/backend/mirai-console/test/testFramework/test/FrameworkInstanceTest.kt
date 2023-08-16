@@ -18,11 +18,11 @@ class FrameworkInstanceTest : AbstractConsoleInstanceTest() {
 
     @Test
     fun testConsole1() {
-        assertEquals(0, PluginManager.plugins.size)
+        assertEquals(1, PluginManager.plugins.size)
     }
 
     @Test
     fun testConsole2() {
-        assertEquals(0, PluginManager.plugins.size)
+        assertEquals(1, PluginManager.plugins.size)
     }
 }

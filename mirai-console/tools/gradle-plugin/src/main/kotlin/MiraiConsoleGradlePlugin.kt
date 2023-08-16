@@ -231,6 +231,7 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
                     }
                 }
                 runConsole.standardInput = System.`in`
+                runConsole.jvmArgs("-Dmirai.console.skip-end-user-readme")
 
                 buildPluginTasks.forEach { runConsole.dependsOn(it.first) }
                 miraiExtension.consoleTestRuntimeConf.forEach { it.invoke(runConsole) }

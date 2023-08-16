@@ -46,6 +46,7 @@ kotlin {
             dependencies {
                 api(yamlkt)
                 implementation(`kotlinx-coroutines-test`)
+                api(`junit-jupiter-api`)
             }
         }
 

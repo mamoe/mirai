@@ -97,80 +97,11 @@ jobs:
 
       # Upload
 
-      - name: Upload mirai-core-utils
-        uses: actions/upload-artifact@v3
-        with:
-          name: mirai-core-utils
-          path: mirai-core-utils/build/libs
+      - name: Publish MavenLocal
+        run: ./gradlew publishToMavenLocal ${{ env.gradleArgs }}
 
-      - name: Upload mirai-core-api
+      - name: Upload MavenLocal
         uses: actions/upload-artifact@v3
         with:
-          name: mirai-core-api
-          path: mirai-core-api/build/libs
-
-      - name: Upload mirai-core
-        uses: actions/upload-artifact@v3
-        with:
-          name: mirai-core
-          path: mirai-core/build/libs
-
-      - name: Upload mirai-core-all
-        uses: actions/upload-artifact@v3
-        with:
-          name: mirai-core-all
-          path: mirai-core-all/build/libs
-
-      - name: Upload mirai-console
-        uses: actions/upload-artifact@v3
-        with:
-          name: mirai-console
-          path: mirai-console/backend/mirai-console/build/libs
-
-      - name: Upload mirai-console-terminal
-        uses: actions/upload-artifact@v3
-        with:
-          name: mirai-console-terminal
-          path: mirai-console/frontend/mirai-console-terminal/build/libs
-
-      - name: Upload mirai-console-compiler-annotations
-        uses: actions/upload-artifact@v3
-        with:
-          name: mirai-console-compiler-annotations
-          path: mirai-console/tools/mirai-console-compiler-annotations/build/libs
-
-      - name: Upload mirai-console-compiler-common
-        uses: actions/upload-artifact@v3
-        with:
-          name: mirai-console-compiler-common
-          path: mirai-console/tools/mirai-console-compiler-common/build/libs
-
-      - name: Upload mirai-console-intellij
-        uses: actions/upload-artifact@v3
-        with:
-          name: mirai-console-intellij
-          path: mirai-console/tools/intelli-plugin/build/distribution
-
-      - name: Upload mirai-logging-log4j2
-        uses: actions/upload-artifact@v3
-        with:
-          name: mirai-logging-log4j2
-          path: logging/mirai-logging-log4j2/build/libs
-
-      - name: Upload mirai-logging-slf4j
-        uses: actions/upload-artifact@v3
-        with:
-          name: mirai-logging-slf4j
-          path: logging/mirai-logging-slf4j/build/libs
-
-      - name: Upload mirai-logging-slf4j-logback
-        uses: actions/upload-artifact@v3
-        with:
-          name: mirai-logging-slf4j-logback
-          path: logging/mirai-logging-slf4j-logback/build/libs
-
-      - name: Upload mirai-logging-slf4j-simple
-        uses: actions/upload-artifact@v3
-        with:
-          name: mirai-logging-slf4j-simple
-          path: logging/mirai-logging-slf4j-simple/build/libs
+          name: maven-cache
+          path: ~/.m2

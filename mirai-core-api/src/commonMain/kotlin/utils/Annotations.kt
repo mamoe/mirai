@@ -36,7 +36,6 @@ public annotation class MiraiInternalApi(
  */
 @Retention(AnnotationRetention.BINARY)
 @Target(FILE)
-@MiraiInternalApi
 public annotation class MiraiInternalFile
 
 /**

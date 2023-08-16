@@ -17,11 +17,11 @@ import androidx.annotation.RequiresApi
 
 
 public actual fun ByteArray.encodeBase64(): String {
-    return Base64.encodeToString(this, Base64.DEFAULT)
+    return Base64.encodeToString(this, Base64.NO_WRAP)
 }
 
 public actual fun String.decodeBase64(): ByteArray {
-    return Base64.decode(this, Base64.DEFAULT)
+    return Base64.decode(this, Base64.NO_WRAP)
 }
 
 @RequiresApi(Build.VERSION_CODES.N)

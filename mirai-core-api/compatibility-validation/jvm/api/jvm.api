@@ -6112,6 +6112,9 @@ public abstract interface annotation class net/mamoe/mirai/utils/MiraiInternalAp
 	public abstract fun message ()Ljava/lang/String;
 }
 
+public abstract interface annotation class net/mamoe/mirai/utils/MiraiInternalFile : java/lang/annotation/Annotation {
+}
+
 public abstract interface class net/mamoe/mirai/utils/MiraiLogger {
 	public static final field Companion Lnet/mamoe/mirai/utils/MiraiLogger$Companion;
 	public fun call (Lnet/mamoe/mirai/utils/SimpleLogger$LogPriority;Ljava/lang/String;Ljava/lang/Throwable;)V

@@ -39,6 +39,7 @@ import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.permission.getPermittedPermissionsAndSource
 import net.mamoe.mirai.console.internal.plugin.JvmPluginInternal
+import net.mamoe.mirai.console.internal.plugin.MiraiConsoleAsPlugin
 import net.mamoe.mirai.console.internal.pluginManagerImpl
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
@@ -633,10 +634,15 @@ public object BuiltInCommands {
                 reset().append("\n\n")
 
                 append("Plugins: ")
-                if (MiraiConsole.pluginManagerImpl.resolvedPlugins.isEmpty()) {
+
+                val resolvedPlugins = MiraiConsole.pluginManagerImpl.resolvedPlugins.asSequence()
+                    .filter { it !is MiraiConsoleAsPlugin } // skip mirai-console in status
+                    .toList()
+
+                if (resolvedPlugins.isEmpty()) {
                     gray().append("<none>")
                 } else {
-                    MiraiConsole.pluginManagerImpl.resolvedPlugins.joinTo(this) { plugin ->
+                    resolvedPlugins.joinTo(this) { plugin ->
                         if (plugin.isEnabled) {
                             green().append(plugin.name).reset().append(" v").gold()
                         } else {

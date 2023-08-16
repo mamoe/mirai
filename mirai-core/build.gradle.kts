@@ -64,6 +64,7 @@ kotlin {
                 implementation(kotlin("script-runtime"))
                 implementation(`kotlinx-coroutines-test`)
                 api(yamlkt)
+                api(`junit-jupiter-api`)
             }
         }
 

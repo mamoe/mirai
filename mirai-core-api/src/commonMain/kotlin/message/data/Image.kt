@@ -306,7 +306,6 @@ public interface Image : Message, MessageContent, CodableMessage {
          * @see Image.imageType
          */
         public var type: ImageType = ImageType.UNKNOWN
-
         /**
          * @see Image.width
          */
@@ -324,6 +323,9 @@ public interface Image : Message, MessageContent, CodableMessage {
 
 
         public fun build(): Image {
+            if (type == ImageType.UNKNOWN) {
+                type = ImageType.match(imageId.split(".").last())
+            }
             @OptIn(MiraiInternalApi::class)
             return InternalImageProtocol.instance.createImage(
                 imageId = imageId,

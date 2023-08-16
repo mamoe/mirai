@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.internal.plugin.JvmPluginClassLoaderN
 import net.mamoe.mirai.console.internal.plugin.JvmPluginInternal
+import net.mamoe.mirai.console.internal.plugin.loadPluginDescriptionFromClassLoader
 import net.mamoe.mirai.console.internal.util.PluginServiceHelper
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
@@ -33,9 +34,23 @@ import kotlin.reflect.KClass
  * @see KotlinPlugin
  */
 @OptIn(ConsoleExperimentalApi::class)
-public abstract class AbstractJvmPlugin @JvmOverloads constructor(
-    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
-) : JvmPlugin, JvmPluginInternal(parentCoroutineContext), AutoSavePluginDataHolder {
+public abstract class AbstractJvmPlugin : JvmPluginInternal, JvmPlugin, AutoSavePluginDataHolder {
+    @JvmOverloads
+    public constructor(
+        description: JvmPluginDescription,
+        parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+    ) : super(parentCoroutineContext) {
+        this.description = description
+    }
+
+    @JvmOverloads
+    public constructor(parentCoroutineContext: CoroutineContext = EmptyCoroutineContext) : super(parentCoroutineContext) {
+        this.description = javaClass.loadPluginDescriptionFromClassLoader()
+    }
+
+
+    final override val description: JvmPluginDescription
+
     @ConsoleExperimentalApi
     public final override val dataHolderName: String
         get() = this.description.id
@@ -106,7 +121,7 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
      * 注: 仅包括当前插件 JAR 的 Service
      */
     @JvmSynthetic
-    protected fun <T: Any> services(kClass: KClass<out T>): Lazy<List<T>> = lazy {
+    protected fun <T : Any> services(kClass: KClass<out T>): Lazy<List<T>> = lazy {
         val classLoader = try {
             jvmPluginClasspath.pluginClassLoader
         } catch (_: IllegalStateException) {
@@ -127,7 +142,7 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
      *
      * 注: 仅包括当前插件 JAR 的 Service
      */
-    protected fun <T: Any> services(clazz: Class<out T>): Lazy<List<T>> = services(kClass = clazz.kotlin)
+    protected fun <T : Any> services(clazz: Class<out T>): Lazy<List<T>> = services(kClass = clazz.kotlin)
 
     /**
      * 获取 指定类的 SPI Service
