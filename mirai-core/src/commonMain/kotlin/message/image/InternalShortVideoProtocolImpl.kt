@@ -10,6 +10,7 @@
 package net.mamoe.mirai.internal.message.image
 
 import net.mamoe.mirai.internal.message.data.OfflineShortVideoImpl
+import net.mamoe.mirai.internal.message.data.ShortVideoThumbnail
 import net.mamoe.mirai.message.data.InternalShortVideoProtocol
 import net.mamoe.mirai.message.data.OfflineShortVideo
 
@@ -29,10 +30,12 @@ internal class InternalShortVideoProtocolImpl : InternalShortVideoProtocol {
             fileMd5,
             fileSize,
             fileFormat,
-            thumbnailMd5,
-            thumbnailSize,
-            0,
-            0
+            ShortVideoThumbnail(
+                thumbnailMd5,
+                thumbnailSize,
+                0,
+                0
+            )
         )
     }
 }

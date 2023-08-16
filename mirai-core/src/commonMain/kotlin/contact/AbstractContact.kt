@@ -18,6 +18,7 @@ import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ShortVideoUploadEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.data.OfflineShortVideoImpl
+import net.mamoe.mirai.internal.message.data.ShortVideoThumbnail
 import net.mamoe.mirai.internal.message.image.calculateImageInfo
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
@@ -82,10 +83,12 @@ internal abstract class AbstractContact(
                     video.md5,
                     video.size,
                     video.formatName,
-                    thumbnail.md5,
-                    thumbnail.size,
-                    thumbnailInfo.width,
-                    thumbnailInfo.height
+                    ShortVideoThumbnail(
+                        thumbnail.md5,
+                        thumbnail.size,
+                        thumbnailInfo.width,
+                        thumbnailInfo.height
+                    )
                 ).also {
                     ShortVideoUploadEvent.Succeed(this, thumbnail, video, it).broadcast()
                 }
@@ -135,10 +138,12 @@ internal abstract class AbstractContact(
                 video.md5,
                 video.size,
                 video.formatName,
-                thumbnail.md5,
-                thumbnail.size,
-                thumbnailInfo.width,
-                thumbnailInfo.height
+                ShortVideoThumbnail(
+                    thumbnail.md5,
+                    thumbnail.size,
+                    thumbnailInfo.width,
+                    thumbnailInfo.height
+                )
             ).also {
                 ShortVideoUploadEvent.Succeed(this, thumbnail, video, it).broadcast()
             }

@@ -84,10 +84,12 @@ internal class OnlineShortVideoMsgInternal(
             videoFile.fileSize.toLong(),
             videoFile.fileFormat.toVideoFormat(),
             shortVideoDownloadReq.urlV4,
-            videoFile.thumbFileMd5,
-            videoFile.thumbFileSize.toLong(),
-            videoFile.thumbWidth,
-            videoFile.thumbHeight
+            ShortVideoThumbnail(
+                videoFile.thumbFileMd5,
+                videoFile.thumbFileSize.toLong(),
+                videoFile.thumbWidth,
+                videoFile.thumbHeight
+            )
         )
     }
 
@@ -102,12 +104,34 @@ internal class OnlineShortVideoMsgInternal(
 }
 
 @Serializable
-internal class ShortVideoThumbnail(
+internal data class ShortVideoThumbnail(
     val md5: ByteArray,
     val size: Long,
     val width: Int?,
     val height: Int?,
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ShortVideoThumbnail
+
+        if (!md5.contentEquals(other.md5)) return false
+        if (size != other.size) return false
+        if (width != other.width) return false
+        if (height != other.height) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = md5.contentHashCode()
+        result = 31 * result + size.hashCode()
+        result = 31 * result + (width ?: 0)
+        result = 31 * result + (height ?: 0)
+        return result
+    }
+}
 
 internal abstract class AbstractShortVideoWithThumbnail : ShortVideo {
     abstract val thumbnail: ShortVideoThumbnail
@@ -123,18 +147,12 @@ internal class OnlineShortVideoImpl(
     override val fileSize: Long,
     override val fileFormat: String,
     override val urlForDownload: String,
-    val thumbMd5: ByteArray,
-    val thumbSize: Long,
-    @Transient val thumbWidth: Int = 0,
-    @Transient val thumbHeight: Int = 0
+    override val thumbnail: ShortVideoThumbnail
 ) : OnlineShortVideo, AbstractShortVideoWithThumbnail() {
-    override val thumbnail: ShortVideoThumbnail by lazy {
-        ShortVideoThumbnail(thumbMd5, thumbSize, thumbWidth, thumbHeight)
-    }
 
     override fun toString(): String {
         return "[mirai:shortvideo:$videoId, videoName=$filename.$fileFormat, videoMd5=${fileMd5.toUHexString("")}, " +
-                "videoSize=${fileSize}, thumbnailMd5=${thumbMd5.toUHexString("")}, thumbnailSize=${thumbSize}]"
+                "videoSize=${fileSize}, thumbnailMd5=${thumbnail.md5.toUHexString("")}, thumbnailSize=${thumbnail.size}]"
     }
 
     override fun contentToString(): String {
@@ -153,10 +171,7 @@ internal class OnlineShortVideoImpl(
         if (fileSize != other.fileSize) return false
         if (fileFormat != other.fileFormat) return false
         if (urlForDownload != other.urlForDownload) return false
-        if (!thumbMd5.contentEquals(other.thumbMd5)) return false
-        if (thumbSize != other.thumbSize) return false
-        if (thumbWidth != other.thumbWidth) return false
-        if (thumbHeight != other.thumbHeight) return false
+        if (thumbnail != other.thumbnail) return false
 
         return true
     }
@@ -168,10 +183,7 @@ internal class OnlineShortVideoImpl(
         result = 31 * result + fileSize.hashCode()
         result = 31 * result + fileFormat.hashCode()
         result = 31 * result + urlForDownload.hashCode()
-        result = 31 * result + thumbMd5.contentHashCode()
-        result = 31 * result + thumbSize.hashCode()
-        result = 31 * result + thumbWidth
-        result = 31 * result + thumbHeight
+        result = 31 * result + thumbnail.hashCode()
         return result
     }
 }
@@ -183,21 +195,15 @@ internal class OfflineShortVideoImpl(
     override val fileMd5: ByteArray,
     override val fileSize: Long,
     override val fileFormat: String,
-    val thumbMd5: ByteArray,
-    val thumbSize: Long,
-    @Transient val thumbWidth: Int = 0,
-    @Transient val thumbHeight: Int = 0
+    override val thumbnail: ShortVideoThumbnail
 ) : OfflineShortVideo, AbstractShortVideoWithThumbnail() {
-    override val thumbnail: ShortVideoThumbnail by lazy {
-        ShortVideoThumbnail(thumbMd5, thumbSize, thumbWidth, thumbHeight)
-    }
 
     /**
      * offline short video uses
      */
     override fun toString(): String {
         return "[mirai:shortvideo:$videoId, videoName=$filename.$fileFormat, videoMd5=${fileMd5.toUHexString("")}, " +
-                "videoSize=${fileSize}, thumbnailMd5=${thumbMd5.toUHexString("")}, thumbnailSize=${thumbSize}]"
+                "videoSize=${fileSize}, thumbnailMd5=${thumbnail.md5.toUHexString("")}, thumbnailSize=${thumbnail.size}]"
     }
 
     override fun contentToString(): String {
@@ -215,10 +221,7 @@ internal class OfflineShortVideoImpl(
         if (!fileMd5.contentEquals(other.fileMd5)) return false
         if (fileSize != other.fileSize) return false
         if (fileFormat != other.fileFormat) return false
-        if (!thumbMd5.contentEquals(other.thumbMd5)) return false
-        if (thumbSize != other.thumbSize) return false
-        if (thumbWidth != other.thumbWidth) return false
-        if (thumbHeight != other.thumbHeight) return false
+        if (thumbnail != other.thumbnail) return false
 
         return true
     }
@@ -229,10 +232,7 @@ internal class OfflineShortVideoImpl(
         result = 31 * result + fileMd5.contentHashCode()
         result = 31 * result + fileSize.hashCode()
         result = 31 * result + fileFormat.hashCode()
-        result = 31 * result + thumbMd5.contentHashCode()
-        result = 31 * result + thumbSize.hashCode()
-        result = 31 * result + thumbWidth
-        result = 31 * result + thumbHeight
+        result = 31 * result + thumbnail.hashCode()
         return result
     }
 }
