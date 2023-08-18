@@ -58,7 +58,7 @@ public interface NormalMember : Member {
      *
      * @see MemberSpecialTitleChangeEvent  成员群特殊头衔改动事件.
      * @throws PermissionDeniedException 无权限修改时
-     * @suppress 试图修改为空字符串将不会产生空头衔的效果，此时成员实际佩戴头衔将退回为[活跃度相关头衔][Member.active]或管理员头衔.
+     * @suppress 请勿试图修改其为空字符串来产生空头衔效果，这将使成员实际佩戴头衔退回为[活跃度相关头衔][Member.active]或管理员头衔.
      */
     public override var specialTitle: String
 
