@@ -60,7 +60,7 @@ internal class ShortVideoProtocol : MessageProtocol() {
                         fileUuid = data.videoId.encodeToByteArray(),
                         fileMd5 = data.fileMd5,
                         fileName = data.filename.encodeToByteArray(),
-                        fileFormat = data.fileFormat.toVideoFormat(),
+                        fileFormat = FORMAT.firstOrNull { it.first == data.fileFormat }?.second ?: 3,
                         fileTime = 10,
                         fileSize = data.fileSize.toInt(),
                         thumbWidth = thumbWidth,
@@ -79,19 +79,20 @@ internal class ShortVideoProtocol : MessageProtocol() {
         }
 
     }
-}
 
-private fun String.toVideoFormat() = when (this) {
-    "ts" -> 1
-    "avi" -> 2
-    "mp4" -> 3
-    "wmv" -> 4
-    "mkv" -> 5
-    "rmvb" -> 6
-    "rm" -> 7
-    "afs" -> 8
-    "mov" -> 9
-    "mod" -> 10
-    "mts" -> 11
-    else -> -1 // unknown to default
+     internal companion object {
+         internal val FORMAT: List<Pair<String, Int>> = listOf(
+             "ts" to 1,
+             "avi" to 2,
+             "mp4" to 3,
+             "wmv" to 4,
+             "mkv" to 5,
+             "rmvb" to 6,
+             "rm" to 7,
+             "afs" to 8,
+             "mov" to 9,
+             "mod" to 10,
+             "mts" to 11
+         )
+     }
 }

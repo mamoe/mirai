@@ -20,9 +20,11 @@ import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.message.RefinableMessage
 import net.mamoe.mirai.internal.message.RefineContext
 import net.mamoe.mirai.internal.message.RefineContextKey
+import net.mamoe.mirai.internal.message.protocol.impl.ShortVideoProtocol
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.packet.chat.video.PttCenterSvr
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.toUHexString
 
 /**
@@ -78,12 +80,16 @@ internal class OnlineShortVideoMsgInternal(
                         "queried result: ${shortVideoDownloadReq.fileMd5.toUHexString("")}"
             )
 
+        val format = ShortVideoProtocol.FORMAT
+            .firstOrNull { it.second == videoFile.fileFormat }?.first
+            ?: ExternalResource.DEFAULT_FORMAT_NAME
+
         return OnlineShortVideoImpl(
             videoFile.fileUuid.decodeToString(),
             shortVideoDownloadReq.fileMd5,
             videoFile.fileName.decodeToString(),
             videoFile.fileSize.toLong(),
-            videoFile.fileFormat.toVideoFormat(),
+            format,
             shortVideoDownloadReq.urlV4,
             ShortVideoThumbnail(
                 videoFile.thumbFileMd5,
@@ -236,19 +242,4 @@ internal class OfflineShortVideoImpl(
         result = 31 * result + thumbnail.hashCode()
         return result
     }
-}
-
-private fun Int.toVideoFormat() = when (this) {
-    1 -> "ts"
-    2 -> "avi"
-    3 -> "mp4"
-    4 -> "wmv"
-    5 -> "mkv"
-    6 -> "rmvb"
-    7 -> "rm"
-    8 -> "afs"
-    9 -> "mov"
-    10 -> "mod"
-    11 -> "mts"
-    else -> "mirai" // unknown to default
 }
