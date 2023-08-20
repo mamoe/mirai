@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
@@ -11,10 +11,8 @@ package net.mamoe.mirai.internal.message.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.message.RefinableMessage
