@@ -56,8 +56,9 @@ public interface NormalMember : Member {
      *
      * 在修改时将会异步上传至服务器.
      *
-     * @see MemberSpecialTitleChangeEvent 群特殊头衔被管理员, 自己或 [Bot] 改动事件. 修改时也会触发此事件.
+     * @see MemberSpecialTitleChangeEvent  成员群特殊头衔改动事件.
      * @throws PermissionDeniedException 无权限修改时
+     * @suppress 请勿试图修改其为空字符串来产生空头衔效果，这将使成员实际佩戴头衔退回为[活跃度相关头衔][Member.active]或管理员头衔.
      */
     public override var specialTitle: String
 
