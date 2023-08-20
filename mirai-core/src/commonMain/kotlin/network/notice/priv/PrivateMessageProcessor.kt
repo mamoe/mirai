@@ -15,6 +15,8 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.getGroupByUinOrCode
+import net.mamoe.mirai.internal.message.RefineContextKey
+import net.mamoe.mirai.internal.message.SimpleRefineContext
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
@@ -25,6 +27,7 @@ import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
+import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.context
 
@@ -114,6 +117,7 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
                 val group = bot.getGroupByUinOrCode(tmpHead.groupUin) ?: return
                 handlePrivateMessage(data, group[senderUin] ?: return)
             }
+
             else -> markNotConsumed()
         }
 
@@ -129,7 +133,16 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
         val msgs = user.fragmentedMessageMerger.tryMerge(this)
         if (msgs.isEmpty()) return
 
-        val chain = msgs.toMessageChainOnline(bot, 0, user.correspondingMessageSourceKind)
+        val chain = msgs.toMessageChainOnline(
+            bot,
+            0,
+            user.correspondingMessageSourceKind,
+            SimpleRefineContext(
+                RefineContextKey.MessageSourceKind to MessageSourceKind.FRIEND,
+                RefineContextKey.FromId to user.uin,
+                RefineContextKey.GroupIdOrZero to 0L,
+            )
+        )
         val time = msgHead.msgTime
 
         collected += if (fromSync) {

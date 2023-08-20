@@ -16,6 +16,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.message.MessageSourceSerializerImpl
+import net.mamoe.mirai.internal.message.RefineContextKey
+import net.mamoe.mirai.internal.message.SimpleRefineContext
 import net.mamoe.mirai.internal.message.toMessageChainNoSource
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -183,7 +185,10 @@ internal fun OfflineMessageSourceImplData(
         internalIds = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer())
             .origUids?.mapToIntArray { it.toInt() } ?: intArrayOf(),
         time = delegate.time,
-        originalMessageLazy = lazy { delegate.toMessageChainNoSource(bot, messageSourceKind, groupIdOrZero) },
+        originalMessageLazy = lazy {
+            val context = SimpleRefineContext(RefineContextKey.FromId to delegate.senderUin)
+            delegate.toMessageChainNoSource(bot, messageSourceKind, groupIdOrZero, context)
+        },
         fromId = delegate.senderUin,
         targetId = when {
             groupIdOrZero != 0L -> groupIdOrZero
@@ -191,6 +196,7 @@ internal fun OfflineMessageSourceImplData(
             delegate.srcMsg != null -> runCatching {
                 delegate.srcMsg.loadAs(MsgComm.Msg.serializer()).msgHead.toUin
             }.getOrElse { 0L }
+
             else -> 0/*error("cannot find targetId. delegate=${delegate._miraiContentToString()}, delegate.srcMsg=${
             kotlin.runCatching { delegate.srcMsg?.loadAs(MsgComm.Msg.serializer())?._miraiContentToString() }
                 .fold(

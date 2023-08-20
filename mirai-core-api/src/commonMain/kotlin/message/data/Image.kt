@@ -572,6 +572,7 @@ public interface InternalImageProtocol { // naming it Internal* to assign it a l
     @MiraiInternalApi
     public companion object {
         public val instance: InternalImageProtocol by lazy {
+            Mirai // initialize MiraiImpl first
             loadService(
                 InternalImageProtocol::class,
                 "net.mamoe.mirai.internal.message.InternalImageProtocolImpl"

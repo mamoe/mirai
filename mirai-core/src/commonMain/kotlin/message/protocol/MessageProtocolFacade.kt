@@ -135,7 +135,9 @@ internal interface MessageProtocolFacade {
         groupIdOrZero: Long,
         messageSourceKind: MessageSourceKind,
         bot: Bot,
-    ): MessageChain = buildMessageChain { decode(elements, groupIdOrZero, messageSourceKind, bot, this, null) }
+    ): MessageChain = buildMessageChain {
+        decode(elements, groupIdOrZero, messageSourceKind, bot, this, null)
+    }
 
 
     fun createSerializersModule(): SerializersModule = SerializersModule {
@@ -336,6 +338,7 @@ internal class MessageProtocolFacadeImpl(
 
         return getSingleReceipt(result, message)
     }
+
     override suspend fun <C : AbstractContact> preprocessAndSendOutgoing(
         target: C,
         message: Message,
@@ -378,6 +381,7 @@ internal class MessageProtocolFacadeImpl(
                 "Internal error: no MessageReceipt was returned from OutgoingMessagePipeline for message",
                 forDebug = message.structureToString()
             )
+
             1 -> return result.single().castUp()
             else -> throw contextualBugReportException(
                 "Internal error: multiple MessageReceipts were returned from OutgoingMessagePipeline: $result",

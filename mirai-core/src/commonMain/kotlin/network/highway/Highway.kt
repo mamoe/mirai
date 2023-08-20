@@ -126,6 +126,8 @@ internal enum class ResourceKind(
     FORWARD_MESSAGE("forward message"),
 
     ANNOUNCEMENT_IMAGE("announcement image"),
+
+    SHORT_VIDEO("short video")
     ;
 
     override fun toString(): String = display

@@ -723,9 +723,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             it.fileName to it.buffer.loadAs(MsgTransmit.PbMultiMsgNew.serializer())
         }
         val main = pbs["MultiMsg"] ?: return this.msg.map { it.toNode(bot, EmptyRefineContext) }
-        val context = SimpleRefineContext(mutableMapOf())
-        context[ForwardMessageInternal.MsgTransmits] = pbs
-        return main.toForwardMessageNodes(bot, context)
+        return main.toForwardMessageNodes(bot, SimpleRefineContext(ForwardMessageInternal.MsgTransmits to pbs))
     }
 
     private suspend fun MsgComm.Msg.toNode(bot: Bot, refineContext: RefineContext): ForwardMessage.Node {

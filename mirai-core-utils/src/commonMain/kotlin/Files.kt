@@ -15,27 +15,35 @@ package net.mamoe.mirai.utils
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
+private class FileType(
+    signature: String,
+    val requiredHeaderSize: Int,
+    val formatName: String
+) {
+    val signatureRegex = Regex(signature, RegexOption.IGNORE_CASE)
+}
+
 /**
  * 文件头和文件类型列表
  */
-public val FILE_TYPES: MutableMap<String, String> = mutableMapOf(
-    "FFD8FF" to "jpg",
-    "89504E47" to "png",
-    "47494638" to "gif",
+private val FILE_TYPES: List<FileType> = listOf(
+    FileType("^FFD8FF", 3, "jpg"),
+    FileType("^89504E47", 4, "png"),
+    FileType("^47494638", 4, "gif"),
+    FileType("^424D", 3, "bmp"),
+    FileType("^2321414D52", 5, "amr"),
+    FileType("^02232153494C4B5F5633", 10, "silk"),
+    FileType("^([a-zA-Z0-9]{8})66747970", 8, "mp4"),
+
     //"49492A00" to "tif", // client doesn't support
-    "424D" to "bmp",
     //"52494646" to "webp", // pc client doesn't support
-
     // "57415645" to "wav", // server doesn't support
-
-    "2321414D52" to "amr",
-    "02232153494C4B5F5633" to "silk",
 )
 
 /**
  * 在 [getFileType] 需要的 [ByteArray] 长度
  */
-public val COUNT_BYTES_USED_FOR_DETECTING_FILE_TYPE: Int get() = FILE_TYPES.maxOf { it.key.length / 2 }
+public val COUNT_BYTES_USED_FOR_DETECTING_FILE_TYPE: Int by lazy { FILE_TYPES.maxOf { it.requiredHeaderSize } }
 
 /*
 
@@ -53,9 +61,9 @@ public fun getFileType(fileHeader: ByteArray): String? {
         "",
         length = COUNT_BYTES_USED_FOR_DETECTING_FILE_TYPE.coerceAtMost(fileHeader.size)
     )
-    FILE_TYPES.forEach { (k, v) ->
-        if (hex.startsWith(k)) {
-            return v
+    FILE_TYPES.forEach { t ->
+        if (hex.contains(t.signatureRegex)) {
+            return t.formatName
         }
     }
     return null

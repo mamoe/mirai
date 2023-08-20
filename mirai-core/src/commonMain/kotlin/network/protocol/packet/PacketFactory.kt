@@ -18,6 +18,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.*
+import net.mamoe.mirai.internal.network.protocol.packet.chat.video.PttCenterSvr
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
@@ -151,6 +152,8 @@ internal object KnownPacketFactories {
         PttStore.GroupPttUp,
         PttStore.GroupPttDown,
         PttStore.C2CPttDown,
+        PttCenterSvr.GroupShortVideoUpReq,
+        PttCenterSvr.ShortVideoDownReq,
         LongConn.OffPicUp,
 //        LongConn.OffPicDown,
         TroopManagement.EditSpecialTitle,

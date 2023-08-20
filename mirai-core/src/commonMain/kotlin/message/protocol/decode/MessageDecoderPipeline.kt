@@ -29,6 +29,7 @@ internal interface MessageDecoderContext : ProcessorPipelineContext<ImMsgBody.El
         val MESSAGE_SOURCE_KIND = TypeKey<MessageSourceKind>("messageSourceKind")
         val GROUP_ID = TypeKey<Long>("groupId") // zero if not group
         val CONTAINING_MSG = TypeKey<MsgComm.Msg?>("containingMsg")
+        val FROM_ID = TypeKey<Long>("fromId") // group/temp = sender, friend/stranger = this
     }
 }
 

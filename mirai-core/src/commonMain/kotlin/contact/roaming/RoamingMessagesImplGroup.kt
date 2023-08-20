@@ -12,6 +12,8 @@ package net.mamoe.mirai.internal.contact.roaming
 import kotlinx.coroutines.flow.*
 import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
 import net.mamoe.mirai.internal.contact.CommonGroupImpl
+import net.mamoe.mirai.internal.message.RefineContextKey
+import net.mamoe.mirai.internal.message.SimpleRefineContext
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
@@ -65,7 +67,18 @@ internal class RoamingMessagesImplGroup(
                         .sortedByDescending { it.msgHead.msgSeq } // Ensure caller receives newer messages first
                         .filter { filter.apply(it) } // Call filter after sort
                         .asFlow()
-                        .map { listOf(it).toMessageChainOnline(bot, contact.id, MessageSourceKind.GROUP) }
+                        .map {
+                            listOf(it).toMessageChainOnline(
+                                bot,
+                                contact.id,
+                                MessageSourceKind.GROUP,
+                                SimpleRefineContext(
+                                    RefineContextKey.MessageSourceKind to MessageSourceKind.GROUP,
+                                    RefineContextKey.FromId to it.msgHead.fromUin,
+                                    RefineContextKey.GroupIdOrZero to contact.uin,
+                                )
+                            )
+                        }
                 )
 
                 currentSeq = resp.msgElem.first().msgHead.msgSeq

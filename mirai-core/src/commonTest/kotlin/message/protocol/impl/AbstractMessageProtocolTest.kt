@@ -236,7 +236,12 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
     protected open fun Deferred<ChecksConfiguration>.doDecoderChecks() {
         val config = this.getCompleted()
         doDecoderChecks(config.messageChain, protocols) {
-            decodeAndRefineLight(config.elems, config.groupIdOrZero, config.messageSourceKind, bot)
+            decodeAndRefineLight(
+                config.elems,
+                config.groupIdOrZero,
+                config.messageSourceKind,
+                bot
+            )
         }
     }
 
@@ -280,6 +285,7 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
                     sender = bot,
                     target = defaultTarget
                 )
+
                 is Friend -> OnlineMessageSourceToFriendImpl(
                     sequenceIds = intArrayOf(1),
                     internalIds = intArrayOf(1),
@@ -288,6 +294,7 @@ internal abstract class AbstractMessageProtocolTest : AbstractMockNetworkHandler
                     sender = bot,
                     target = defaultTarget
                 )
+
                 else -> error("Unexpected target: $defaultTarget")
             }
         }

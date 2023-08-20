@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.contact.roaming.RoamingMessageFilter
+import net.mamoe.mirai.internal.message.RefineContextKey
+import net.mamoe.mirai.internal.message.SimpleRefineContext
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetRoamMsgReq
 import net.mamoe.mirai.message.data.MessageChain
@@ -32,13 +34,18 @@ internal sealed class TimeBasedRoamingMessagesImpl : AbstractRoamingMessages() {
             while (currentCoroutineContext().isActive) {
                 val resp = requestRoamMsg(timeStart, lastMessageTime, random)
                 val messages = resp.messages ?: break
+
                 if (filter == null || filter === RoamingMessageFilter.ANY) {
                     // fast path
-                    messages.forEach { emit(it.toMessageChainOnline(contact.bot)) }
+                    messages.forEach { msg ->
+                        val context = SimpleRefineContext(RefineContextKey.FromId to msg.msgHead.fromUin)
+                        emit(msg.toMessageChainOnline(contact.bot, context))
+                    }
                 } else {
                     for (message in messages) {
                         if (filter.invoke(createRoamingMessage(message, messages))) {
-                            emit(message.toMessageChainOnline(contact.bot))
+                            val context = SimpleRefineContext(RefineContextKey.FromId to message.msgHead.fromUin)
+                            emit(message.toMessageChainOnline(contact.bot, context))
                         }
                     }
                 }

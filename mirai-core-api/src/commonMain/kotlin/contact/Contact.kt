@@ -72,8 +72,6 @@ public interface Contact : ContactOrBot, CoroutineScope {
     /**
      * 上传一个 [资源][ExternalResource] 作为图片以备发送.
      *
-     * **无论上传是否成功都不会关闭 [resource]. 需要调用方手动关闭资源**
-     *
      * 也可以使用其他扩展: [ExternalResource.uploadAsImage] 使用 [File], [InputStream] 等上传.
      *
      * @see Image 查看有关图片的更多信息, 如上传图片
@@ -88,6 +86,26 @@ public interface Contact : ContactOrBot, CoroutineScope {
      */
     public suspend fun uploadImage(resource: ExternalResource): Image
 
+    /**
+     * 上传 [资源][ExternalResource] 作为短视频发送.
+     * 同时需要上传缩略图作为视频消息显示的封面.
+     *
+     * @see ShortVideo 查看有关短视频的更多信息
+     *
+     * @see BeforeShortVideoUploadEvent 短视频发送前事件，可通过中断来拦截视频上传.
+     * @see ShortVideoUploadEvent 短视频上传完成事件，不可拦截.
+     *
+     * @param thumbnail 短视频封面图，为图片资源.
+     * @param video 视频资源，目前仅支持上传 mp4 格式的视频.
+     * @param fileName 文件名，若为 `null` 则根据 [video] 自动生成.
+     */
+    public suspend fun uploadShortVideo(
+        thumbnail: ExternalResource,
+        video: ExternalResource,
+        fileName: String? = null
+    ): ShortVideo
+
+    @JvmBlockingBridge
     public companion object {
         /**
          * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人

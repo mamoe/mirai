@@ -83,6 +83,10 @@ internal object MiraiCoreServices {
         ) { net.mamoe.mirai.internal.message.protocol.impl.RichMessageProtocol() }
         Services.register(
             msgProtocol,
+            "net.mamoe.mirai.internal.message.protocol.impl.ShortVideoProtocol"
+        ) { net.mamoe.mirai.internal.message.protocol.impl.ShortVideoProtocol() }
+        Services.register(
+            msgProtocol,
             "net.mamoe.mirai.internal.message.protocol.impl.TextProtocol"
         ) { net.mamoe.mirai.internal.message.protocol.impl.TextProtocol() }
         Services.register(
