@@ -8,8 +8,8 @@
  */
 
 plugins {
-    kotlin("jvm") version "1.8.10"
-    kotlin("plugin.serialization") version "1.8.10"
+    kotlin("jvm") version "1.8.20"
+    kotlin("plugin.serialization") version "1.8.20"
     id("net.mamoe.mirai-console") version "2.99.0-local"
     java
 }

@@ -73,7 +73,7 @@ kotlin.target.compilations.all {
 // https://plugins.jetbrains.com/docs/intellij/kotlin.html#kotlin-standard-library
 tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
     sinceBuild.set("223")
-    untilBuild.set("231.*")
+    untilBuild.set("232.*")
     pluginDescription.set(
         """
         Plugin development support for <a href='https://github.com/mamoe/mirai'>Mirai Console</a>
