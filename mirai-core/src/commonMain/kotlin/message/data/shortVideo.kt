@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright 2019-2023 Mamoe Technologies and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
@@ -15,6 +15,7 @@ import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.message.RefinableMessage
 import net.mamoe.mirai.internal.message.RefineContext
@@ -48,14 +49,14 @@ internal class OnlineShortVideoMsgInternal(
             else -> return null // TODO: ignore processing stranger's video message
         } as Contact
         val sender = when (sourceKind) {
-            net.mamoe.mirai.message.data.MessageSourceKind.FRIEND -> bot.getFriend(fromId)
+            net.mamoe.mirai.message.data.MessageSourceKind.FRIEND ->
+                bot.getFriend(fromId) ?: error("Cannot find friend $fromId.")
             net.mamoe.mirai.message.data.MessageSourceKind.GROUP -> {
-                val group = bot.getGroup(groupId)
-                checkNotNull(group).members[fromId]
+                val group = bot.getGroup(groupId) ?: error("Cannot find group $groupId.")
+                group.getMember(fromId) ?: error("Cannot find member $fromId of group $groupId.")
             }
-
             else -> return null // TODO: ignore processing stranger's video message
-        } as User
+        }
 
         val shortVideoDownloadReq = bot.network.sendAndExpect(
             PttCenterSvr.ShortVideoDownReq(
@@ -68,11 +69,11 @@ internal class OnlineShortVideoMsgInternal(
         )
 
         if (shortVideoDownloadReq !is PttCenterSvr.ShortVideoDownReq.Response.Success)
-            throw IllegalStateException("failed to query short video download attributes.")
+            throw IllegalStateException("Failed to query short video download attributes.")
 
         if (!shortVideoDownloadReq.fileMd5.contentEquals(videoFile.fileMd5))
             throw IllegalStateException(
-                "queried short video download attributes doesn't match the requests. " +
+                "Queried short video download attributes doesn't match the requests. " +
                         "message provides: ${videoFile.fileMd5.toUHexString("")}, " +
                         "queried result: ${shortVideoDownloadReq.fileMd5.toUHexString("")}"
             )
