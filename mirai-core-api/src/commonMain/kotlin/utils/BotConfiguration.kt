@@ -234,7 +234,9 @@ public open class BotConfiguration : AbstractBotConfiguration() { // open for Ja
         /**
          * Android 手表.
          *
-         * 注意: 不支持戳一戳事件解析
+         * 注意:
+         * - 不支持戳一戳事件解析
+         * - 由于该协议的省电特性, 当群被设置为不提醒的的时候, 服务器不会推送消息.
          */
         ANDROID_WATCH,
 
