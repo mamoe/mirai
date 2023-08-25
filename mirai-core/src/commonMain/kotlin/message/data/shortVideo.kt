@@ -12,7 +12,6 @@ package net.mamoe.mirai.internal.message.data
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.message.RefinableMessage
@@ -44,18 +43,17 @@ internal class OnlineShortVideoMsgInternal(
         val groupId = refineContext[RefineContextKey.GroupIdOrZero] ?: return null
 
         val contact = when (sourceKind) {
-            net.mamoe.mirai.message.data.MessageSourceKind.FRIEND -> bot.getFriend(fromId)
-            net.mamoe.mirai.message.data.MessageSourceKind.GROUP -> bot.getGroup(groupId)
-            else -> return null // TODO: ignore processing stranger's video message
-        } as Contact
+            MessageSourceKind.FRIEND -> bot.getFriend(fromId) ?: error("Cannot find friend $fromId.")
+            MessageSourceKind.GROUP -> bot.getGroup(groupId) ?: error("Cannot find group $fromId.")
+            else -> return null // ignore processing stranger's video message
+        }
         val sender = when (sourceKind) {
-            net.mamoe.mirai.message.data.MessageSourceKind.FRIEND ->
-                bot.getFriend(fromId) ?: error("Cannot find friend $fromId.")
-            net.mamoe.mirai.message.data.MessageSourceKind.GROUP -> {
+            MessageSourceKind.FRIEND -> bot.getFriend(fromId) ?: error("Cannot find friend $fromId.")
+            MessageSourceKind.GROUP -> {
                 val group = bot.getGroup(groupId) ?: error("Cannot find group $groupId.")
                 group.getMember(fromId) ?: error("Cannot find member $fromId of group $groupId.")
             }
-            else -> return null // TODO: ignore processing stranger's video message
+            else -> return null // ignore processing stranger's video message
         }
 
         val shortVideoDownloadReq = bot.network.sendAndExpect(
