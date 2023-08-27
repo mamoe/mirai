@@ -92,3 +92,11 @@ plugins {
     id("net.mamoe.mirai-console") version "2.15.0-build-index-1"
 }
 ```
+
+## 附录
+
+### 获取 dev 分支的最新版本号
+
+1. 访问 Mirai Build Index API: <https://build.mirai.mamoe.net/v1/mirai-core/dev/indexes/latest> 获取 "value" 的值, 例如 `127`
+2. 访问 <https://github.com/mamoe/mirai/blob/dev/buildSrc/src/main/kotlin/Versions.kt> 获取由 `/*PROJECT_VERSION_START*/` 和 `/*PROJECT_VERSION_END*/` 包围的主分支版本号, 例如 `2.16.0`
+3. 组合得到版本号 `2.16.0-dev-127`
