@@ -26,7 +26,6 @@ import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.utils.TypeKey
 import net.mamoe.mirai.utils.buildTypeSafeMap
-import kotlin.math.max
 
 internal class NewContact {
 

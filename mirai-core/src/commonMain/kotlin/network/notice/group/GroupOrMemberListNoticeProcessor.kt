@@ -26,7 +26,6 @@ import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
-import net.mamoe.mirai.internal.network.components.context
 import net.mamoe.mirai.internal.network.notice.decoders.DecodedNotifyMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
