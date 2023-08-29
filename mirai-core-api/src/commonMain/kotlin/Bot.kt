@@ -18,6 +18,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.friendgroup.FriendGroups
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.network.LoginFailedException
@@ -169,6 +170,14 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      * @see MemberNudge.sendTo 发送这个戳一戳消息
      */
     public override fun nudge(): BotNudge = BotNudge(this)
+
+    /**
+     * 获取未处理的好友请求事件
+     *
+     * @see NewFriendRequestEvent
+     * @since 2.16
+     */
+    public suspend fun getNewFriendRequestList(): List<NewFriendRequestEvent>
 
 
     /**

@@ -12,11 +12,13 @@ package net.mamoe.mirai.internal
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.auth.AuthReason
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
+import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.internal.contact.friendgroup.FriendGroupsImpl
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ComponentStorageDelegate
@@ -317,6 +319,10 @@ internal open class QQAndroidBot constructor(
                 )
             },
         ) // We can move the factory to configuration but this is not necessary for now.
+    }
+
+    override suspend fun getNewFriendRequestList(): List<NewFriendRequestEvent> {
+        return Mirai.getNewFriendRequestList(this)
     }
 }
 

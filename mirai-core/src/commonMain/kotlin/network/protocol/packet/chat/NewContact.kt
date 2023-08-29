@@ -17,7 +17,6 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.NoticeProcessorPipeline.Companion.processPacketThroughPipeline
-import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
@@ -32,7 +31,7 @@ import kotlin.math.max
 internal class NewContact {
 
     internal object SystemMsgNewFriend :
-        OutgoingPacketFactory<Packet>("ProfileService.Pb.ReqSystemMsgNew.Friend") {
+        OutgoingPacketFactory<SystemMsgNewFriend.Response>("ProfileService.Pb.ReqSystemMsgNew.Friend") {
 
         operator fun invoke(client: QQAndroidClient) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
@@ -56,33 +55,26 @@ internal class NewContact {
             )
         }
 
+        internal class Response(val list: List<NewFriendRequestEvent>) : Packet
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet {
-            readProtoBuf(Structmsg.RspSystemMsgNew.serializer()).run {
-                return friendmsgs/*.filter {
-                    it.msgTime >= bot.syncController.latestMsgNewFriendTime
-                }*/.mapNotNull { struct ->
-                    /*if (!bot.syncController.syncNewFriend(struct.msgSeq, struct.msgTime)) { // duplicate
-                        return@mapNotNull null
-                    }*/
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val resp = readProtoBuf(Structmsg.RspSystemMsgNew.serializer())
 
-                    /*struct.msg?.run {
-                        NewFriendRequestEvent(
-                            bot,
-                            struct.msgSeq,
-                            msgAdditional,
-                            struct.reqUin,
-                            groupCode,
-                            reqUinNick,
-                        )
-                    }*/
-                    bot.processPacketThroughPipeline(struct, buildTypeSafeMap { set(SYSTEM_MSG_TYPE, 0) })
-                }.toPacket()/*.also {
-                    bot.syncController.run {
-                        latestMsgNewFriendTime = max(latestMsgNewFriendTime, friendmsgs.maxOfOrNull { it.msgTime } ?: 0)
-                    }
-                }*/
-            }
+            return resp.friendmsgs.map { struct ->
+                bot.processPacketThroughPipeline(struct, buildTypeSafeMap { set(SYSTEM_MSG_TYPE, 0) })
+
+                val systemMsg = struct.msg ?: return@map null
+                if (systemMsg.actions.size < 2) return@map null // 只返回可以操作的（同意或拒绝好友请求）
+
+                NewFriendRequestEvent(
+                    bot,
+                    struct.msgSeq,
+                    systemMsg.msgAdditional,
+                    struct.reqUin,
+                    systemMsg.groupCode,
+                    systemMsg.reqUinNick,
+                )
+            }.filterNotNull().let { Response(it) }
         }
 
         internal object Action : OutgoingPacketFactory<Nothing?>("ProfileService.Pb.ReqSystemMsgAction.Friend") {
@@ -163,7 +155,7 @@ internal class NewContact {
             return readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 groupmsgs/*.filter {
                     it.msgTime >= bot.syncController.latestMsgNewGroupTime
-                }*/.mapNotNull { struct ->
+                }*/.map { struct ->
                     /*if (!bot.syncController.syncNewGroup(struct.msgSeq, struct.msgTime)) { // duplicate
                         return@mapNotNull null
                     }*/
