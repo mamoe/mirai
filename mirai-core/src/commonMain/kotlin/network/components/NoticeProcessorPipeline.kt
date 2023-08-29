@@ -171,6 +171,7 @@ internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
             is Structmsg.StructMsg -> processImpl(data)
             is RequestPushStatus -> processImpl(data)
             is DecodedNotifyMsgBody -> processImpl(data)
+            is Structmsg.RspSystemMsgNew -> processImpl(data)
         }
     }
 
@@ -183,4 +184,5 @@ internal abstract class MixedNoticeProcessor : AnyNoticeProcessor() {
     protected open suspend fun NoticePipelineContext.processImpl(data: RequestPushStatus) {}
 
     protected open suspend fun NoticePipelineContext.processImpl(data: DecodedNotifyMsgBody) {}
+    protected open suspend fun NoticePipelineContext.processImpl(data: Structmsg.RspSystemMsgNew) {}
 }

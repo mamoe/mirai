@@ -25,12 +25,15 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.components.ContactUpdater
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
+import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
+import net.mamoe.mirai.internal.network.components.context
 import net.mamoe.mirai.internal.network.notice.decoders.DecodedNotifyMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x44
+import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.parseToMessageDataList
 import net.mamoe.mirai.internal.utils.toMemberInfo
@@ -38,6 +41,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.context
 import net.mamoe.mirai.utils.read
 import net.mamoe.mirai.utils.structureToString
+import kotlin.math.max
 
 
 /**
@@ -197,19 +201,26 @@ internal class GroupOrMemberListNoticeProcessor(
     // Structmsg.StructMsg
     ///////////////////////////////////////////////////////////////////////////
 
-    override suspend fun NoticePipelineContext.processImpl(data: Structmsg.StructMsg) = data.msg.context {
-        if (this == null) return
+    override suspend fun NoticePipelineContext.processImpl(data: Structmsg.StructMsg) {
+        val systemMsg = data.msg ?: return
+        if (attributes[NewContact.SYSTEM_MSG_TYPE] != 1) return
+
+        if (data.msgTime <= bot.syncController.latestMsgNewGroupTime) return
+        if (!bot.syncController.syncNewGroup(data.msgSeq, data.msgTime)) return // duplicate
+
         markAsConsumed()
-        when (subType) {
+        var consumed = true
+
+        when (systemMsg.subType) {
             0 -> {
-                if (groupMsgType == 8) {
+                if (systemMsg.groupMsgType == 8) {
                     // #1388: 使用手机TIM邀请入群，我为管理员，成功邀请 bot 入群
 
                     // 能正常解析 BotInvitedJoinGroupRequestEvent 和 BotJoinGroupEvent.Active, 因此忽略该通知
                     return
                 } else {
                     throw contextualBugReportException(
-                        "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=$groupMsgType",
+                        "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=${systemMsg.groupMsgType}",
                         data.structureToString(),
                         null,
                         "并描述此时机器人是否被邀请加入群等其他",
@@ -218,26 +229,27 @@ internal class GroupOrMemberListNoticeProcessor(
             }
 
             // 处理被邀请入群 或 处理成员入群申请
-            1 -> when (groupMsgType) {
+            1 -> when (systemMsg.groupMsgType) {
                 1 -> {
                     // 成员申请入群
                     collected += MemberJoinRequestEvent(
-                        bot, data.msgSeq, msgAdditional,
-                        data.reqUin, groupCode, groupName, reqUinNick
+                        bot, data.msgSeq, systemMsg.msgAdditional,
+                        data.reqUin, systemMsg.groupCode, systemMsg.groupName, systemMsg.reqUinNick
                     )
                 }
                 2 -> {
                     // Bot 被邀请入群
                     collected += BotInvitedJoinGroupRequestEvent(
-                        bot, data.msgSeq, actionUin,
-                        groupCode, groupName, actionUinNick
+                        bot, data.msgSeq, systemMsg.actionUin,
+                        systemMsg.groupCode, systemMsg.groupName, systemMsg.actionUinNick
                     )
                 }
                 22 -> {
                     // 成员邀请入群
                     collected += MemberJoinRequestEvent(
-                        bot, data.msgSeq, msgAdditional,
-                        data.reqUin, groupCode, groupName, reqUinNick, actionUin
+                        bot, data.msgSeq, systemMsg.msgAdditional,
+                        data.reqUin, systemMsg.groupCode, systemMsg.groupName,
+                        systemMsg.reqUinNick, systemMsg.actionUin
                     )
                 }
                 else -> throw contextualBugReportException(
@@ -256,8 +268,8 @@ internal class GroupOrMemberListNoticeProcessor(
             3 -> { // 已被请他管理员处理
             }
             5 -> {
-                val group = bot.getGroup(groupCode) ?: return
-                when (groupMsgType) {
+                val group = bot.getGroup(systemMsg.groupCode) ?: return
+                when (systemMsg.groupMsgType) {
                     3 -> {
                         // https://github.com/mamoe/mirai/issues/651
                         // msgDescribe=将你设置为管理员
@@ -268,7 +280,7 @@ internal class GroupOrMemberListNoticeProcessor(
                         // 但无法获取是哪个成员.
                     }
                     7 -> { // 机器人被踢
-                        val operator = group[actionUin] ?: return
+                        val operator = group[systemMsg.actionUin] ?: return
                         collected += BotLeaveEvent.Kick(operator)
                     }
                     6 -> {
@@ -284,7 +296,7 @@ internal class GroupOrMemberListNoticeProcessor(
                     }
                     else -> {
                         throw contextualBugReportException(
-                            "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=$groupMsgType",
+                            "解析 NewContact.SystemMsgNewGroup, subType=5, groupMsgType=${systemMsg.groupMsgType}",
                             this.structureToString(),
                             null,
                             "并描述此时机器人是否被踢出群等",
@@ -292,7 +304,15 @@ internal class GroupOrMemberListNoticeProcessor(
                     }
                 }
             }
-            else -> markNotConsumed()
+            else -> {
+                consumed = false
+                markNotConsumed()
+            }
+        }
+
+        if (consumed) {
+            val latestTime = bot.syncController.latestMsgNewGroupTime
+            bot.syncController.latestMsgNewGroupTime = max(latestTime, data.msgTime)
         }
     }
 

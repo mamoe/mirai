@@ -25,6 +25,8 @@ import net.mamoe.mirai.internal.network.toPacket
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.utils.TypeKey
+import net.mamoe.mirai.utils.buildTypeSafeMap
 import kotlin.math.max
 
 internal class NewContact {
@@ -49,6 +51,7 @@ internal class NewContact {
                     isGetGrpRibbon = false,
                     msgNum = 20,
                     version = 1000,
+                    reqMsgType = 2,
                 ),
             )
         }
@@ -56,13 +59,14 @@ internal class NewContact {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet {
             readProtoBuf(Structmsg.RspSystemMsgNew.serializer()).run {
-                return friendmsgs.filter {
+                return friendmsgs/*.filter {
                     it.msgTime >= bot.syncController.latestMsgNewFriendTime
-                }.mapNotNull { struct ->
-                    if (!bot.syncController.syncNewFriend(struct.msgSeq, struct.msgTime)) { // duplicate
+                }*/.mapNotNull { struct ->
+                    /*if (!bot.syncController.syncNewFriend(struct.msgSeq, struct.msgTime)) { // duplicate
                         return@mapNotNull null
-                    }
-                    struct.msg?.run {
+                    }*/
+
+                    /*struct.msg?.run {
                         NewFriendRequestEvent(
                             bot,
                             struct.msgSeq,
@@ -71,12 +75,13 @@ internal class NewContact {
                             groupCode,
                             reqUinNick,
                         )
-                    }
-                }.toPacket().also {
+                    }*/
+                    bot.processPacketThroughPipeline(struct, buildTypeSafeMap { set(SYSTEM_MSG_TYPE, 0) })
+                }.toPacket()/*.also {
                     bot.syncController.run {
                         latestMsgNewFriendTime = max(latestMsgNewFriendTime, friendmsgs.maxOfOrNull { it.msgTime } ?: 0)
                     }
-                }
+                }*/
             }
         }
 
@@ -152,19 +157,22 @@ internal class NewContact {
 
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet {
+            val resp = readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer())
+
+
             return readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
-                groupmsgs.filter {
+                groupmsgs/*.filter {
                     it.msgTime >= bot.syncController.latestMsgNewGroupTime
-                }.mapNotNull { struct ->
-                    if (!bot.syncController.syncNewGroup(struct.msgSeq, struct.msgTime)) { // duplicate
+                }*/.mapNotNull { struct ->
+                    /*if (!bot.syncController.syncNewGroup(struct.msgSeq, struct.msgTime)) { // duplicate
                         return@mapNotNull null
-                    }
-                    bot.processPacketThroughPipeline(struct)
-                }.toPacket().also {
+                    }*/
+                    bot.processPacketThroughPipeline(struct, buildTypeSafeMap { set(SYSTEM_MSG_TYPE, 1) })
+                }.toPacket()/*.also {
                     bot.syncController.run {
                         latestMsgNewGroupTime = max(latestMsgNewGroupTime, groupmsgs.maxOfOrNull { it.msgTime } ?: 0)
                     }
-                }
+                }*/
             }
         }
 
@@ -179,8 +187,7 @@ internal class NewContact {
                 accept: Boolean?,
                 blackList: Boolean = false,
                 message: String = "",
-            ) =
-                buildOutgoingUniPacket(client) {
+            ) = buildOutgoingUniPacket(client) {
                     writeProtoBuf(
                         Structmsg.ReqSystemMsgAction.serializer(),
                         Structmsg.ReqSystemMsgAction(
@@ -208,5 +215,12 @@ internal class NewContact {
 
             override suspend fun ByteReadPacket.decode(bot: QQAndroidBot) = null
         }
+    }
+
+    internal companion object {
+        /**
+         * friend = 0, group = 1
+         */
+        internal val SYSTEM_MSG_TYPE = TypeKey<Int>("SystemMsgType")
     }
 }
