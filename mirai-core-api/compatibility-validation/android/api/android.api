@@ -28,6 +28,8 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public abstract fun getLogger ()Lnet/mamoe/mirai/utils/MiraiLogger;
 	public fun getNewFriendRequestList (Z)Ljava/util/List;
 	public abstract fun getNewFriendRequestList (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun getNewFriendRequestList$default (Lnet/mamoe/mirai/Bot;ZILjava/lang/Object;)Ljava/util/List;
+	public static synthetic fun getNewFriendRequestList$default (Lnet/mamoe/mirai/Bot;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public abstract fun getOtherClients ()Lnet/mamoe/mirai/contact/ContactList;
 	public fun getStranger (J)Lnet/mamoe/mirai/contact/Stranger;
 	public fun getStrangerOrFail (J)Lnet/mamoe/mirai/contact/Stranger;

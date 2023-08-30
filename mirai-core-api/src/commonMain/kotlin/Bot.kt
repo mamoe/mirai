@@ -175,11 +175,11 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     /**
      * 获取未处理的好友请求，作为事件返回
      *
-     * @param broadcast 是否广播该事件
+     * @param broadcast 是否广播该事件，默认为不广播
      * @see NewFriendRequestEvent
      * @since 2.16
      */
-    public suspend fun getNewFriendRequestList(broadcast: Boolean): List<NewFriendRequestEvent>
+    public suspend fun getNewFriendRequestList(broadcast: Boolean = false): List<NewFriendRequestEvent>
 
     /**
      * 关闭这个 [Bot], 立即取消 [Bot] 的 [SupervisorJob], 取消与这个 [Bot] 相关的所有有协程联系的任务.
