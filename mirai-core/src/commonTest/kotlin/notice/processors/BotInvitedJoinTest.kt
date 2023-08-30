@@ -16,7 +16,10 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.network.components.NoticeProcessorPipelineImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
+import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.utils.buildTypeSafeMap
+import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -24,13 +27,15 @@ import kotlin.test.assertIs
 internal class BotInvitedJoinTest : AbstractNoticeProcessorTest() {
     @Test
     fun `invited join`() = runBlockingUnit {
-        suspend fun runTest() = use {
-
+        suspend fun runTest() = use(
+            attributes = buildTypeSafeMap { set(NewContact.SYSTEM_MSG_TYPE, 1) }
+        ) {
+            mockTime += 1000
             Structmsg.StructMsg(
                 version = 1,
                 msgType = 2,
-                msgSeq = 1630,
-                msgTime = 1630,
+                msgSeq = mockTime * 1000,
+                msgTime = mockTime,
                 reqUin = 1230,
                 msg = Structmsg.SystemMsg(
                     subType = 1,
@@ -81,6 +86,7 @@ internal class BotInvitedJoinTest : AbstractNoticeProcessorTest() {
                     c2cInviteJoinGroupFlag = 1,
                 ),
             )
+
         }
 
         setBot(1230003)
@@ -93,7 +99,7 @@ internal class BotInvitedJoinTest : AbstractNoticeProcessorTest() {
                 assertEquals("user1", invitorNick)
                 assertEquals(2230203, groupId)
                 assertEquals("testtest", groupName)
-                assertEquals(1630, eventId)
+                assertEquals(mockTime * 1000, eventId)
             }
         }
 

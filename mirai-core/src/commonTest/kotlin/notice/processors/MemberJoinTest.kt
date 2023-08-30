@@ -13,19 +13,25 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.MemberJoinEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
+import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.test.runBlockingUnit
+import net.mamoe.mirai.utils.buildTypeSafeMap
+import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.test.*
 
 internal class MemberJoinTest : AbstractNoticeProcessorTest() {
 
     @Test
     fun `member actively request join`() = runBlockingUnit {
-        suspend fun runTest() = use {
+        suspend fun runTest() = use(
+            attributes = buildTypeSafeMap { set(NewContact.SYSTEM_MSG_TYPE, 1) }
+        ) {
+            mockTime += 1000
             Structmsg.StructMsg(
                 version = 1,
                 msgType = 2,
-                msgSeq = 16300,
-                msgTime = 1630,
+                msgSeq = mockTime * 1000,
+                msgTime = mockTime,
                 reqUin = 1230001,
                 msg = Structmsg.SystemMsg(
                     subType = 1,

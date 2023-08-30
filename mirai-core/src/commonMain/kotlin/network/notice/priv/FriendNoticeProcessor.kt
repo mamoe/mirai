@@ -141,13 +141,12 @@ internal class FriendNoticeProcessor(
     }
 
     override suspend fun NoticePipelineContext.processImpl(data: Structmsg.StructMsg) {
+        val systemMsg = data.msg ?: return
         if (attributes[NewContact.SYSTEM_MSG_TYPE] != 0) return
         markAsConsumed()
 
         if (data.msgTime <= bot.syncController.latestMsgNewFriendTime) return
         if (!bot.syncController.syncNewFriend(data.msgSeq, data.msgTime)) return // duplicate
-
-        val systemMsg = data.msg ?: return
 
         collected += NewFriendRequestEvent(
             bot,
