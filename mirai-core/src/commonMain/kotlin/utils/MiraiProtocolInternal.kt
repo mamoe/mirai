@@ -29,6 +29,7 @@ internal class MiraiProtocolInternal(
     var ssoVersion: Int,
     var appKey: String,
     var supportsQRLogin: Boolean,
+    var supportsNudge: Boolean
 
     // don't change property signatures, used externally.
 ) : InternalProtocolDataExchange.InternalProtocolData {
@@ -56,6 +57,7 @@ internal class MiraiProtocolInternal(
                 ssoVersion = 20,
                 appKey = "0S200MNJT807V3GE",
                 supportsQRLogin = false,
+                supportsNudge = true
             )
             //Updated from MiraiGo (2023/6/18)
             protocols[MiraiProtocol.ANDROID_PAD] = MiraiProtocolInternal(
@@ -72,6 +74,7 @@ internal class MiraiProtocolInternal(
                 ssoVersion = 20,
                 appKey = "0S200MNJT807V3GE",
                 supportsQRLogin = false,
+                supportsNudge = true
             )
             //Updated from MiraiGo (2023/3/24)
             protocols[MiraiProtocol.ANDROID_WATCH] = MiraiProtocolInternal(
@@ -88,6 +91,7 @@ internal class MiraiProtocolInternal(
                 ssoVersion = 5,
                 appKey = "",
                 supportsQRLogin = true,
+                supportsNudge = false
             )
             protocols[MiraiProtocol.IPAD] = MiraiProtocolInternal(
                 apkId = "com.tencent.minihd.qq",
@@ -103,6 +107,7 @@ internal class MiraiProtocolInternal(
                 ssoVersion = 12,
                 appKey = "",
                 supportsQRLogin = false,
+                supportsNudge = true
             )
             protocols[MiraiProtocol.MACOS] = MiraiProtocolInternal(
                 apkId = "com.tencent.qq",
@@ -118,6 +123,7 @@ internal class MiraiProtocolInternal(
                 ssoVersion = 7,
                 appKey = "",
                 supportsQRLogin = true,
+                supportsNudge = false
             )
         }
 
@@ -134,6 +140,7 @@ internal class MiraiProtocolInternal(
 
 
     override val isQRLoginSupported: Boolean get() = supportsQRLogin
+    override val isNudgeSupported: Boolean get() = supportsNudge
     override val mainVersion: String get() = ver
     override val buildVersion: String get() = buildVer
     override val sdkVersion: String get() = sdkVer

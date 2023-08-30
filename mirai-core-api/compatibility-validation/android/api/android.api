@@ -5732,6 +5732,7 @@ public final class net/mamoe/mirai/utils/BotConfiguration$MiraiProtocol : java/l
 	public static final field ANDROID_WATCH Lnet/mamoe/mirai/utils/BotConfiguration$MiraiProtocol;
 	public static final field IPAD Lnet/mamoe/mirai/utils/BotConfiguration$MiraiProtocol;
 	public static final field MACOS Lnet/mamoe/mirai/utils/BotConfiguration$MiraiProtocol;
+	public final fun isNudgeSupported ()Z
 	public final fun isQRLoginSupported ()Z
 	public static fun valueOf (Ljava/lang/String;)Lnet/mamoe/mirai/utils/BotConfiguration$MiraiProtocol;
 	public static fun values ()[Lnet/mamoe/mirai/utils/BotConfiguration$MiraiProtocol;

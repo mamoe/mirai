@@ -262,6 +262,13 @@ public open class BotConfiguration : AbstractBotConfiguration() { // open for Ja
          */
         public val isQRLoginSupported: Boolean get() = data.isQRLoginSupported
 
+        /**
+         * 当前协议是否支持[戳一戳][Bot.nudge]
+         *
+         * @since 2.16.0
+         */
+        public val isNudgeSupported: Boolean get() = data.isNudgeSupported
+
         private inline val data: InternalProtocolDataExchange.InternalProtocolData
             get() = InternalProtocolDataExchange.instance.of(
                 this
@@ -585,6 +592,7 @@ public interface InternalProtocolDataExchange {
     @MiraiInternalApi
     public interface InternalProtocolData {
         public val isQRLoginSupported: Boolean
+        public val isNudgeSupported: Boolean
         public val mainVersion: String
         public val buildVersion: String
         public val sdkVersion: String
