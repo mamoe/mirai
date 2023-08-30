@@ -14,6 +14,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.auth.AuthReason
+import net.mamoe.mirai.data.RequestEventData
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
@@ -321,8 +322,17 @@ internal open class QQAndroidBot constructor(
         ) // We can move the factory to configuration but this is not necessary for now.
     }
 
-    override suspend fun getNewFriendRequestList(): List<NewFriendRequestEvent> {
-        return Mirai.getNewFriendRequestList(this)
+    override suspend fun getNewFriendRequestList(broadcast: Boolean): List<NewFriendRequestEvent> {
+        return Mirai.getNewFriendRequestList(this).map { data ->
+            NewFriendRequestEvent(
+                this,
+                data.eventId,
+                data.message,
+                data.requester,
+                data.fromGroupId,
+                data.requesterNick
+            ).also { if (broadcast) it.broadcast() }
+        }
     }
 }
 

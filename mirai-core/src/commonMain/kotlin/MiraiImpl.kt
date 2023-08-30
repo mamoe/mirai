@@ -802,7 +802,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
     }
 
-    override suspend fun getNewFriendRequestList(bot: Bot): List<NewFriendRequestEvent>{
+    override suspend fun getNewFriendRequestList(bot: Bot): List<RequestEventData.NewFriendRequest>{
         bot.asQQAndroidBot()
         val resp = bot.network.sendAndExpect(NewContact.SystemMsgNewFriend(bot.client))
 

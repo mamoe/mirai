@@ -12,7 +12,7 @@
 package net.mamoe.mirai.internal.network.protocol.packet.chat
 
 import io.ktor.utils.io.core.*
-import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.data.RequestEventData
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -54,7 +54,7 @@ internal class NewContact {
             )
         }
 
-        internal class Response(val list: List<NewFriendRequestEvent>) : Packet
+        internal class Response(val list: List<RequestEventData.NewFriendRequest>) : Packet
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val resp = readProtoBuf(Structmsg.RspSystemMsgNew.serializer())
@@ -65,13 +65,12 @@ internal class NewContact {
                 val systemMsg = struct.msg ?: return@map null
                 if (systemMsg.actions.size < 2) return@map null // 只返回可以操作的（同意或拒绝好友请求）
 
-                NewFriendRequestEvent(
-                    bot,
+                RequestEventData.NewFriendRequest(
                     struct.msgSeq,
-                    systemMsg.msgAdditional,
                     struct.reqUin,
-                    systemMsg.groupCode,
                     systemMsg.reqUinNick,
+                    systemMsg.groupCode,
+                    systemMsg.msgAdditional,
                 )
             }.filterNotNull().let { Response(it) }
         }

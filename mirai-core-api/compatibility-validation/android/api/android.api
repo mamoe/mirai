@@ -26,6 +26,8 @@ public abstract interface class net/mamoe/mirai/Bot : kotlinx/coroutines/Corouti
 	public static fun getInstances ()Ljava/util/List;
 	public static fun getInstancesSequence ()Lkotlin/sequences/Sequence;
 	public abstract fun getLogger ()Lnet/mamoe/mirai/utils/MiraiLogger;
+	public fun getNewFriendRequestList (Z)Ljava/util/List;
+	public abstract fun getNewFriendRequestList (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getOtherClients ()Lnet/mamoe/mirai/contact/ContactList;
 	public fun getStranger (J)Lnet/mamoe/mirai/contact/Stranger;
 	public fun getStrangerOrFail (J)Lnet/mamoe/mirai/contact/Stranger;
@@ -135,10 +137,10 @@ public abstract interface annotation class net/mamoe/mirai/LowLevelApi : java/la
 }
 
 public abstract interface class net/mamoe/mirai/LowLevelApiAccessor {
-	public fun getFriendRequestList (Lnet/mamoe/mirai/Bot;)Ljava/util/List;
-	public abstract fun getFriendRequestList (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getGroupVoiceDownloadUrl (Lnet/mamoe/mirai/Bot;[BJJ)Ljava/lang/String;
 	public abstract fun getGroupVoiceDownloadUrl (Lnet/mamoe/mirai/Bot;[BJJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getNewFriendRequestList (Lnet/mamoe/mirai/Bot;)Ljava/util/List;
+	public abstract fun getNewFriendRequestList (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getRawGroupList (Lnet/mamoe/mirai/Bot;)Lkotlin/sequences/Sequence;
 	public abstract fun getRawGroupList (Lnet/mamoe/mirai/Bot;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getRawGroupMemberList (Lnet/mamoe/mirai/Bot;JJJ)Lkotlin/sequences/Sequence;
