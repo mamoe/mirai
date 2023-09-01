@@ -450,9 +450,11 @@ public final class net/mamoe/mirai/contact/ExceptionsKt {
 public abstract interface class net/mamoe/mirai/contact/FileSupported : net/mamoe/mirai/contact/Contact {
 	public abstract fun getFiles ()Lnet/mamoe/mirai/contact/file/RemoteFiles;
 	public abstract fun getFilesRoot ()Lnet/mamoe/mirai/utils/RemoteFile;
+	public abstract fun uploadFile (Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun uploadFile$default (Lnet/mamoe/mirai/contact/FileSupported;Ljava/lang/String;Lnet/mamoe/mirai/utils/ExternalResource;Lnet/mamoe/mirai/utils/ProgressionCallback;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/User, net/mamoe/mirai/contact/roaming/RoamingSupported {
+public abstract interface class net/mamoe/mirai/contact/Friend : kotlinx/coroutines/CoroutineScope, net/mamoe/mirai/contact/AudioSupported, net/mamoe/mirai/contact/FileSupported, net/mamoe/mirai/contact/User, net/mamoe/mirai/contact/roaming/RoamingSupported {
 	public fun delete ()V
 	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getFriendGroup ()Lnet/mamoe/mirai/contact/friendgroup/FriendGroup;
