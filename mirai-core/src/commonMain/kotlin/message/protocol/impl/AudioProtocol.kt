@@ -57,6 +57,8 @@ internal class AudioProtocol : MessageProtocol() {
                 .getOrNull() ?: return
 
             val ptt = originalMsg.msgBody.richText.ptt ?: return
+            if (collected.data.find { it is OnlineAudioImpl } != null) return // audio is ConstrainSingle
+
             collect(OnlineAudioImpl(
                 filename = ptt.fileName.decodeToString(),
                 fileMd5 = ptt.fileMd5,

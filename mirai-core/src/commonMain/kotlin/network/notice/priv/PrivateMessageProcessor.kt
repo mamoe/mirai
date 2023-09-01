@@ -15,13 +15,10 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.getGroupByUinOrCode
-import net.mamoe.mirai.internal.message.ReceiveMessageTransformer
 import net.mamoe.mirai.internal.message.RefineContextKey
 import net.mamoe.mirai.internal.message.SimpleRefineContext
-import net.mamoe.mirai.internal.message.data.FriendFileMessageImpl
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.KEY_FROM_SYNC
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.fromSync
@@ -30,13 +27,9 @@ import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
-import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x4
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
-import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSourceKind
-import net.mamoe.mirai.message.data.buildMessageChain
-import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.context
 
@@ -132,7 +125,26 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
             -> {
                 val content = msgBody.msgContent
                 if (content.isEmpty()) return
-                handlePrivateMessage(data, bot.getFriend(senderUin)?.impl() ?: return)
+
+                // msgBody.richText.elems is empty when received friend file message
+                // In order to let the decoder at FileMessageProtocol in MessageProtocolFacade works,
+                // we put a fake(stub) elem which all message protocols ignore
+                val copiedData = MsgComm.Msg(
+                    msgHead, contentHead, ImMsgBody.MsgBody(
+                        ImMsgBody.RichText(
+                            attr = data.msgBody.richText.attr,
+                            elems = listOf(ImMsgBody.Elem()),
+                            notOnlineFile = data.msgBody.richText.notOnlineFile,
+                            ptt = data.msgBody.richText.ptt,
+                            tmpPtt = data.msgBody.richText.tmpPtt,
+                            trans211TmpMsg = data.msgBody.richText.trans211TmpMsg,
+                        ),
+                        data.msgBody.msgContent,
+                        data.msgBody.msgEncryptContent
+                    ), appshareInfo
+                )
+
+                handlePrivateMessage(copiedData, bot.getFriend(senderUin)?.impl() ?: return)
             }
 
             else -> markNotConsumed()
