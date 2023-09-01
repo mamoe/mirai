@@ -31,11 +31,6 @@ import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.warning
 import kotlin.contracts.contract
 
-internal fun FileMessage.checkIsImpl(): GroupFileMessageImpl {
-    contract { returns() implies (this@checkIsImpl is GroupFileMessageImpl) }
-    return this as? GroupFileMessageImpl ?: error("FileMessage must not be implemented manually.")
-}
-
 @Serializable
 @Suppress("ANNOTATION_ARGUMENT_MUST_BE_CONST") // bug
 @SerialName(FileMessage.SERIAL_NAME)
@@ -93,6 +88,7 @@ internal data class FriendFileMessageImpl(
     override val id: String,
     override val name: String,
     override val size: Long,
+    val md5: ByteArray,
     @Transient val allowSend: Boolean = false,
 ) : FileMessage {
     override val internalId: Int

@@ -232,8 +232,7 @@ internal abstract class CommonAbsoluteFolderImpl(
                             ),
                         ),
                     ),
-                    u3 = 0,
-                    u200 = 1
+                    u3 = 0
                 ).toByteArray(FileUploadExt.serializer())
 
                 callback?.onBegin(file, content)

@@ -130,7 +130,7 @@ internal class FriendImpl(
         val fileUuid = when (appUpResp) {
             is OfflineFilleHandleSvr.ApplyUploadV3.Response.FileExists -> appUpResp.fileUuid
             is OfflineFilleHandleSvr.ApplyUploadV3.Response.RequireUpload -> appUpResp.fileUuid
-            else -> error("unreachable!")
+            else -> assertUnreachable()
         }
         val file = AbsoluteFriendFileImpl(
             this,
@@ -168,10 +168,9 @@ internal class FriendImpl(
                         clientVer = "d92615c5",
                         unknown = 4,
                     ),
-                    fileNameInfo = ExcitingFileNameInfo(filename)
+                    fileNameInfo = ExcitingFileNameInfo(filename = filename)
                 ),
-                u3 = 0,
-                u200 = null
+                u200 = 1
             )
 
             Highway.uploadResourceBdh(
@@ -180,7 +179,6 @@ internal class FriendImpl(
                 kind = ResourceKind.FRIEND_FILE,
                 commandId = 69,
                 extendInfo = ext.toByteArray(FileUploadExt.serializer()),
-                dataFlag = 0,
                 callback = if (callback == null) null else fun(it: Long) {
                     callback.onProgression(file, content, it)
                 }
@@ -194,8 +192,9 @@ internal class FriendImpl(
             throw IllegalStateException(upSuccResp.message)
         }
 
-        sendMessage(AllowSendFileMessage + file.toMessage())
-        return file.toMessage()
+        val fileMessage = file.toMessage()
+        sendMessage(AllowSendFileMessage + fileMessage)
+        return fileMessage
     }
 
     override suspend fun delete() {

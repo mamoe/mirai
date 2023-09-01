@@ -60,7 +60,7 @@ internal class AbsoluteFriendFileImpl(
     }
 
     override fun toMessage(): FileMessage {
-        return FriendFileMessageImpl(id, name, size, false)
+        return FriendFileMessageImpl(id, name, size, md5, true)
     }
 
     override suspend fun refreshed(): AbsoluteFile? {

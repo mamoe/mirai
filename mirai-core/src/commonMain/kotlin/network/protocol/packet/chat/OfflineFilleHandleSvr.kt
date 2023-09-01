@@ -39,8 +39,6 @@ internal class OfflineFilleHandleSvr {
     internal object UploadSucc : OutgoingPacketFactory<FileInfo>(
         "OfflineFilleHandleSvr.pb_ftn_CMD_REQ_UPLOAD_SUCC-800"
     ) {
-
-
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): FileInfo {
             val resp = readProtoBuf(Cmd0x346.RspBody.serializer())
 
@@ -58,7 +56,7 @@ internal class OfflineFilleHandleSvr {
                 fileInfo.uuid,
                 fileInfo.fileName,
                 fileInfo._3sha,
-                fileInfo.md5,
+                fileInfo._10mMd5,
                 fileInfo.fileSize,
                 fileInfo.expireTime.toLong(),
                 fileInfo.ownerUin,
@@ -69,12 +67,14 @@ internal class OfflineFilleHandleSvr {
             client: QQAndroidClient,
             contact: Contact,
             fileUuid: ByteArray,
-        ) = buildOutgoingUniPacket(client) { seq ->
+        ) = buildOutgoingUniPacket(client, sequenceId = 7) { seq ->
             writeProtoBuf(
                 Cmd0x346.ReqBody.serializer(),
                 Cmd0x346.ReqBody(
                     cmd = 800,
                     seq = seq,
+                    businessId = 3,
+                    clientType = 104,
                     msgUploadSuccReq = Cmd0x346.UploadSuccReq(
                         senderUin = client.uin,
                         recverUin = contact.uin,
@@ -219,12 +219,14 @@ internal class OfflineFilleHandleSvr {
             fileSize: Long,
             fileMd5: ByteArray,
             fileSha1: ByteArray,
-        ) = buildOutgoingUniPacket(client) { seq ->
+        ) = buildOutgoingUniPacket(client, sequenceId = client.sendFriendMessageSeq.next()) { seq ->
             writeProtoBuf(
                 Cmd0x346.ReqBody.serializer(),
                 Cmd0x346.ReqBody(
                     cmd = 1700,
                     seq = seq,
+                    businessId = 3,
+                    clientType = 104,
                     msgApplyUploadReqV3 = Cmd0x346.ApplyUploadReqV3(
                         senderUin = client.uin,
                         recverUin = contact.uin,
@@ -233,15 +235,12 @@ internal class OfflineFilleHandleSvr {
                         _10mMd5 = fileMd5,
                         sha = fileSha1,
                         localFilepath = "/storage/emulated/0/Android/data/com.tencent.mobileqq/Tencent/QQfile_recv/$filename",
-                        dangerLevel = 0,
-                        totalSpace = 0,
-                        contenttype = 0,
                         md5 = fileMd5
-                    )
+                    ),
+                    flagSupportMediaplatform = 1,
                 )
             )
         }
     }
-
 
 }

@@ -12,10 +12,12 @@ package net.mamoe.mirai.internal.message.protocol.impl
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.internal.contact.SendMessageStep
+import net.mamoe.mirai.internal.contact.impl
+import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.data.FriendFileMessageImpl
 import net.mamoe.mirai.internal.message.data.GroupFileMessageImpl
-import net.mamoe.mirai.internal.message.data.checkIsImpl
 import net.mamoe.mirai.internal.message.flags.AllowSendFileMessage
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
@@ -29,20 +31,32 @@ import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessagePipelin
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageSender
 import net.mamoe.mirai.internal.message.protocol.outgoing.OutgoingMessageTransformer
 import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
+import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToFriendImpl
 import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.message.visitor.MessageVisitorEx
+import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
+import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncCookie
+import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.data.proto.ObjMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x4
+import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.visitor.RecursiveMessageVisitor
 import net.mamoe.mirai.message.data.visitor.acceptChildren
+import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.getRandomUnsignedInt
 import net.mamoe.mirai.utils.read
 import net.mamoe.mirai.utils.systemProp
 
@@ -88,8 +102,11 @@ internal class FileMessageProtocol : MessageProtocol() {
                 override fun visitFileMessage(message: FileMessage, data: Unit) {
                     if (ALLOW_SENDING_FILE_MESSAGE) return
                     // #1715
-                    if (message !is GroupFileMessageImpl) error("Customized FileMessage cannot be send")
-                    if (!message.allowSend) {
+                    if (message !is GroupFileMessageImpl && message !is FriendFileMessageImpl) {
+                        error("Customized FileMessage cannot be send")
+                    }
+                    if ((message is GroupFileMessageImpl && !message.allowSend) ||
+                        (message is FriendFileMessageImpl && !message.allowSend)) {
                         hasFileMessage = true
                     }
                 }
@@ -111,26 +128,91 @@ internal class FileMessageProtocol : MessageProtocol() {
     private class FileMessageSender : OutgoingMessageSender {
         override suspend fun OutgoingMessagePipelineContext.process() {
             val file = currentMessageChain[FileMessage] ?: return
-            markAsConsumed()
-
-            file.checkIsImpl() // TODO: file check impl
 
             val contact = attributes[CONTACT]
             val bot = contact.bot
 
             val strategy = components[MessageProtocolStrategy]
 
-            val source = coroutineScope {
-                val source = async {
-                    strategy.constructSourceForSpecialMessage(attributes[ORIGINAL_MESSAGE_AS_CHAIN], 2021)
+            if (file is FriendFileMessageImpl) {
+                markAsConsumed()
+
+                val msgRand = getRandomUnsignedInt()
+                val msgSeq = bot.client.sendFriendMessageSeq.next()
+
+                val msgSvcPbSendMsgResp = bot.network.sendAndExpect(
+                    MessageSvcPbSendMsg.buildOutgoingUniPacket(
+                        client = bot.client
+                    ) {
+                        writeProtoBuf(
+                            MsgSvc.PbSendMsgReq.serializer(),
+                            MsgSvc.PbSendMsgReq(
+                                routingHead = MsgSvc.RoutingHead(
+                                    trans0x211 = MsgSvc.Trans0x211(
+                                        toUin = contact.uin,
+                                        ccCmd = 4
+                                    )
+                                ),
+                                contentHead = MsgComm.ContentHead(
+                                    pkgNum = 1,
+                                    pkgIndex = 0,
+                                    divSeq = 0
+                                ),
+                                msgBody = ImMsgBody.MsgBody(
+                                    msgContent = SubMsgType0x4.MsgBody(
+                                        msgNotOnlineFile = ImMsgBody.NotOnlineFile(
+                                            fileType = 0,
+                                            fileUuid = file.id.encodeToByteArray(),
+                                            fileMd5 = file.md5,
+                                            fileName = file.name.encodeToByteArray(),
+                                            fileSize = file.size,
+                                            subcmd = 1
+                                        )
+                                    ).toByteArray(SubMsgType0x4.MsgBody.serializer())
+                                ),
+                                msgSeq = msgSeq,
+                                msgRand = msgRand,
+                                syncCookie = bot.client.syncCookie ?: byteArrayOf()
+                            )
+                        )
+                    }
+                )
+
+                if (msgSvcPbSendMsgResp is MessageSvcPbSendMsg.Response.SUCCESS) {
+                    val source = OnlineMessageSourceToFriendImpl(
+                        internalIds = intArrayOf(msgRand),
+                        sender = bot,
+                        target = contact.cast(),
+                        time = bot.clock.server.currentTimeSeconds().toInt(),
+                        sequenceIds = intArrayOf(msgSeq),
+                        originalMessage = currentMessageChain,
+                    )
+
+                    collect(source.createMessageReceipt(contact, false))
+                    return
+                } else {
+                    error("Failed to send FileMessage to contact $contact: MessageSvcPbSendMsg failed. $msgSvcPbSendMsgResp")
                 }
-
-                bot.network.sendAndExpect(FileManagement.Feed(bot.client, contact.id, file.busId, file.id))
-
-                source.await()
             }
 
-            collect(source.createMessageReceipt(contact, true))
+            if (file is GroupFileMessageImpl) {
+                markAsConsumed()
+
+                val source = coroutineScope {
+                    val source = async {
+                        strategy.constructSourceForSpecialMessage(attributes[ORIGINAL_MESSAGE_AS_CHAIN], 2021)
+                    }
+
+                    bot.network.sendAndExpect(FileManagement.Feed(bot.client, contact.id, file.busId, file.id))
+
+                    source.await()
+                }
+
+                collect(source.createMessageReceipt(contact, true))
+                return
+            }
+
+            error("FileMessage must not be implemented manually.")
         }
     }
 
@@ -183,7 +265,8 @@ internal class FileMessageProtocol : MessageProtocol() {
                         FriendFileMessageImpl(
                             sub0x4.msgNotOnlineFile.fileUuid.decodeToString(),
                             sub0x4.msgNotOnlineFile.fileName.decodeToString(),
-                            sub0x4.msgNotOnlineFile.fileSize
+                            sub0x4.msgNotOnlineFile.fileSize,
+                            sub0x4.msgNotOnlineFile.fileMd5
                         )
                     )
                 }

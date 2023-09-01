@@ -17,9 +17,9 @@ import kotlin.jvm.JvmField
 
 @Serializable
 internal class FileUploadExt(
-    @JvmField @ProtoNumber(1) val u1: Int,
-    @JvmField @ProtoNumber(2) val u2: Int,
-    @JvmField @ProtoNumber(3) val u3: Int,
+    @JvmField @ProtoNumber(1) val u1: Int? = null,
+    @JvmField @ProtoNumber(2) val u2: Int? = null,
+    @JvmField @ProtoNumber(3) val u3: Int? = null,
     @JvmField @ProtoNumber(100) val entry: FileUploadEntry,
     @JvmField @ProtoNumber(200) val u200: Int? = null,
 ) : ProtoBuf
