@@ -25,7 +25,7 @@ import net.mamoe.mirai.utils.isSameType
 
 internal fun AbstractAbsoluteFileFolder.api(): AbsoluteFileFolder = this.cast()
 internal fun AbsoluteFileFolder.impl(): AbstractAbsoluteFileFolder = this.cast()
-internal fun AbsoluteFile.impl(): AbsoluteFileImpl = this.cast()
+internal fun AbsoluteFile.impl(): AbsoluteGroupFileImpl = this.cast()
 internal fun AbsoluteFolder.impl(): AbsoluteFolderImpl = this.cast()
 
 internal val AbsoluteFolder?.idOrRoot get() = this?.id ?: AbsoluteFolder.ROOT_FOLDER_ID

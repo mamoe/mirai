@@ -110,7 +110,7 @@ internal class MessageSerializationTest : AbstractTest() {
         MessageOrigin(SimpleServiceMessage(1, "content"), "resource id", MessageOriginKind.LONG),
         ShowImageFlag,
         Dice(1),
-        FileMessageImpl("id", 2, "name", 1)
+        GroupFileMessageImpl("id", 2, "name", 1)
     )
 
     @Serializable
@@ -120,7 +120,7 @@ internal class MessageSerializationTest : AbstractTest() {
 
     @Test
     fun `test FileMessage serialization`() {
-        val w = W(FileMessageImpl("id", 2, "name", 1))
+        val w = W(GroupFileMessageImpl("id", 2, "name", 1))
         println(w.serialize(W.serializer()))
         assertEquals(w, w.serialize(W.serializer()).deserialize(W.serializer()))
     }

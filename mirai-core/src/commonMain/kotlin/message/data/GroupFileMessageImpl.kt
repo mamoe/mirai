@@ -24,20 +24,22 @@ import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.file.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x6d8.GetFileListRspBody
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
+import net.mamoe.mirai.internal.network.protocol.packet.chat.OfflineFilleHandleSvr
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.utils.cast
+import net.mamoe.mirai.utils.warning
 import kotlin.contracts.contract
 
-internal fun FileMessage.checkIsImpl(): FileMessageImpl {
-    contract { returns() implies (this@checkIsImpl is FileMessageImpl) }
-    return this as? FileMessageImpl ?: error("FileMessage must not be implemented manually.")
+internal fun FileMessage.checkIsImpl(): GroupFileMessageImpl {
+    contract { returns() implies (this@checkIsImpl is GroupFileMessageImpl) }
+    return this as? GroupFileMessageImpl ?: error("FileMessage must not be implemented manually.")
 }
 
 @Serializable
 @Suppress("ANNOTATION_ARGUMENT_MUST_BE_CONST") // bug
 @SerialName(FileMessage.SERIAL_NAME)
-internal data class FileMessageImpl(
+internal data class GroupFileMessageImpl(
     override val id: String,
     @SerialName("internalId") val busId: Int,
     override val name: String,
@@ -84,4 +86,41 @@ internal data class FileMessageImpl(
     }
 
     override fun toString(): String = "[mirai:file:$name, id=$id, internalId=$busId, size=$size]"
+}
+
+@SerialName(FileMessage.SERIAL_NAME)
+internal data class FriendFileMessageImpl(
+    override val id: String,
+    override val name: String,
+    override val size: Long,
+    @Transient val allowSend: Boolean = false,
+) : FileMessage {
+    override val internalId: Int
+        get() = 0
+
+    override suspend fun toAbsoluteFile(contact: FileSupported): AbsoluteFile? {
+        val queryResp = contact.bot.asQQAndroidBot().network
+            .sendAndExpect(
+                OfflineFilleHandleSvr.FileQuery(contact.bot.asQQAndroidBot().client, id.encodeToByteArray())
+            )
+
+        if (queryResp is OfflineFilleHandleSvr.FileInfo.Failed) {
+            contact.bot.logger.warning { "failed to query friend file info: ${queryResp.message}" }
+            return null
+        }
+
+        val fileInfo = queryResp as OfflineFilleHandleSvr.FileInfo.Success
+        return AbsoluteFriendFileImpl(
+            contact,
+            fileInfo.fileUuid.decodeToString(),
+            fileInfo.filename,
+            fileInfo.ownerUin,
+            fileInfo.expiryTime,
+            fileInfo.fileSize,
+            fileInfo.fileMd5,
+            fileInfo.fileSha1,
+        )
+    }
+
+    override fun toString(): String = "[mirai:file:$name, id=$id, size=$size]"
 }

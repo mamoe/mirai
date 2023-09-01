@@ -16,20 +16,21 @@ import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import kotlin.jvm.JvmField
 
 @Serializable
-internal class GroupFileUploadExt(
+internal class FileUploadExt(
     @JvmField @ProtoNumber(1) val u1: Int,
     @JvmField @ProtoNumber(2) val u2: Int,
-    @JvmField @ProtoNumber(100) val entry: GroupFileUploadEntry,
     @JvmField @ProtoNumber(3) val u3: Int,
+    @JvmField @ProtoNumber(100) val entry: FileUploadEntry,
+    @JvmField @ProtoNumber(200) val u200: Int? = null,
 ) : ProtoBuf
 
 @Serializable
-internal class GroupFileUploadEntry(
+internal class FileUploadEntry(
     @JvmField @ProtoNumber(100) val business: ExcitingBusiInfo,
     @JvmField @ProtoNumber(200) val fileEntry: ExcitingFileEntry,
     @JvmField @ProtoNumber(300) val clientInfo: ExcitingClientInfo,
     @JvmField @ProtoNumber(400) val fileNameInfo: ExcitingFileNameInfo,
-    @JvmField @ProtoNumber(500) val host: ExcitingHostConfig,
+    @JvmField @ProtoNumber(500) val host: ExcitingHostConfig? = null,
 ) : ProtoBuf
 
 @Serializable

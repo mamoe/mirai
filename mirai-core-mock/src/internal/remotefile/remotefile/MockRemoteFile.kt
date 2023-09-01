@@ -17,7 +17,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.contact.isOperator
-import net.mamoe.mirai.internal.message.data.FileMessageImpl
+import net.mamoe.mirai.internal.message.data.GroupFileMessageImpl
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.mock.contact.MockGroup
@@ -284,7 +284,7 @@ internal class MockRemoteFile(
 
     override suspend fun toMessage(): FileMessage? {
         val resolved = resolveFile() ?: return null
-        return FileMessageImpl(
+        return GroupFileMessageImpl(
             name = resolved.name,
             id = resolved.id,
             size = resolved.size,
@@ -308,7 +308,7 @@ internal class MockRemoteFile(
             val rsp = parent.uploadFile(this.name, resource, contact.bot.id)
             callback?.onProgression(this, resource, rsSize)
             callback?.onSuccess(this, resource)
-            return FileMessageImpl(
+            return GroupFileMessageImpl(
                 name = rsp.name,
                 id = rsp.id,
                 size = rsp.size,

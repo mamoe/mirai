@@ -13,7 +13,8 @@ import io.ktor.utils.io.core.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import net.mamoe.mirai.internal.contact.SendMessageStep
-import net.mamoe.mirai.internal.message.data.FileMessageImpl
+import net.mamoe.mirai.internal.message.data.FriendFileMessageImpl
+import net.mamoe.mirai.internal.message.data.GroupFileMessageImpl
 import net.mamoe.mirai.internal.message.data.checkIsImpl
 import net.mamoe.mirai.internal.message.flags.AllowSendFileMessage
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
@@ -32,7 +33,9 @@ import net.mamoe.mirai.internal.message.source.createMessageReceipt
 import net.mamoe.mirai.internal.message.visitor.MessageVisitorEx
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.ObjMsg
+import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x4
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.message.data.MessageChain
@@ -60,8 +63,8 @@ internal class FileMessageProtocol : MessageProtocol() {
         MessageSerializer.superclassesScope(FileMessage::class, MessageContent::class, SingleMessage::class) {
             add(
                 MessageSerializer(
-                    FileMessageImpl::class,
-                    FileMessageImpl.serializer()
+                    GroupFileMessageImpl::class,
+                    GroupFileMessageImpl.serializer()
                 )
             )
         }
@@ -85,7 +88,7 @@ internal class FileMessageProtocol : MessageProtocol() {
                 override fun visitFileMessage(message: FileMessage, data: Unit) {
                     if (ALLOW_SENDING_FILE_MESSAGE) return
                     // #1715
-                    if (message !is FileMessageImpl) error("Customized FileMessage cannot be send")
+                    if (message !is GroupFileMessageImpl) error("Customized FileMessage cannot be send")
                     if (!message.allowSend) {
                         hasFileMessage = true
                     }
@@ -110,7 +113,7 @@ internal class FileMessageProtocol : MessageProtocol() {
             val file = currentMessageChain[FileMessage] ?: return
             markAsConsumed()
 
-            file.checkIsImpl()
+            file.checkIsImpl() // TODO: file check impl
 
             val contact = attributes[CONTACT]
             val bot = contact.bot
@@ -133,43 +136,58 @@ internal class FileMessageProtocol : MessageProtocol() {
 
     private class Decoder : MessageDecoder {
         override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
-            if (data.transElemInfo == null) return
-            if (data.transElemInfo.elemType != 24) return
+            if (data.transElemInfo != null && data.transElemInfo.elemType == 24) {
+                markAsConsumed()
+                data.transElemInfo.elemValue.read {
+                    // group file feed
+                    // 01 00 77 08 06 12 0A 61 61 61 61 61 61 2E 74 78 74 1A 06 31 35 42 79 74 65 3A 5F 12 5D 08 66 12 25 2F 64 37 34 62 62 66 33 61 2D 37 62 32 35 2D 31 31 65 62 2D 38 34 66 38 2D 35 34 35 32 30 30 37 62 35 64 39 66 18 0F 22 0A 61 61 61 61 61 61 2E 74 78 74 28 00 3A 00 42 20 61 33 32 35 66 36 33 34 33 30 65 37 61 30 31 31 66 37 64 30 38 37 66 63 33 32 34 37 35 34 39 63
+                    //                fun getFileRsrvAttr(file: ObjMsg.MsgContentInfo.MsgFile): HummerResv21.ResvAttr? {
+                    //                    if (file.ext.isEmpty()) return null
+                    //                    val element = kotlin.runCatching {
+                    //                        jsonForFileDecode.parseToJsonElement(file.ext) as? JsonObject
+                    //                    }.getOrNull() ?: return null
+                    //                    val extInfo = element["ExtInfo"]?.toString()?.decodeBase64() ?: return null
+                    //                    return extInfo.loadAs(HummerResv21.ResvAttr.serializer())
+                    //                }
 
-            markAsConsumed()
+                    val var7 = readByte()
+                    if (var7 == 1.toByte()) {
+                        while (remaining > 2) {
+                            val proto = readProtoBuf(ObjMsg.ObjMsg.serializer(), readShort().toUShort().toInt())
+                            // proto.msgType=6
 
-            data.transElemInfo.elemValue.read {
-                // group file feed
-                // 01 00 77 08 06 12 0A 61 61 61 61 61 61 2E 74 78 74 1A 06 31 35 42 79 74 65 3A 5F 12 5D 08 66 12 25 2F 64 37 34 62 62 66 33 61 2D 37 62 32 35 2D 31 31 65 62 2D 38 34 66 38 2D 35 34 35 32 30 30 37 62 35 64 39 66 18 0F 22 0A 61 61 61 61 61 61 2E 74 78 74 28 00 3A 00 42 20 61 33 32 35 66 36 33 34 33 30 65 37 61 30 31 31 66 37 64 30 38 37 66 63 33 32 34 37 35 34 39 63
-                //                fun getFileRsrvAttr(file: ObjMsg.MsgContentInfo.MsgFile): HummerResv21.ResvAttr? {
-                //                    if (file.ext.isEmpty()) return null
-                //                    val element = kotlin.runCatching {
-                //                        jsonForFileDecode.parseToJsonElement(file.ext) as? JsonObject
-                //                    }.getOrNull() ?: return null
-                //                    val extInfo = element["ExtInfo"]?.toString()?.decodeBase64() ?: return null
-                //                    return extInfo.loadAs(HummerResv21.ResvAttr.serializer())
-                //                }
+                            val file = proto.msgContentInfo.firstOrNull()?.msgFile ?: continue // officially get(0) only.
+                            //                        val attr = getFileRsrvAttr(file) ?: continue
+                            //                        val info = attr.forwardExtFileInfo ?: continue
 
-                val var7 = readByte()
-                if (var7 == 1.toByte()) {
-                    while (remaining > 2) {
-                        val proto = readProtoBuf(ObjMsg.ObjMsg.serializer(), readShort().toUShort().toInt())
-                        // proto.msgType=6
-
-                        val file = proto.msgContentInfo.firstOrNull()?.msgFile ?: continue // officially get(0) only.
-                        //                        val attr = getFileRsrvAttr(file) ?: continue
-                        //                        val info = attr.forwardExtFileInfo ?: continue
-
-                        collect(
-                            FileMessageImpl(
-                                id = file.filePath,
-                                busId = file.busId, // path i.e. /a99e95fa-7b2d-11eb-adae-5452007b698a
-                                name = file.fileName,
-                                size = file.fileSize
+                            collect(
+                                GroupFileMessageImpl(
+                                    id = file.filePath,
+                                    busId = file.busId, // path i.e. /a99e95fa-7b2d-11eb-adae-5452007b698a
+                                    name = file.fileName,
+                                    size = file.fileSize
+                                )
                             )
-                        )
+                        }
                     }
                 }
+                return
+            }
+
+            val originalMsg = runCatching { attributes[MessageDecoderContext.CONTAINING_MSG] }.getOrNull()
+            if (originalMsg != null && originalMsg.msgHead.msgType == 529) {
+                markAsConsumed()
+                val sub0x4 = originalMsg.msgBody.msgContent.loadAs(SubMsgType0x4.MsgBody.serializer())
+                if (sub0x4.msgNotOnlineFile != null) {
+                    collect(
+                        FriendFileMessageImpl(
+                            sub0x4.msgNotOnlineFile.fileUuid.decodeToString(),
+                            sub0x4.msgNotOnlineFile.fileName.decodeToString(),
+                            sub0x4.msgNotOnlineFile.fileSize
+                        )
+                    )
+                }
+                return
             }
         }
     }

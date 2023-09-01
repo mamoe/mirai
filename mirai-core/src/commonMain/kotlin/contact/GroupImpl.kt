@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.active.GroupActive
 import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.essence.Essences
+import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.data.GroupHonorType
@@ -394,6 +395,16 @@ internal abstract class CommonGroupImpl constructor(
     }
 
     override val roamingMessages: RoamingMessages by lazy { RoamingMessagesImplGroup(this) }
+
+    override suspend fun uploadFile(
+        filename: String,
+        content: ExternalResource,
+        callback: ProgressionCallback<AbsoluteFile, Long>?,
+    ): FileMessage {
+        val tailFileName = filename.split('/').last().trim()
+        val absFile = files.uploadNewFile("/$tailFileName", content, callback)
+        return absFile.toMessage()
+    }
 
     // 鉴于在 [essences] 中 有相同的功能的 Web API 所以此方法移除
 //    override suspend fun removeEssenceMessage(source: MessageSource): Boolean {

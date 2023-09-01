@@ -14,9 +14,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.message.DeepMessageRefiner.refineDeep
 import net.mamoe.mirai.internal.message.LightMessageRefiner.refineLight
 import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.cleanupRubbishMessageElements
-import net.mamoe.mirai.internal.message.ReceiveMessageTransformer.toAudio
 import net.mamoe.mirai.internal.message.data.LongMessageInternal
-import net.mamoe.mirai.internal.message.data.OnlineAudioImpl
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.protocol.impl.PokeMessageProtocol.Companion.UNSUPPORTED_POKE_MESSAGE_PLAIN
 import net.mamoe.mirai.internal.message.protocol.impl.RichMessageProtocol.Companion.UNSUPPORTED_MERGED_MESSAGE_PLAIN
@@ -24,9 +22,7 @@ import net.mamoe.mirai.internal.message.source.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.structureToString
-import net.mamoe.mirai.utils.toLongUnsigned
 import net.mamoe.mirai.utils.warning
 
 /**
@@ -138,7 +134,6 @@ private fun List<MsgComm.Msg>.toMessageChainImpl(
 ): MessageChain {
     val messageList = this
 
-
     val builder = MessageChainBuilder(messageList.sumOf { it.msgBody.richText.elems.size })
 
     val source = if (onlineSource != null) {
@@ -163,10 +158,6 @@ private fun List<MsgComm.Msg>.toMessageChainImpl(
             builder,
             msg
         )
-    }
-
-    for (msg in messageList) {
-        msg.msgBody.richText.ptt?.toAudio()?.let { builder.add(it) }
     }
 
     return builder.build().cleanupRubbishMessageElements()
@@ -301,14 +292,4 @@ internal object ReceiveMessageTransformer {
 
         return builder.asMessageChain()
     }
-
-    fun ImMsgBody.Ptt.toAudio() = OnlineAudioImpl(
-        filename = fileName.decodeToString(),
-        fileMd5 = fileMd5,
-        fileSize = fileSize.toLongUnsigned(),
-        codec = AudioCodec.fromId(format),
-        url = downPara.decodeToString(),
-        length = time.toLongUnsigned(),
-        originalPtt = this,
-    )
 }

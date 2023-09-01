@@ -13,14 +13,14 @@ import io.ktor.utils.io.core.*
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFolder
-import net.mamoe.mirai.internal.message.data.FileMessageImpl
+import net.mamoe.mirai.internal.message.data.GroupFileMessageImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.utils.isSameClass
 import net.mamoe.mirai.utils.toUHexString
 
-internal class AbsoluteFileImpl(
+internal class AbsoluteGroupFileImpl(
     contact: FileSupported,
     parent: AbsoluteFolder?,
     id: String,
@@ -131,7 +131,7 @@ internal class AbsoluteFileImpl(
     }
 
     override fun toMessage(): FileMessage {
-        return FileMessageImpl(id, busId, name, size)
+        return GroupFileMessageImpl(id, busId, name, size)
     }
 
     override suspend fun refresh(): Boolean {
@@ -143,7 +143,7 @@ internal class AbsoluteFileImpl(
         return true
     }
 
-    override fun toString(): String = "AbsoluteFile(name=$name, absolutePath=$absolutePath, id=$id)"
+    override fun toString(): String = "AbsoluteGroupFile(name=$name, absolutePath=$absolutePath, id=$id)"
 
     override suspend fun refreshed(): AbsoluteFile? {
         val result = bot.network.sendAndExpect(FileManagement.GetFileInfo(client, contact.id, id, busId))
@@ -160,7 +160,7 @@ internal class AbsoluteFileImpl(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is AbsoluteFileImpl || !isSameClass(this, other)) return false
+        if (other !is AbsoluteGroupFileImpl || !isSameClass(this, other)) return false
         if (!super.equals(other)) return false
 
         if (expiryTime != other.expiryTime) return false

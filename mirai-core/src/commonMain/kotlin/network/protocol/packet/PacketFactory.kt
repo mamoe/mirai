@@ -181,6 +181,10 @@ internal object KnownPacketFactories {
         SummaryCard.ReqSummaryCard,
         ChangeFriendRemark,
         MusicSharePacket,
+        OfflineFilleHandleSvr.UploadSucc,
+        OfflineFilleHandleSvr.ApplyDownload,
+        OfflineFilleHandleSvr.FileQuery,
+        OfflineFilleHandleSvr.ApplyUploadV3,
         *FileManagement.factories
     )
 

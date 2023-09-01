@@ -15,19 +15,28 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.getGroupByUinOrCode
+import net.mamoe.mirai.internal.message.ReceiveMessageTransformer
 import net.mamoe.mirai.internal.message.RefineContextKey
 import net.mamoe.mirai.internal.message.SimpleRefineContext
+import net.mamoe.mirai.internal.message.data.FriendFileMessageImpl
 import net.mamoe.mirai.internal.message.toMessageChainOnline
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.KEY_FROM_SYNC
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.fromSync
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
+import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x4
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSourceKind
+import net.mamoe.mirai.message.data.buildMessageChain
+import net.mamoe.mirai.message.data.toMessageChain
 import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.context
 
@@ -90,7 +99,8 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
         if (!bot.components[SsoProcessor].firstLoginSucceed) return
         val senderUin = if (fromSync) msgHead.toUin else msgHead.fromUin
         when (msgHead.msgType) {
-            166, 167, // 单向好友
+            166,
+            167, // 单向好友
             208, // friend ptt, maybe also support stranger
             -> {
                 data.msgBody.richText.ptt?.let { ptt ->
@@ -118,6 +128,13 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
                 handlePrivateMessage(data, group[senderUin] ?: return)
             }
 
+            529, // friend file
+            -> {
+                val content = msgBody.msgContent
+                if (content.isEmpty()) return
+                handlePrivateMessage(data, bot.getFriend(senderUin)?.impl() ?: return)
+            }
+
             else -> markNotConsumed()
         }
 
@@ -143,11 +160,20 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
                 RefineContextKey.GroupIdOrZero to 0L,
             )
         )
-        val time = msgHead.msgTime
 
-        collected += if (fromSync) {
-            val client = bot.otherClients.find { it.appId == msgHead.fromInstid }
-                ?: return // don't compare with dstAppId. diff.
+        collected += constructMessageEvent(fromSync, msgHead.fromInstid, user, chain, msgHead.msgTime)
+    }
+
+    private fun NoticePipelineContext.constructMessageEvent(
+        fromSync: Boolean,
+        fromInstid: Int,
+        user: AbstractUser,
+        chain: MessageChain,
+        time: Int
+    ): MessageEvent? {
+        return if (fromSync) {
+            val client = bot.otherClients.find { it.appId == fromInstid }
+                ?: return null // don't compare with dstAppId. diff.
             when (user) {
                 is FriendImpl -> FriendMessageSyncEvent(client, user, chain, time)
                 is StrangerImpl -> StrangerMessageSyncEvent(client, user, chain, time)

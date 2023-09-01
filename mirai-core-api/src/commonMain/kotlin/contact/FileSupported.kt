@@ -10,12 +10,17 @@
 
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.contact.file.AbsoluteFile
+import net.mamoe.mirai.contact.file.AbsoluteFolder
 import net.mamoe.mirai.contact.file.RemoteFiles
+import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.utils.DeprecatedSinceMirai
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.NotStableForInheritance
+import net.mamoe.mirai.utils.ProgressionCallback
 
 /**
- * 支持文件操作的 [Contact]. 目前仅 [Group].
+ * 支持文件操作的 [Contact]. 目前仅 [Group] 和 [Friend].
  *
  * 获取文件操作相关示例: [RemoteFiles]
  *
@@ -47,4 +52,18 @@ public interface FileSupported : Contact {
      * @since 2.8
      */
     public val files: RemoteFiles
+
+    /**
+     * 上传一个文件到联系人，并返回文件消息.
+     * 对于群, 上传到群文件根目录.
+     *
+     * @param filename 文件名, 不可包含路径符(slash "/")
+     * @see AbsoluteFolder.uploadNewFile
+     * @since 2.17
+     */
+    public suspend fun uploadFile(
+        filename: String,
+        content: ExternalResource,
+        callback: ProgressionCallback<AbsoluteFile, Long>? = null
+    ): FileMessage
 }

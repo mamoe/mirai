@@ -37,7 +37,7 @@ import net.mamoe.mirai.utils.NotStableForInheritance
  */
 @Suppress("RedundantSetter")
 @NotStableForInheritance
-public interface Friend : User, CoroutineScope, AudioSupported, RoamingSupported {
+public interface Friend : User, CoroutineScope, AudioSupported, RoamingSupported, FileSupported {
 
     /**
      * 该好友所在的好友分组

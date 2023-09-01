@@ -621,7 +621,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     override fun createFileMessage(id: String, internalId: Int, name: String, size: Long): FileMessage {
-        return FileMessageImpl(id, internalId, name, size)
+        return GroupFileMessageImpl(id, internalId, name, size)
     }
 
     override fun createUnsupportedMessage(struct: ByteArray): UnsupportedMessage =
