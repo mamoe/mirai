@@ -67,7 +67,7 @@ internal class OfflineFilleHandleSvr {
             client: QQAndroidClient,
             contact: Contact,
             fileUuid: ByteArray,
-        ) = buildOutgoingUniPacket(client, sequenceId = 7) { seq ->
+        ) = buildOutgoingUniPacket(client, sequenceId = client.sendFriendMessageSeq.next()) { seq ->
             writeProtoBuf(
                 Cmd0x346.ReqBody.serializer(),
                 Cmd0x346.ReqBody(
