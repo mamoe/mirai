@@ -23,6 +23,7 @@ import kotlin.jvm.Throws
  * 超级表情
  *
  * @see Face
+ * @since 2.16
  */
 @OptIn(MiraiExperimentalApi::class)
 @Serializable
@@ -118,6 +119,18 @@ public class SuperFace @MiraiInternalApi constructor(
     @MiraiInternalApi
     override fun <D, R> accept(visitor: MessageVisitor<D, R>, data: D): R {
         return visitor.visitSuperFace(this, data)
+    }
+
+    override fun hashCode(): Int {
+        var result = face.hashCode()
+        result = 31 * result + id.hashCode()
+        result = 31 * result + type.hashCode()
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is SuperFace) return false
+        return face == other.face && id == other.id && type == other.type
     }
 }
 

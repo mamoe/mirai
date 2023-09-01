@@ -5310,12 +5310,14 @@ public final class net/mamoe/mirai/message/data/SuperFace : net/mamoe/mirai/mess
 	public static final field SERIAL_NAME Ljava/lang/String;
 	public synthetic fun <init> (IILjava/lang/String;ILkotlinx/serialization/internal/SerializationConstructorMarker;)V
 	public fun contentToString ()Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
 	public static final fun from (Lnet/mamoe/mirai/message/data/Face;)Lnet/mamoe/mirai/message/data/SuperFace;
 	public final fun getFace ()I
 	public final fun getId ()Ljava/lang/String;
 	public fun getKey ()Lnet/mamoe/mirai/message/data/MessageKey;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getType ()I
+	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 	public static final fun tryFrom (Lnet/mamoe/mirai/message/data/Face;)Lnet/mamoe/mirai/message/data/SuperFace;
 	public static final fun write$Self (Lnet/mamoe/mirai/message/data/SuperFace;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
