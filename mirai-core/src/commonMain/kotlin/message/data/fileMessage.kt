@@ -22,7 +22,9 @@ import net.mamoe.mirai.contact.file.AbsoluteFolder
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.file.*
+import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x6d8.GetFileListRspBody
+import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x4
 import net.mamoe.mirai.internal.network.protocol.packet.chat.FileManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.OfflineFilleHandleSvr
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toResult
@@ -117,6 +119,17 @@ internal data class FriendFileMessageImpl(
             fileInfo.fileSha1,
         )
     }
+
+    internal fun toSubMsg0x4() = SubMsgType0x4.MsgBody(
+        msgNotOnlineFile = ImMsgBody.NotOnlineFile(
+            fileType = 0,
+            fileUuid = id.encodeToByteArray(),
+            fileMd5 = md5,
+            fileName = name.encodeToByteArray(),
+            fileSize = size,
+            subcmd = 1
+        )
+    )
 
     override fun toString(): String = "[mirai:file:$name, id=$id, size=$size]"
 }

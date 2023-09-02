@@ -140,54 +140,18 @@ internal class FileMessageProtocol : MessageProtocol() {
                 val msgRand = getRandomUnsignedInt()
                 val msgSeq = bot.client.sendFriendMessageSeq.next()
 
-                val msgSvcPbSendMsgResp = bot.network.sendAndExpect(
-                    MessageSvcPbSendMsg.buildOutgoingUniPacket(
-                        client = bot.client
-                    ) {
-                        writeProtoBuf(
-                            MsgSvc.PbSendMsgReq.serializer(),
-                            MsgSvc.PbSendMsgReq(
-                                routingHead = MsgSvc.RoutingHead(
-                                    trans0x211 = MsgSvc.Trans0x211(
-                                        toUin = contact.uin,
-                                        ccCmd = 4
-                                    )
-                                ),
-                                contentHead = MsgComm.ContentHead(
-                                    pkgNum = 1,
-                                    pkgIndex = 0,
-                                    divSeq = 0
-                                ),
-                                msgBody = ImMsgBody.MsgBody(
-                                    msgContent = SubMsgType0x4.MsgBody(
-                                        msgNotOnlineFile = ImMsgBody.NotOnlineFile(
-                                            fileType = 0,
-                                            fileUuid = file.id.encodeToByteArray(),
-                                            fileMd5 = file.md5,
-                                            fileName = file.name.encodeToByteArray(),
-                                            fileSize = file.size,
-                                            subcmd = 1
-                                        )
-                                    ).toByteArray(SubMsgType0x4.MsgBody.serializer())
-                                ),
-                                msgSeq = msgSeq,
-                                msgRand = msgRand,
-                                syncCookie = bot.client.syncCookie ?: byteArrayOf()
-                            )
-                        )
-                    }
+                var source: OnlineMessageSourceToFriendImpl
+                val msgSvcPbSendMsgResp = bot.network.sendAndExpect<MessageSvcPbSendMsg.Response>(
+                    MessageSvcPbSendMsg.createToFriendImpl(
+                        bot.client,
+                        contact.cast(),
+                        currentMessageChain,
+                        currentMessageChain,
+                        false
+                    ) { source = it }.single()
                 )
 
                 if (msgSvcPbSendMsgResp is MessageSvcPbSendMsg.Response.SUCCESS) {
-                    val source = OnlineMessageSourceToFriendImpl(
-                        internalIds = intArrayOf(msgRand),
-                        sender = bot,
-                        target = contact.cast(),
-                        time = bot.clock.server.currentTimeSeconds().toInt(),
-                        sequenceIds = intArrayOf(msgSeq),
-                        originalMessage = currentMessageChain,
-                    )
-
                     collect(source.createMessageReceipt(contact, false))
                     return
                 } else {
