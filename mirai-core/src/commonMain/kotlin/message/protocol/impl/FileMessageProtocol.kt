@@ -224,16 +224,19 @@ internal class FileMessageProtocol : MessageProtocol() {
             if (originalMsg != null && originalMsg.msgHead.msgType == 529) {
                 markAsConsumed()
                 val sub0x4 = originalMsg.msgBody.msgContent.loadAs(SubMsgType0x4.MsgBody.serializer())
-                if (sub0x4.msgNotOnlineFile != null) {
-                    collect(
-                        FriendFileMessageImpl(
-                            sub0x4.msgNotOnlineFile.fileUuid.decodeToString(),
-                            sub0x4.msgNotOnlineFile.fileName.decodeToString(),
-                            sub0x4.msgNotOnlineFile.fileSize,
-                            sub0x4.msgNotOnlineFile.fileMd5
-                        )
+                val msgNotOnline = sub0x4.msgNotOnlineFile ?: return
+
+                // notify that friend had downloaded the file.
+                if (msgNotOnline.subcmd == 2) return
+
+                collect(
+                    FriendFileMessageImpl(
+                        sub0x4.msgNotOnlineFile.fileUuid.decodeToString(),
+                        sub0x4.msgNotOnlineFile.fileName.decodeToString(),
+                        sub0x4.msgNotOnlineFile.fileSize,
+                        sub0x4.msgNotOnlineFile.fileMd5
                     )
-                }
+                )
                 return
             }
         }
