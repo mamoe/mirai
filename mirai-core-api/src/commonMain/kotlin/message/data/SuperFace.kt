@@ -17,10 +17,14 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
 import net.mamoe.mirai.utils.safeCast
-import kotlin.jvm.Throws
 
 /**
- * 超级表情
+ * 表示一个超级表情.
+ *
+ * 超级表情由[普通表情][Face]转换而来. 不是所有的普通表情都有对应的超级表情.
+ *
+ * 要构造超级表情, 使用 [SuperFace.from] 或 [SuperFace.fromOrNull].
+ * 在 Kotlin 还可以使用对应扩展函数: [Face.toSuperFace] 或 [Face.toSuperFaceOrNull].
  *
  * @see Face
  * @since 2.16
@@ -46,12 +50,12 @@ public class SuperFace @MiraiInternalApi constructor(
         /**
          * 将普通表情转换为超级表情.
          *
-         * @throws UnsupportedOperationException 无法转换时抛出
+         * @throws IllegalArgumentException 无法转换时抛出
          **/
         @JvmStatic
-        @Throws(UnsupportedOperationException::class)
         public fun from(face: Face): SuperFace {
-            return tryFrom(face = face) ?: throw UnsupportedOperationException("${face.id} - ${face.name}")
+            return fromOrNull(face = face)
+                ?: throw IllegalArgumentException("No SuperFace mapping from Face(id=${face.id}, name='${face.name}')")
         }
 
         /**
@@ -61,7 +65,7 @@ public class SuperFace @MiraiInternalApi constructor(
          **/
         @JvmStatic
         @OptIn(MiraiInternalApi::class)
-        public fun tryFrom(face: Face): SuperFace? {
+        public fun fromOrNull(face: Face): SuperFace? {
             val stickerId = when (face.id) {
                 Face.DA_CALL -> "1"
                 Face.BIAN_XING -> "2"
@@ -134,11 +138,27 @@ public class SuperFace @MiraiInternalApi constructor(
     }
 }
 
+/**
+ * 将超级表情转换为普通表情
+ *
+ * @since 2.16
+ */
 @JvmSynthetic
 public fun SuperFace.toFace(): Face = Face(id = face)
 
+/**
+ * 将普通表情转换为超级表情
+ *
+ * @since 2.16
+ * @throws IllegalArgumentException 无法转换时抛出
+ */
 @JvmSynthetic
-public fun SuperFace(face: Face): SuperFace = SuperFace.from(face)
+public fun Face.toSuperFace(): SuperFace = SuperFace.from(this)
 
+/**
+ * 将普通表情转换为超级表情, 在无法转换时返回 `null`
+ *
+ * @since 2.16
+ */
 @JvmSynthetic
-public fun SuperFace(face: Int): SuperFace = SuperFace.from(face = Face(id = face))
+public fun Face.toSuperFaceOrNull(): SuperFace? = SuperFace.fromOrNull(this)

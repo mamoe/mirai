@@ -302,7 +302,7 @@ internal class MessageVisitorTest {
                 "visitSingleMessage",
                 "visitMessage",
             ),
-            SuperFace(Face.DA_CALL).accept(GetCalledMethodNames)
+            SuperFace.from(Face(Face.DA_CALL)).accept(GetCalledMethodNames)
         )
 
         assertContentEquals(
