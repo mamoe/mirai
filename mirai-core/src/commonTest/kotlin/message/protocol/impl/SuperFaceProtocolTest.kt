@@ -15,8 +15,8 @@ import net.mamoe.mirai.internal.testFramework.DynamicTestsResult
 import net.mamoe.mirai.internal.testFramework.TestFactory
 import net.mamoe.mirai.internal.testFramework.runDynamicTests
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.message.data.SuperFace
 import net.mamoe.mirai.message.data.Face
+import net.mamoe.mirai.message.data.SuperFace
 import net.mamoe.mirai.utils.hexToBytes
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -43,14 +43,14 @@ internal class SuperFaceProtocolTest : AbstractMessageProtocolTest() {
                     .loadAs(net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody.Elem.serializer())
             )
             message(
-                SuperFace(face = Face.LAN_QIU)
+                SuperFace.from(Face(Face.LAN_QIU))
             )
         }.doDecoderChecks()
     }
 
     @TestFactory
     fun `test serialization`(): DynamicTestsResult {
-        val data = SuperFace(face = Face.LAN_QIU)
+        val data = SuperFace.from(Face(Face.LAN_QIU))
         val serialName = SuperFace.SERIAL_NAME
         return runDynamicTests(
             testPolymorphicInMessageContent(data, serialName),

@@ -97,7 +97,7 @@ internal class TestMiraiCode : AbstractTest() {
         )
 
         assertEquals(
-            messageChainOf(SuperFace(Face.LAN_QIU)),
+            messageChainOf(SuperFace.from(Face(Face.LAN_QIU))),
             "[mirai:superface:114,13,2]".deserializeMiraiCode()
         )
     }
