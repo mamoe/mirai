@@ -24,7 +24,6 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.systemProp
 import net.mamoe.mirai.utils.verbose
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.native.concurrent.SharedImmutable
 
 /**
  * Implementation must be fast and non-blocking, throwing no exception.
@@ -117,5 +116,4 @@ internal class PacketLoggingStrategyImpl(
 }
 
 
-@SharedImmutable
 private val SHOW_PACKET_DETAILS = systemProp("mirai.network.show.packet.details", false)
