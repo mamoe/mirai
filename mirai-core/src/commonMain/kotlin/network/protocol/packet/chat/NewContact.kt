@@ -149,21 +149,9 @@ internal class NewContact {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet {
             val resp = readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer())
 
-
-            return readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
-                groupmsgs/*.filter {
-                    it.msgTime >= bot.syncController.latestMsgNewGroupTime
-                }*/.map { struct ->
-                    /*if (!bot.syncController.syncNewGroup(struct.msgSeq, struct.msgTime)) { // duplicate
-                        return@mapNotNull null
-                    }*/
-                    bot.processPacketThroughPipeline(struct, buildTypeSafeMap { set(SYSTEM_MSG_TYPE, 1) })
-                }.toPacket()/*.also {
-                    bot.syncController.run {
-                        latestMsgNewGroupTime = max(latestMsgNewGroupTime, groupmsgs.maxOfOrNull { it.msgTime } ?: 0)
-                    }
-                }*/
-            }
+            return resp.groupmsgs.map { struct ->
+                bot.processPacketThroughPipeline(struct, buildTypeSafeMap { set(SYSTEM_MSG_TYPE, 1) })
+            }.toPacket()
         }
 
         internal object Action : OutgoingPacketFactory<Nothing?>("ProfileService.Pb.ReqSystemMsgAction.Group") {

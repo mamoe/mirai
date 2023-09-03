@@ -322,17 +322,8 @@ internal open class QQAndroidBot constructor(
         ) // We can move the factory to configuration but this is not necessary for now.
     }
 
-    override suspend fun getNewFriendRequestList(broadcast: Boolean): List<NewFriendRequestEvent> {
-        return Mirai.getNewFriendRequestList(this).map { data ->
-            NewFriendRequestEvent(
-                this,
-                data.eventId,
-                data.message,
-                data.requester,
-                data.fromGroupId,
-                data.requesterNick
-            ).also { if (broadcast) it.broadcast() }
-        }
+    override suspend fun getNewFriendRequestList(broadcast: Boolean): List<RequestEventData.NewFriendRequest> {
+        return Mirai.getNewFriendRequestList(this)
     }
 }
 

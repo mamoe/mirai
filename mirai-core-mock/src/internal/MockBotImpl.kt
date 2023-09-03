@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.friendgroup.FriendGroups
+import net.mamoe.mirai.data.RequestEventData
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.broadcast
@@ -120,7 +121,7 @@ internal class MockBotImpl(
         }
     }
 
-    override suspend fun getNewFriendRequestList(broadcast: Boolean): List<NewFriendRequestEvent> {
+    override suspend fun getNewFriendRequestList(broadcast: Boolean): List<RequestEventData.NewFriendRequest> {
         return listOf()
     }
 

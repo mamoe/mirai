@@ -19,7 +19,6 @@ import net.mamoe.mirai.contact.friendgroup.FriendGroups
 import net.mamoe.mirai.data.RequestEventData
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.network.LoginFailedException
@@ -173,13 +172,12 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     public override fun nudge(): BotNudge = BotNudge(this)
 
     /**
-     * 获取未处理的好友请求，作为事件返回
+     * 获取未处理的好友请求
      *
-     * @param broadcast 是否广播该事件，默认为不广播
-     * @see NewFriendRequestEvent
+     * @see RequestEventData.NewFriendRequest
      * @since 2.16
      */
-    public suspend fun getNewFriendRequestList(broadcast: Boolean = false): List<NewFriendRequestEvent>
+    public suspend fun getNewFriendRequestList(broadcast: Boolean = false): List<RequestEventData.NewFriendRequest>
 
     /**
      * 关闭这个 [Bot], 立即取消 [Bot] 的 [SupervisorJob], 取消与这个 [Bot] 相关的所有有协程联系的任务.
