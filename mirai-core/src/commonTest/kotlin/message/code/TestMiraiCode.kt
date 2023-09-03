@@ -95,5 +95,10 @@ internal class TestMiraiCode : AbstractTest() {
             messageChainOf(RockPaperScissors.PAPER),
             "[mirai:rps:paper]".deserializeMiraiCode()
         )
+
+        assertEquals(
+            messageChainOf(SuperFace.from(Face(Face.LAN_QIU))),
+            "[mirai:superface:114,13,2]".deserializeMiraiCode()
+        )
     }
 }

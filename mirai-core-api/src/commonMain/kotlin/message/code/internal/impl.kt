@@ -111,6 +111,9 @@ private object MiraiCodeParsers : AbstractMap<String, MiraiCodeParser>(), Map<St
     "face" to MiraiCodeParser(Regex("""(\d*)""")) { (id) ->
         Face(id.toInt())
     },
+    "superface" to MiraiCodeParser(Regex("""(\d*),(.*),(\d*)""")) { (face, id, type) ->
+        SuperFace(face.toInt(), id, type.toInt())
+    },
     "image" to MiraiCodeParser(Regex("""(.*)""")) { (id) ->
         Image(id)
     },
