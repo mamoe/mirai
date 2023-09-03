@@ -175,9 +175,9 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      * 获取未处理的好友请求
      *
      * @see RequestEventData.NewFriendRequest
-     * @since 2.16
+     * @since 2.17
      */
-    public suspend fun getNewFriendRequestList(broadcast: Boolean = false): List<RequestEventData.NewFriendRequest>
+    public suspend fun getNewFriendRequestList(): List<RequestEventData.NewFriendRequest>
 
     /**
      * 关闭这个 [Bot], 立即取消 [Bot] 的 [SupervisorJob], 取消与这个 [Bot] 相关的所有有协程联系的任务.

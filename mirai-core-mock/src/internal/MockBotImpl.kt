@@ -121,7 +121,7 @@ internal class MockBotImpl(
         }
     }
 
-    override suspend fun getNewFriendRequestList(broadcast: Boolean): List<RequestEventData.NewFriendRequest> {
+    override suspend fun getNewFriendRequestList(): List<RequestEventData.NewFriendRequest> {
         return listOf()
     }
 
