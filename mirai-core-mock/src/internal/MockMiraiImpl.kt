@@ -22,6 +22,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.network.components.EventDispatcher
+import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.mock.MockActions
@@ -295,6 +296,11 @@ internal class MockMiraiImpl : MiraiImpl() {
     }
 
     override suspend fun sendNudge(bot: Bot, nudge: Nudge, receiver: Contact): Boolean {
+        if (!bot.configuration.protocol.isNudgeSupported) {
+            throw UnsupportedOperationException("nudge is supported only with protocol ${
+                MiraiProtocolInternal.protocols.filter { it.value.supportsNudge }.map { it.key }
+            }")
+        }
         NudgeEvent(
             from = bot,
             target = nudge.target,
