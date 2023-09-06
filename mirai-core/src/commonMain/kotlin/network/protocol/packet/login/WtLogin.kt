@@ -241,6 +241,8 @@ internal class WtLogin {
                 // 40: blocked
                 // 161: 今日操作次数过多，请等待一天后再试。   (SMS)
                 // 162: 可能也是 SMS 太频繁
+                // 180：可能是需要换服务器 IP
+                180 -> onChangeServerIpv6(tlvMap, bot)
                 204 /*-52*/ -> onDevLockLogin(tlvMap, bot)
                 // 1, 15 -> onErrorMessage(tlvMap) ?: error("Cannot find error message")
                 else -> {
@@ -254,6 +256,18 @@ internal class WtLogin {
 
         private fun dumpTlvMap(tlvMap: TlvMap): String {
             return tlvMap.entries.joinToString { "${it.key}=${it.value.toUHexString()}" }
+        }
+
+        // temporary function name
+        private fun onChangeServerIpv6(
+            tlvMap: TlvMap,
+            bot: QQAndroidBot
+        ): LoginPacketResponse.Error {
+            tlvMap[0x161]?.let { bot.client.analysisTlv161(it) }
+
+            return onErrorMessage(0x146, tlvMap, bot)
+                ?: LoginPacketResponse.Error(bot, 0x146, "login failed",
+                    "login result type 180 without error message", "")
         }
 
         private fun onDevLockLogin(
