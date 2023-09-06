@@ -283,8 +283,13 @@ internal class WtLogin {
 
             val t172 = t161[0x172]
             if (t172 != null) {
-                bot.client.rollbackSig = t172
+                if (t172.contentEquals(bot.client.rollbackSig)) {
+                    return LoginPacketResponse.Error(bot, 0x146, "login failed",
+                        "login result type 180 with same t172 as the client's", "")
+                }
+
                 runCatching {
+                    bot.client.rollbackSig = t172
                     bot.components[KeyRefreshProcessor].refreshKeysNow(bot.network)
                 }.fold(
                     onSuccess = { return LoginPacketResponse.Success(bot) },
