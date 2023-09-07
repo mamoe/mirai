@@ -44,7 +44,7 @@ internal class OnlineShortVideoMsgInternal(
 
         val contact = when (sourceKind) {
             MessageSourceKind.FRIEND -> bot.getFriend(fromId) ?: error("Cannot find friend $fromId.")
-            MessageSourceKind.GROUP -> bot.getGroup(groupId) ?: error("Cannot find group $fromId.")
+            MessageSourceKind.GROUP -> bot.getGroup(groupId) ?: error("Cannot find group $groupId.")
             else -> return null // ignore processing stranger's video message
         }
         val sender = when (sourceKind) {
