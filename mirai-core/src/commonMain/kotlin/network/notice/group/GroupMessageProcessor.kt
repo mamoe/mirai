@@ -169,7 +169,7 @@ internal class GroupMessageProcessor(
                             mutableMapOf(
                                 RefineContextKey.MessageSourceKind to MessageSourceKind.GROUP,
                                 RefineContextKey.FromId to sender.uin,
-                                RefineContextKey.GroupIdOrZero to group.uin,
+                                RefineContextKey.GroupIdOrZero to group.id,
                             )
                         )
                     ),
@@ -195,7 +195,7 @@ internal class GroupMessageProcessor(
                             mutableMapOf(
                                 RefineContextKey.MessageSourceKind to MessageSourceKind.GROUP,
                                 RefineContextKey.FromId to sender.uin,
-                                RefineContextKey.GroupIdOrZero to group.uin,
+                                RefineContextKey.GroupIdOrZero to group.id,
                             )
                         )
                     ),
