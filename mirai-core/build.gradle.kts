@@ -173,6 +173,16 @@ if (tasks.findByName("androidMainClasses") != null) {
 configureMppPublishing()
 configureBinaryValidators(setOf("jvm", "android").filterTargets())
 
+tasks.register("compileJava") {
+    description = "Dummy task to allow IntelliJ IDEA to run main functions from jvmTest"
+    dependsOn(tasks.getByName("compileKotlinJvm"))
+}
+
+tasks.register("testClasses") {
+    description = "Dummy task to allow IntelliJ IDEA to run main functions from jvmTest"
+    dependsOn(tasks.getByName("compileTestKotlinJvm"))
+}
+
 //mavenCentralPublish {
 //    artifactId = "mirai-core"
 //    githubProject("mamoe", "mirai")
