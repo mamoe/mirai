@@ -98,6 +98,8 @@ public interface Contact : ContactOrBot, CoroutineScope {
      * @param thumbnail 短视频封面图，为图片资源.
      * @param video 视频资源，目前仅支持上传 mp4 格式的视频.
      * @param fileName 文件名，若为 `null` 则根据 [video] 自动生成.
+     *
+     * @since 2.16
      */
     public suspend fun uploadShortVideo(
         thumbnail: ExternalResource,
