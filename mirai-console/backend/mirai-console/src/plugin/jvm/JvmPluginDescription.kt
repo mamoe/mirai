@@ -16,6 +16,7 @@ import io.github.karlatemp.caller.StackFrame
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
+import net.mamoe.mirai.console.internal.plugin.JvmPluginClassLoaderN
 import net.mamoe.mirai.console.internal.util.findLoader
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
@@ -47,6 +48,11 @@ public interface JvmPluginDescription : PluginDescription {
             pluginClassloader: ClassLoader = CallerFinder.getCaller()?.findLoader()
                 ?: error("Cannot find caller classloader, please specify manually."),
         ): JvmPluginDescription {
+            if (filename == "plugin.yml") {
+                val cache = (pluginClassloader as? JvmPluginClassLoaderN)?.pluginDescriptionFromPluginResource
+                if (cache != null) return cache
+            }
+
             val stream = pluginClassloader.getResourceAsStream(filename)
                 ?: error("Cannot find plugin description resource '$filename'")
 
