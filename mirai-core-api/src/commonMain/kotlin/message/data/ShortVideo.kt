@@ -61,7 +61,7 @@ public interface ShortVideo : MessageContent, ConstrainSingle {
      */
     public val fileMd5: ByteArray
 
-    /*
+    /**
      * 视频大小
      */
     public val fileSize: Long
@@ -71,7 +71,7 @@ public interface ShortVideo : MessageContent, ConstrainSingle {
      */
     public val fileFormat: String
 
-    /*
+    /**
      * 视频文件名, 不包括拓展名
      */
     public val filename: String
