@@ -50,6 +50,8 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 
 [Chlorie/miraipp]: https://github.com/Chlorie/miraipp-template
 
+[Numendacil/cpp-mirai-client]: https://github.com/Numendacil/cpp-mirai-client
+
 [Executor-Cheng/mirai-CSharp]: https://github.com/Executor-Cheng/mirai-CSharp
 
 [HoshinoTented/mirai-rs]: https://github.com/HoshinoTented/mirai-rs
@@ -138,6 +140,7 @@ HTTP 插件），也可以阅读 [用户手册](UserManual.md) 进行个性化�
 | `C#`                      | [yuansicloud/Abp.Mirai]              |
 | `C++`                     | [cyanray/mirai-cpp]                  |
 | `C++`                     | [Chlorie/miraipp]                    |
+| `C++`                     | [Numendacil/cpp-mirai-client]        |
 | `GDScript`                | [Xwdit/RainyBot-Core]                |
 | `Go`                      | [Logiase/gomirai]                    |
 | `JavaScript` / Node.js    | [RedBeanN/node-mirai]                |
