@@ -43,7 +43,7 @@ internal open class NettyNetworkHandler(
     ///////////////////////////////////////////////////////////////////////////
 
     protected open fun handlePipelineException(ctx: ChannelHandlerContext, error: Throwable) {
-        setState { StateClosed(NettyChannelException(cause = error)) }
+        setState { StateClosed(NettyChannelException(cause = error, message = "An unexpected exception was received from netty pipeline. (context=$context, address=$address)")) }
     }
 
     ///////////////////////////////////////////////////////////////////////////
