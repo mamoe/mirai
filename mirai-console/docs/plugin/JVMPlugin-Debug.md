@@ -66,6 +66,71 @@ fun onEnable() {
 }
 ```
 
+## 使用依赖库后无法加载插件 / clinit 无法使用依赖库
+
+错误类似
+
+```log
+2023-12-08 00:23:42 E/main: Failed to init MiraiConsole.
+net.mamoe.mirai.console.internal.util.ServiceLoadException: Could not load service com.example.exmapleplugin.MyPlugin
+    at ....
+Caused by: java.lang.NoClassDefFoundError: com/example/somelibrary/ClassFromLibrary
+	at java.base/java.lang.Class.forName0(Native Method)
+	at java.base/java.lang.Class.forName(Class.java:467)
+	at net.mamoe.mirai.console.internal.util.PluginServiceHelper.loadService(PluginServiceHelper.kt:51)
+Caused by: java.lang.NoClassDefFoundError: org/quartz/SchedulerException
+	... 23 more
+Caused by: java.lang.ClassNotFoundException: com/example/somelibrary/ClassFromLibrary
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+Caused by: java.lang.ClassNotFoundException: com.example.somelibrary.ClassFromLibrary
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:520)
+	at net.mamoe.mirai.console.internal.plugin.JvmPluginClassLoaderN.loadClass(JvmPluginClassLoader.kt:389)
+	... 26 more
+```
+
+此原因是因为 clinit 阶段时 mirai-console 还未加载依赖库至插件类搜索路径中。
+
+如果您使用 mirai-console 2.16.0+
+
+请创建 `plugin.yml`, mirai-console 才能将依赖库在 clinit 阶段前加载到插件类搜索路径，见 [JVMPlugin - 通过资源文件提供静态信息](./JVMPlugin.md#%E9%80%9A%E8%BF%87%E8%B5%84%E6%BA%90%E6%96%87%E4%BB%B6%E6%8F%90%E4%BE%9B%E9%9D%99%E6%80%81%E4%BF%A1%E6%81%AF)
+
+如果您使用 mirai-console 2.160 之前的版本, 请创建一个新的类，此类不要包含依赖库的代码，然后将此类的代码转移到您的真正的逻辑代码
+
+示例
+```kotlin
+object OuterPlugin: KotlinPlugin(...) {
+    override fun onEnable() {
+        ActuallyPluginClassLoader.onEnable()
+    }
+}
+
+object ActuallyPluginClassLoader {
+    fun onEnable() {
+        // .....
+    }
+}
+```
+
+> 底层分析
+>
+> 为了实现插件之间的相互依赖，mirai-console 必须获取到插件的信息 (PluginDescription) 才能进行插件类路径链接操作
+>
+> 在 mirai-console 2.16.0 之前，插件加载顺序为
+>
+> - 加载插件主类 (即 clinit 阶段)
+> - 加载插件实例 (传递 PluginDescription 给 mirai-console)
+> - mirai-console 构建插件依赖关系，链接插件类路径
+> - 执行插件的 onEnable
+>
+> 在 2.16.0+, 存在 plugin.yml 时, 插件加载的顺序为
+>
+> - 加载 plugin.yml
+> - 构建插件依赖关系，链接插件类路径
+> - 加载插件主类
+> - 加载插件实例
+> - 执行 onEnable
+
 ## java.lang.LinkageError: loader constraint violation
 
 ```log
