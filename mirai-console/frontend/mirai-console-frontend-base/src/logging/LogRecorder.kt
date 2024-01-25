@@ -107,7 +107,7 @@ public open class DailySplitLogRecorder(
     protected val directory: Path,
     protected val base: FrontendBase,
     protected val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(
-        "YYYY-MM-dd'.log'"
+        "yyyy-MM-dd'.log'"
     ),
 ) : LogRecorder() {
     @JvmField
