@@ -16,6 +16,7 @@ import net.mamoe.mirai.event.globalEventChannel
 import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.internal.network.component.ComponentKey
 import net.mamoe.mirai.internal.network.handler.NetworkHandler
+import net.mamoe.mirai.internal.network.handler.selector.NetworkException
 import net.mamoe.mirai.internal.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.warning
@@ -42,7 +43,7 @@ internal class ConfigPushProcessorImpl(
         if (resp == null) {
             val bdhSyncer = network.context[BdhSessionSyncer]
             if (!bdhSyncer.hasSession) {
-                val e = IllegalStateException("Timeout waiting for ConfigPush.")
+                val e = NetworkException("Timeout waiting for ConfigPush.",true)
                 bdhSyncer.bdhSession.completeExceptionally(e)
                 logger.warning { "Missing ConfigPush. Switching server..." }
                 network.context[SsoProcessor].casFirstLoginResult(null, FirstLoginResult.CHANGE_SERVER)
