@@ -502,10 +502,11 @@ public enum class ImageType(
      * @since 2.9.0
      */
     @MiraiInternalApi public val formatName: String,
+    @MiraiInternalApi public vararg val secondaryNames: String
 ) {
     PNG("png"),
     BMP("bmp"),
-    JPG("jpg"),
+    JPG("jpg", "JPEG", "JPE"),
     GIF("gif"),
 
     //WEBP, //Unsupported by pc client
@@ -523,7 +524,7 @@ public enum class ImageType(
         @JvmStatic
         public fun matchOrNull(str: String): ImageType? {
             val input = str.uppercase()
-            return IMAGE_TYPE_ENUM_LIST.firstOrNull { it.name == input }
+            return IMAGE_TYPE_ENUM_LIST.firstOrNull { it.name == input || it.secondaryNames.contains(input) }
         }
     }
 }
