@@ -49,6 +49,7 @@ internal class ImageProtocol : MessageProtocol() {
             add(MessageSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer()))
             add(MessageSerializer(OnlineFriendImageImpl::class, OnlineFriendImageImpl.serializer()))
             add(MessageSerializer(OnlineGroupImageImpl::class, OnlineGroupImageImpl.serializer()))
+            add(MessageSerializer(OnlineNewTechImageImpl::class, OnlineNewTechImageImpl.serializer()))
         }
     }
 
@@ -87,6 +88,9 @@ internal class ImageProtocol : MessageProtocol() {
                             collect(ShowImageFlag)
                         }
                     }
+                }
+                data.commonElem != null && data.commonElem.serviceType == 48 -> {
+                    collect(OnlineNewTechImageImpl(data.commonElem))
                 }
                 else -> {
                     markNotConsumed()
@@ -128,6 +132,9 @@ internal class ImageProtocol : MessageProtocol() {
                     } else {
                         collect(ImMsgBody.Elem(customFace = data.toJceData().toCustomFace()))
                     }
+                }
+                is OnlineNewTechImageImpl -> {
+                    collect(ImMsgBody.Elem(commonElem = data.commonElem))
                 }
             }
         }
