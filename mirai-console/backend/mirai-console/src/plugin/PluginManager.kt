@@ -17,7 +17,7 @@ import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.utils.NotStableForInheritance
 import java.io.File
-import java.nio.file.Path
+import com.llamalab.safs.Path
 
 /**
  * 插件管理器.

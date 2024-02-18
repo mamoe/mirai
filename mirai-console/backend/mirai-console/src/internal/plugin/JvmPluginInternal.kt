@@ -41,7 +41,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.safeCast
 import java.io.File
 import java.io.InputStream
-import java.nio.file.Path
+import com.llamalab.safs.Path
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.coroutines.CoroutineContext

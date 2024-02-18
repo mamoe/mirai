@@ -13,7 +13,7 @@ import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import java.io.File
-import java.nio.file.Path
+import com.llamalab.safs.Path
 
 
 /**

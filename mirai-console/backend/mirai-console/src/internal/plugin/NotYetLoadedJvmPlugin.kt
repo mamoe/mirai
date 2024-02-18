@@ -19,7 +19,7 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.io.InputStream
-import java.nio.file.Path
+import com.llamalab.safs.Path
 import kotlin.coroutines.CoroutineContext
 
 internal abstract class NotYetLoadedJvmPlugin(

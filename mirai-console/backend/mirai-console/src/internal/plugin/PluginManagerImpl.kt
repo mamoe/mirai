@@ -30,7 +30,7 @@ import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.*
 import java.io.File
-import java.nio.file.Path
+import com.llamalab.safs.Path
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.coroutines.CoroutineContext
 

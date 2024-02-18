@@ -17,7 +17,7 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import java.io.File
-import java.nio.file.Path
+import com.llamalab.safs.Path
 
 /**
  * [数据对象][PluginData] 存储仓库.

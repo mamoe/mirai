@@ -40,7 +40,7 @@ import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.*
-import java.nio.file.Path
+import com.llamalab.safs.Path
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.annotation.AnnotationTarget.*

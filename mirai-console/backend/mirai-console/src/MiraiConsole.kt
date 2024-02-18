@@ -34,7 +34,7 @@ import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.*
 import java.io.File
-import java.nio.file.Path
+import com.llamalab.safs.Path
 import java.time.Instant
 
 /**

@@ -24,7 +24,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.yamlkt.Yaml
 import java.io.File
-import java.nio.file.Path
+import com.llamalab.safs.Path
 
 @Suppress("RedundantVisibilityModifier") // might be public in the future
 internal open class MultiFilePluginDataStorageImpl(

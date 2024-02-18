@@ -24,7 +24,7 @@ import java.io.FileOutputStream
 import java.io.PrintStream
 import java.lang.management.ManagementFactory
 import java.lang.reflect.Method
-import java.nio.file.Paths
+import com.llamalab.safs.Paths
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.*
@@ -33,7 +33,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.io.path.writeText
+import com.llamalab.safs.kotlin.io.path.writeText
 
 internal object ShutdownDaemon {
     @Suppress("RemoveRedundantQualifierName")
@@ -110,6 +110,7 @@ internal object ShutdownDaemon {
         bridge.mainLogger.debug { "SHUTDOWN DAEMON STARTED........." }
     }
 
+    @OptIn(ConsoleInternalApi::class)
     @Suppress("MemberVisibilityCanBePrivate")
     fun dumpCrashReport(saveError: Boolean) {
         val isAndroidSystem = kotlin.runCatching { Class.forName("android.util.Log") }.isSuccess

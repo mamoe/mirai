@@ -13,12 +13,13 @@ import net.mamoe.mirai.utils.SecretsProtection
 import net.mamoe.mirai.utils.lateinitMutableProperty
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
-import java.nio.file.Path
+import com.llamalab.safs.Path
 import java.util.*
-import kotlin.io.path.createDirectories
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.readBytes
-import kotlin.io.path.writeBytes
+import com.llamalab.safs.kotlin.io.path.createDirectories
+import com.llamalab.safs.kotlin.io.path.readBytes
+import com.llamalab.safs.kotlin.io.path.writeBytes
+
+import com.llamalab.safs.kotlin.io.path.isRegularFile
 
 internal class ConsoleSecretsCalculator(
     private val file: Path,

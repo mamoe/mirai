@@ -31,7 +31,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.*
 import net.mamoe.yamlkt.Yaml
 import java.io.File
-import java.nio.file.Path
+import com.llamalab.safs.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
 
