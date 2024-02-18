@@ -16,7 +16,7 @@ import net.mamoe.mirai.console.internal.data.MultiFilePluginDataStorageImpl
 import net.mamoe.mirai.console.testFramework.AbstractConsoleInstanceTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
+import com.llamalab.safs.Path
 import kotlin.test.assertEquals
 
 internal class MultiFilePluginDataStorageImplTests : AbstractConsoleInstanceTest() {

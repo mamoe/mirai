@@ -18,9 +18,9 @@ import net.mamoe.mirai.console.frontendbase.FrontendBase
 import net.mamoe.mirai.console.util.AnsiMessageBuilder.Companion.dropAnsi
 import net.mamoe.mirai.utils.childScope
 import java.io.Writer
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.StandardOpenOption
+import com.llamalab.safs.Files
+import com.llamalab.safs.Path
+import com.llamalab.safs.StandardOpenOption
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

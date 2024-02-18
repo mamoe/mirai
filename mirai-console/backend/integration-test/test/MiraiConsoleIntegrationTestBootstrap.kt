@@ -13,8 +13,8 @@ import net.mamoe.console.integrationtest.testpoints.MCITBSelfAssertions
 import org.objectweb.asm.ClassReader
 import java.io.File
 import java.lang.management.ManagementFactory
-import java.nio.file.Files
-import java.nio.file.Paths
+import com.llamalab.safs.Files
+import com.llamalab.safs.Paths
 import java.util.*
 import java.util.stream.Collectors
 import kotlin.io.path.inputStream

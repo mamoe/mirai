@@ -16,7 +16,7 @@ import net.mamoe.mirai.console.frontendbase.logging.DailySplitLogRecorder
 import net.mamoe.mirai.console.frontendbase.logging.LogRecorder
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.PrintStream
-import java.nio.file.Path
+import com.llamalab.safs.Path
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
 

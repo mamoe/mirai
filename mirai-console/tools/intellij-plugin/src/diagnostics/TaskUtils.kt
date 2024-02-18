@@ -15,7 +15,7 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.writeChild
 import org.intellij.lang.annotations.Language
-import java.nio.file.Path
+import com.llamalab.safs.Path
 
 val Path.vfOrNull: VirtualFile?
     get() = LocalFileSystem.getInstance().refreshAndFindFileByPath(this.toAbsolutePath().toString())

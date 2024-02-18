@@ -24,7 +24,7 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.PlatformLogger
-import java.nio.file.Path
+import com.llamalab.safs.Path
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
