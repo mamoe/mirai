@@ -17,9 +17,6 @@ import com.llamalab.safs.Files
 import com.llamalab.safs.Paths
 import java.util.*
 import java.util.stream.Collectors
-import kotlin.io.path.inputStream
-import kotlin.io.path.isDirectory
-import kotlin.io.path.name
 import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertTrue

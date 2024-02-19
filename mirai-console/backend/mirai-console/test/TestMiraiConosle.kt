@@ -28,7 +28,7 @@ import com.llamalab.safs.Path
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
-import kotlin.io.path.createTempDirectory
+import com.llamalab.safs.kotlin.io.path.createTempDirectory
 import kotlin.test.assertNotNull
 
 internal object Testing {

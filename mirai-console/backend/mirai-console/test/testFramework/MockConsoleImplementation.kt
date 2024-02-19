@@ -32,7 +32,7 @@ import com.llamalab.safs.Path
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import kotlin.io.path.createTempDirectory
+import com.llamalab.safs.kotlin.io.path.createTempDirectory
 
 open class MockConsoleImplementation : MiraiConsoleImplementation {
     final override val rootPath: Path = createTempDirectory()

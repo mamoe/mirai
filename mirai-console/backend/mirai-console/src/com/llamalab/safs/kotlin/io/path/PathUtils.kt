@@ -4,6 +4,7 @@ import com.llamalab.safs.Path
 import com.llamalab.safs.Files
 import com.llamalab.safs.OpenOption
 import com.llamalab.safs.attribute.FileAttribute
+import java.io.InputStream
 import java.nio.charset.Charset
 
 public inline fun Path.isRegularFile(vararg options: LinkOption): Boolean = Files.isRegularFile(this, *options)
@@ -26,3 +27,10 @@ public inline fun createTempDirectory(prefix: String? = null, vararg attributes:
 public fun Path.writeText(text: CharSequence, charset: Charset = Charsets.UTF_8, vararg options: OpenOption) {
     Files.newOutputStream(this, *options).writer(charset).use { it.append(text) }
 }
+
+public inline fun Path.inputStream(vararg options: OpenOption): InputStream {
+    return Files.newInputStream(this, *options)
+}
+
+public val Path.name: String
+    get() = fileName?.toString().orEmpty()

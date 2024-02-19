@@ -551,7 +551,7 @@ public final class Files {
 
 
     public static File[] walk(@Nullable Path path) {
-        throw new NotImplementedException("我懒得写");
+        return path.toFile().listFiles();
     }
 
 
