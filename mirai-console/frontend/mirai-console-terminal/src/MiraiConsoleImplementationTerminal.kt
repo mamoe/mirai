@@ -56,8 +56,8 @@ import org.jline.reader.impl.completer.NullCompleter
 import org.jline.terminal.Terminal
 import org.jline.terminal.TerminalBuilder
 import org.jline.terminal.impl.AbstractWindowsTerminal
-import compatibilty.java.nio.file.Path
-import compatibilty.java.nio.file.Paths
+import com.llamalab.safs.Path
+import com.llamalab.safs.Paths
 
 /**
  * mirai-console-terminal 后端实现
