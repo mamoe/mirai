@@ -69,5 +69,8 @@ internal sealed class FriendImage : AbstractImage()
 // moved from mirai-core-api since 2.11
 internal sealed class GroupImage : AbstractImage()
 
+// NT Image
+internal sealed class NewTechImage : AbstractImage()
+
 private val imageLogger: MiraiLogger by lazy { MiraiLogger.Factory.create(Image::class, "Image") }
 internal val Image.Key.logger get() = imageLogger

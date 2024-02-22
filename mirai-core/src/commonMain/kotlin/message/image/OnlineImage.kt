@@ -21,6 +21,7 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.ImageType
 import net.mamoe.mirai.utils.generateImageId
 import net.mamoe.mirai.utils.generateImageIdFromResourceId
+import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.structureToString
 
 internal sealed interface OnlineImage : Image, ConstOriginUrlAware {
@@ -134,6 +135,51 @@ internal class OnlineGroupImageImpl(
 
     override val isEmoji: Boolean by lazy {
         delegate.pbReserve.pbImageResv_checkIsEmoji(CustomFaceExtPb.ResvAttr.serializer())
+    }
+}
+
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+internal sealed class OnlineNewTechImage : NewTechImage(), OnlineImage
+
+@Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+@Serializable(with = OnlineNewTechImageImpl.Serializer::class)
+internal class OnlineNewTechImageImpl(
+    internal val commonElem: ImMsgBody.CommonElem,
+) : OnlineNewTechImage() {
+
+    private val delegate = commonElem.pbElem.loadAs(ImMsgBody.NewTechImageInfo.serializer())
+
+    object Serializer : Image.FallbackSerializer("OnlineNewTechImage")
+
+    override val md5 = delegate.info.msgInfo.imageInfo.md5.hexToBytes()
+
+    private val senderMeta = delegate.meta.main.friendMeta ?: delegate.meta.main.groupMeta!!
+    override val size: Long get() = delegate.info.msgInfo.imageInfo.size
+    override val width: Int
+        get() = delegate.info.msgInfo.imageInfo.imageWidth
+    override val height: Int
+        get() = delegate.info.msgInfo.imageInfo.imageHeight
+    override val imageType: ImageType
+        get() = OnlineImageIds.speculateImageType(
+            delegate.info.msgInfo.imageInfo.filePath,
+            delegate.info.msgInfo.imageInfo.imageType.type
+        )
+
+    override val imageId: String = generateImageId(
+        md5,
+        OnlineImageIds.speculateImageTypeNameFromFilePath(delegate.info.msgInfo.imageInfo.filePath)
+    ).takeIf {
+        Image.IMAGE_ID_REGEX.matches(it)
+    } ?: generateImageId(md5)
+
+    override val originUrl: String
+        get() = if (senderMeta.origUrl.isBlank()) {
+            gchatImageUrlByImageId(imageId)
+        } else "http://" + delegate.info.noKeyDownloadInfo.domain + senderMeta.origUrl
+
+    override val isEmoji: Boolean by lazy {
+        delegate.meta.main.isEmoji == 1 || delegate.meta.main.displayStr == "[动画表情]"
+
     }
 }
 

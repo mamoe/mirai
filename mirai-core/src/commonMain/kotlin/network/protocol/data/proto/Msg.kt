@@ -696,6 +696,140 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(56) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
     ) : ProtoBuf
 
+    @Serializable
+    internal class NewTechImageType(
+        @ProtoNumber(1) @JvmField val i: Int = 0,
+        @ProtoNumber(2) @JvmField val type: Int = 0,
+        @ProtoNumber(3) @JvmField val j: Int = 0,
+        @ProtoNumber(4) @JvmField val k: Int = 0,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageFileInfo(
+        @ProtoNumber(1) @JvmField val size: Long = 0L,
+        @ProtoNumber(2) @JvmField val md5: String = "",
+        @ProtoNumber(3) @JvmField val sha1: String = "",
+        @ProtoNumber(4) @JvmField val filePath: String = "",
+        @ProtoNumber(5) @JvmField val imageType: NewTechImageType,
+        @ProtoNumber(6) @JvmField val imageWidth: Int = 0,
+        @ProtoNumber(7) @JvmField val imageHeight: Int = 0,
+        @ProtoNumber(8) @JvmField val i: Int = 0,
+        @ProtoNumber(9) @JvmField val j: Int = 0,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageMsgInfo(
+        @ProtoNumber(1) @JvmField val imageInfo: NewTechImageFileInfo,
+        @ProtoNumber(2) @JvmField val fileId: String = "",
+        @ProtoNumber(3) @JvmField val i: Int = 0,
+        @ProtoNumber(4) @JvmField val timestamp: Long = 0L,
+        @ProtoNumber(5) @JvmField val friendOrGroup: Int = 0,
+        @ProtoNumber(6) @JvmField val j: Int = 0,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageSpec(
+        @ProtoNumber(1) @JvmField val origin: String = "&spec=0",
+        @ProtoNumber(2) @JvmField val large: String = "&spec=720",
+        @ProtoNumber(3) @JvmField val small: String = "&spec=198",
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageNoKeyDownloadInfo(
+        @ProtoNumber(1) @JvmField val noKeyUrl: String = "",
+        @ProtoNumber(2) @JvmField val spec: NewTechImageSpec,
+        @ProtoNumber(3) @JvmField val domain: String = "multimedia.nt.qq.com.cn",
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageGroupInfo(
+        @ProtoNumber(1) @JvmField val groupId: Long = 0L,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageFriendInfo(
+        @ProtoNumber(1) @JvmField val i: Int = 0,
+        @ProtoNumber(2) @JvmField val j: String = "",
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageSenderInfo(
+        @ProtoNumber(101) @JvmField val i: Int = 0,
+        @ProtoNumber(102) @JvmField val j: Int = 0,
+        @ProtoNumber(200) @JvmField val k: Int = 0,
+        @ProtoNumber(201) @JvmField val friendInfo: NewTechImageFriendInfo?,
+        @ProtoNumber(202) @JvmField val groupInfo: NewTechImageGroupInfo?,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageInfoMain(
+        @ProtoNumber(1) @JvmField val msgInfo: NewTechImageMsgInfo,
+        @ProtoNumber(2) @JvmField val noKeyDownloadInfo: NewTechImageNoKeyDownloadInfo,
+        @ProtoNumber(5) @JvmField val k: Int = 0,
+        @ProtoNumber(6) @JvmField val senderInfo: NewTechImageSenderInfo,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageMetaInfoSenderMetaSenderUnknown(
+        @ProtoNumber(1) @JvmField val i: Int = 0,
+        @ProtoNumber(2) @JvmField val j: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(3) @JvmField val k: Int = 0,
+        @ProtoNumber(4) @JvmField val l: Int = 0,
+        @ProtoNumber(5) @JvmField val m: Int = 0,
+        @ProtoNumber(7) @JvmField val n: ByteArray = EMPTY_BYTE_ARRAY,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageMetaInfoSenderMeta(
+        @ProtoNumber(1) @JvmField val i: Int = 0,
+        @ProtoNumber(3) @JvmField val j: Int = 0,
+        @ProtoNumber(4) @JvmField val k: Int = 0,
+        @ProtoNumber(9) @JvmField val displayStr: String = "",
+        @ProtoNumber(10) @JvmField val l: Int = 0,
+        @ProtoNumber(12) @JvmField val m: ByteArray? = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(18) @JvmField val n: ByteArray? = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(19) @JvmField val o: ByteArray? = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(20) @JvmField val friendUnknown: NewTechImageMetaInfoSenderMetaSenderUnknown?,
+        @ProtoNumber(21) @JvmField val groupUnknown: NewTechImageMetaInfoSenderMetaSenderUnknown?,
+        @ProtoNumber(30) @JvmField val origUrl: String = "",
+        @ProtoNumber(31) @JvmField val md5Upper: String = "",
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageMetaInfoMain(
+        @ProtoNumber(1) @JvmField val isEmoji: Int = 0,
+        @ProtoNumber(2) @JvmField val displayStr: String = "",
+        @ProtoNumber(11) @JvmField val friendMeta: NewTechImageMetaInfoSenderMeta?,
+        @ProtoNumber(12) @JvmField val groupMeta: NewTechImageMetaInfoSenderMeta?,
+        @ProtoNumber(1001) @JvmField val i: Int = 0,
+        @ProtoNumber(1002) @JvmField val j: Int = 0,
+        @ProtoNumber(1003) @JvmField val k: Int? = 0,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageMetaInfoUnknown2(
+        @ProtoNumber(3) @JvmField val i: ByteArray = EMPTY_BYTE_ARRAY,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageMetaInfoUnknown3(
+        @ProtoNumber(11) @JvmField val i: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(12) @JvmField val j: ByteArray = EMPTY_BYTE_ARRAY,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageMetaInfo(
+        @ProtoNumber(1) @JvmField val main: NewTechImageMetaInfoMain,
+        @ProtoNumber(2) @JvmField val unknown1: NewTechImageMetaInfoUnknown2,
+        @ProtoNumber(3) @JvmField val unknown2: NewTechImageMetaInfoUnknown3,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class NewTechImageInfo(
+        @ProtoNumber(1) @JvmField val info: NewTechImageInfoMain,
+        @ProtoNumber(2) @JvmField val meta: NewTechImageMetaInfo,
+    ) : ProtoBuf
+
     interface NotOnlineImageOrCustomFace {
         val thumbUrl: String
         val origUrl: String
