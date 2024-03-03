@@ -16,6 +16,7 @@ import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.data.RequestEventData
 import net.mamoe.mirai.data.StrangerInfo
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.NotStableForInheritance
@@ -196,4 +197,10 @@ public interface LowLevelApiAccessor {
         groupId: Long,
         seconds: Int,
     )
+
+    /**
+     * 获取新好友请求列表
+     */
+    @LowLevelApi
+    public suspend fun getNewFriendRequestList(bot: Bot): List<RequestEventData.NewFriendRequest>
 }

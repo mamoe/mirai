@@ -137,6 +137,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(8) @JvmField val isGetFrdRibbon: Boolean = true,
         @ProtoNumber(9) @JvmField val isGetGrpRibbon: Boolean = true,
         @ProtoNumber(10) @JvmField val friendMsgTypeFlag: Long = 0L,
+        @ProtoNumber(11) @JvmField val reqMsgType: Int = 0
     ) : ProtoBuf
 
     @Serializable

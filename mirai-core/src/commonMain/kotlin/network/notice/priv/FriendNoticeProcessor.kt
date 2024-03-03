@@ -21,11 +21,13 @@ import net.mamoe.mirai.internal.contact.toMiraiFriendInfo
 import net.mamoe.mirai.internal.network.components.MixedNoticeProcessor
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext
 import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Companion.msgInfo
+import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.notice.NewContactSupport
 import net.mamoe.mirai.internal.network.notice.group.get
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.proto.FrdSysMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x115.SubMsgType0x115
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x122
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x27.SubMsgType0x27.*
@@ -36,10 +38,12 @@ import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList.GetFrien
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.utils.*
+import kotlin.math.max
 
 /**
- * All [FriendEvent] except [FriendMessageEvent]
+ * All [FriendEvent] except [FriendMessageEvent], plus [NewFriendRequestEvent]
  *
+ * @see NewFriendRequestEvent
  * @see FriendInputStatusChangedEvent
  * @see FriendAddEvent
  * @see StrangerRelationChangeEvent.Friended
@@ -140,6 +144,27 @@ internal class FriendNoticeProcessor(
 
             else -> markNotConsumed()
         }
+    }
+
+    override suspend fun NoticePipelineContext.processImpl(data: Structmsg.StructMsg) {
+        val systemMsg = data.msg ?: return
+        if (attributes[NewContact.SYSTEM_MSG_TYPE] != 0) return
+        markAsConsumed()
+
+        if (data.msgTime <= bot.syncController.latestMsgNewFriendTime) return
+        if (!bot.syncController.syncNewFriend(data.msgSeq, data.msgTime)) return // duplicate
+
+        collected += NewFriendRequestEvent(
+            bot,
+            data.msgSeq,
+            systemMsg.msgAdditional,
+            data.reqUin,
+            systemMsg.groupCode,
+            systemMsg.reqUinNick,
+        )
+
+        val latestTime = bot.syncController.latestMsgNewFriendTime
+        bot.syncController.latestMsgNewFriendTime = max(latestTime, data.msgTime)
     }
 
 

@@ -20,12 +20,14 @@ import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.friendgroup.FriendGroups
+import net.mamoe.mirai.data.RequestEventData
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
+import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.internal.network.component.ComponentStorage
 import net.mamoe.mirai.internal.network.component.ConcurrentComponentStorage
 import net.mamoe.mirai.internal.network.components.EventDispatcher
@@ -117,6 +119,10 @@ internal class MockBotImpl(
         if (!loginBefore.compareAndSet(false, true)) {
             BotReloginEvent(this, null).broadcast()
         }
+    }
+
+    override suspend fun getNewFriendRequestList(): List<RequestEventData.NewFriendRequest> {
+        return listOf()
     }
 
 

@@ -16,6 +16,7 @@ import kotlinx.coroutines.*
 import me.him188.kotlin.jvm.blocking.bridge.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.friendgroup.FriendGroups
+import net.mamoe.mirai.data.RequestEventData
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.action.BotNudge
@@ -170,6 +171,13 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      */
     public override fun nudge(): BotNudge = BotNudge(this)
 
+    /**
+     * 获取未处理的好友请求
+     *
+     * @see RequestEventData.NewFriendRequest
+     * @since 2.17
+     */
+    public suspend fun getNewFriendRequestList(): List<RequestEventData.NewFriendRequest>
 
     /**
      * 关闭这个 [Bot], 立即取消 [Bot] 的 [SupervisorJob], 取消与这个 [Bot] 相关的所有有协程联系的任务.

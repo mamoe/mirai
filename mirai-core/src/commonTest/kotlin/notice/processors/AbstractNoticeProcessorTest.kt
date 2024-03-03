@@ -39,6 +39,8 @@ import net.mamoe.mirai.utils.*
  * To add breakpoint, see [NoticeProcessorPipelineImpl.process]
  */
 internal abstract class AbstractNoticeProcessorTest : AbstractCommonNHTest(), GroupExtensions {
+    var mockTime = currentTimeSeconds()
+
     init {
         setSystemProp("mirai.network.notice.pipeline.log.full", "true")
     }
