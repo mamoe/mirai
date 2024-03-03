@@ -58,6 +58,8 @@ import org.jline.terminal.TerminalBuilder
 import org.jline.terminal.impl.AbstractWindowsTerminal
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.exists
+import kotlin.io.path.outputStream
 
 /**
  * mirai-console-terminal 后端实现
@@ -131,6 +133,10 @@ open class MiraiConsoleImplementationTerminal
         get() = ConsoleTerminalSettings.launchOptions
 
     override fun preStart() {
+
+        val lock = rootPath.resolve("startup.properties")
+        if (lock.exists()) throw RuntimeException("已有其他实例启动，或者上次启动后没有正常关闭 Mirai Console")
+
         registerSignalHandler()
 
         JLineInputDaemon.terminal0 = this
@@ -142,6 +148,16 @@ open class MiraiConsoleImplementationTerminal
             while (isActive) {
                 downloadingProgressDaemonStub()
             }
+        }
+    }
+
+    override fun postStart() {
+        launch(CoroutineName("Mirai Console Terminal Startup Lock")) {
+            val lock = rootPath.resolve("startup.properties")
+            lock.outputStream().use { output ->
+                System.getProperties().store(output, "startup lock")
+            }
+            lock.toFile().deleteOnExit()
         }
     }
 
