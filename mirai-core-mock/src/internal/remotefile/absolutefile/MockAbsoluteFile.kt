@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import net.mamoe.mirai.contact.FileSupported
 import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.AbsoluteFolder
-import net.mamoe.mirai.internal.message.data.FileMessageImpl
+import net.mamoe.mirai.internal.message.data.GroupFileMessageImpl
 import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.mock.internal.remotefile.remotefile.MockRemoteFile
 import net.mamoe.mirai.mock.resserver.MockServerRemoteFile
@@ -55,7 +55,7 @@ internal class MockAbsoluteFile(
 
     override fun toMessage(): FileMessage {
         //todo busId
-        return FileMessageImpl(id, 0, name, size)
+        return GroupFileMessageImpl(id, 0, name, size)
     }
 
     override suspend fun refreshed(): AbsoluteFile? =

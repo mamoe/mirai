@@ -18,6 +18,8 @@ import io.ktor.utils.io.core.*
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.file.AbsoluteFile
+import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.contact.friendgroup.FriendGroup
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.event.broadcast
@@ -25,15 +27,25 @@ import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.event.events.FriendRemarkChangeEvent
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.file.AbsoluteFriendFileImpl
 import net.mamoe.mirai.internal.contact.info.FriendInfoImpl
 import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplFriend
 import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
+import net.mamoe.mirai.internal.message.flags.AllowSendFileMessage
 import net.mamoe.mirai.internal.message.protocol.outgoing.FriendMessageProtocolStrategy
 import net.mamoe.mirai.internal.message.protocol.outgoing.MessageProtocolStrategy
 import net.mamoe.mirai.internal.network.components.HttpClientProvider
 import net.mamoe.mirai.internal.network.highway.*
+import net.mamoe.mirai.internal.network.protocol
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x346
+import net.mamoe.mirai.internal.network.protocol.data.proto.ExcitingBusiInfo
+import net.mamoe.mirai.internal.network.protocol.data.proto.ExcitingClientInfo
+import net.mamoe.mirai.internal.network.protocol.data.proto.ExcitingFileEntry
+import net.mamoe.mirai.internal.network.protocol.data.proto.ExcitingFileNameInfo
+import net.mamoe.mirai.internal.network.protocol.data.proto.FileUploadEntry
+import net.mamoe.mirai.internal.network.protocol.data.proto.FileUploadExt
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.internal.network.protocol.packet.chat.OfflineFilleHandleSvr
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.audioCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
@@ -41,6 +53,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.summarycard.ChangeFriend
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.FileMessage
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.OfflineAudio
 import net.mamoe.mirai.spi.AudioToSilkService
@@ -88,6 +101,101 @@ internal class FriendImpl(
         get() = bot.friendGroups[info.friendGroupId] ?: bot.friendGroups[0]!!
 
     private val messageProtocolStrategy: MessageProtocolStrategy<FriendImpl> = FriendMessageProtocolStrategy(this)
+
+    override val files: RemoteFiles
+        get() = throw UnsupportedOperationException("file system is not supported by Friend, please use uploadFile instead.")
+
+    @Suppress("DEPRECATION_ERROR")
+    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"), level = DeprecationLevel.ERROR)
+    override val filesRoot: RemoteFile
+        get() = throw UnsupportedOperationException("file system is not supported by Friend, please use uploadFile instead.")
+
+    override suspend fun uploadFile(
+        filename: String,
+        content: ExternalResource,
+        callback: ProgressionCallback<AbsoluteFile, Long>?
+    ): FileMessage {
+        val md5 = content.md5
+        val sha1 = content.sha1
+        val size = content.size
+
+        val appUpResp = bot.network.sendAndExpect(
+            OfflineFilleHandleSvr.ApplyUploadV3(bot.client, this, filename, size, md5, sha1)
+        )
+
+        if (appUpResp is OfflineFilleHandleSvr.ApplyUploadV3.Response.Failed) {
+            throw IllegalStateException(appUpResp.message)
+        }
+
+        val fileUuid = when (appUpResp) {
+            is OfflineFilleHandleSvr.ApplyUploadV3.Response.FileExists -> appUpResp.fileUuid
+            is OfflineFilleHandleSvr.ApplyUploadV3.Response.RequireUpload -> appUpResp.fileUuid
+            else -> assertUnreachable()
+        }
+        val file = AbsoluteFriendFileImpl(
+            this,
+            fileUuid.decodeToString(),
+            filename,
+            bot.id,
+            0,
+            content.size,
+            content.sha1,
+            content.md5
+        )
+
+        if (appUpResp is OfflineFilleHandleSvr.ApplyUploadV3.Response.RequireUpload) {
+            val ext = FileUploadExt(
+                u1 = 100,
+                u2 = 2,
+                entry = FileUploadEntry(
+                    business = ExcitingBusiInfo(
+                        busId = 3,
+                        senderUin = bot.uin,
+                        receiverUin = uin,
+                        groupCode = 0,
+                    ),
+                    fileEntry = ExcitingFileEntry(
+                        fileSize = content.size,
+                        md5 = content.md5,
+                        sha1 = content.sha1,
+                        fileId = appUpResp.fileUuid,
+                        uploadKey = appUpResp.uploadKey,
+                    ),
+                    clientInfo = ExcitingClientInfo(
+                        clientType = 2,
+                        appId = bot.client.protocol.id.toString(),
+                        terminalType = 2,
+                        clientVer = "d92615c5",
+                        unknown = 4,
+                    ),
+                    fileNameInfo = ExcitingFileNameInfo(filename = filename)
+                ),
+                u200 = 1
+            )
+
+            Highway.uploadResourceBdh(
+                bot = bot,
+                resource = content,
+                kind = ResourceKind.FRIEND_FILE,
+                commandId = 69,
+                extendInfo = ext.toByteArray(FileUploadExt.serializer()),
+                callback = if (callback == null) null else fun(it: Long) {
+                    callback.onProgression(file, content, it)
+                }
+            )
+
+            callback?.onFinished(file, content, Result.success(content.size))
+        }
+
+        val upSuccResp = bot.network.sendAndExpect(OfflineFilleHandleSvr.UploadSucc(bot.client, this, fileUuid))
+        if (upSuccResp is OfflineFilleHandleSvr.FileInfo.Failed) {
+            throw IllegalStateException(upSuccResp.message)
+        }
+
+        val fileMessage = file.toMessage()
+        sendMessage(AllowSendFileMessage + fileMessage)
+        return fileMessage
+    }
 
     override suspend fun delete() {
         check(bot.friends[id] != null) {

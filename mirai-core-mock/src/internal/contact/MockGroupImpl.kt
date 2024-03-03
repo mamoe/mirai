@@ -16,6 +16,7 @@ import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.announcement.OfflineAnnouncement
 import net.mamoe.mirai.contact.announcement.buildAnnouncementParameters
+import net.mamoe.mirai.contact.file.AbsoluteFile
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.data.GroupHonorType
@@ -348,6 +349,14 @@ internal class MockGroupImpl(
 
     override val files: RemoteFiles by lazy {
         net.mamoe.mirai.mock.internal.remotefile.absolutefile.MockRemoteFiles(this, txFileSystem)
+    }
+
+    override suspend fun uploadFile(
+        filename: String,
+        content: ExternalResource,
+        callback: ProgressionCallback<AbsoluteFile, Long>?
+    ): FileMessage {
+        TODO("uploadFile of MockGroupImpl")
     }
 
     override suspend fun uploadAudio(resource: ExternalResource): OfflineAudio =

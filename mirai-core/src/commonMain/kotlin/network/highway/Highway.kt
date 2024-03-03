@@ -121,6 +121,7 @@ internal enum class ResourceKind(
     GROUP_AUDIO("group audio"),
 
     GROUP_FILE("group file"),
+    FRIEND_FILE("friend file"),
 
     LONG_MESSAGE("long message"),
     FORWARD_MESSAGE("forward message"),

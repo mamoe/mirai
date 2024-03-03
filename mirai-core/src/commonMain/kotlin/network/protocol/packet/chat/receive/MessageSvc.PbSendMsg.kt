@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.groupCode
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.data.ForwardMessageInternal
+import net.mamoe.mirai.internal.message.data.FriendFileMessageImpl
 import net.mamoe.mirai.internal.message.data.toPtt
 import net.mamoe.mirai.internal.message.protocol.MessageProtocolFacade
 import net.mamoe.mirai.internal.message.source.OnlineMessageSourceToFriendImpl
@@ -31,14 +32,16 @@ import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.components.ClockHolder.Companion.clock
 import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncController
 import net.mamoe.mirai.internal.network.components.SyncController.Companion.syncCookie
+import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
-import net.mamoe.mirai.internal.network.protocol.data.proto.MsgCtrl
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
+import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x4
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.getRandomUnsignedInt
@@ -270,11 +273,19 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                         ),
                         ptt = subChain.findPtt(),
                     ),
+                    msgContent = subChain.findFriendFile()
+                        ?.toByteArray(SubMsgType0x4.MsgBody.serializer())
+                        ?: net.mamoe.mirai.utils.EMPTY_BYTE_ARRAY
                 )
             },
             pbSendMsgReq = { msgBody, msgSeq, msgRand, contentHead ->
                 MsgSvc.PbSendMsgReq(
-                    routingHead = MsgSvc.RoutingHead(c2c = MsgSvc.C2C(toUin = targetFriend.uin)),
+                    routingHead = MsgSvc.RoutingHead(
+                        c2c = MsgSvc.C2C(toUin = targetFriend.uin),
+                        trans0x211 = if (message.findIsInstance<FileMessage>() is FriendFileMessageImpl) {
+                            MsgSvc.Trans0x211(toUin = targetFriend.uin, ccCmd = 4)
+                        } else null
+                    ),
                     contentHead = contentHead,
                     msgBody = msgBody,
                     msgSeq = msgSeq,
@@ -439,6 +450,10 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
 
     private fun MessageChain.findPtt() =
         findIsInstance<Audio>()?.toPtt() ?: this[PttMessage]?.toPtt()
+
+    private fun MessageChain.findFriendFile() = findIsInstance<FileMessage>()?.run {
+        if (this is FriendFileMessageImpl) toSubMsg0x4() else null
+    }
     /*
     = buildOutgoingUniPacket(client) {
         ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())

@@ -53,6 +53,8 @@ public interface AbsoluteFile : AbsoluteFileFolder {
      *
      * 注意该操作有可能产生同名文件或目录 (当 [folder] 中已经存在一个名称为 [name] 的文件或目录时).
      *
+     * 对于好友文件, 此方法不会产生任何效果.
+     *
      * @throws IOException 当发生网络错误时可能抛出
      * @throws IllegalStateException 当发生已知的协议错误时抛出
      * @throws PermissionDeniedException 当无管理员权限时抛出 (若群仅允许管理员上传)

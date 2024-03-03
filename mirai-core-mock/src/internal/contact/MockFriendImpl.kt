@@ -7,7 +7,12 @@
  * https://github.com/mamoe/mirai/blob/dev/LICENSE
  */
 
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "CANNOT_OVERRIDE_INVISIBLE_MEMBER")
+@file:Suppress(
+    "INVISIBLE_MEMBER",
+    "INVISIBLE_REFERENCE",
+    "CANNOT_OVERRIDE_INVISIBLE_MEMBER",
+    "DEPRECATION_ERROR"
+)
 
 package net.mamoe.mirai.mock.internal.contact
 
@@ -15,15 +20,14 @@ import kotlinx.coroutines.cancel
 import net.mamoe.mirai.contact.AvatarSpec
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.OtherClient
+import net.mamoe.mirai.contact.file.AbsoluteFile
+import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.contact.friendgroup.FriendGroup
 import net.mamoe.mirai.contact.roaming.RoamingMessages
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.OfflineAudio
-import net.mamoe.mirai.message.data.OnlineMessageSource
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.mock.MockBot
 import net.mamoe.mirai.mock.contact.MockFriend
 import net.mamoe.mirai.mock.internal.contact.friendfroup.MockFriendGroups
@@ -34,6 +38,8 @@ import net.mamoe.mirai.mock.internal.msgsrc.OnlineMsgSrcToFriend
 import net.mamoe.mirai.mock.internal.msgsrc.newMsgSrc
 import net.mamoe.mirai.mock.utils.broadcastBlocking
 import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.ProgressionCallback
+import net.mamoe.mirai.utils.RemoteFile
 import net.mamoe.mirai.utils.cast
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
@@ -91,6 +97,21 @@ internal class MockFriendImpl(
             mockApi.remark = value
             FriendRemarkChangeEvent(this, ov, value).broadcastBlocking()
         }
+
+    @Deprecated("Please use files instead.", replaceWith = ReplaceWith("files.root"), level = DeprecationLevel.ERROR)
+    override val filesRoot: RemoteFile
+        get() = throw UnsupportedOperationException("file system is not supported by MockFriend, please use uploadFile instead.")
+
+    override val files: RemoteFiles
+        get() = throw UnsupportedOperationException("file system is not supported by MockFriend, please use uploadFile instead.")
+
+    override suspend fun uploadFile(
+        filename: String,
+        content: ExternalResource,
+        callback: ProgressionCallback<AbsoluteFile, Long>?
+    ): FileMessage {
+        TODO("Not yet implemented")
+    }
 
     override fun newMessagePreSend(message: Message): MessagePreSendEvent {
         return FriendMessagePreSendEvent(this, message)

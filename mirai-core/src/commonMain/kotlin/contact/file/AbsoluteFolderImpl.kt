@@ -59,7 +59,7 @@ internal fun CommonAbsoluteFolderImpl.createChildFolder(
 
 internal fun CommonAbsoluteFolderImpl.createChildFile(
     info: GroupFileCommon.FileInfo
-): AbsoluteFileImpl = AbsoluteFileImpl(
+): AbsoluteGroupFileImpl = AbsoluteGroupFileImpl(
     contact = contact,
     parent = this,
     id = info.fileId,
@@ -74,12 +74,18 @@ internal fun CommonAbsoluteFolderImpl.createChildFile(
     busId = info.busId
 )
 
+/**
+ * only for group
+ */
 internal expect class AbsoluteFolderImpl(
     contact: FileSupported, parent: AbsoluteFolder?, id: String, name: String,
     uploadTime: Long, uploaderId: Long, lastModifiedTime: Long,
     contentsCount: Int,
 ) : CommonAbsoluteFolderImpl
 
+/**
+ * only for group
+ */
 internal abstract class CommonAbsoluteFolderImpl(
     contact: FileSupported, parent: AbsoluteFolder?, id: String, name: String,
     uploadTime: Long, uploaderId: Long, lastModifiedTime: Long,
@@ -160,7 +166,7 @@ internal abstract class CommonAbsoluteFolderImpl(
                     -36 -> folder.throwPermissionDeniedException("uploadNewFile")
                 }
 
-                val file = AbsoluteFileImpl(
+                val file = AbsoluteGroupFileImpl(
                     contact = folder.contact,
                     parent = folder,
                     id = resp.fileId,
@@ -187,10 +193,10 @@ internal abstract class CommonAbsoluteFolderImpl(
                     return file
                 }
 
-                val ext = GroupFileUploadExt(
+                val ext = FileUploadExt(
                     u1 = 100,
                     u2 = 1,
-                    entry = GroupFileUploadEntry(
+                    entry = FileUploadEntry(
                         business = ExcitingBusiInfo(
                             busId = resp.busId,
                             senderUin = folder.bot.id,
@@ -226,8 +232,8 @@ internal abstract class CommonAbsoluteFolderImpl(
                             ),
                         ),
                     ),
-                    u3 = 0,
-                ).toByteArray(GroupFileUploadExt.serializer())
+                    u3 = 0
+                ).toByteArray(FileUploadExt.serializer())
 
                 callback?.onBegin(file, content)
 

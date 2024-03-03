@@ -13,11 +13,17 @@ import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
 import net.mamoe.mirai.internal.message.data.OnlineAudioImpl
 import net.mamoe.mirai.internal.message.protocol.MessageProtocol
 import net.mamoe.mirai.internal.message.protocol.ProcessorCollector
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoder
+import net.mamoe.mirai.internal.message.protocol.decode.MessageDecoderContext
 import net.mamoe.mirai.internal.message.protocol.serialization.MessageSerializer
+import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.toLongUnsigned
 
 internal class AudioProtocol : MessageProtocol() {
     override fun ProcessorCollector.collectProcessorsImpl() {
+        add(Decoder())
+
         MessageSerializer.superclassesScope(
             OnlineAudio::class,
             Audio::class,
@@ -42,6 +48,26 @@ internal class AudioProtocol : MessageProtocol() {
                     net.mamoe.mirai.message.data.Voice.serializer()
                 )
             )
+        }
+    }
+
+    private class Decoder : MessageDecoder {
+        override suspend fun MessageDecoderContext.process(data: ImMsgBody.Elem) {
+            val originalMsg = runCatching { attributes[MessageDecoderContext.CONTAINING_MSG] }
+                .getOrNull() ?: return
+
+            val ptt = originalMsg.msgBody.richText.ptt ?: return
+            if (collected.data.find { it is OnlineAudioImpl } != null) return // audio is ConstrainSingle
+
+            collect(OnlineAudioImpl(
+                filename = ptt.fileName.decodeToString(),
+                fileMd5 = ptt.fileMd5,
+                fileSize = ptt.fileSize.toLongUnsigned(),
+                codec = AudioCodec.fromId(ptt.format),
+                url = ptt.downPara.decodeToString(),
+                length = ptt.time.toLongUnsigned(),
+                originalPtt = ptt,
+            ))
         }
     }
 }

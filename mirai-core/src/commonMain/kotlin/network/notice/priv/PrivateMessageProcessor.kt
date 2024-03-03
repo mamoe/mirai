@@ -25,8 +25,10 @@ import net.mamoe.mirai.internal.network.components.NoticePipelineContext.Compani
 import net.mamoe.mirai.internal.network.components.SimpleNoticeProcessor
 import net.mamoe.mirai.internal.network.components.SsoProcessor
 import net.mamoe.mirai.internal.network.notice.group.GroupMessageProcessor
+import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.assertUnreachable
 import net.mamoe.mirai.utils.context
@@ -90,7 +92,8 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
         if (!bot.components[SsoProcessor].firstLoginSucceed) return
         val senderUin = if (fromSync) msgHead.toUin else msgHead.fromUin
         when (msgHead.msgType) {
-            166, 167, // 单向好友
+            166,
+            167, // 单向好友
             208, // friend ptt, maybe also support stranger
             -> {
                 data.msgBody.richText.ptt?.let { ptt ->
@@ -118,6 +121,32 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
                 handlePrivateMessage(data, group[senderUin] ?: return)
             }
 
+            529, // friend file
+            -> {
+                val content = msgBody.msgContent
+                if (content.isEmpty()) return
+
+                // msgBody.richText.elems is empty when received friend file message
+                // In order to let the decoder at FileMessageProtocol in MessageProtocolFacade works,
+                // we put a fake(stub) elem which all message protocols ignore
+                val copiedData = MsgComm.Msg(
+                    msgHead, contentHead, ImMsgBody.MsgBody(
+                        ImMsgBody.RichText(
+                            attr = data.msgBody.richText.attr,
+                            elems = listOf(ImMsgBody.Elem()),
+                            notOnlineFile = data.msgBody.richText.notOnlineFile,
+                            ptt = data.msgBody.richText.ptt,
+                            tmpPtt = data.msgBody.richText.tmpPtt,
+                            trans211TmpMsg = data.msgBody.richText.trans211TmpMsg,
+                        ),
+                        data.msgBody.msgContent,
+                        data.msgBody.msgEncryptContent
+                    ), appshareInfo
+                )
+
+                handlePrivateMessage(copiedData, bot.getFriend(senderUin)?.impl() ?: return)
+            }
+
             else -> markNotConsumed()
         }
 
@@ -143,11 +172,20 @@ internal class PrivateMessageProcessor : SimpleNoticeProcessor<MsgComm.Msg>(type
                 RefineContextKey.GroupIdOrZero to 0L,
             )
         )
-        val time = msgHead.msgTime
 
-        collected += if (fromSync) {
-            val client = bot.otherClients.find { it.appId == msgHead.fromInstid }
-                ?: return // don't compare with dstAppId. diff.
+        collected += constructMessageEvent(fromSync, msgHead.fromInstid, user, chain, msgHead.msgTime)
+    }
+
+    private fun NoticePipelineContext.constructMessageEvent(
+        fromSync: Boolean,
+        fromInstid: Int,
+        user: AbstractUser,
+        chain: MessageChain,
+        time: Int
+    ): MessageEvent? {
+        return if (fromSync) {
+            val client = bot.otherClients.find { it.appId == fromInstid }
+                ?: return null // don't compare with dstAppId. diff.
             when (user) {
                 is FriendImpl -> FriendMessageSyncEvent(client, user, chain, time)
                 is StrangerImpl -> StrangerMessageSyncEvent(client, user, chain, time)

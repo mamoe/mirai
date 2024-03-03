@@ -19,7 +19,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.contact.groupCode
-import net.mamoe.mirai.internal.message.data.FileMessageImpl
+import net.mamoe.mirai.internal.message.data.GroupFileMessageImpl
 import net.mamoe.mirai.internal.message.flags.AllowSendFileMessage
 import net.mamoe.mirai.internal.network.highway.Highway
 import net.mamoe.mirai.internal.network.highway.ResourceKind
@@ -446,10 +446,10 @@ internal abstract class CommonRemoteFileImpl(
             return resp
         }
 
-        val ext = GroupFileUploadExt(
+        val ext = FileUploadExt(
             u1 = 100,
             u2 = 1,
-            entry = GroupFileUploadEntry(
+            entry = FileUploadEntry(
                 business = ExcitingBusiInfo(
                     busId = resp.busId,
                     senderUin = bot.id,
@@ -486,7 +486,7 @@ internal abstract class CommonRemoteFileImpl(
                 ),
             ),
             u3 = 0,
-        ).toByteArray(GroupFileUploadExt.serializer())
+        ).toByteArray(FileUploadExt.serializer())
 
         callback?.onBegin(this, resource)
 
@@ -519,7 +519,7 @@ internal abstract class CommonRemoteFileImpl(
         callback: RemoteFile.ProgressionCallback?,
     ): FileMessage {
         val resp = upload0(resource, callback) ?: error("Failed to upload file.")
-        return FileMessageImpl(
+        return GroupFileMessageImpl(
             resp.fileId, resp.busId, name, resource.size, allowSend = true
         )
     }
@@ -582,7 +582,7 @@ internal abstract class CommonRemoteFileImpl(
     override suspend fun toMessage(): FileMessage? {
         val info = getFileFolderInfo() ?: return null
         if (!info.isFile) return null
-        return FileMessageImpl(info.id, info.busId, name, info.size)
+        return GroupFileMessageImpl(info.id, info.busId, name, info.size)
     }
 }
 
