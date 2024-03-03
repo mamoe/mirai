@@ -72,9 +72,9 @@ public fun <T> MiraiFile.loadNotBlankAs(
     if (!this.exists() || this.length == 0L) {
         return null
     }
-    return try{
+    return try {
         stringFormat.decodeFromString(serializer, this.readText())
-    }catch(e:Throwable){//broken file
+    } catch (e: Throwable) { //broken file
         e.printStackTrace()
         null
     }
@@ -87,9 +87,9 @@ public fun <T> MiraiFile.loadNotBlankAs(
     if (!this.exists() || this.length == 0L) {
         return null
     }
-    return try{
+    return try {
         binaryFormat.decodeFromByteArray(serializer, this.readBytes())
-    }catch(e:Throwable){//broken file
+    } catch (e: Throwable) { //broken file
         e.printStackTrace()
         null
     }
