@@ -325,8 +325,23 @@ internal class GroupNotificationProcessor(
         data: MsgType0x2DC,
     ) = data.context {
         val grayTip = buf.loadAs(TroopTips0x857.NotifyMsgBody.serializer(), 1).optGeneralGrayTip
+            ?: return@context markNotConsumed()
         markAsConsumed()
-        when (grayTip?.templId) {
+        when (grayTip.templId) {
+            // 群幸运词
+            10047L, 10048L -> {
+                val user = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
+                val images = listOfNotNull(
+                    grayTip.msgTemplParam["img_url"],
+                    grayTip.msgTemplParam["img_url_1"],
+                    grayTip.msgTemplParam["img_url_2"]
+                )
+
+                collected += MemberLuckyWordEvent(
+                    member = user,
+                    images = images
+                )
+            }
             // 群戳一戳
             10043L, 1133L, 1132L, 1134L, 1135L, 1136L -> {
                 // group nudge
@@ -358,6 +373,15 @@ internal class GroupNotificationProcessor(
                     rank = rank
                 )
             }
+            // 群待办
+            10134L, 10135L, 10136L -> {
+                val user = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
+                when (grayTip.templId) {
+                    10134L -> collected += MemberSetTodoEvent(member = user)
+                    10135L -> collected += MemberCompleteTodoEvent(member = user)
+                    10136L -> collected += MemberRecallTodoEvent(member = user)
+                }
+            }
             // 龙王
             10093L, 10094L, 1053L, 1054L, 1103L -> {
                 val now = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
@@ -376,14 +400,14 @@ internal class GroupNotificationProcessor(
                 }
             }
             // 群聊之火
-            1052L, 1129L -> {
+            1052L, 1129L, 10095L -> {
                 val now = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
 
                 now.info.honors += GroupHonorType.PERFORMER
                 collect(MemberHonorChangeEvent.Achieve(now, GroupHonorType.PERFORMER))
             }
             // 群聊炽焰
-            1055L -> {
+            1055L, 10096L -> {
                 val now = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
 
                 now.info.honors -= GroupHonorType.PERFORMER
@@ -411,11 +435,23 @@ internal class GroupNotificationProcessor(
                     collect(MemberHonorChangeEvent.Achieve(now, GroupHonorType.RED_PACKET))
                 }
             }
-            //
+            // 等级头衔
+            10097L -> {
+                // XXX: 目前只有机器人本身会触发
+                val user = grayTip.msgTemplParam["uin"]?.findMember() ?: group.botAsMember
+                val level = grayTip.msgTemplParam["level"]?.removePrefix("LV")?.toIntOrNull() ?: 1
+                val title = grayTip.msgTemplParam["title"] ?: grayTip.msgTemplParam["level"] ?: ""
+
+                collected += MemberTemperatureTitleChangeEvent(
+                    member = user,
+                    temperature = level,
+                    title = title
+                )
+            }
             else -> {
                 markNotConsumed()
                 logger.debug {
-                    "Unknown Transformers528 0x14 template\ntemplId=${grayTip?.templId}\nPermList=${grayTip?.msgTemplParam?.structureToString()}"
+                    "Unknown Transformers528 0x14 template\ntemplId=${grayTip.templId}\nPermList=${grayTip.msgTemplParam.structureToString()}"
                 }
             }
         }

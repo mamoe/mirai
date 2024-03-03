@@ -22,6 +22,7 @@ import net.mamoe.mirai.contact.announcement.Announcements
 import net.mamoe.mirai.contact.essence.Essences
 import net.mamoe.mirai.contact.file.RemoteFiles
 import net.mamoe.mirai.contact.roaming.RoamingMessages
+import net.mamoe.mirai.contact.todo.GroupTodo
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
@@ -34,6 +35,7 @@ import net.mamoe.mirai.internal.contact.essence.EssencesImpl
 import net.mamoe.mirai.internal.contact.file.RemoteFilesImpl
 import net.mamoe.mirai.internal.contact.info.MemberInfoImpl
 import net.mamoe.mirai.internal.contact.roaming.RoamingMessagesImplGroup
+import net.mamoe.mirai.internal.contact.todo.GroupTodoImpl
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.message.data.OfflineAudioImpl
 import net.mamoe.mirai.internal.message.image.OfflineGroupImage
@@ -411,6 +413,13 @@ internal abstract class CommonGroupImpl constructor(
 
     override val essences: Essences by lazy {
         EssencesImpl(
+            this as GroupImpl,
+            bot.network.logger.subLogger("Group $id"),
+        )
+    }
+
+    override val todo: GroupTodo by lazy {
+        GroupTodoImpl(
             this as GroupImpl,
             bot.network.logger.subLogger("Group $id"),
         )

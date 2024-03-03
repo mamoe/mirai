@@ -520,8 +520,29 @@ public data class MemberSpecialTitleChangeEvent @MiraiInternalApi constructor(
     public override val operator: NormalMember?
 ) : GroupMemberEvent, GroupOperableEvent, AbstractEvent(), Packet, GroupMemberInfoChangeEvent
 
-// endregion
+/**
+ * [Member] 活跃度头衔改变时的事件，目前只有 Bot 自身会触发
+ */
+public class MemberTemperatureTitleChangeEvent(
+    /**
+     * 改变活跃度头衔的群成员
+     */
+    public override val member: NormalMember,
+    /**
+     * 活跃度
+     */
+    public val temperature: Int,
+    /**
+     * 获得头衔
+     */
+    public val title: String
+) : Packet, GroupMemberEvent, BotPassiveEvent, AbstractEvent() {
+    override fun toString(): String {
+        return "MemberTemperatureTitleChangeEvent(group=${group.id}, member=${member.id}, temperature=${temperature}, title=${title})"
+    }
+}
 
+// endregion
 
 // region 成员权限
 
@@ -535,7 +556,6 @@ public data class MemberPermissionChangeEvent @MiraiInternalApi constructor(
 ) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent(), GroupMemberInfoChangeEvent
 
 // endregion
-
 
 // region 禁言
 
@@ -570,9 +590,8 @@ public data class MemberUnmuteEvent @MiraiInternalApi constructor(
 
 // region 群荣誉
 /**
- * [Member] 荣誉改变时的事件, 目前只支持龙王
+ * [Member] 荣誉改变时的事件
  */
-@MiraiExperimentalApi
 public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent() {
     /**
      * 改变荣誉的群成员
@@ -630,6 +649,80 @@ public data class GroupTalkativeChangeEvent(
      */
     public val previous: NormalMember
 ) : Packet, GroupEvent, BotPassiveEvent, AbstractEvent()
+
+// endregion
+
+// region 群幸运词
+
+/**
+ * [Member] 触发群幸运词事件
+ */
+public class MemberLuckyWordEvent(
+    /**
+     * 触发群幸运词的群成员
+     */
+    public override val member: NormalMember,
+    /**
+     * 群幸运词的图片链接
+     */
+    public val images: List<String>
+) : Packet, GroupMemberEvent, BotPassiveEvent, AbstractEvent() {
+    override fun toString(): String {
+        return "MemberLuckyWordEvent(group=${group.id}, member=${member.id})"
+    }
+}
+
+// endregion
+
+// region 群待办
+
+/**
+ * [Member] 设置群待办事件
+ *
+ * 因 QQ 自身限制，无法获取到待办内容
+ */
+public class MemberSetTodoEvent(
+    /**
+     * 设置群待办的群成员
+     */
+    public override val member: NormalMember,
+) : Packet, GroupMemberEvent, BotPassiveEvent, AbstractEvent() {
+    override fun toString(): String {
+        return "MemberSetTodoEvent(group=${group.id}, member=${member.id})"
+    }
+}
+
+/**
+ * [Member] 撤回群待办事件
+ *
+ * 因 QQ 自身限制，无法获取到待办内容
+ */
+public class MemberRecallTodoEvent(
+    /**
+     * 完成群待办的群成员
+     */
+    public override val member: NormalMember,
+) : Packet, GroupMemberEvent, BotPassiveEvent, AbstractEvent() {
+    override fun toString(): String {
+        return "MemberRecallTodoEvent(group=${group.id}, member=${member.id})"
+    }
+}
+
+/**
+ * [Member] 完成群待办事件，可能会在成员完成群待办时触发
+ *
+ * 因 QQ 自身限制，无法获取到待办内容
+ */
+public class MemberCompleteTodoEvent(
+    /**
+     * 完成群待办的群成员
+     */
+    public override val member: NormalMember,
+) : Packet, GroupMemberEvent, BotPassiveEvent, AbstractEvent() {
+    override fun toString(): String {
+        return "MemberCompleteTodoEvent(group=${group.id}, member=${member.id})"
+    }
+}
 
 // endregion
 
