@@ -327,19 +327,20 @@ internal class GroupNotificationProcessor(
         data: MsgType0x2DC,
     ) = data.context {
 
-        fun String.findUser(): UserOrBot? {
-            return if (this == bot.id.toString()) {
-                bot
-            } else {
-                this.findMember() ?: this.findFriendOrStranger()
-            }
-        }
-
         val grayTip = buf.loadAs(TroopTips0x857.NotifyMsgBody.serializer(), 1).optGeneralGrayTip
         markAsConsumed()
         when (grayTip?.templId) {
             // 群戳一戳
             10043L, 1133L, 1132L, 1134L, 1135L, 1136L -> {
+                
+                fun String.findUser(): UserOrBot? {
+                    return if (this == bot.id.toString()) {
+                        group.botAsMember
+                    } else {
+                        this.findMember()?: this.findFriendOrStranger()
+                    }
+                }
+                
                 // group nudge
                 // 预置数据，服务器将不会提供己方已知消息
                 val action = grayTip.msgTemplParam["action_str"].orEmpty()
