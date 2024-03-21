@@ -331,7 +331,7 @@ internal class GroupNotificationProcessor(
             return if (this == bot.id.toString()) {
                 bot
             } else {
-                this.findMember()?: this.findFriendOrStranger()
+                this.findMember() ?: this.findFriendOrStranger()
             }
         }
 
