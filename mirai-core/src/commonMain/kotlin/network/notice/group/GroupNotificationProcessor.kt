@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.network.notice.group
 
 import io.ktor.utils.io.core.*
 import net.mamoe.mirai.contact.NormalMember
+import net.mamoe.mirai.contact.UserOrBot
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
@@ -315,6 +316,7 @@ internal class GroupNotificationProcessor(
         }
     }
 
+
     /**
      * @see NudgeEvent
      * @see MemberHonorChangeEvent
@@ -324,25 +326,45 @@ internal class GroupNotificationProcessor(
     private fun NoticePipelineContext.processGeneralGrayTip(
         data: MsgType0x2DC,
     ) = data.context {
+
         val grayTip = buf.loadAs(TroopTips0x857.NotifyMsgBody.serializer(), 1).optGeneralGrayTip
         markAsConsumed()
         when (grayTip?.templId) {
             // 群戳一戳
             10043L, 1133L, 1132L, 1134L, 1135L, 1136L -> {
+                
+                fun String.findUser(): UserOrBot? {
+                    return if (this == bot.id.toString()) {
+                        group.botAsMember
+                    } else {
+                        this.findMember() ?: this.findFriendOrStranger()
+                    }
+                }
+                
                 // group nudge
                 // 预置数据，服务器将不会提供己方已知消息
                 val action = grayTip.msgTemplParam["action_str"].orEmpty()
-                val from = grayTip.msgTemplParam["uin_str1"]?.findMember() ?: group.botAsMember
-                val target = grayTip.msgTemplParam["uin_str2"]?.findMember() ?: group.botAsMember
+                val from = grayTip.msgTemplParam["uin_str1"]
+                val target = grayTip.msgTemplParam["uin_str2"]
                 val suffix = grayTip.msgTemplParam["suffix_str"].orEmpty()
 
-                collected += NudgeEvent(
-                    from = if (from.id == bot.id) bot else from,
-                    target = if (target.id == bot.id) bot else target,
-                    action = action,
-                    suffix = suffix,
-                    subject = group,
-                )
+                val fromUser = from?.findUser()
+                val targetUser = target?.findUser()
+
+                if(fromUser == null || targetUser == null){
+                    markNotConsumed()
+                    logger.debug {
+                        "Cannot find from or target in Transformers528 0x14 template\ntemplId=${grayTip.templId}\nPermList=${grayTip.msgTemplParam.structureToString()}"
+                    }
+                }else{
+                    collected += NudgeEvent(
+                            from = fromUser,
+                            target = targetUser,
+                            action = action,
+                            suffix = suffix,
+                            subject = group,
+                    )
+                }
             }
             // 群签到/打卡
             10036L, 10038L -> {
