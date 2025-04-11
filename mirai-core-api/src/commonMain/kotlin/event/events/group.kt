@@ -35,7 +35,7 @@ import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
 
 /**
- * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
+ * 机器人已离开群聊事件. 在事件广播前 [Bot.groups] 就已删除这个群.
  */
 public sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent(), GroupMemberInfoChangeEvent {
     public abstract override val group: Group
@@ -79,7 +79,7 @@ public sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent(), GroupMemb
 }
 
 /**
- * Bot 在群里的权限被改变. 操作人一定是群主
+ * Bot 在群中权限被改变事件. 操作人一定是群主.
  */
 public data class BotGroupPermissionChangeEvent @MiraiInternalApi constructor(
     public override val group: Group,
@@ -88,7 +88,7 @@ public data class BotGroupPermissionChangeEvent @MiraiInternalApi constructor(
 ) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent(), GroupMemberInfoChangeEvent
 
 /**
- * Bot 被禁言
+ * Bot 被禁言事件.
  */
 public data class BotMuteEvent @MiraiInternalApi constructor(
     public val durationSeconds: Int,
@@ -102,7 +102,7 @@ public data class BotMuteEvent @MiraiInternalApi constructor(
 }
 
 /**
- * Bot 被取消禁言
+ * Bot 被取消禁言事件.
  */
 public data class BotUnmuteEvent @MiraiInternalApi constructor(
     /**
@@ -115,7 +115,7 @@ public data class BotUnmuteEvent @MiraiInternalApi constructor(
 }
 
 /**
- * Bot 成功加入了一个新群
+ * Bot 已成功加入群聊事件.
  */
 public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, AbstractEvent(),
     GroupMemberInfoChangeEvent {
@@ -269,7 +269,9 @@ public data class GroupAllowMemberInviteEvent @MiraiInternalApi constructor(
 // region 成员变更
 
 /**
- * 成员已经加入群的事件
+ * 成员已成功加入群的事件.
+ *
+ * @see BotJoinGroupEvent 机器人已成功加入群的事件
  */
 public sealed class MemberJoinEvent(
     public override val member: NormalMember
@@ -309,11 +311,13 @@ public sealed class MemberJoinEvent(
 }
 
 /**
- * 成员已经离开群的事件. 在事件广播前成员就已经从 [Group.members] 中删除
+ * 成员已经离开群的事件. 在事件广播前成员就已经从 [Group.members] 中删除. 该成员不可能是机器人本人.
+ *
+ * @see BotLeaveEvent 机器人已经离开群的事件
  */
 public sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent(), GroupMemberInfoChangeEvent {
     /**
-     * 成员被踢出群. 成员不可能是机器人自己.
+     * 成员被踢出群. 该成员不可能是机器人本人.
      */
     public data class Kick(
         public override val member: NormalMember,
@@ -326,7 +330,7 @@ public sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent(), GroupM
     }
 
     /**
-     * 成员主动离开
+     * 成员主动离开. 该成员不可能是机器人本人.
      */
     public data class Quit(
         public override val member: NormalMember
@@ -336,7 +340,9 @@ public sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent(), GroupM
 }
 
 /**
- * [Bot] 被邀请加入一个群.
+ * [Bot] 被邀请加入群聊事件.
+ *
+ * 并非所有群聊邀请时都产生该事件，当群人数过少时该事件可能不会广播. 
  */
 public data class BotInvitedJoinGroupRequestEvent @MiraiInternalApi constructor(
     public override val bot: Bot,
@@ -495,7 +501,7 @@ public data class MemberCardChangeEvent @MiraiInternalApi constructor(
 ) : GroupMemberEvent, Packet, AbstractEvent(), GroupMemberInfoChangeEvent
 
 /**
- * 成员群特殊头衔改动. 一定为群主操作
+ * 成员群特殊头衔改动. 一定为群主操作.
  *
  * 由于服务器并不会告知特殊头衔的重置, 因此此事件在特殊头衔重置后只能由 mirai 在发现变动时才广播
  */
@@ -526,7 +532,9 @@ public data class MemberSpecialTitleChangeEvent @MiraiInternalApi constructor(
 // region 成员权限
 
 /**
- * 成员权限改变的事件. 成员不可能是机器人自己.
+ * 群成员权限改变事件. 该成员不可能是机器人本人.
+ *
+ * @see BotGroupPermissionChangeEvent 机器人权限改变事件
  */
 public data class MemberPermissionChangeEvent @MiraiInternalApi constructor(
     public override val member: NormalMember,
@@ -540,9 +548,9 @@ public data class MemberPermissionChangeEvent @MiraiInternalApi constructor(
 // region 禁言
 
 /**
- * 群成员被禁言事件. 被禁言的成员都不可能是机器人本人
+ * 群成员被禁言事件. 被禁言的成员不可能是机器人本人.
  *
- * @see BotMuteEvent 机器人被禁言的事件
+ * @see BotMuteEvent 机器人被禁言事件
  */
 public data class MemberMuteEvent @MiraiInternalApi constructor(
     public override val member: Member,
@@ -554,9 +562,9 @@ public data class MemberMuteEvent @MiraiInternalApi constructor(
 ) : GroupMemberEvent, Packet, GroupOperableEvent, AbstractEvent(), GroupMemberInfoChangeEvent
 
 /**
- * 群成员被取消禁言事件. 被禁言的成员都不可能是机器人本人
+ * 群成员被取消禁言事件. 被取消禁言的成员不可能是机器人本人.
  *
- * @see BotUnmuteEvent 机器人被取消禁言的事件
+ * @see BotUnmuteEvent 机器人被取消禁言事件
  */
 public data class MemberUnmuteEvent @MiraiInternalApi constructor(
     public override val member: Member,
@@ -570,7 +578,7 @@ public data class MemberUnmuteEvent @MiraiInternalApi constructor(
 
 // region 群荣誉
 /**
- * [Member] 荣誉改变时的事件, 目前只支持龙王
+ * [Member] 荣誉改变时的事件, 目前只支持龙王.
  */
 @MiraiExperimentalApi
 public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent() {
@@ -614,7 +622,7 @@ public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, 
 }
 
 /**
- * [Group] 龙王改变时的事件
+ * [Group] 龙王改变时的事件.
  */
 public data class GroupTalkativeChangeEvent(
     /**
