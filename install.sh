@@ -9,3 +9,4 @@
 
 cargo install --force cbindgen
 cargo install bindgen
+cargo install Chinese
